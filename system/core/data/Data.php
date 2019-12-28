@@ -323,7 +323,7 @@ class Data
             return NULL;
         }
         return $this->xss->clean($value, array_merge([
-            'prevent_basic_xss', 'filter_sanitize'
+            'filter_sanitize'
         ], $filter));
     }
 

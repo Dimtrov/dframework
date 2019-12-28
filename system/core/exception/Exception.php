@@ -72,7 +72,8 @@ class Exception extends \Exception
             }
             else
             {
-                echo "Exception non attrapée : " , $exception->getMessage(), "\n";
+                echo "Exception non attrapée : " , $exception->getMessage(), "<br><br>";
+                echo "File : " , $exception->getFile(), " -- ", $exception->getLine() , "<br>";
             }
         });
     }

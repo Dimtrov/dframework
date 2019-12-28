@@ -142,7 +142,6 @@ class Xss
 
     //Clean dangerous characters for prevent XSS Attacks
     private function prevent_basic_xss($string_arg){
-        $string_arg = str_replace(" ", "", $string_arg);
         $string_arg = str_replace("<", "[eugsxss]+",$string_arg);
         $string_arg = str_replace(">", "[eugsxss]-", $string_arg);
         $string_arg = str_replace("'", "", $string_arg);

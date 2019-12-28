@@ -99,6 +99,7 @@ class dF_Validator
      */
     public function is_date($value, string $format = 'dd/mm/yyyy')
     {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         $format = strtoupper($format);
 
         if(in_array($format, ['DMY', 'DDMMYY']))
@@ -194,6 +195,72 @@ class dF_Validator
         return ($day >= 1 AND $day <= 30);
     }
 
+
+    /**
+     * Verifie si une donne ne contient que des caractere alphabetique ou que c'est un tableau qui n'a que des caractere aphabetique
+     * @param string|array $value
+     * @return bool
+     */
+    public function is_alpha($value) : bool
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+        if(is_array($value))
+        {
+            foreach ($value as $k => $v)
+            {
+                if(!is_string($v))
+                {
+                    return false;
+                }
+                $strlen = strlen($v);
+                if($strlen < 0 OR !preg_match("#^(?:[[:alpha:]]){".$strlen."}$#", $v))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if(is_string($value))
+        {
+            $strlen = strlen($value);
+            return ($strlen > 0 AND preg_match("#^(?:[[:alpha:]]){".$strlen."}$#", $value));
+        }
+        return false;
+    }
+
+    /**
+     * Verifie si une donne ne contient que des caractere alphanumerique ou que c'est un tableau qui n'a que des caractere aphanumerique
+     *
+     * @param string|array $value
+     * @return bool
+     */
+    public function is_alphanum($value)
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+        if(is_array($value))
+        {
+            foreach ($value As $v)
+            {
+                if(!is_string($v))
+                {
+                    return false;
+                }
+                $strlen = strlen($v);
+                if($strlen < 0 OR !preg_match("#^(?:[[:alnum:]]){".$strlen."}$#", $v))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if(is_string($value))
+        {
+            $strlen = strlen($value);
+            return ($strlen > 0 AND preg_match("#^(?:[[:alnum:]]){".$strlen."}$#", $value));
+        }
+        return false;
+    }
+
     /**
      * Verifie si une donnee est une adresse email valide
      *
@@ -270,6 +337,28 @@ class dF_Validator
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         return strlen(trim($value)) == $length;
+    }
+    /**
+     * Verifie si une chaine a une longueur comprise entre une valeur minimale et une valeur maximale
+     *
+     * @param string $value
+     * @param int $min
+     * @param int $max
+     * @param bool $inclusive
+     * @return bool
+     */
+    public function length_between(string $value, int $min, int $max, bool $inclusive = false) : bool
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+
+        if(!$inclusive)
+        {
+             return (strlen(trim($value)) < $max AND strlen(trim($value)) > $min);
+        }
+        else
+        {
+            return (strlen(trim($value)) <= $max && strlen(trim($value)) >= $min);
+        }
     }
     /**
      * @param $value

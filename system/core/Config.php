@@ -46,6 +46,8 @@ class Config
         'general'       => APP_DIR.'config'.DS.'general.php',
         'layout'        => APP_DIR.'config'.DS.'layout.php',
         'route'         => APP_DIR.'config'.DS.'route.php',
+
+        'email'         => APP_DIR.'config'.DS.'email.php',
     ];
 
     /**

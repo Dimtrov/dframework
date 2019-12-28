@@ -16,7 +16,9 @@ if ( ! function_exists('css_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            return base_url() . 'assets/css/' . $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
+            $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
+            $filename = ASSET_DIR.'css'.DS.$name;
+            return base_url() . 'assets/css/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
@@ -39,7 +41,9 @@ if ( ! function_exists('js_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            return base_url() . 'assets/js/' . $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
+            $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
+            $filename = ASSET_DIR.'js'.DS.$name;
+            return base_url() . 'assets/js/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
@@ -62,7 +66,9 @@ if ( ! function_exists('lib_css_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            return base_url() . 'assets/lib/' . $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
+            $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
+            $filename = ASSET_DIR.'lib'.DS.$name;
+            return base_url() . 'assets/lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
@@ -85,7 +91,9 @@ if ( ! function_exists('lib_js_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            return base_url() . 'assets/lib/' . $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
+            $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
+            $filename = ASSET_DIR.'lib'.DS.$name;
+            return base_url() . 'assets/lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
@@ -108,7 +116,8 @@ if ( ! function_exists('img_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            return base_url() . 'assets/img/' . $name;
+            $filename = ASSET_DIR.'img'.DS.$name;
+            return base_url() . 'assets/img/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name;
     }

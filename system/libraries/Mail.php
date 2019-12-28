@@ -122,6 +122,23 @@ class dF_Mail
         }
     }
 
+    public function use(string $name)
+    {
+        $name = strtolower($name);
+        $config = (array) \dFramework\core\Config::get('email.'.$name);
+
+        if(empty($config['connect']) OR !is_array($config['connect']))
+        {
+            Exception::show('Can\'t load a email connect parameters. check manuel to correct it');
+        }
+        $this->connect($config['connect']);
+
+        if(!empty($config['set']) AND is_array($config['set']))
+        {
+            $this->set($config['set']);
+        }
+    }
+
 
     /**
      * @param string $address
@@ -237,12 +254,12 @@ class dF_Mail
     }
 
     /**
-     * @param $path
+     * @param string|array $path
      * @param string $name
      * @return dF_Mail
      * @throws \dFramework\dependencies\phpmailer\Exception
      */
-    public function attach($path, ?$name = '') : self
+    public function attach($path, ?string $name = '') : self
     {
         if(is_string($path))
         {
@@ -256,6 +273,30 @@ class dF_Mail
                 {
                    // Exception::show('Le tableau des fichiers à joindre ne peut être qu\'une châine de caractère');
                     $this->mail->addAttachment($key, $value);
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @param string|array $name
+     * @param null $value
+     * @return dF_Mail
+     */
+    public function header($name, $value = null) : self
+    {
+        if(is_string($name))
+        {
+            $this->mail->addCustomHeader($name, $value);
+        }
+        if(is_array($name))
+        {
+            foreach ($name As $key => $value)
+            {
+                if(is_string($key) AND (is_string($value) OR is_null($value)))
+                {
+                    $this->mail->addCustomHeader($key, $value);
                 }
             }
         }
