@@ -1,10 +1,32 @@
 <?php
 /**
- * Copyright (c) 2019. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
- * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
- * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
- * Vestibulum commodo. Ut rhoncus gravida arcu.
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019, Dimtrov Sarl
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @link	    https://dimtrov.hebfree.org/works/dframework
+ * @version 2.1
+ */
+
+/**
+ * Cache
+ *
+ * A simple system cache for application
+ *
+ * @class       Cache
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Output
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/caching
+ * @file		/system/core/output/Cache.php
  */
 
 namespace dFramework\core\output;
@@ -13,9 +35,6 @@ namespace dFramework\core\output;
 use dFramework\core\Config;
 use dFramework\core\exception\Exception;
 use dFramework\core\route\Dispatcher;
-
-define('CACHE_LITE_ERROR_RETURN', 1);
-define('CACHE_LITE_ERROR_DIE', 8);
 
 
 class Cache
@@ -40,6 +59,9 @@ class Cache
      */
     private $buffer = '';
 
+    /**
+     * Cache constructor.
+     */
     public function __construct() {}
 
 
@@ -90,6 +112,7 @@ class Cache
 
     /**
      * Supprime un fichier mis en cache
+     *
      * @param string $label
      */
     public function remove(string $label)
@@ -172,10 +195,12 @@ class Cache
 
 
     /**
-     * @param $label
+     * Verifie si le fichier demandé a deja été mis en cache et que le temps n'est pas encore expiré
+     *
+     * @param string $label
      * @return bool
      */
-    private function is_cached($label)
+    private function is_cached(string $label)
     {
         $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
 
