@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Group Corp
- * This content is released under the Creative Commons License 3.0 (CC) BY-SA
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Group Corp. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    Creative Commons BY-SA License http://creativecommons.org/licenses/by-sa/3.0/
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     2.0
+ *  @package	    dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version 2.1
  */
 
 /**
@@ -36,6 +36,8 @@ use dFramework\core\route\Router;
 
 class dFramework
 {
+    const VERSION = '2.1';
+
     /**
      * @throws Exception
      * @throws \ReflectionException
@@ -48,7 +50,8 @@ class dFramework
         self::checkPHPVersion('7.0');
 
         session_start();
-        if(!isset($_SESSION['df_session'])) {
+        if(!isset($_SESSION['df_session']))
+        {
             $_SESSION['df_session'] = [];
         }
 
@@ -108,5 +111,3 @@ class dFramework
         }
     }
 }
-
-const dF_VERSION = '2.0';

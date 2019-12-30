@@ -11,8 +11,8 @@
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version    2.1
  */
 
 /**
@@ -30,7 +30,7 @@
  * @category    Data
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/data
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @file        /system/core/data/Response.php
  */
 
@@ -1280,13 +1280,13 @@ class Response
      * ### Whitelist of URIs
      * e.g `cors($request, array('http://www.cakephp.org', '*.google.com', 'https://myproject.github.io'));`
      *
-     * @param CakeRequest $request Request object
+     * @param Request $request Request object
      * @param string|array $allowedDomains List of allowed domains, see method description for more details
      * @param string|array $allowedMethods List of HTTP verbs allowed
      * @param string|array $allowedHeaders List of HTTP headers allowed
      * @return void
      */
-    public function cors(CakeRequest $request, $allowedDomains, $allowedMethods = array(), $allowedHeaders = array()) {
+    public function cors(Request $request, $allowedDomains, $allowedMethods = array(), $allowedHeaders = array()) {
         $origin = $request->header('Origin');
         if (!$origin) {
             return;

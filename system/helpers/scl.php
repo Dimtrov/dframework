@@ -650,12 +650,12 @@ function scl_crypt($str, $key, $action = 'encrypt')
             $letter = 0;
         }
         if ($action == 'encrypt') {
-            $neword = ord($str{$i}) + ord($key{$letter});
+            $neword = ord($str[$i]) + ord($key[$letter]);
             if ($neword > 255) {
                 $neword -= 256;
             }
         } else {
-            $neword = ord($str{$i}) - ord($key{$letter});
+            $neword = ord($str[$i]) - ord($key[$letter]);
             if ($neword < 1) {
                 $neword += 256;
             }

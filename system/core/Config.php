@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov SARL
- * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov SARL. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ *  @package	    dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	    https://dimtrov.hebfree.org/works/dframework
+ *  @version 2.1
  */
 
 /**
@@ -24,7 +24,7 @@
  * @package		dFramework
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/config
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @file		/system/core/Config.php
  */
 
@@ -218,10 +218,6 @@ class Config
             }
             self::set('general.base_url', rtrim(str_replace('\\', '/', $base_url), '/'));
         }
-        if (empty(self::$_config['general']['index_page']))
-        {
-            self::set('general.index_page', '');
-        }
     }
 
 
@@ -236,18 +232,18 @@ class Config
 
         switch (self::$_config['general']['environment'])
         {
-            case 'development':
+            case 'dev':
                 error_reporting(-1);
                 ini_set('display_errors', 1);
                 break;
-            case 'testing':
-            case 'production':
+            case 'test':
+            case 'prod':
                 ini_set('display_errors', 0);
                 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
                 break;
             default:
                 throw new ConfigException('
-                    The <b>general[environment]</b> configuration is not set correctly (Accept values: development/production/testing). 
+                    The <b>general[environment]</b> configuration is not set correctly (Accept values: dev/prod/test). 
                     <br>
                     Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
                 ');
@@ -273,9 +269,8 @@ class Config
         }
         else if(self::$_config['general']['compress_output'] === 'auto')
         {
-            self::$_config['general']['compress_output'] = (self::$_config['general']['environment'] !== 'development');
+            self::$_config['general']['compress_output'] = (self::$_config['general']['environment'] !== 'dev');
         }
-
 
         foreach (self::$_config['database'] As $key => $value)
         {
@@ -290,10 +285,8 @@ class Config
             }
             else if(self::$_config['database'][$key]['debug'] === 'auto')
             {
-                self::$_config['database'][$key]['debug'] = (self::$_config['general']['environment'] === 'development');
+                self::$_config['database'][$key]['debug'] = (self::$_config['general']['environment'] === 'dev');
             }
         }
     }
-
-
 }

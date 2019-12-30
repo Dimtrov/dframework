@@ -1,4 +1,20 @@
 <?php
+/**
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019, Dimtrov Sarl
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version    2.1
+ */
+
 //
 //  A simple PHP CAPTCHA script
 //
@@ -11,7 +27,7 @@ namespace dFramework\dependencies\others\simplephpcaptcha;
 
 
 use dFramework\core\exception\Exception;
-use dFramework\core\Functions;
+use dFramework\core\Helpers;
 
 class SimplePhpCaptcha
 {
@@ -19,8 +35,8 @@ class SimplePhpCaptcha
      * @var array  Defaults configurations
      */
     private $config = [
-        'bg_path' => __DIR__ . DIRECTORY_SEPARATOR .DIRECTORY_SEPARATOR,
-        'font_path' => __DIR__ . DIRECTORY_SEPARATOR .DIRECTORY_SEPARATOR,
+        'bg_path' => __DIR__ . DIRECTORY_SEPARATOR,
+        'font_path' => __DIR__ . DIRECTORY_SEPARATOR,
         'min_length' => 5,
         'max_length' => 5,
         'backgrounds' => [
@@ -95,7 +111,7 @@ class SimplePhpCaptcha
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__, 2));
         $dir = end($dir);
 
-        $image_src = Functions::instance()->site_url($dir.'/dependencies/simplephpcaptcha/show.php?df_captcha&amp;sid='.urlencode(microtime()));
+        $image_src = Helpers::instance()->site_url($dir.'/dependencies/simplephpcaptcha/show.php?df_captcha&amp;sid='.urlencode(microtime()));
 
         $captcha_config['code'] = base64_encode(md5(uniqid()).$captcha_code);
         $_SESSION['df_captcha']['config'] = serialize($captcha_config);

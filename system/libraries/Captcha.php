@@ -11,13 +11,9 @@
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version    2.1
  */
-
-use dFramework\core\exception\Exception;
-use dFramework\core\Functions;
-use dFramework\dependencies\others\simplephpcaptcha\SimplePhpCaptcha;
 
 /**
  * Captcha
@@ -28,6 +24,14 @@ use dFramework\dependencies\others\simplephpcaptcha\SimplePhpCaptcha;
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/captcha
  */
+
+
+use dFramework\core\{
+    exception\Exception,
+    Helpers
+};
+use dFramework\dependencies\others\simplephpcaptcha\SimplePhpCaptcha;
+
 
 class dF_Captcha
 {
@@ -369,7 +373,7 @@ class dF_Captcha
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
 
-        return Functions::instance()->site_url($dir.'/dependencies/securimage/show.php?df_captcha&amp;sid='.urlencode(microtime()));
+        return Helpers::instance()->site_url($dir.'/dependencies/securimage/show.php?df_captcha&amp;sid='.urlencode(microtime()));
     }
 
     /**
@@ -383,7 +387,7 @@ class dF_Captcha
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
 
-        return Functions::instance()->site_url($dir.'/dependencies/securimage/play.php?df_captcha&amp;sid='.urlencode(microtime()));
+        return Helpers::instance()->site_url($dir.'/dependencies/securimage/play.php?df_captcha&amp;sid='.urlencode(microtime()));
     }
 
 }

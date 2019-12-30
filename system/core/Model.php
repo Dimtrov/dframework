@@ -2,6 +2,7 @@
 
 namespace dFramework\core;
 
+use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
 use dFramework\dependencies\fluentpdo\Query as FluentQuery;
 
@@ -16,6 +17,9 @@ class Model extends Query
         parent::__construct();
     }
 
+    /**
+     * @var FluentQuery|null
+     */
     private $fluent = null;
 
     /**
@@ -36,17 +40,72 @@ class Model extends Query
     }
 
     /**
+     * @var Migrator|null
+     */
+    private $migrator = null;
+
+    /**
+     * @return Migrator|null
+     */
+    protected function migrator() : ?Migrator
+    {
+        if(null === $this->migrator)
+        {
+            try {
+                $this->migrator = new Migrator($this->db);
+            }
+            catch (\Exception $e) {
+                die('Impossible de charger l\'objet Migrator : ' . $e->getMessage());
+            }
+        }
+        return $this->migrator;
+    }
+
+    /**
+     * Do backup for database
+     * @param string $version
+     */
+    public function downDbTo(string $version)
+    {
+        $this->migrator()->down($version);
+    }
+
+    /**
+     * Update database from specific backup
+     *
+     * @param string $version
+     * @throws exception\DatabaseException
+     */
+    public function upDbFrom(string $version)
+    {
+        $this->migrator()->up($version);
+    }
+
+
+    /**
      *  Returns the last inserted id.
+     *
      * @param $name
+     * @return string
+     */
+    public function lastId($name = null)
+    {
+        return $this->db->pdo()->lastInsertId($name);
+    }
+    /**
+     * @alias lastId
+     * @deprecated
+     * @param null $name
      * @return string
      */
     public function lastInsertId($name = null)
     {
-        return $this->db->pdo()->lastInsertId($name);
+        return $this->lastId($name);
     }
 
     /**
      * Starts the transaction
+     *
      * @return boolean, true on success or false on failure
      */
     public function beginTransaction()

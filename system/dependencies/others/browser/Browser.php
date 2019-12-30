@@ -1,5 +1,5 @@
 <?php
-namespace dFramework\dependencies\browser;
+namespace dFramework\dependencies\others\browser;
 
 /**
  * File: Browser.php
@@ -358,6 +358,7 @@ class Browser
      * Set the user agent value (the construction will use the HTTP header value - this will overwrite it)
      * @param string $agent_string The value for the User Agent
      */
+
     public function setUserAgent($agent_string)
     {
         $this->reset();

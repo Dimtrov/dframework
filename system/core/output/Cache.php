@@ -128,7 +128,7 @@ class Cache
      */
     public function clear()
     {
-        $files = glob($this->cache_dir.'/*');
+        $files = glob(rtrim($this->cache_dir, DS).DS.'*');
         foreach ($files As $file)
         {
             unlink($file);

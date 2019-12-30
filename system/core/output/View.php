@@ -1,18 +1,19 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
- * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ *  @package	dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version    2.1
+ *
  */
 
 /**
@@ -25,7 +26,7 @@
  * @subpackage	Core
  * @category    Output
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/renderer
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_output_view.html
  * @file		/system/core/output/View.php
  */
 
@@ -56,7 +57,7 @@ class View
      */
     public function __construct($view, array $vars = [], string $controller = '')
     {
-        $this->view = $view;
+        $this->view = preg_replace('#\.php$#i', '', $view);
         $this->vars = $vars;
         $this->controller = $controller;
         $this->create();
@@ -67,7 +68,7 @@ class View
      */
     public function render()
     {
-        echo $this->get(Config::get('general.environment') != 'development');
+        echo $this->get(Config::get('general.environment') !== 'dev');
     }
 
     /**

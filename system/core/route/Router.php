@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Group Corp
- * This content is released under the MIT License (MIT)
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	dFramework
- * @author	Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Group Corp. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	https://opensource.org/licenses/MIT	MIT License
- * @link	https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ *  @package	dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version    2.1
  */
 
 /**
@@ -25,8 +25,8 @@
  * @subpackage	Core
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/routing
- * @filename	/system/core/route/Router.php
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_router.html
+ * @file	    /system/core/route/Router.php
  */
 
 

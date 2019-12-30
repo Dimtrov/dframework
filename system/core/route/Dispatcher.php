@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Group Corp
- * This content is released under the MIT License (MIT) - See License.txt file
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Group Corp. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    MIT License https://opensource.org/licenses/MIT
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     2.0
+ *  @package	    dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version 2.1
  */
 
 /**
@@ -26,8 +26,8 @@
  * @subpackage	Core
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/dic
- * @filename    /system/core/route/Dispatcher.php
+ * @link		https://dimtrov.hebfree.org/docs/dframework/class_dispatcher.html
+ * @file        /system/core/route/Dispatcher.php
  * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
  */
 

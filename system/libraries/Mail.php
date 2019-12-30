@@ -61,17 +61,24 @@ class dF_Mail
             Exception::show('The parameter "host" is required');
         }
         $this->mail->Host = $data['host'];
-        if(empty($data['username']) OR !is_string($data['username']))
-        {
-            Exception::show('The parameter "username" is required and it was to be a string');
-        }
-        $this->mail->Username = $data['username'];
-        if(empty($data['password']) OR !is_string($data['password']))
-        {
-            Exception::show('The parameter "password" is required and it was to be a string');
-        }
-        $this->mail->Password = $data['password'];
-        if(!empty($data['port']) AND !is_int($data['port']))
+        if(null !== $data['username'])
+		{
+			if(empty($data['username']) OR !is_string($data['username']))
+			{
+				Exception::show('The parameter "username" is required and it was to be a string');
+			}
+			$this->mail->Username = $data['username'];
+			
+		}
+		if(null !== $data['password'])
+		{
+			if(empty($data['password']) OR !is_string($data['password']))
+			{
+				Exception::show('The parameter "password" is required and it was to be a string');
+			}
+			$this->mail->Password = $data['password'];			
+		}
+		if(!empty($data['port']) AND !is_int($data['port']))
         {
             $this->mail->Port = $data['port'];
         }
@@ -111,6 +118,10 @@ class dF_Mail
         }
         if(isset($data['encryption']))
         {
+			if(null === $data['encryption'])
+			{
+				$this->mail->SMTPSecure = null;
+			}
 			if(strtolower($data['encryption']) == 'tls')
 			{
 				$this->mail->SMTPSecure =  PHPMailer::ENCRYPTION_STARTTLS;

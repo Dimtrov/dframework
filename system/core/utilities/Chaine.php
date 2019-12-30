@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
- * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ *  @package	    dFramework
+ *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version 2.1
  */
 
 /**
@@ -25,7 +25,7 @@
  * @category    Utilities
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/data
+ * @link		https://dimtrov.hebfree.org/docs/dframework/class_utilities_chaine.html
  * @file        /system/core/utilities/Chaine.php
  */
 
@@ -34,6 +34,34 @@ namespace dFramework\core\utilities;
 
 class Chaine
 {
+
+    /**
+     * Transforme une chaine simple au format camelcase
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function toCamelCase(string $str) : string
+    {
+        $i = ['-', '_'];
+        $str = preg_replace('/([a-z])([A-Z])/', "\\1 \\2", $str);
+        $str = preg_replace('@[^a-zA-Z0-9\-_ ]+@', '', $str);
+        $str = str_replace($i, ' ', $str);
+        $str = str_replace(' ', '', ucwords(strtolower($str)));
+        $str = strtolower(substr($str,0,1)).substr($str,1);
+        return $str;
+    }
+
+    /**
+     * Transforme une chaine simple au format pascalcase
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function toPascalCase(string $str) : string
+    {
+        return join('', array_map('ucfirst', explode('_', $str)));
+    }
 
 
     /**
@@ -48,13 +76,13 @@ class Chaine
      */
     public static function tokenize($data, $separator = ',', $leftBound = '(', $rightBound = ')') {
         if (empty($data)) {
-            return array();
+            return [];
         }
 
         $depth = 0;
         $offset = 0;
         $buffer = '';
-        $results = array();
+        $results = [];
         $length = strlen($data);
         $open = false;
 
@@ -72,21 +100,21 @@ class Chaine
             }
             if ($tmpOffset !== -1) {
                 $buffer .= substr($data, $offset, ($tmpOffset - $offset));
-                if (!$depth && $data{$tmpOffset} == $separator) {
+                if (!$depth && $data[$tmpOffset] == $separator) {
                     $results[] = $buffer;
                     $buffer = '';
                 } else {
-                    $buffer .= $data{$tmpOffset};
+                    $buffer .= $data[$tmpOffset];
                 }
                 if ($leftBound != $rightBound) {
-                    if ($data{$tmpOffset} == $leftBound) {
+                    if ($data[$tmpOffset] == $leftBound) {
                         $depth++;
                     }
-                    if ($data{$tmpOffset} == $rightBound) {
+                    if ($data[$tmpOffset] == $rightBound) {
                         $depth--;
                     }
                 } else {
-                    if ($data{$tmpOffset} == $leftBound) {
+                    if ($data[$tmpOffset] == $leftBound) {
                         if (!$open) {
                             $depth++;
                             $open = true;
@@ -108,7 +136,6 @@ class Chaine
         if (!empty($results)) {
             return array_map('trim', $results);
         }
-
-        return array();
+        return [];
     }
 }

@@ -504,7 +504,7 @@ class Requests {
 		$defaults = array(
 			'timeout' => 10,
 			'connect_timeout' => 10,
-			'useragent' => 'php-requests/' . self::VERSION,
+			'useragent' => 'dframework/' . \dFramework\core\dFramework::VERSION,
 			'protocol_version' => 1.1,
 			'redirected' => 0,
 			'redirects' => 10,

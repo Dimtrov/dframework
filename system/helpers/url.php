@@ -1,12 +1,12 @@
 <?php
 
-use dFramework\core\Functions;
+use dFramework\core\Helpers;
 
 if ( ! function_exists('site_url'))
 {
     function site_url($uri = '', $protocol = NULL)
     {
-        return Functions::instance()->site_url($uri, $protocol);
+        return Helpers::instance()->site_url($uri, $protocol);
     }
 }
 
@@ -27,7 +27,7 @@ if ( ! function_exists('base_url'))
      */
     function base_url($uri = '', $protocol = NULL)
     {
-        return Functions::instance()->base_url($uri, $protocol);
+        return Helpers::instance()->base_url($uri, $protocol);
     }
 }
 
@@ -42,7 +42,7 @@ if (!function_exists('current_url')) {
      */
     function current_url($url = '')
     {
-        return trim(Functions::instance()->site_url(trim($_SERVER['REQUEST_URI'], '/') . (preg_match('#^/#', $url) ? $url : '/' . $url)), '/');
+        return trim(Helpers::instance()->site_url(trim($_SERVER['REQUEST_URI'], '/') . (preg_match('#^/#', $url) ? $url : '/' . $url)), '/');
     }
 }
 
