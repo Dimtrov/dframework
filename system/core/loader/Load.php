@@ -115,7 +115,7 @@ class Load
                     Le fichier &laquo; '.$file.' &raquo; n\'existe pas
                 ');
             }
-            self::$loads['helpers'][] = $func;
+            self::loaded($func, 'helpers');
 
             require_once $file;
         }
@@ -204,7 +204,8 @@ class Load
                     Le fichier &laquo; '.$model_path.' &raquo; ne contient pas de classe <b>'.$model.'</b>
                 ');
             }
-            self::$loads['models'][] = $model;
+            self::loaded($model, 'models');
+
             return DIC::get($model);
         }
     }
@@ -267,11 +268,14 @@ class Load
      */
     private static function _library($library, bool $app = false)
     {
+        $library = ucfirst($library);
+
         $file = ($app === false)
             ? SYST_DIR.'libraries'.DS.str_replace('/', DS, $library).'.php'
             : APP_DIR.'libraries'.DS.str_replace('/', DS, $library).'.php'
         ;
-        $library = explode('/', trim($library)); $library = end($library);
+        $library = explode('/', trim($library)); 
+        $library = end($library);
 
         if(!self::is_loaded($library, 'libraries'))
         {
@@ -294,7 +298,8 @@ class Load
                     Le fichier &laquo; '.$file.' &raquo; ne contient pas de classe <b>'.$library.'</b>
                 ');
             }
-            self::$loads['libraries'][] = $library;
+            self::loaded($library, 'librairies');
+
             return DIC::get($library);
         }
     }
@@ -305,7 +310,7 @@ class Load
 
     /**
      * @param $element
-     * @param $module
+     * @param string $module
      * @return bool
      */
     private static function is_loaded($element, $module) : bool
@@ -315,6 +320,15 @@ class Load
             return false;
         }
         return (in_array($element, self::$loads[$module]));
+    }
+    /**
+     * @param $element
+     * @param string $module
+     * @return void
+     */
+    private static function loaded($element, $module) : void 
+    {
+        self::$loads[$module][] = $element;
     }
 
 }

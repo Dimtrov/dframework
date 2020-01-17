@@ -62,3 +62,18 @@ if (!function_exists('redirect')) {
         return;
     }
 }
+
+// ------------------------------------------------------------------------
+
+if(!function_exists('clean_url')) {
+    /**
+     * @param string $url
+     * @return string
+     */
+    function clean_url($url)
+    {
+        return Helpers::instance()->clean_url($url);
+    }
+}
+
+// ------------------------------------------------------------------------

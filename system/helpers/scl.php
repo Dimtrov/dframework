@@ -35,6 +35,10 @@
  *    ---- Nouveautés V3.2.1 :
  *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 15/08/2019
  *            1) Modification de la fonction scl_debug() pour adopter une mise en page plus moderne
+ *
+ *    ---- Nouveautés V3.3 :
+ *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 12/01/2020
+ *            1) Ajout de la fonction scl_shortenStr() qui tronque une chaine en ajoutant les mots de fin
  ***/
 
 
@@ -687,11 +691,46 @@ function scl_truncate($str, $size, $suspension = false)
     if ($lenght > $size) {
         // Si la longueur initiale de la chaine est superieur à la taille qu'on veut
         $str = substr($str, 0, $size); // On coupe la chaine
-        if ($suspension) {
+        if ($suspension === true) {
             $str .= '...'; // On ajoute les suspension
         }
     }
     return $str; // On renvoie la chaine couper
+}
+
+
+/**
+ * ------- FUNCTION SCL_SHORTENSTR()   --------
+ * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @brief Cette fonction permet de couper une chaine de caractere
+ * @return string
+ *
+ * @param  string $str la chaine caractères qu'on veut couper
+ * @param int $max est la longueur finale de la chaine apres la coupure
+ * @param string [$sep] Le separateur entre le debut et la fin de la chaine
+ * @param int [$width] Le nombre de fois qu'on doit repeter le separateur
+ *
+ * @example
+ *  echo scl_shortenStr("J'aime le PHP et j'ose croire que cette fonction vous sera utile", 34); // J'aime le PHP et...vous sera utile
+ */
+function scl_shortenStr($str, $max, $sep = '.', $width = 3)
+{
+    /*Valeur par defaut */
+    $str = htmlspecialchars($str); // On protege la chaine
+    $max = (!is_numeric($max)) ? strlen($str) : $max; // Taille à couper
+
+    $length = strlen($str); // Nombre de caractères
+
+    if ($length > $max) {
+        $too_much_length = $length - $max + $width; // Nombre de caractères en trop
+        if ($max < $width) {
+            // Dans le cas où la largeur max est inférieur à la largeur du séparateur
+            $width = $max;
+        }
+        $start = ceil($length / 2 - $too_much_length / 2);
+        $str = substr($str, 0, $start) . str_repeat($sep, $width) . substr($str, floor($start + $too_much_length));
+    }
+    return $str;
 }
 
 

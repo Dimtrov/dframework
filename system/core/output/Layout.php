@@ -148,6 +148,8 @@ class Layout
     }
 
     /**
+     * Ajoute un fichier css au layout
+     * 
      * @param string ...$src
      * @return Layout
      */
@@ -163,6 +165,8 @@ class Layout
         return $this;
     }
     /**
+     * Ajoute un fichier css au layout par appel static depuis une vue
+     * 
      * @param string|string[] $src
      * @return void
      */
@@ -177,6 +181,8 @@ class Layout
     }
 
     /**
+     * Ajoute un fichier css de librairie au layout
+     * 
      * @param string ...$src
      * @return Layout
      */
@@ -192,6 +198,8 @@ class Layout
         return $this;
     }
     /**
+     * Ajoute un fichier css de librairie au layout par appel satic depuis une vue
+     * 
      * @param string|string[] $src
      * @return void
      */
@@ -206,6 +214,8 @@ class Layout
     }
 
     /**
+     * Ajoute un fichier js au layout
+     * 
      * @param string ...$src
      * @return Layout
      */
@@ -221,6 +231,8 @@ class Layout
         return $this;
     }
     /**
+     * Ajoute un fichier js au layout par appel static depuis une vue
+     * 
      * @param $src
      * @return void
      */
@@ -235,6 +247,8 @@ class Layout
     }
 
     /**
+     * Ajoute un fichier js de librairie au layout
+     * 
      * @param string ...$src
      * @return Layout
      */
@@ -250,6 +264,8 @@ class Layout
         return $this;
     }
     /**
+     * Ajoute un fichier js de librairie au layout par appel satic depuis une vue
+     * 
      * @param $src
      * @return void
      */
@@ -264,6 +280,8 @@ class Layout
     }
 
     /**
+     * Definition du titre du document
+     * 
      * @param string $title
      * @return Layout
      */
@@ -277,12 +295,48 @@ class Layout
     }
 
     /**
+     * Definition du titre du document par appel static depuis une vue
+     * 
      * @param string $title
      * @return void
      */
     public static function setTitle(string $title) : void
     {
         self::instance()->setPageTitle($title);
+    }
+
+    /**
+     * Definition des metas donnees du document
+     * 
+     * @param string|array $meta
+     * @param string $value
+     * @return Layout
+     */
+    public function setPageMeta($meta, string $value) : self
+    {
+        if(is_array($meta))
+        {
+            foreach ($meta as $k => $v) 
+            {
+                $this->setPageMeta($k, $v);
+            }
+        }
+        if(is_string($meta) AND !empty($value))
+        {
+            self::$_vars['pageMeta'][$meta] = $value; 
+        }
+        return $this;
+    }
+    /**
+     * Definition des metas donnees du document par appel static depuis une vue
+     * 
+     * @param string|array $meta
+     * @param string $value
+     * @return Layout
+     */
+    public static function setMeta($meta, string $value) : void
+    {
+        self::instance()->setPageMeta($meta, $value);
     }
     
     /**
@@ -301,7 +355,10 @@ class Layout
 
 
     private static $_instance = null;
-    private static function instance()
+    /**
+     * @return Layout
+     */
+    private static function instance() : self
     {
         if(null === self::$_instance)
         {
@@ -313,17 +370,14 @@ class Layout
     /**
      *  Rend le code de la vue dans le layout
      */
-    public static function output()
+    public static function renderView() : void
     {
         echo self::$_output;
     }
-    public static function renderView()
+    public static function output() : void
     {
-        self::output();
+        self::renderView();
     }
-
-
-
 
 
     /**
@@ -335,6 +389,8 @@ class Layout
     const B_PREPEND = 2;
 
     /**
+     * Demarre une nouvelle section
+     * 
      * @param string $name Le nom du block a demarrer
      * @param int $concat
      */
@@ -359,14 +415,24 @@ class Layout
             }
         });
     }
+    public static function startSection(string $name, int $concat = self::B_APPEND) : void
+    {
+        self::block($name, $concat);
+    }
     /**
-     *
+     * Stop la capture de section
      */
-    public static function end()
+    public static function end() : void
     {
         ob_end_clean();
     }
+    public static function endSection() : void
+    {
+        self::end();
+    }
     /**
+     * Affiche le contenu de la section capturée
+     * 
      * @param string $name Le nom du bloc a afficher
      * @return void
      */
@@ -385,6 +451,10 @@ class Layout
         {
             echo self::$_blocks[$name] ?? null;
         }
+    }
+    public static function getSection(string $name) : void
+    {
+        self::show($name);
     }
 
 
@@ -407,7 +477,6 @@ class Layout
         }
         self::show('css');
     }
-
     /**
      * @param null|string $config
      * @return void

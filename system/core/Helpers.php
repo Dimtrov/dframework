@@ -238,4 +238,47 @@ class Helpers
         $this->config[$item] = $value;
     }
 
+
+    /**
+     * @param $url
+     * @return string
+     */
+    public function clean_url($url)
+    {
+        $path = parse_url($url);
+        $query = '';
+
+        if (!empty($path['host']))
+        {
+            $r = $path['scheme'].'://';
+            if (!empty($path['user']))
+            {
+                $r .= $path['user'];
+                if (!empty($path['pass']))
+                {
+                    $r .= ':'.$path['pass'].'@';
+                }
+                $r .= '@';
+            }
+            if (!empty($path['host']))
+            {
+                $r .= $path['host'];
+            }
+            if (!empty($path['port']))
+            {
+                $r .= ":".$path['port'];
+            }
+            $url = $r.$path['path'];
+            if (!empty($path['query'])) {
+                $query = "?".$path['query'];
+            }
+        }
+        $url = str_replace('/./', '/', $url);
+
+        while (substr_count($url, '../'))
+        {
+            $url = preg_replace("!/([\w\d]+/\.\.)!",'', $url);
+        }
+        return $url.$query;
+    }
 }

@@ -102,8 +102,13 @@ class Router
             $path = $key;
             if(!is_array($value))
             {
-                $method = 'get';
                 $callable = $value;
+                $methods = ['post', 'put', 'patch', 'delete'];
+                foreach($methods As $method) 
+                {
+                    $instance->add($path, $callable, $method);
+                }
+                $method = 'get';
             }
             else
             {

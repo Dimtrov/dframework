@@ -26,7 +26,7 @@
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_route.html
- * @filename	/system/core/route/Route.php
+ * @file	/system/core/route/Route.php
  */
 
 namespace dFramework\core\route;
