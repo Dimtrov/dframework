@@ -146,7 +146,6 @@ class dF_Form
     {
         return $this->input('text', $key, $label, $attributes);
     }
-
     /**
      * Cree un input de type hidden
      * 
@@ -157,6 +156,186 @@ class dF_Form
     {
         $this->surround(false);
         return $this->input('hidden', $key, false);
+    }
+    /**
+     * Creer un input de type password
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function password(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('password', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type tel
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function tel(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('tel', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type email
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function email(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('email', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type url
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function url(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('url', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type search
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function search(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('search', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type number
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function number(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('number', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type range
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function range(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('range', $key, $label, Tableau::merge($attributes, ['class' => 'form-control-range']));
+    }
+    /**
+     * Creer un input de type color
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function color(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('color', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type date
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function date(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('date', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type time
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function time(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('time', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type datetime
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function datetime(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('datetime', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type datetime-local
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function datetimeLocal(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('datetime-local', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type month
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function month(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('month', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type week
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function week(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('week', $key, $label, $attributes);
+    }
+    /**
+     * Creer un input de type file
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function file(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return $this->input('file', $key, $label, Tableau::merge($attributes, ['class' => 'custom-file-input']));
     }
 
     /**
@@ -178,19 +357,231 @@ class dF_Form
             {$this->surround['end']}
 HTML;
     }
+    
 
-    public function textarea(string $key, ?string $label = null) : string 
+    /**
+     * Cree un bouton de type submit
+     *
+     * @param string $value Valeur du bouton
+     * @param array|null $attributes Attributs supplementaire
+     * @param string|null $key Nom du champ
+     * @return string
+     */
+    public function submit(string $value, ?array $attributes = [], ?string $key = null) : string
     {
-        return '';
+        return $this->button($value, $attributes, $key, 'submit');
+    }
+    /**
+     * Cree un bouton de type reset
+     *
+     * @param string $value Valeur du bouton
+     * @param array|null $attributes Attributs supplementaire
+     * @param string|null $key Nom du champ
+     * @return string
+     */
+    public function reset(string $value, ?array $attributes = [], ?string $key = null) : string
+    {
+        return $this->button($value, $attributes, $key, 'reset');
+    }
+    /**
+     * Cree un bouton de type image
+     *
+     * @param string $value Valeur du bouton
+     * @param array|null $attributes Attributs supplementaire
+     * @param string|null $key Nom du champ
+     * @return string
+     */
+    public function image(string $value, ?array $attributes = [], ?string $key = null) : string
+    {
+        return $this->button($value, $attributes, $key, 'image');
+    }
+
+    /**
+     * Cree un bouton
+     *
+     * @param string $value Valeur du bouton
+     * @param array|null $attributes Attributs supplementaire
+     * @param string|null $key Nom du champ
+     * @param string|null $type Type d'input a creer
+     * @return string
+     */
+    public function button(string $value, ?array $attributes = [], ?string $key = null, ?string $type = 'button') : string 
+    {
+        $type = (empty($type)) ? 'button' : strtolower($type);
+
+        $value = ucfirst($value);
+        $id = strtolower($value);
+        $name = ($key !== null) ? "name={$key}" : "";
+
+        $class = $attributes['class'] ?? '';
+
+        if(empty($attributes['class']) OR (!empty($attributes['class']) AND !preg_match('#btn-(primary|danger|default|secondary|warning|success|info)#i', strtolower($attributes['class']))))
+        {
+            switch (strtolower($type)) {
+                case 'submit':
+                    $class .= ' btn-primary';
+                    break;
+                case 'reset': 
+                    $class .= ' btn-danger';
+                    break;  
+                default:
+                    $class .= ' btn-default';
+                    break;
+            }
+        }
+
+        return <<<HTML
+            {$this->surround['start']}
+                <input type="{$type}" value="{$value}" class="btn {$class}" id="btn{$id}" {$name} {$this->getAttributes($attributes)} />
+            {$this->surround['end']}
+HTML;
+    }
+
+    /**
+     * Cree une zone de texte multiligne (textarea)
+     *
+     * @param string $key Nom du champ
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function textarea(string $key, $label = null, ?array $attributes = []) : string 
+    {
+        return <<<HTML
+            {$this->surround['start']}
+                {$this->getLabel($key, $label)}
+                <textarea name="{$key}" id="field{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$this->getValue($key)}</textarea>
+                {$this->getErrorFeedback($key)}
+            {$this->surround['end']}
+HTML;
+    }
+    
+    /**
+     * Cree un liste d'option (select)
+     *
+     * @param string $key Nom du champ
+     * @param array $options Options de la liste
+     * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
+     * @param array|null $attributes Attributs supplementaire
+     * @return string
+     */
+    public function select(string $key, array $options, $label = null, ?array $attributes = []) : string
+    {
+        $r = '';
+        foreach($options As $k => $v)
+        {
+            $v = (string) $v;
+            if(!is_string(($k)))
+            {
+                $k = $v;
+            }
+            $selected = ($k == $this->getValue($key)) ? 'selected="selected"' : '';
+            $r .= '<option value="'.$k.'" '.$selected.'>'.ucfirst($v).'</option>';
+        }
+        return <<<HTML
+            {$this->surround['start']}
+                {$this->getLabel($key, $label)}
+                <select name="{$key}" id="field{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}">{$r}</select>
+                {$this->getErrorFeedback($key)}
+            {$this->surround['end']}
+HTML;
+    }
+
+    /**
+     * Cree des cases a cocher (checkbox)
+     *
+     * @param string $key Nom du champ
+     * @param array $options Options de la liste
+     * @param array|null $attributes Attributs supplementaire
+     * @param array|null $checked Cases qui seront automatiquement cochées
+     * @return string
+     */
+    public function chechbox(string $key, array $options, ?array $attributes = [], $checked = null) : string
+    {
+        $r = ''; $i = 0;
+        $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
+        
+        foreach($options As $k => $v)
+        {
+            $i++;
+            $v = (string) $v;
+            if(!is_string(($k)))
+            {
+                $k = $v;
+            }
+            $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
+
+            $r .= '<input type="checkbox" name="'.$key.'[]" id="field'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
+            $r .= '<label class="form-check-label" for="field'.$key.$i.'">'.ucfirst($v).'</label>';
+            $r .= "\n";
+        }
+        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+        return <<<HTML
+            {$surround_start}
+                {$r}
+                {$this->getErrorFeedback($key)}
+            {$this->surround['end']}
+HTML;
+    }
+
+    /**
+     * Cree des boutton radios (radio)
+     *
+     * @param string $key Nom du champ
+     * @param array $options Options de la liste
+     * @param array|null $attributes Attributs supplementaire
+     * @param array|null $checked Cases qui seront automatiquement cochées
+     * @return string
+     */
+    public function radio(string $key, array $options, ?array $attributes = [], $checked = '') : string
+    {
+        $r = ''; $i = 0;
+        $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
+        
+        foreach($options As $k => $v)
+        {
+            $i++;
+            $v = (string) $v;
+            if(!is_string(($k)))
+            {
+                $k = $v;
+            }
+            $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
+
+            $r .= '<input type="radio" name="'.$key.'" id="field'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
+            $r .= '<label class="form-check-label" for="field'.$key.$i.'">'.ucfirst($v).'</label>';
+            $r .= "\n";
+        }
+        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+        return <<<HTML
+            {$surround_start}
+                {$r}
+                {$this->getErrorFeedback($key)}
+            {$this->surround['end']}
+HTML;
     }
 
 
+    
 
-    private function getErrorFeedback(string $key) : string
+    /**
+     * Renvoie l'erreur relatif a un champ
+     *
+     * @param string $key Cle du champ dont on veut avoir l'erreur potentielle
+     * @return string
+     */
+    protected function getErrorFeedback(string $key) : string
     {
         return (!isset($this->errors[$key])) ? '' : '<div class="invalid-feedback">' . implode('<br>', $this->errors[$key]) . '</div>';
     }
-    private function getInputClass(string $key, ?string $class = '') : string
+    /**
+     * Renvoie la/les classe(s) d'un input
+     *
+     * @param string $key Cle du champ en question
+     * @param string|null $class Classe(s) a compiler
+     * @return string
+     */
+    protected function getInputClass(string $key, ?string $class = '') : string
     {        
         $inputClass = Tableau::merge(explode(' ', $class), ['form-control']);
         if(isset($this->errors[$key])) 
@@ -201,11 +592,23 @@ HTML;
 
         return $inputClass;
     }
-    
+    /**
+     * Renvoie le label d'un champ
+     *
+     * @param string $key Cle du champ dont on veut avoir le label
+     * @param false|null|string $label Le label par default
+     * @return string
+     */
     protected function getLabel(string $key, $label) : string
     {
         return (false === $label) ? '' : '<label for="field'.$key.'" class="form-label">'.ucfirst((string)$label ?? $key).'</label>';
     }
+    /**
+     * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire 
+     *
+     * @param string $key La cle du champ
+     * @return string
+     */
     protected function getValue(string $key) : string
     {
         $post = (new Request)->data[$key] ?? null;

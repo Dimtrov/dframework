@@ -443,7 +443,7 @@ class Layout
         {
             echo "<style type=\"text/css\">\n".self::$_blocks[$name]."</style>\n";
         }
-        else if(!empty(self::$_blocks[$name]) AND $name = 'js')
+        else if(!empty(self::$_blocks[$name]) AND $name == 'js')
         {
             echo "<script type=\"text/javascript\">\n".self::$_blocks[$name]."</script>\n";
         }
