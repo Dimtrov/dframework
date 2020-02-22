@@ -1,0 +1,2 @@
+[14-Feb-2020 17:55:43 UTC] PHP Fatal error:  require_once(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dim\app\views\test.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dim\system\core\output\View.php on line 106
+[15-Feb-2020 20:45:10 UTC] PHP Fatal error:  require_once(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dim\system\core\output\Smarty.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dim\system\Autoloader.php on line 54

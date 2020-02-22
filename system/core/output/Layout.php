@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version 2.1
+ *  @version    3.0
  *
  */
 
@@ -27,6 +27,7 @@
  * @category    Output
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       1.0
  * @file		/system/core/output/Layout.php
  */
 
@@ -76,8 +77,7 @@ class Layout
 
         $this->class = $class;
 
-        self::$_vars['pageTitle'] = ucfirst($method) . ' - ' . ucfirst($class);
-
+        self::$_vars['df_pageTitle'] = ucfirst($method) . ' - ' . ucfirst($class);
     }
 
     /**
@@ -99,7 +99,7 @@ class Layout
      */
     public function launch()
     {
-        $view = new View('..'.DS.'layouts'.DS.self::$_layout, self::$_vars);
+        $view = new View('_layouts'.DS.self::$_layout, self::$_vars);
         $view->render();
     }
 
@@ -135,10 +135,10 @@ class Layout
     public static function vars(?string $var = null)
     {
         $vars = self::$_vars;
-        $vars = Tableau::remove($vars, 'css');
-        $vars = Tableau::remove($vars, 'js');
-        $vars = Tableau::remove($vars, 'lib_css');
-        $vars = Tableau::remove($vars, 'lib_js');
+        $vars = Tableau::remove($vars, 'df_css');
+        $vars = Tableau::remove($vars, 'df_js');
+        $vars = Tableau::remove($vars, 'df_lib_css');
+        $vars = Tableau::remove($vars, 'df_lib_js');
 
         if(null !== $var)
         {
@@ -157,9 +157,9 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['css']) OR (isset(self::$_vars['css']) AND !in_array($var, self::$_vars['css'])))
+            if(!isset(self::$_vars['df_css']) OR (isset(self::$_vars['df_css']) AND !in_array($var, self::$_vars['df_css'])))
             {
-                self::$_vars['css'][] = $var;
+                self::$_vars['df_css'][] = $var;
             }
         }
         return $this;
@@ -190,9 +190,9 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['lib_css']) OR (isset(self::$_vars['lib_css']) AND !in_array($var, self::$_vars['lib_css'])))
+            if(!isset(self::$_vars['df_lib_css']) OR (isset(self::$_vars['df_lib_css']) AND !in_array($var, self::$_vars['df_lib_css'])))
             {
-                self::$_vars['lib_css'][] = $var;
+                self::$_vars['df_lib_css'][] = $var;
             }
         }
         return $this;
@@ -223,9 +223,9 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['js']) OR (isset(self::$_vars['js']) AND !in_array($var, self::$_vars['js'])))
+            if(!isset(self::$_vars['df_js']) OR (isset(self::$_vars['df_js']) AND !in_array($var, self::$_vars['df_js'])))
             {
-                self::$_vars['js'][] = $var;
+                self::$_vars['df_js'][] = $var;
             }
         }
         return $this;
@@ -256,9 +256,9 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['lib_js']) OR (isset(self::$_vars['lib_js']) AND !in_array($var, self::$_vars['lib_js'])))
+            if(!isset(self::$_vars['df_lib_js']) OR (isset(self::$_vars['df_lib_js']) AND !in_array($var, self::$_vars['df_lib_js'])))
             {
-                self::$_vars['lib_js'][] = $var;
+                self::$_vars['df_lib_js'][] = $var;
             }
         }
         return $this;
@@ -289,7 +289,7 @@ class Layout
     {
         if (!empty($title) AND is_string($title))
         {
-            self::$_vars['pageTitle'] = trim(htmlspecialchars($title));
+            self::$_vars['df_pageTitle'] = trim(htmlspecialchars($title));
         }
         return $this;
     }
@@ -309,10 +309,10 @@ class Layout
      * Definition des metas donnees du document
      * 
      * @param string|array $meta
-     * @param string $value
+     * @param string|null $value
      * @return Layout
      */
-    public function setPageMeta($meta, string $value) : self
+    public function setPageMeta($meta, ?string $value = null) : self
     {
         if(is_array($meta))
         {
@@ -323,7 +323,7 @@ class Layout
         }
         if(is_string($meta) AND !empty($value))
         {
-            self::$_vars['pageMeta'][$meta] = $value; 
+            self::$_vars['df_pageMeta'][$meta] = $value; 
         }
         return $this;
     }
@@ -331,10 +331,10 @@ class Layout
      * Definition des metas donnees du document par appel static depuis une vue
      * 
      * @param string|array $meta
-     * @param string $value
+     * @param string|null $value
      * @return Layout
      */
-    public static function setMeta($meta, string $value) : void
+    public static function setMeta($meta, ?string $value = null) : void
     {
         self::instance()->setPageMeta($meta, $value);
     }
@@ -465,12 +465,12 @@ class Layout
     public static function stylesBundle(?string $config = null) : void
     {
         $config = ($config === null) ? self::$_layout : $config;
-        $lib_styles = array_merge((array) Config::get('layout.'.$config.'.lib_styles'), self::$_vars['lib_css'] ?? []);
+        $lib_styles = array_merge((array) Config::get('layout.'.$config.'.lib_styles'), self::$_vars['df_lib_css'] ?? []);
         if(!empty($lib_styles))
         {
             lib_styles($lib_styles);
         }
-        $styles = array_merge((array) Config::get('layout.'.$config.'.styles'), self::$_vars['css'] ?? []);
+        $styles = array_merge((array) Config::get('layout.'.$config.'.styles'), self::$_vars['df_css'] ?? []);
         if(!empty($styles))
         {
             styles($styles);
@@ -484,12 +484,12 @@ class Layout
     public static function scriptsBundle(?string $config = null) : void
     {
         $config = ($config === null) ? self::$_layout : $config;
-        $lib_scripts = array_merge((array) Config::get('layout.'.$config.'.lib_scripts'), self::$_vars['lib_js'] ?? []);
+        $lib_scripts = array_merge((array) Config::get('layout.'.$config.'.lib_scripts'), self::$_vars['df_lib_js'] ?? []);
         if(!empty($lib_scripts))
         {
             lib_scripts($lib_scripts);
         }
-        $scripts = array_merge((array) Config::get('layout.'.$config.'.scripts'), self::$_vars['js'] ?? []);
+        $scripts = array_merge((array) Config::get('layout.'.$config.'.scripts'), self::$_vars['df_js'] ?? []);
         if(!empty($scripts))
         {
             scripts($scripts);

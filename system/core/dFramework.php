@@ -6,13 +6,13 @@
  *  Copyright (c) 2019, Dimtrov Sarl
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- *  @package	    dFramework
+ *  @package	dFramework
  *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version 2.1
+ *  @version    3.0
  */
 
 /**
@@ -24,6 +24,7 @@
  * @package		dFramework
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @since       1.0
  */
 
 
@@ -33,10 +34,11 @@ namespace dFramework\core;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\core\route\Router;
+use dFramework\core\security\Session;
 
 class dFramework
 {
-    const VERSION = '2.1';
+    const VERSION = '3.0';
 
     /**
      * @throws Exception
@@ -49,13 +51,7 @@ class dFramework
     {
         self::checkPHPVersion('7.0');
 
-        session_start();
-        if(!isset($_SESSION['df_session']))
-        {
-            $_SESSION['df_session'] = [];
-        }
-
-        require_once SYST_DIR . 'constants.php';
+        require_once SYST_DIR . 'constants'.DIRECTORY_SEPARATOR.'constants.php';
 
         /**
          * Lance la capture des exceptions et erreurs
@@ -63,9 +59,14 @@ class dFramework
         Exception::init();
 
         /**
-         * Initialise les configurations du systeme a partir des fichiers se trouvant dana /app/config
+         * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
         Config::init();
+
+        /**
+         * Demarre la session
+         */
+        Session::start();
 
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload

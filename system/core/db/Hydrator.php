@@ -48,9 +48,11 @@ class Hydrator
      * @return mixed
      * @throws Exception
      */
-    public static function hydrate(array $array, string $class, string $dir = ENTITY_DIR)
+    public static function hydrate(array $array, string $class, string $dir = '')
     {
         $class = preg_replace('#Entity#isU', '', $class) . 'Entity';
+        
+        $dir = ENTITY_DIR.trim($dir, '/\\');
         $dir = str_replace(['/', '\\'], DS, $dir);
         $dir = rtrim($dir, DS).DS;
 
@@ -242,7 +244,7 @@ class Hydrator
             $render .= "\n\t /** \n \t * @param ".$property['type'].(($property['null'] === 'yes') ? "|null" : "")." $".$property['name'];
             $render .= "\n\t * @return ".$class."Entity";
             $render .= "\n\t */\n";
-            $render .= "\t public function set".ucfirst($property['name'])."(".(($property['null'] === 'yes') ? "?" : "").$property['type']." $".$property['name'].(($property['null'] === 'yes') ? " = null" : "").") : self";
+            $render .= "\t public function set".ucfirst($property['name'])."(".(($property['null'] === 'yes') ? "?" : "").(($property['type'] !== 'mixed') ? $property['type'] : '')." $".$property['name'].(($property['null'] === 'yes') ? " = null" : "").") : self";
             $render .= "\n\t {";
             $render .= "\n\t\t \$this->".$property['name']." = $".$property['name'].";";
             $render .= "\n\t\t return \$this;";

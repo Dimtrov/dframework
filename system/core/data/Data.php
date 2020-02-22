@@ -26,12 +26,14 @@
  * @category    Data
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/data
+ * @since       1.0.0
  * @file        /system/core/data/Data.php
  */
 
 namespace dFramework\core\data;
 
 use dFramework\core\Config;
+use dFramework\core\security\Session;
 use dFramework\core\security\Xss;
 
 
@@ -52,7 +54,6 @@ class Data
      *
      * Parsed from php://input at runtime
      *
-     * @see	CI_Input::input_stream()
      * @var	array
      */
     protected $_input_stream;
@@ -61,11 +62,6 @@ class Data
      * @var Xss
      */
     private $xss;
-
-    public function __construct()
-    {
-        $this->xss = new Xss();
-    }
 
 
     /**
@@ -179,10 +175,11 @@ class Data
      */
     public function session($index = null, $value = null, ?array $filter = [])
     {
-        if(!empty($value)) {
-            $_SESSION['df_session'][$index] = $value;
+        if(!empty($value)) 
+        {
+            Session::set($index, $value);
         }
-        return $this->_fetch_from_array($_SESSION['df_session'], $index, $filter);
+        return Session::get($index);
     }
 
     /**
@@ -190,8 +187,9 @@ class Data
      */
     public function free_session(string ...$index)
     {
-        foreach ($index As $value) {
-            unset($_SESSION['df_session'][$value]);
+        foreach ($index As $value) 
+        {
+            Session::destroy($value);
         }
     }
 
@@ -323,7 +321,7 @@ class Data
         else {
             return NULL;
         }
-        return $this->xss->clean($value, array_merge([
+        return Xss::clean($value, array_merge([
             'filter_sanitize'
         ], $filter));
     }

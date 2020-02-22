@@ -113,7 +113,8 @@ class Database
 
         foreach ($config As $key => $value)
         {
-            if(!in_array($key, ['password','options','prefix', 'debug']) AND empty($value)) {
+            if(!in_array($key, ['password','options','prefix', 'debug']) AND empty($value)) 
+			{
                 throw new DatabaseException('
                     The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
                     Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo
@@ -138,7 +139,7 @@ class Database
      */
     private function initialize()
     {
-        $config = $this->config;
+        $config = $this->parse_config();
 
         $config['dbname'] = $config['database'];
         switch (strtolower($config['dbms']))
@@ -189,7 +190,29 @@ class Database
         $this->config = $config;
     }
 
-
+	/**
+	* Parse database configuration and use the correct key if we are in dev/prod environment
+	*/
+	private function parse_config()
+	{
+		$config = $this->config;
+		foreach($config As $key => $value)
+		{
+			if(is_string($value) AND !in_array($key, ['options', 'debug'])) 
+			{
+				$tmp = explode('|', $value);
+				if(preg_match('#^prod(uction)?$#i', Config::get('general.environment'))) {
+					$config[$key] = $tmp[1] ?? $tmp[0];
+				}
+				else {
+					$config[$key] = $tmp[0];
+				}
+			}
+		}
+		return $config;
+	}
+	
+	
     /**
      * @var array
      */

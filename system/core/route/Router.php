@@ -11,8 +11,8 @@
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    2.1
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
  */
 
 /**
@@ -26,6 +26,7 @@
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_router.html
+ * @since       2.0
  * @file	    /system/core/route/Router.php
  */
 
@@ -36,6 +37,7 @@ namespace dFramework\core\route;
 use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
 use dFramework\core\utilities\Tableau;
+use dFramework\core\data\Request;
 
 class Router
 {
@@ -81,7 +83,7 @@ class Router
     {
         if(is_null(self::$_instance))
         {
-            self::$_instance = new Router($_GET['url'] ?? '/');
+            self::$_instance = new Router((new Request)->url ?? '/');
         }
         return self::$_instance;
     }
@@ -106,7 +108,7 @@ class Router
                 $methods = ['post', 'put', 'patch', 'delete'];
                 foreach($methods As $method) 
                 {
-                    $instance->add($path, $callable, $method);
+                    $instance->add($path, $callable, strtoupper($method));
                 }
                 $method = 'get';
             }
@@ -211,15 +213,23 @@ class Router
      */
     private function run()
     {
-        if(empty($_SERVER['REQUEST_METHOD']) OR !isset($this->routes[$_SERVER['REQUEST_METHOD']]))
+        $method = (new Request)->method();
+        
+        if(empty($method) OR !isset($this->routes[strtoupper($method)]))
         {
-            throw new RouterException('REQUEST_METHOD does not exist', 405);
-        }
-        foreach ($this->routes[$_SERVER['REQUEST_METHOD']] As $route)
-        {
-            if($route->match($this->url))
+            if('cli' !== php_sapi_name())
             {
-                return $route->call();
+                throw new RouterException('REQUEST_METHOD does not exist', 405);
+            }
+        }
+        if(!empty($this->routes[strtoupper($method)]))
+        {
+            foreach ($this->routes[strtoupper($method)] As $route)
+            {
+                if($route->match($this->url))
+                {
+                    return $route->call();
+                }
             }
         }
         Dispatcher::init();

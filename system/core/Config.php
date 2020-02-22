@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	    https://dimtrov.hebfree.org/works/dframework
- *  @version 2.1
+ *  @version    3.0
  */
 
 /**
@@ -25,6 +25,7 @@
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       1.0
  * @file		/system/core/Config.php
  */
 
@@ -46,7 +47,7 @@ class Config
         'general'       => APP_DIR.'config'.DS.'general.php',
         'layout'        => APP_DIR.'config'.DS.'layout.php',
         'route'         => APP_DIR.'config'.DS.'route.php',
-
+       
         'email'         => APP_DIR.'config'.DS.'email.php',
     ];
 
@@ -61,10 +62,10 @@ class Config
      * @var array
      */
     private static $_required_config  = [
-        'data'      => ['encryption'],
+        'data'      => ['encryption', 'session'],
         'database'  => ['default'],
         'general'   => ['environment', 'charset'],
-        'route'     => ['default_controller']
+        'route'     => ['default_controller'],
     ];
 
 
@@ -174,7 +175,7 @@ class Config
         {
             foreach ($value AS $item)
             {
-                if(empty(self::$_config[$key][$item]))
+                if(empty(self::get($key.'.'.$item)))
                 {
                     throw new ConfigException('
                         The <b>'.$key.'['.$item.']</b> configuration is required. 
@@ -189,7 +190,11 @@ class Config
 
     private static function setDefaultVar()
     {
-        if (empty(self::$_config['general']['base_url']))
+        if(true !== self::get('general.use_absolute_link'))
+        {
+            self::set('general.base_url', str_replace('\\', '/', BASE_URL.'/'));
+        }
+        else if (empty(self::$_config['general']['base_url']))
         {
             if (isset($_SERVER['SERVER_ADDR']))
             {
@@ -214,9 +219,14 @@ class Config
             }
             else
             {
-                $base_url = 'http://localhost:'. $_SERVER['SERVER_PORT'] ?? '80';
+                $base_url = 'http://localhost:'. ($_SERVER['SERVER_PORT'] ?? '80');
             }
             self::set('general.base_url', rtrim(str_replace('\\', '/', $base_url), '/'));
+        }
+
+        if(null === self::get('general.use_template_engine'))
+        {
+            self::set('general.use_template_engine', true);
         }
     }
 
@@ -278,15 +288,49 @@ class Config
             if(!in_array(self::$_config['database'][$key]['debug'], ['auto', true, false]))
             {
                 throw new ConfigException('
-                The <b>database['.$key.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
-                <br>
-                Please edit &laquo; '.self::$_config_file['database'].' &raquo; file to correct it
-            ');
+                    The <b>database['.$key.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
+                    <br>
+                    Please edit &laquo; '.self::$_config_file['database'].' &raquo; file to correct it
+                ');
             }
             else if(self::$_config['database'][$key]['debug'] === 'auto')
             {
                 self::$_config['database'][$key]['debug'] = (self::$_config['general']['environment'] === 'dev');
             }
+        }
+
+        /* ----------------
+            Parametres de session
+        ------------------- */
+        if(!is_string(self::get('data.session.name')))
+        {
+            throw new ConfigException('
+                The <b>data[session][name]</b> configuration is not set correctly: It accept only string values. 
+                <br>
+                Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
+            ');
+        }
+        if(!empty(self::get('data.session.cache_limiter')))
+        {
+            $autorize = ['public', 'private', 'nocache', 'private_no_expire'];
+            $config = strtolower(self::get('data.session.cache_limiter'));
+            if(!in_array($config, $autorize))
+            {
+                throw new ConfigException('
+                    The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).'). 
+                    <br>
+                    Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
+                ');
+            }
+            self::set('data.session.cache_limiter', $config);
+        }
+        if(isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
+        {
+            throw new ConfigException('
+                The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values. 
+                <br>
+                Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
+            ');
         }
     }
 }

@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.1
+ * @version     3.0
  */
 
 /**
@@ -26,6 +26,7 @@
  * @category    Output
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/caching
+ * @since       2.2
  * @file		/system/core/output/Cache.php
  */
 
@@ -42,7 +43,7 @@ class Cache
     /**
      * @var string Repertoire de stockage des fichiers mis en cache
      */
-    private $cache_dir = APP_DIR.'cache'.DS;
+    private $cache_dir = VIEW_DIR.'__caches'.DS;
 
     /**
      * @var int duree de validite du cache en minute

@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @version     3.0
  */
 
 use dFramework\dependencies\others\filipegomes\Upload;
@@ -22,11 +22,11 @@ use dFramework\dependencies\verot\Upload As verotUpload;
  * Upload
  *
  *
- *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/Upload.html
+ * @since       2.0
  */
 
 

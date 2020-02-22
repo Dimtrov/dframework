@@ -130,28 +130,20 @@ class Helpers
 
         $uri = $this->_uri_string($uri);
 
-        if ($this->item('enable_query_strings') === FALSE)
-        {
-            $suffix = isset($this->config['url_suffix']) ? $this->config['url_suffix'] : '';
+        $suffix = (string) $this->item('url_suffix');
 
-            if ($suffix !== '')
-            {
-                if (($offset = strpos($uri, '?')) !== FALSE)
-                {
-                    $uri = substr($uri, 0, $offset).$suffix.substr($uri, $offset);
-                }
-                else
-                {
-                    $uri .= $suffix;
-                }
-            }
-            return $base_url.$this->slash_item('index_page').$uri;
-        }
-        if (strpos($uri, '?') === FALSE)
+        if ($suffix !== '')
         {
-            $uri = '?'.$uri;
+            if (($offset = strpos($uri, '?')) !== FALSE)
+            {
+                $uri = substr($uri, 0, $offset).$suffix.substr($uri, $offset);
+            }
+            else
+            {
+                $uri .= $suffix;
+            }
         }
-        return $base_url.$this->item('index_page').$uri;
+        return $base_url.$this->slash_item('index_page').$uri;
     }
 
     // -------------------------------------------------------------
@@ -199,16 +191,8 @@ class Helpers
      */
     protected function _uri_string($uri)
     {
-        if ($this->item('enable_query_strings') === FALSE)
-        {
-            is_array($uri) && $uri = implode('/', $uri);
+        is_array($uri) && $uri = implode('/', $uri);
             return ltrim($uri, '/');
-        }
-        if (is_array($uri))
-        {
-            return http_build_query($uri);
-        }
-        return $uri;
     }
 
     // --------------------------------------------------------------------

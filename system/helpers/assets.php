@@ -17,8 +17,8 @@ if ( ! function_exists('css_url'))
         if(is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
-            $filename = ASSET_DIR.'css'.DS.$name;
-            return base_url() . 'assets/css/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+            $filename = WEBROOT.'css'.DS.$name;
+            return base_url() . 'css/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
@@ -42,8 +42,8 @@ if ( ! function_exists('js_url'))
         if(is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
-            $filename = ASSET_DIR.'js'.DS.$name;
-            return base_url() . 'assets/js/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+            $filename = WEBROOT.'js'.DS.$name;
+            return base_url() . 'js/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
@@ -67,8 +67,8 @@ if ( ! function_exists('lib_css_url'))
         if(is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
-            $filename = ASSET_DIR.'lib'.DS.$name;
-            return base_url() . 'assets/lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+            $filename = WEBROOT.'lib'.DS.$name;
+            return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
@@ -92,8 +92,8 @@ if ( ! function_exists('lib_js_url'))
         if(is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
-            $filename = ASSET_DIR.'lib'.DS.$name;
-            return base_url() . 'assets/lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+            $filename = WEBROOT.'lib'.DS.$name;
+            return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
@@ -116,8 +116,8 @@ if ( ! function_exists('img_url'))
         $name = htmlspecialchars($name);
         if(is_localfile($name))
         {
-            $filename = ASSET_DIR.'img'.DS.$name;
-            return base_url() . 'assets/img/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+            $filename = WEBROOT.'img'.DS.$name;
+            return base_url() . 'img/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
         return $name;
     }
@@ -169,15 +169,19 @@ if ( ! function_exists('lib_styles'))
             if(is_string($style))
             {
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
-                if(is_file(ASSET_DIR.'lib'.DS.str_replace('/', DS, $style)))
+                if(is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $style)))
                 {
                     echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
                 }
-                else
+                else if(is_localfile($style))
                 {
                     echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
                     echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" /> -->'; echo "\n";
                 }
+				else 
+				{
+					echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
+				}
             }
         }
         return;
@@ -203,15 +207,19 @@ if ( ! function_exists('lib_scripts'))
             if(is_string($script))
             {
                 $script = (!preg_match('#\.js$#i', $script) ? $script.'.js' : $script);
-                if(is_file(ASSET_DIR.'lib'.DS.str_replace('/', DS, $script)))
+                if(is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $script)))
                 {
                     echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script>'; echo "\n";
                 }
-                else
+                else if(is_localfile($script))
                 {
                     echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
                     echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script> -->'; echo "\n";
                 }
+				else 
+				{
+					echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script>'; echo "\n";
+				}
             }
         }
         return;
@@ -237,15 +245,19 @@ if ( ! function_exists('styles'))
             if(is_string($style))
             {
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
-                if(is_file(ASSET_DIR.'css'.DS.str_replace('/', DS, $style)))
+                if(is_file(WEBROOT.'css'.DS.str_replace('/', DS, $style)))
                 {
                     echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
                 }
-                else
+                else if(is_localfile($style))
                 {
                     echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
                     echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" /> -->'; echo "\n";
                 }
+				else 
+				{
+					echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
+				}
             }
         }
         return;
@@ -271,15 +283,19 @@ if ( ! function_exists('scripts'))
             if(is_string($script))
             {
                 $script = (!preg_match('#\.js$#i', $script) ? $script.'.js' : $script);
-                if(is_file(ASSET_DIR.'js'.DS.str_replace('/', DS, $script)))
+                if(is_file(WEBROOT.'js'.DS.str_replace('/', DS, $script)))
                 {
                     echo '<script type="text/javascript" src="'.js_url($script).'"></script>'; echo "\n";
                 }
-                else
+                else if(is_localfile($script))
                 {
                     echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
                     echo '<script type="text/javascript" src="'.js_url($script).'"></script> -->'; echo "\n";
                 }
+				else 
+				{
+					echo '<script type="text/javascript" src="'.js_url($script).'"></script>'; echo "\n";
+				}
             }
         }
         return;

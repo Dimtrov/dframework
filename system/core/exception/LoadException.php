@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    2.1
+ *  @version    3.0
  */
 
 /**
@@ -26,6 +26,7 @@
  * @category    Exception
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       2.0
  */
 
 
@@ -63,7 +64,8 @@ class LoadException extends Exception
 
     protected function notFound()
     {
-        (new View('/errors/404', [
+        Config::set('general.use_template_engine', false);
+        (new View('/__errors/404', [
             'heading' => 'Page Not Found',
             'message' => 'The page you requested was not found.'
         ]))->render();

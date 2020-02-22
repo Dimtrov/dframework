@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 use dFramework\dependencies\codedepp\bbcode\BBCode;
@@ -28,6 +28,7 @@ use dFramework\dependencies\erusev\parsedown\Parsedown;
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Parser.html
+ * @since       2.1
  * @file        /system/libraries/Parser.php
  */
 

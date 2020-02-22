@@ -41,6 +41,10 @@ class dF_Paginator
      */
     protected $db;
     /**
+     * @var bool Specifie if we run query to found a pagination information
+     */
+    protected $run_query = true;
+    /**
      * @var int The number of elements to display in the page.
      *
      * Example :
@@ -142,6 +146,14 @@ class dF_Paginator
      */
     public function init(array $params = [])
     {
+        if(isset($params['run_query']))
+        {
+            if(!is_bool($params['run_query']))
+            {
+                Exception::show('The parameter "run_query" must be a boolean');
+            }
+            $this->run_query = $params['run_query'];
+        }
         if(!empty($params['db']))
         {
             if(!is_string($params['db']))
@@ -313,30 +325,31 @@ class dF_Paginator
      */
     private function runQuery(array &$data)
     {
-        $pdo = $this->db->pdo();
-
-        if(empty($this->max_item))
-        {
-            $this->max_item = $pdo->query($this->query_count)->fetchColumn();
-        }
-        if(true === $this->return_data)
-        {
-            $request = $pdo->prepare($this->query);
-            if(!empty($this->query_args) AND is_array($this->query_args))
-            {
-                foreach ($this->query_args As $key => $value)
-                {
-                    $request->bindValue(
-                        is_int($key) ? $key + 1 : $key,
-                        $value,
-                        is_int($value) || is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
-                    );
-                }
-            }
-            $request->execute();
-            $data['data'] = $request->fetchAll();
-            $request->closeCursor();
-        }
+		if(true === $this->run_query)
+		{
+			if(empty($this->max_item))
+			{
+				$this->max_item = $this->db->pdo()->query($this->query_count)->fetchColumn();
+			}
+			if(true === $this->return_data)
+			{
+				$request = $this->db->pdo()->prepare($this->query);
+				if(!empty($this->query_args) AND is_array($this->query_args))
+				{
+					foreach ($this->query_args As $key => $value)
+					{
+						$request->bindValue(
+							is_int($key) ? $key + 1 : $key,
+							$value,
+							is_int($value) || is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+						);
+					}
+				}
+				$request->execute();
+				$data['data'] = $request->fetchAll();
+				$request->closeCursor();
+			}
+		}
     }
 
 

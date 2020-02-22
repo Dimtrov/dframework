@@ -1,0 +1,7 @@
+.git
+.idea
+vendor
+public/css
+public/js
+public/img
+public/lib

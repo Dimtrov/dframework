@@ -11,9 +11,8 @@
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    2.1
- *
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
  */
 
 /**
@@ -27,6 +26,7 @@
  * @category    Loader
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       1.0
  */
 
 
@@ -228,14 +228,8 @@ class Load
                 if(!empty($key) AND is_string($key))
                 {
                     $lib = explode('/', $key); $lib = end($lib);
-                    if(!empty($value) AND is_string($value)) {
-                        $property = strtolower($value);
-                        $object->$property = self::_library($key, preg_match('#^my_#i', $lib));
-                    }
-                    else {
-                        $property = strtolower($key);
-                        $object->$property = self::_library($key, preg_match('#^my_#i', $lib));
-                    }
+                    $property = strtolower(!empty($value) AND is_string($value) ? $value : $key);
+                    $object->$property = self::_library($key, preg_match('#^my_#i', $lib));
                 }
                 else if(!empty($value) AND is_string($value))
                 {
@@ -248,14 +242,8 @@ class Load
         if(!empty($library) AND is_string($library))
         {
             $lib = explode('/', $library); $lib = end($lib);
-            if(!empty($alias) AND is_string($alias)) {
-                $property = strtolower($alias);
-                $object->$property = self::_library($library, preg_match('#^my_#i', $lib));
-            }
-            else {
-                $property = strtolower($library);
-                $object->$property = self::_library($library, preg_match('#^my_#i', $lib));
-            }
+            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $library);
+            $object->$property = self::_library($library, preg_match('#^my_#i', $lib));
         }
     }
 
@@ -330,5 +318,4 @@ class Load
     {
         self::$loads[$module][] = $element;
     }
-
 }

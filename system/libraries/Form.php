@@ -12,10 +12,12 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     2.1
+ * @version     3.0
  */
 
+use dFramework\core\data\Data;
 use dFramework\core\data\Request;
+use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Tableau;
 
 /**
@@ -27,6 +29,7 @@ use dFramework\core\utilities\Tableau;
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Form.html
+ * @since       2.1
  * @file        /system/libraries/Form.php
  */
 
@@ -56,6 +59,8 @@ class dF_Form
     {
         $this->datas = $datas;
         $this->errors = $errors;
+
+        
     }
     /**
      * Definie la valeur pour une cle donnee
@@ -86,7 +91,7 @@ class dF_Form
      * @param mixed $value
      * @return dF_Form
      */
-    public function error($key, $value) : self
+    public function error($key, $value = null) : self
     {
         if(is_array($key))
         {
@@ -97,7 +102,7 @@ class dF_Form
         }
         if(is_string($key))
         {
-            $this->errors = Tableau::merge($this->errors, [$key => $value]);
+            $this->errors = Tableau::merge($this->errors, [$key => [$value]]);
         }
         return $this;
     }
@@ -132,6 +137,43 @@ class dF_Form
             $this->surround = compact('start', 'end');
         }
     }
+
+
+    /**
+     * Ouvre un formulaire en inserant une cle de securite
+     *
+     * @param string $action
+     * @param string $method
+     * @param int $token_time 
+     * @param string|null $key
+     * @param string|null $enctype
+     * @param array|null $attributes
+     * @return string
+     */
+    public function open(string $action, string $method = 'post', int $token_time = 5, ?string $key = null, ?string $enctype = null, ?array $attributes = []) : string
+    {
+        $key = (!empty($key)) ? $key : 'form'.uniqid();
+        $enctype = (!empty($enctype)) ? 'enctype="'.$enctype.'"' : '';
+        $class = preg_replace('#form-control#i', 'form', $this->getInputClass($key, $attributes['class'] ?? null));
+
+        $token = Csrf::instance()->generateToken($token_time, 20);
+        return <<<HTML
+            <form method="{$method}" action="{$action}" {$enctype} id="{$key}" class="{$class}" role="form" {$this->getAttributes($attributes)}>
+                <input type="hidden" name="formcsrftoken" value="{$token}" />
+HTML;
+    }
+    /**
+     * Ferme un formulaire
+     *
+     * @return string
+     */
+    public function close() : string
+    {
+        return <<<HTML
+            </form>
+HTML;
+    }
+
 
 
     /**
@@ -349,10 +391,13 @@ class dF_Form
      */
     public function input(string $type, string $key, $label = null, ?array $attributes = []) : string 
     {
+        $type = strtolower(($type));
+        $value = ($type == 'password') ? null : 'value="'.$this->getValue($key).'"';
+
         return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label)}
-                <input type="{$type}" name="{$key}" id="field{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" value="{$this->getValue($key)}" {$this->getAttributes($attributes)} />
+                <input type="{$type}" name="{$key}" id="field{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
@@ -481,7 +526,7 @@ HTML;
         return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label)}
-                <select name="{$key}" id="field{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}">{$r}</select>
+                <select name="{$key}" id="field{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$r}</select>
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
@@ -601,7 +646,7 @@ HTML;
      */
     protected function getLabel(string $key, $label) : string
     {
-        return (false === $label) ? '' : '<label for="field'.$key.'" class="form-label">'.ucfirst((string)$label ?? $key).'</label>';
+        return (false === $label) ? '' : '<label for="field'.$key.'" class="form-label">'.ucfirst($label ?? $key).'</label>';
     }
     /**
      * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire 

@@ -11,8 +11,8 @@
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    2.1
+ *  @homepage   https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
  *
  */
 
@@ -27,6 +27,7 @@
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_lister.html
+ * @since       1.0
  * @file        /system/core/route/Lister.php
  * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
  */

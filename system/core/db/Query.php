@@ -465,7 +465,7 @@ class Query
      * @return array
      * @throws \dFramework\core\exception\Exception
      */
-    protected function result(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = ENTITY_DIR): array
+    protected function result(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = ''): array
     {
         $query = $this->run();
         $this->free_db();

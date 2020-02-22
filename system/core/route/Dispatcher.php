@@ -6,13 +6,13 @@
  *  Copyright (c) 2019, Dimtrov Sarl
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- *  @package	    dFramework
+ *  @package	dFramework
  *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version 2.1
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
  */
 
 /**
@@ -27,6 +27,7 @@
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/class_dispatcher.html
+ * @since       1.0
  * @file        /system/core/route/Dispatcher.php
  * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
  */
@@ -40,6 +41,7 @@ use dFramework\core\Config;
 use dFramework\core\exception\LoadException;
 use dFramework\core\exception\RouterException;
 use dFramework\core\loader\DIC;
+use dFramework\core\data\Request;
 use ReflectionMethod;
 
 /**
@@ -142,6 +144,10 @@ class Dispatcher
      */
     public static function loadController($controllerClassFile, $controllerClass, $method, ?array $parameters = null)
     {
+        if('cli' === \php_sapi_name())
+        {
+            return;
+        }
         $instance = self::getInstance();
 
         if(!empty($parameters) AND is_array($parameters))
@@ -254,11 +260,10 @@ class Dispatcher
      */
     private function __construct()
     {
-        $get = $_GET;
-        $url= $get['url'] ?? null;
+        $url = str_replace(Config::get('general.url_suffix'), '', ((new Request)->url ?? null));
         $current_subsystem = Lister::getCurrentSubSystem($url);
 
-        $url = (is_string($url) AND $url[-1] != '/') ? $url.'/' : $url;
+        $url = (is_string($url) AND isset($url[-1]) AND $url[-1] != '/') ? $url.'/' : $url;
         if(!empty($url) AND !empty($current_subsystem))
         {
             $url = preg_replace('#^'.$current_subsystem.'/?#', '', $url);

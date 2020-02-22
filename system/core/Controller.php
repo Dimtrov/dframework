@@ -81,6 +81,12 @@ abstract class Controller
         $this->layout = $this->layout('default');
 
         $this->data = new Data();
+
+        /**
+         * Use Request and Response Object automaticaly
+         * @since 2.2
+         */
+        $this->useObject(self::REQUEST_OBJECT, self::RESPONSE_OBJECT);
     }
 
     /**
@@ -148,15 +154,27 @@ abstract class Controller
     }
 
     /**
+     * Charge une librarie
+     * 
      * @param string|array $library
      * @param string|null $alias
+     * @param mixed $var 
      * @throws \ReflectionException
      * @throws exception\Exception
      * @throws exception\LoadException
      */
-    protected function loadLibrary($library, string $alias = null)
+    protected function loadLibrary($library, string $alias = null, &$var = null)
     {
         Load::library($this, $library, $alias);
+        
+        /**
+         * @since 2.2
+         */
+        if(is_string($library) AND array_key_exists(2, func_get_args()))
+        {
+            $prop = strtolower(!empty($alias) ? $alias : $library);
+            $var = $this->$prop;
+        }
     }
 
     /**

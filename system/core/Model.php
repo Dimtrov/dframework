@@ -4,7 +4,7 @@ namespace dFramework\core;
 
 use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
-use dFramework\dependencies\fluentpdo\Query as FluentQuery;
+use dFramework\dependencies\envms\fluentpdo\Query as FluentQuery;
 
 /**
  * Membres

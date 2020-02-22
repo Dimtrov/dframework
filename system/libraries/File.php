@@ -21,7 +21,6 @@ use dFramework\core\exception\Exception;
  * File
  *
  *
- *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>

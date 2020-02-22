@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @version     3.0
  */
 
 require_once SYST_DIR.'dependencies'.DS.'php-requests'.DS.'Requests.php';
@@ -25,13 +25,33 @@ require_once SYST_DIR.'dependencies'.DS.'php-requests'.DS.'Requests.php';
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/Api.html
+ * @since       2.0.1
  */
 
 class dF_Api
 {
+    /**
+     * Donnees bruts (toutes les donnees, memes les entetes)
+     */
     const  BRUT = 1;
-
+    /**
+     * Les donnees formatees (DATAS + METAS )
+     */ 
     const FORMAT = 2;
+
+    /**
+     * Donnees specifiquement renvoyes
+     */
+    const   DATAS = 3;
+    /**
+     * Les meta donnees simples
+     */
+    const   METAS = 4;
+    /**
+     * Les headers
+     */
+    const   HEADERS = 5;
+
 
     /**
      * @var string
@@ -41,7 +61,7 @@ class dF_Api
     /**
      * @var int
      */
-    private $return_type = self::FORMAT;
+    private $return_type = self::DATAS;
 
 
     /**
@@ -73,6 +93,8 @@ class dF_Api
     {
         $this->return_type = $type;
     }
+
+
 
     /**
      * Main interface for HTTP requests
@@ -138,8 +160,7 @@ class dF_Api
      */
     public function get(string $url, ?array $headers = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::get($url, $headers, $options));
+        return $this->return(Requests::get($this->url($url), $headers, $options));
     }
 
     /**
@@ -152,8 +173,7 @@ class dF_Api
      */
     public function head(string $url, ?array $headers = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::head($url, $headers, $options));
+        return $this->return(Requests::head($this->url($url), $headers, $options));
     }
 
     /**
@@ -166,8 +186,7 @@ class dF_Api
      */
     public function delete(string $url, ?array $headers = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::delete($url, $headers, $options));
+        return $this->return(Requests::delete($this->url($url), $headers, $options));
     }
 
     /**
@@ -180,8 +199,7 @@ class dF_Api
      */
     public function trace(string $url, ?array $headers = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::trace($url, $headers, $options));
+        return $this->return(Requests::trace($this->url($url), $headers, $options));
     }
 
      /**
@@ -195,8 +213,7 @@ class dF_Api
      */
     public function post(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::post($url, $headers, $data, $options));
+        return $this->return(Requests::post($this->url($url), $headers, $data, $options));
     }
 
      /**
@@ -210,8 +227,7 @@ class dF_Api
      */
     public function put(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::put($url, $headers, $data, $options));
+        return $this->return(Requests::put($this->url($url), $headers, $data, $options));
     }
 
      /**
@@ -225,8 +241,7 @@ class dF_Api
      */
     public function options(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::options($url, $headers, $data, $options));
+        return $this->return(Requests::options($this->url($url), $headers, $data, $options));
     }
 
      /**
@@ -240,11 +255,26 @@ class dF_Api
      */
     public function patch(string $url, array $headers, ?array $data = [], ?array $options = [])
     {
-        $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
-        return $this->return(Requests::patch($url, $headers, $data, $options));
+        return $this->return(Requests::patch($this->url($url), $headers, $data, $options));
     }
 
 
+    /**
+     * @param string $url
+     * @return string
+     */
+    private function url(string $url) : string
+    {
+        if(preg_match('#^(?:-|/)#', $url)) 
+        {
+            $url = trim(substr($url, 1));
+        }
+        else if(!empty($this->base_url))
+        {
+            $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
+        }
+        return $url;
+    }
 
     /**
      * @param Requests_Response $response
@@ -252,17 +282,30 @@ class dF_Api
      */
     private function return(Requests_Response $response)
     {
+        if(self::HEADERS === $this->return_type)
+        {
+            return $response->headers;
+        }
         if($this->return_type === self::BRUT)
         {
             return $response;
         }
-        $return['meta'] = [
-            'code' => $response->status_code,
-            'success' => $response->success,
-            'content-type' => $response->headers->data['content-type'][0]
+        $return = [
+            'metas' => [
+                'code' => $response->status_code,
+                'success' => $response->success,
+                'content-type' => $response->headers->data['content-type'][0]
+            ],
+            'datas' => $response->body
         ];
-        $return['data'] = $response->body;
-
+        if(self::DATAS === $this->return_type)
+        {
+            return $return['data'];
+        }
+        if(self::METAS === $this->return_type)
+        {
+            return $return['metas'];
+        }
         return $return;
     }
 }
