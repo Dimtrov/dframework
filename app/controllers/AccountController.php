@@ -10,7 +10,6 @@ class AccountController extends Controller
     }
     public function index() {
 
-        $a = new Envms\FluentPDO\Query();
     }
 
     public function login()

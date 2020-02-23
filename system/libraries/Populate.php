@@ -17,7 +17,7 @@
 
 use dFramework\core\db\Query;
 use dFramework\core\exception\Exception;
-
+use Faker\Factory As Faker;
 
 /**
  * dF_Populate
@@ -50,11 +50,6 @@ class dF_Populate
      */
     private $rows = 5;
 
-
-    public function __construct()
-    {
-        require_once SYST_DIR.'dependencies'.DS.'fzaninotto'.DS.'faker'.DS.'autoload.php';
-    }
 
     /**
      * Specifie la langue a utiliser pour generer des phrases aleatoire
@@ -174,7 +169,7 @@ class dF_Populate
                 $field2 = $value;
             }
         }
-        $generator = Faker\Factory::create($this->locale);
+        $generator = Faker::create($this->locale);
 
         foreach ($tab_values[$tab1] As $value)
         {
@@ -197,7 +192,7 @@ class dF_Populate
      */
     private function buildInsert(string $table)
     {
-        $generator = Faker\Factory::create($this->locale);
+        $generator = Faker::create($this->locale);
 
         $parts = ['INSERT INTO '.$table];
         $columns = [];

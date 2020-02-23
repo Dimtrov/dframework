@@ -15,8 +15,7 @@
  * @version     3.0
  */
 
-use dFramework\dependencies\codedepp\bbcode\BBCode;
-use dFramework\dependencies\erusev\parsedown\Parsedown;
+use \Codedepp\BBCode\BBCode;
 
 
 /**

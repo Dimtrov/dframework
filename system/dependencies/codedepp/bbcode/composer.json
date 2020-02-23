@@ -1,0 +1,48 @@
+{
+	"name": "codedepp/bbcode",
+	"description": "BBCode parser from or to HTML.",
+	"keywords": [
+		"bbcode",
+		"parser",
+		"laravel",
+		"psr-1",
+		"psr-2",
+		"psr-4"
+	],
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Johnny Hoang",
+			"email": "tuanhoangaka@gmail.com",
+			"homepage": "http://codedepp.com"
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Codedepp\\BBCode\\": "src/"
+		}
+	},
+	"support": {
+		"issues": "https://github.com/codedepp/bbcode/issues"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^6.1"
+	},
+	"scripts": {
+		"test": "phpunit --coverage-text"
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Codedepp\\BBCode\\BBCodeServiceProvider"
+			],
+			"aliases": {
+				"Invoice": "Codedepp\\BBCode\\Facades\\BBCode"
+			}
+		}
+	}
+
+}

@@ -33,6 +33,11 @@ namespace dFramework;
 
 class Autoloader
 {
+    /**
+     * Array contain every map classes
+     */
+    private static $_class_map = [];
+
     static function load()
     {
         spl_autoload_register(array(__CLASS__, 'autoload'));
@@ -55,11 +60,14 @@ class Autoloader
         }
         else if(file_exists(SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php'))
         {
-            $class_map = require_once SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php';
-
-            if(array_key_exists($input, $class_map))
+            $class_map_file = SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php';
+            if(true !== in_array($class_map_file, \get_included_files()))
             {
-                require_once str_replace('{SYST_DIR}', SYST_DIR, $class_map[$input]);
+                self::$_class_map = require $class_map_file;
+            }
+            if(array_key_exists($input, self::$_class_map))
+            {
+                require_once str_replace('{SYST_DIR}', SYST_DIR, self::$_class_map[$input]);
             }
         }
     }
