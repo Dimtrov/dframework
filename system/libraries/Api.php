@@ -299,7 +299,7 @@ class dF_Api
         ];
         if(self::DATAS === $this->return_type)
         {
-            return $return['data'];
+            return $return['datas'];
         }
         if(self::METAS === $this->return_type)
         {

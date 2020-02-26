@@ -16,6 +16,7 @@
  */
 
 use dFramework\core\exception\Exception;
+use dFramework\core\Config;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
@@ -27,6 +28,7 @@ use PHPMailer\PHPMailer\SMTP;
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/Mail.html
+ * @since       2.0
  */
 
 
@@ -52,47 +54,53 @@ class dF_Mail
 
 
     /**
-     * @param array $data
+     * Define a parameters for connexion in mail server
+     * 
+     * @param array $params
      */
-    public function connect(array $data)
+    public function connect(array $params)
     {
-        if(empty($data['host']))
+        if(empty($params['host']))
         {
             Exception::show('The parameter "host" is required');
         }
-        $this->mail->Host = $data['host'];
-        if(null !== $data['username'])
+        $this->mail->Host = $params['host'];
+        if(null !== $params['username'])
 		{
-			if(empty($data['username']) OR !is_string($data['username']))
+			if(empty($params['username']) OR !is_string($params['username']))
 			{
 				Exception::show('The parameter "username" is required and it was to be a string');
 			}
-			$this->mail->Username = $data['username'];
-			
+			$this->mail->Username = $params['username'];
 		}
-		if(null !== $data['password'])
+		if(null !== $params['password'])
 		{
-			if(empty($data['password']) OR !is_string($data['password']))
+			if(empty($params['password']) OR !is_string($params['password']))
 			{
 				Exception::show('The parameter "password" is required and it was to be a string');
 			}
-			$this->mail->Password = $data['password'];			
+			$this->mail->Password = $params['password'];			
 		}
-		if(!empty($data['port']) AND !is_int($data['port']))
+		if(!empty($params['port']) AND !is_int($params['port']))
         {
-            $this->mail->Port = $data['port'];
+            $this->mail->Port = $params['port'];
         }
-        if(isset($data['debug']) AND true === $data['debug'])
+        if(isset($params['debug']) AND true === $params['debug'])
         {
             $this->mail->SMTPDebug = SMTP::DEBUG_SERVER;
         }
     }
 
-    public function set(array $data)
+    /**
+     * Define a parameters for seding mail process
+     * 
+     * @param array $params
+     */
+    public function set(array $params)
     {
-        if(!empty($data['method']))
+        if(!empty($params['method']))
         {
-            switch (strtolower($data['method']))
+            switch (strtolower($params['method']))
             {
                 case 'mail':        $this->mail->isMail();
                     break;
@@ -104,39 +112,44 @@ class dF_Mail
                     break;
             }
         }
-        if(isset($data['timeout']) AND is_int($data['timeout']))
+        if(isset($params['timeout']) AND is_int($params['timeout']))
         {
-            $this->mail->Timeout = $data['timeout'];
+            $this->mail->Timeout = $params['timeout'];
         }
-        if(isset($data['charset']) AND is_string($data['charset']))
+        if(isset($params['charset']) AND is_string($params['charset']))
         {
-            $this->mail->CharSet = $data['charset'];
+            $this->mail->CharSet = $params['charset'];
         }
-        if(isset($data['priority']) AND in_array((int)$data['priority'], [1, 3, 5]))
+        if(isset($params['priority']) AND in_array((int)$params['priority'], [1, 3, 5]))
         {
-            $this->mail->Priority = $data['priority'];
+            $this->mail->Priority = $params['priority'];
         }
-        if(isset($data['encryption']))
+        if(isset($params['encryption']))
         {
-			if(null === $data['encryption'])
+			if(null === $params['encryption'])
 			{
 				$this->mail->SMTPSecure = null;
 			}
-			if(strtolower($data['encryption']) == 'tls')
+			if(strtolower($params['encryption']) == 'tls')
 			{
 				$this->mail->SMTPSecure =  PHPMailer::ENCRYPTION_STARTTLS;
 			}
-			if(strtolower($data['encryption']) == 'ssl')
+			if(strtolower($params['encryption']) == 'ssl')
 			{
 				$this->mail->SMTPSecure =  PHPMailer::ENCRYPTION_SMTPS;
 			}
         }
     }
 
+    /**
+     * Tell a configuration that use for email process
+     * 
+     * @param string $name
+     */
     public function use(string $name)
     {
         $name = strtolower($name);
-        $config = (array) \dFramework\core\Config::get('email.'.$name);
+        $config = (array) Config::get('email.'.$name);
 
         if(empty($config['connect']) OR !is_array($config['connect']))
         {
@@ -181,7 +194,6 @@ class dF_Mail
             {
                 if(is_string($key) AND is_string($value))
                 {
-                    //Exception::show('Le tableau des destinataire ne peut avoir que des adresses mail');
                     $this->mail->addAddress($key, $value);
                 }
             }

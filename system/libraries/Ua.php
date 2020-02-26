@@ -26,12 +26,10 @@
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Ua.html
  * @since       2.0
  * @file        /system/libraries/Ua.php
- * @uses       \dFramework\dependencies\others\browser\Browser
  */
 
 use dFramework\core\Config;
 use dFramework\core\utilities\Chaine;
-use dFramework\dependencies\others\browser\Browser;
 
 class dF_Ua
 {

@@ -11,9 +11,12 @@
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.0
  */
+
+ use dFramework\core\Config;
+ use dFramework\core\exception\Exception;
 
 /**
  * Crypto
@@ -23,7 +26,8 @@
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/Crypto.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Crypto.html
+ * @since       2.0
  */
 
 
@@ -52,7 +56,7 @@ class dF_Crypto
      */
     public function __construct()
     {
-        $config = \dFramework\core\Config::get('data.encryption');
+        $config = Config::get('data.encryption');
 
         $this->key = $config['key'] ?? $this->key;
         $this->algo = strtolower(trim($config['algo'] ?? $this->algo));
@@ -193,7 +197,7 @@ class dF_Crypto
             }
             catch (Exception $e)
             {
-                \dFramework\core\exception\Exception::Throw($e);
+                Exception::Throw($e);
             }
         }
         elseif (defined('MCRYPT_DEV_URANDOM'))

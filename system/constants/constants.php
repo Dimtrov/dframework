@@ -18,6 +18,8 @@ define('LIBRARY_DIR', APP_DIR . 'libraries' . DS);
 
 define('ENTITY_DIR', APP_DIR . 'entities' . DS);
 
+define('RESOURCE_DIR', APP_DIR . 'resources' . DS);
+
 
 /*
  * Database constants

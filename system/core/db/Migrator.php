@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 /**
@@ -45,7 +45,7 @@ class Migrator
     /**
      * @var string
      */
-    private $save_folder = APP_DIR.'migrations'.DS;
+    private $save_folder = RESOURCE_DIR.'migrations'.DS;
 
     /**
      * @var string

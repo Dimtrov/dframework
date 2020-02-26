@@ -19,7 +19,7 @@
 /**
  * Auth
  *
- * Generateur de formulaire html a la volee
+ * Systeme d'authentification automatique des utilisateurs
  *
  * @package		dFramework
  * @subpackage	Core
@@ -44,8 +44,8 @@ class Auth
         /**
          * La table dans laquelle on doit faire la recherche
          */
-        'table'  => 'default.users',
-        'fields' => [
+        'table'             => 'default.users',
+        'fields'            => [
             /**
              * Le champ a utiliser comme login 
              *  (doit etre le meme dans la base de donnees et l'attribut name du input)
@@ -60,7 +60,12 @@ class Auth
         /**
          * Specifie si on doit distinguer l'erreur au niveau des champs (login ou password incorrect)
          */
-        'distinct_fields' => false,
+        'distinct_fields'   => false,
+        /**
+         * Nombre de tentative  de connxion avant le blocage du compte
+         *  (Si inferieur a 1, le systeme de blocage du compte sera desactivé)
+         */
+        'nbr_login_failed'    => 0,
     ];
 
     /**
@@ -174,6 +179,11 @@ class Auth
             $this->logout();
             return false;
         }
+        if(true === $this->bruteForce($datas[$login], $this->login_params['nbr_login_failed']))
+        {
+            $this->errMsg = 'You have {atteint} the maximal number of trying connection. Retry tomorrow';
+            $this->errors = [$login => 'Try with an another "'.$login.'"'];
+        }
         if(true !== password_verify(sha1($datas[$password]), $user[$password]))
         {
             if(true !== $this->login_params['distinct_fields'])
@@ -192,8 +202,27 @@ class Auth
             $this->logout();
             return false;
         }
+        $this->unlinkTentatives($datas[$login]);
         $this->save_session($user[$login], $user[$password]);
         return true;
+    }
+
+
+    public function bruteForce($login, int $nbr_login_failed) : bool
+    {
+        if(!is_int($nbr_login_failed) OR $nbr_login_failed < 1)
+        {
+            return false;
+        }
+        list($existence_ft, $nbr_tentatives) = $this->getLoginTentatives($login);
+        
+        if(++$nbr_tentatives > $nbr_login_failed) 
+        {
+            return true;
+        }
+        $this->setLoginTentatives($login, $existence_ft, $nbr_tentatives);
+
+        return false;
     }
 
     /**
@@ -272,6 +301,58 @@ class Auth
         Session::destroy('auth');
     }
 
+
+
+
+    /**
+     * @param mixed $login
+     * @return array 
+     */
+    private function getLoginTentatives($login) : array
+    {
+        $tentatives = 0; 
+        $existence_ft = 0;
+
+        $fichier = RESOURCE_DIR . '_antibruteforce_'. DS . sha1($login) . '.df';
+        if(file_exists($fichier))
+        {
+            $fichier_tentatives = fopen($fichier, 'r');
+            $contenu_tentatives = fgets($fichier_tentatives);
+            $infos_tentatives = explode(';', $contenu_tentatives);
+
+            if($infos_tentatives[0] == date('d/m/Y'))
+            {
+                $tentatives = $infos_tentatives[1];
+            }
+            else 
+            {
+                $existence_ft = 2;
+            }
+        }
+        else
+        {
+            $existence_ft = 1;
+        }
+        return [$existence_ft, $tentatives];
+    }
+    private function setLoginTentatives($login, $existence_ft, $nbr_tentatives)
+    {
+        $fichier = RESOURCE_DIR . '_antibruteforce_'. DS . sha1($login) . '.df';
+        if(file_exists($fichier)) {
+            unlink($fichier);
+        }
+        $nb = ($existence_ft == 1 OR $existence_ft == 2) ? 1 : ($nbr_tentatives + 1);
+
+        $fichier_tentatives = fopen($fichier, 'a+');
+        fputs($fichier_tentatives, date('d/m/Y').';'.$nb);
+        fclose($fichier_tentatives);
+        return;
+    }
+    private function unlinkTentatives($login)
+    {
+        @unlink(RESOURCE_DIR . '_antibruteforce_'. DS . sha1($login) . '.df');
+        return;
+    }
 
 
 }
