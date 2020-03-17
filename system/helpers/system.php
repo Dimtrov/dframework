@@ -1,10 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Dimitri Sitchet
- * Date: 02/06/2019
- * Time: 12:00
- */
+use dFramework\core\Helpers;
+use dFramework\core\Config;
+use dFramework\core\data\Request;
 
 // ------------------------------------------------------------------------
 
@@ -42,7 +39,7 @@ if ( ! function_exists('is_localfile'))
      */
     function is_localfile($name)
     {
-        if(preg_match('#^'.\dFramework\core\Config::get('general.base_url').'#i', $name))
+        if(preg_match('#^'.Config::get('general.base_url').'#i', $name))
         {
             return true;
         }
@@ -54,7 +51,6 @@ if ( ! function_exists('is_localfile'))
     }
 }
 
-
 if (!function_exists('is_ajax_request')) {
     /**
      * Test to see if a request contains the HTTP_X_REQUESTED_WITH header.
@@ -63,7 +59,19 @@ if (!function_exists('is_ajax_request')) {
      */
     function is_ajax_request()
     {
-        return (new \dFramework\core\data\Request())->is_ajax();
+        return (new Request)->is_ajax();
+    }
+}
+
+if (!function_exists('ip_address')) {
+    /**
+     * Return IP Address of current user
+     *
+     * @return    string
+     */
+    function ip_address()
+    {
+        return Helpers::instance()->ip_address();
     }
 }
 

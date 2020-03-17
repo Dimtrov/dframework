@@ -65,7 +65,7 @@ class LoadException extends Exception
     protected function notFound()
     {
         Config::set('general.use_template_engine', false);
-        (new View('/__errors/404', [
+        (new View('/errors/404', [
             'heading' => 'Page Not Found',
             'message' => 'The page you requested was not found.'
         ]))->render();

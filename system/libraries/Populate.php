@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     2.1
+ * @version     3.0
  */
 
 use dFramework\core\db\Query;
@@ -28,8 +28,8 @@ use Faker\Factory As Faker;
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Populate.html
- * @file        /system/libraries/Parser.php
- * @uses       \dFramework\dependencies\faker\Factory
+ * @since       2.1
+ * @file        /system/libraries/Populate.php
  */
 
 class dF_Populate
@@ -81,7 +81,7 @@ class dF_Populate
      * Defini les type de donnees a generer pour chaque colone qu'on souhaite remplir dans la base de donnees
      *
      * @param array|string $field Le champ a remplir
-     * @param null|string $function La fonction designant le tyoe de donnees a generer
+     * @param null|string $function La fonction designant le type de donnees a generer
      * @return dF_Populate
      */
     public function generate($field, ?string $function = null) : self
@@ -134,17 +134,18 @@ class dF_Populate
 
 
     /**
-     * Associe de facon aleatoire les cles de differents tables dans une table d'association
+     * Associe de facon aleatoire les cles de differentes tables dans une table d'association
      *
      * @param string $merge La table d'associaition
      * @param array $tables Les couples tables/cles a associer
+     * @param string $use_db La configuration  de la base de donnees a utiliser
      */
-    public function join(string $merge, array $tables)
+    public function join(string $merge, array $tables, string $use_db = 'default')
     {
         $tab_values = [];
         $tab1 = $tab2 = null;
         $field1 = $field2 = null;
-        $query = new Query($this->use_db);
+        $query = new Query($use_db ?? 'default');
         $merge = $query->db->config['prefix'].$merge;
 
         $i = 0;

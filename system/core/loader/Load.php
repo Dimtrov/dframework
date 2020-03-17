@@ -251,6 +251,7 @@ class Load
      * @param $library
      * @param bool $app
      * @return mixed
+     * @since 3.0
      * @throws LoadException
      * @throws \ReflectionException
      */
@@ -272,7 +273,7 @@ class Load
                 throw new LoadException('
                     Impossible de charger la librairie <b>'.$library.'</b>. 
                     <br> 
-                    Le fichier &laquo; '.$file.' n\'existe pas &raquo;
+                    Le fichier &laquo; '.$file.' &raquo; n\'existe pas
                 ');
             }
             require_once $file;
@@ -292,9 +293,43 @@ class Load
         }
     }
 
+    /**
+     * @param string $file
+     * @param mixed $var 
+     * @param string|null $locale
+     * @param bool $app
+     * @since 3.0
+     * @throws exception\LoadException
+     */
+    public static function lang(string $file, &$var, ?string $locale = null, bool $app = false)
+    {
+        if(empty($locale))
+        {
+            $locale = Config::get('general.language');
+        }
+        $file = preg_replace('#\.json$#i', '', $file);
+        $filename = (true === $app) 
+            ? RESSOURCE_DIR . 'lang' . DS . $locale . DS . $file . '.json'
+            : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
-
-
+        if(true !== file_exists($filename))
+        {
+            throw new LoadException('
+                Impossible de charger le fichier de langue <b>'.$file.'</b>. 
+                <br> 
+                Le fichier &laquo; '.$filename.' &raquo; n\'existe pas.
+            ');
+        }
+        if(false === ($lang = file_get_contents($filename)))
+        {
+            throw new LoadException('
+                Impossible de charger le fichier de langue <b>'.$file.'</b>. 
+                <br> 
+                Le fichier &laquo; '.$filename.' &raquo; est innaccessible en lecture.
+            ');
+        }
+        $var = json_decode($lang);
+    }
 
     /**
      * @param $element

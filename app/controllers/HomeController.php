@@ -1,36 +1,18 @@
 <?php
-use \dFramework\core\utilities\Auth;
+use \dFramework\components\auth\Login;
 use \dFramework\core\Controller;
 
 class HomeController extends Controller
 {
-    /**
-     * HomeController constructor.
-     * @throws \dFramework\core\exception\Exception
-     */
-    public function __construct()
-    {
-        Auth::instance()->checkout('account/login');
-        parent::__construct();
-    }
 
     public function index()
     {
-        $this->layout
-            ->add('index')
-            ->launch();
-    }
+        $this->loadLibrary('Captcha');
 
-    /**
-     * @throws ReflectionException
-     */
-    public function about()
-    {
-        $datas['staff'] = $this->model->getStaff();
+        $this->captcha->use(dF_Captcha::IMAGE_SECURIMAGE);
+        $captcha = $this->captcha->get();
 
-        $this->layout
-            ->add('about', $datas)
-            ->launch();
+        echo '<img src="'.$captcha.'" >';
     }
 
     public function a()

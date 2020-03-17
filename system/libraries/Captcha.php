@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 /**
@@ -23,14 +23,15 @@
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/captcha
+ * @since       2.0
  */
 
 
 use dFramework\core\{
+    Config,
     exception\Exception,
     Helpers
 };
-use dFramework\dependencies\others\simplephpcaptcha\SimplePhpCaptcha;
 
 
 class dF_Captcha
@@ -92,6 +93,12 @@ class dF_Captcha
     ];
 
 
+    public function __construct()
+    {
+        Config::set('general.url_suffix', '');
+    }
+
+
     /**
      * Specifie le type de captcha a utiliser
      *
@@ -139,11 +146,16 @@ class dF_Captcha
     {
         switch ($this->type)
         {
-            case self::MATH : return $this->captchaMath();
-            case self::IMAGE_NATIVE: return $this->captchaImageNative();
-            case self::IMAGE_SECURIMAGE: return $this->captchaImageSecurimage();
-            case self::AUDIO_SECURIMAGE: return $this->captchaAudioSecurimage();
-            default: Exception::show('Unknow type of captcha');
+            case self::MATH : 
+                return $this->captchaMath();
+            case self::IMAGE_NATIVE: 
+                return $this->captchaImageNative();
+            case self::IMAGE_SECURIMAGE: 
+                return $this->captchaImageSecurimage();
+            case self::AUDIO_SECURIMAGE: 
+                return $this->captchaAudioSecurimage();
+            default: 
+                Exception::show('Unknow type of captcha');
         }
     }
 
@@ -155,19 +167,18 @@ class dF_Captcha
     {
         if(!in_array($this->type, [self::IMAGE_SECURIMAGE, self::AUDIO_SECURIMAGE]))
         {
-            if(empty($_SESSION['df_captcha']['code']))
+            if(empty($_SESSION['df_security']['captcha']['code']))
             {
                 return false;
             }
             else
             {
-                $code = unserialize($_SESSION['df_captcha']['code']);
+                $code = unserialize($_SESSION['df_security']['captcha']['code']);
                 return ($code === hash('sha512', $value));
             }
         }
         else
         {
-            require_once __DIR__.'../dependencies/securimage/securimage.php';
             $securimage = new Securimage($this->params[self::IMAGE_SECURIMAGE]);
 
             return (!($securimage->check($value) == false));
@@ -354,7 +365,7 @@ class dF_Captcha
      */
     private function captchaImageNative() : string
     {
-        unset($_SESSION['df_captcha']['config']);
+        unset($_SESSION['df_security']['captcha']['config']);
         $captcha = new SimplePhpCaptcha();
         $captcha->config($this->params[self::IMAGE_NATIVE]);
         $image_src = $captcha->generate();
@@ -367,8 +378,8 @@ class dF_Captcha
      */
     private function captchaImageSecurimage() : string
     {
-        unset($_SESSION['df_captcha']['config']);
-        $_SESSION['df_captcha']['config'] = serialize($this->params[$this->type]);
+        unset($_SESSION['df_security']['captcha']['config']);
+        $_SESSION['df_security']['captcha']['config'] = serialize($this->params[$this->type]);
 
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
@@ -381,8 +392,9 @@ class dF_Captcha
      */
     private function captchaAudioSecurimage() : string
     {
-        unset($_SESSION['df_captcha']['config']);
-        $_SESSION['df_captcha']['config'] = serialize($this->params[$this->type]);
+        unset($_SESSION['df_security']['captcha']['config']);
+        $_SESSION['df_security']['captcha']['config'] = serialize($this->params[$this->type]);
+
 
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);

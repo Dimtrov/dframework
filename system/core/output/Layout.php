@@ -33,9 +33,10 @@
 
 namespace dFramework\core\output;
 
-use \dFramework\core\Config;
-use \dFramework\core\route\Dispatcher;
+use dFramework\core\Config;
+use dFramework\core\route\Dispatcher;
 use dFramework\core\utilities\Tableau;
+use dFramework\core\exception\LoadException;
 use phpDocumentor\Reflection\Types\Void_;
 
 /**
@@ -99,7 +100,7 @@ class Layout
      */
     public function launch()
     {
-        $view = new View('_layouts'.DS.self::$_layout, self::$_vars);
+        $view = new View('/reserved/layouts' . DS . self::$_layout, self::$_vars);
         $view->render();
     }
 
@@ -332,7 +333,7 @@ class Layout
      * 
      * @param string|array $meta
      * @param string|null $value
-     * @return Layout
+     * @return void
      */
     public static function setMeta($meta, ?string $value = null) : void
     {
@@ -347,6 +348,14 @@ class Layout
     {
         if(!empty($layout) AND is_string($layout))
         {
+			if(!file_exists(LAYOUT_DIR.$layout.'.php'))
+			{
+				throw new LoadException('
+					Impossible de charger le template <b>'.$layout.'</b>.
+					<br>
+					Le fichier &laquo; '.LAYOUT_DIR.$layout.'.php &raquo; n\'existe pas
+				');
+			}
             self::$_layout = trim(htmlspecialchars($layout));
         }
         return $this;

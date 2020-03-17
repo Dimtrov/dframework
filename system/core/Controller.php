@@ -6,13 +6,13 @@
  *  Copyright (c) 2019, Dimtrov Sarl
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- *  @package	    dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version 2.1
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
  */
 
 
@@ -25,7 +25,8 @@
  * @package		dFramework
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/controller
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/Controller.html
+ * @since       1.0
  * @file		/system/core/Controller.php
  */
 
@@ -178,6 +179,8 @@ abstract class Controller
     }
 
     /**
+     * Charge un helper
+     * 
      * @param string ...$helpers
      * @throws exception\Exception
      */
@@ -185,6 +188,21 @@ abstract class Controller
     {
         Load::helper($helpers);
     }
+
+    /**
+     * Charge un fichier de langue
+     * 
+     * @param string $file
+     * @param mixed $var 
+     * @param string|null $locale
+     * @since 3.0
+     * @throws exception\LoadException
+     */
+    protected function loadLang(string $file, &$var, ?string $locale = null)
+    {
+        Load::lang($file, $var, $locale, true);
+    }
+
 
 
     /**

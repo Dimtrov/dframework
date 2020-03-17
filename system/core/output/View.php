@@ -105,9 +105,9 @@ class View
             
             $smarty = new \Smarty();
             $smarty->template_dir = VIEW_DIR;
-            $smarty->compile_dir  = VIEW_DIR.'__compiles'.DS;
-            $smarty->cache_dir    = VIEW_DIR.'__caches'.DS;
-            $smarty->config_dir   = APP_DIR.'config'.DS.'smarty'.DS;
+            $smarty->compile_dir  = VIEW_DIR.'reserved'.DS.'compiles'.DS;
+            $smarty->cache_dir    = VIEW_DIR.'reserved'.DS.'cache'.DS;
+            $smarty->config_dir   = VIEW_DIR.'reserved'.DS.'conf'.DS;
 
             $smarty->caching = true;
             $smarty->compile_check = true;

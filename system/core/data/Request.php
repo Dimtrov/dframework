@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 /**
@@ -26,8 +26,9 @@
  * @subpackage	Core
  * @category    Data
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       2.1
+ * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/data/Request.php
  */
 

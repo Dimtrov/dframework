@@ -1,1 +1,0 @@
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus adipisci debitis, delectus deleniti doloremque ducimus ea expedita ipsam libero molestias nostrum obcaecati officiis qui recusandae repellat soluta tempore veritatis voluptas.

@@ -1,0 +1,14 @@
+{
+    "text_rest_invalid_api_key"      : "La clef d'API %s est invalide",
+    "text_rest_invalid_credentials"  : "Authentification invalide",
+    "text_rest_ip_denied"            : "IP refusée",
+    "text_rest_ip_unauthorized"      : "IP non-autorisée",
+    "text_rest_unauthorized"         : "Non autorisé",
+    "text_rest_ajax_only"            : "Seul les requêtes AJAX sont autorisées",
+    "text_rest_api_key_unauthorized" : "Cette clef d'API n'a pas accès au contrôleur demandé",
+    "text_rest_api_key_permissions"  : "Cette clef d'API n'a pas les permissions requises",
+    "text_rest_api_key_time_limit"   : "Cette clef d'API a atteint sa limite de temps pour cette méthode",
+    "text_rest_ip_address_time_limit": "Cet adresse IP a atteint sa limite de temps pour cette  method",
+    "text_rest_unknown_method"       : "Méthode inconnue",
+    "text_rest_unsupported"          : "Protocole non-supporté"
+}

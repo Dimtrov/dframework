@@ -6,12 +6,12 @@
  *  Copyright (c) 2019, Dimtrov Sarl
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- *  @package	    dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- *  @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- *  @homepage	    https://dimtrov.hebfree.org/works/dframework
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  */
 
@@ -49,6 +49,7 @@ class Config
         'route'         => APP_DIR.'config'.DS.'route.php',
        
         'email'         => APP_DIR.'config'.DS.'email.php',
+        'rest'          => APP_DIR.'config'.DS.'rest.php',
     ];
 
     /**
@@ -302,14 +303,6 @@ class Config
         /* ----------------
             Parametres de session
         ------------------- */
-        if(!is_string(self::get('data.session.name')))
-        {
-            throw new ConfigException('
-                The <b>data[session][name]</b> configuration is not set correctly: It accept only string values. 
-                <br>
-                Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
-            ');
-        }
         if(!empty(self::get('data.session.cache_limiter')))
         {
             $autorize = ['public', 'private', 'nocache', 'private_no_expire'];

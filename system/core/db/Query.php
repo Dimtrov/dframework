@@ -45,7 +45,10 @@ class Query
 
     private $crud = 'select';
 
-    private $query;
+    /**
+     * @var mixed resultats obtenus d'une requete en BD
+     */
+    private $results = null;
 
     private $fields = [];
     private $conditions = [];
@@ -88,6 +91,7 @@ class Query
         $this->joins = [];
         $this->limit = null;
         $this->crud = 'select';
+        $this->results = null;
         return $this;
     }
 
@@ -343,8 +347,12 @@ class Query
     }
 
 
-
-    protected function getSql()
+    /**
+     * Renvoie le statement d'une requete
+     * 
+     * @return string
+     */
+    protected function getSql() : string
     {
         switch ($this->crud) {
             case 'insert' :
@@ -358,7 +366,162 @@ class Query
         }
     }
 
-    private function getInsert()
+    /**
+     * Recupere tous les resultats d'une requete en BD
+     * 
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function result(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '') : array
+    {
+        return $this->buildResult($mode, $class, $dir);
+    }
+    /**
+     * Recupere le premier resultat d'une requete en BD
+     * 
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function first(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
+    {
+        return $this->result($mode, $class, $dir)[0] ?? null;
+    }
+    /**
+     * Recupere le dernier resultat d'une requete en BD
+     * 
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function last(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
+    {
+        return $this->result($mode, $class, $dir)[-1] ?? null;
+    }
+    /**
+     * Recupere un resultat precis dans les resultat d'une requete en BD
+     * 
+     * @param int $index L'index de l'enregistrement a recupperer
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function row(int $index, int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
+    {
+        return $this->result($mode, $class, $dir)[$index] ?? null;
+    }
+
+
+    
+
+
+    /**
+     * @param string $statement
+     * @param array $datas
+     * @return \PDOStatement|null
+     */
+    public function query(string $statement, array $datas = [])
+    {
+        $pdoStatement = $this->db->pdo()->prepare($statement);
+        foreach ($datas As $key => $value)
+        {
+            $pdoStatement->bindValue(
+                is_int($key) ? $key + 1 : $key,
+                $value,
+                is_int($value) OR is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+            );
+        }
+        $pdoStatement->execute();
+        return $pdoStatement;
+    }
+
+    /**
+     * @return \PDOStatement|null
+     */
+    protected function run()
+    {
+        return $this->query($this->getSql(), $this->params);
+    }
+
+
+    /**
+     * Compile et renvoie un tableau  contenant les resultatas issus de la bD
+     * 
+     * @return array
+     */
+    private function buildResult(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
+    {
+        $query = $this->run();
+        $this->free_db();
+
+        if($mode !== DF_FCLA)
+        {
+            if($mode === DF_FARR)
+            {
+                $query->setFetchMode(PDO::FETCH_ASSOC);
+            }
+            else if ($mode === DF_FNUM)
+            {
+                $query->setFetchMode(PDO::FETCH_NUM);
+            }
+            else
+            {
+                $query->setFetchMode(PDO::FETCH_OBJ);
+            }
+            return $query->fetchAll();
+        }
+        if(empty($class))
+        {
+           Hydrator::Exception('Veuillez specifier la classe a charger');
+        }
+        $records = $query->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($records As $key => $value)
+        {
+            if(!isset($this->h_hidratedRecords[$key]))
+            {
+                $this->h_hidratedRecords[$key] = Hydrator::hydrate($value, $class, $dir);
+            }
+        }
+        return $this->h_hidratedRecords;
+    }
+
+    /**
+     * Compile et renvoie la liste des tables pour le statement des requetes INSERT
+     * 
+     * @return string
+     */
+    private function buildTable() : string
+    {
+        $from = [];
+        foreach ($this->table As $key => $value)
+        {
+            if(is_string($key)) 
+            {
+                $from[] = "$key As $value";
+            }
+            else 
+            {
+                $from[] = $value;
+            }
+        }
+        return join(', ', $from);
+    }
+    
+    /**
+     * Renvoie le statement d'une requete INSERT
+     * 
+     * @return string
+     */
+    private function getInsert() : string
     {
         $parts = ['INSERT INTO'];
         $parts[] = end($this->table);
@@ -376,8 +539,12 @@ class Query
 
         return join(' ', $parts);
     }
-
-    private function getUpdate()
+    /**
+     * Renvoie le statement d'une requete UPDATE
+     * 
+     * @return string
+     */
+    private function getUpdate() : string
     {
         $parts = ['UPDATE'];
         $parts[] = end($this->table);
@@ -400,8 +567,12 @@ class Query
         }
         return join(' ', $parts);
     }
-
-    private function getDelete()
+    /**
+     * Renvoie le statement d'une requete DELETE
+     * 
+     * @return string
+     */
+    private function getDelete() : string
     {
         $parts = ['DELETE FROM'];
         $parts[] = end($this->table);
@@ -413,8 +584,12 @@ class Query
         }
         return join(' ', $parts);
     }
-
-    private function getSelect()
+    /**
+     * Renvoie le statement d'une requete SELECT
+     * 
+     * @return string
+     */
+    private function getSelect() : string
     {
         $parts = ['SELECT'];
         if(!empty($this->fields))
@@ -455,96 +630,6 @@ class Query
             $parts[] = "LIMIT $this->limit";
         }
         return join(' ', $parts);
-    }
-
-
-    /**
-     * @param int $mode
-     * @param null|string $class
-     * @param null|string $dir
-     * @return array
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function result(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = ''): array
-    {
-        $query = $this->run();
-        $this->free_db();
-
-        if($mode !== DF_FCLA)
-        {
-            if($mode === DF_FARR)
-            {
-                $query->setFetchMode(PDO::FETCH_ASSOC);
-            }
-            else if ($mode === DF_FNUM)
-            {
-                $query->setFetchMode(PDO::FETCH_NUM);
-            }
-            else
-            {
-                $query->setFetchMode(PDO::FETCH_OBJ);
-            }
-            $query = $query->fetchAll();
-            return $query;
-        }
-        if(empty($class))
-        {
-           Hydrator::Exception('Veuillez specifier la classe a charger');
-        }
-        $records = $query->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($records As $key => $value)
-        {
-            if(!isset($this->h_hidratedRecords[$key]))
-            {
-                $this->h_hidratedRecords[$key] = Hydrator::hydrate($value, $class, $dir);
-            }
-        }
-        return $this->h_hidratedRecords;
-    }
-    private $h_hidratedRecords = [];
-
-
-    /**
-     * @param string $statement
-     * @param array $datas
-     * @return \PDOStatement|null
-     */
-    public function query(string $statement, array $datas = [])
-    {
-        $pdoStatement = $this->db->pdo()->prepare($statement);
-        foreach ($datas as $key => $value)
-        {
-            $pdoStatement->bindValue(
-                is_int($key) ? $key + 1 : $key,
-                $value,
-                is_int($value) || is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
-            );
-        }
-        $pdoStatement->execute();
-        return $pdoStatement;
-    }
-
-    /**
-     * @return \PDOStatement|null
-     */
-    protected function run()
-    {
-        return $this->query($this->getSql(), $this->params);
-    }
-
-    private function buildTable() : string
-    {
-        $from = [];
-        foreach ($this->table As $key => $value)
-        {
-            if(is_string($key)) {
-                $from[] = "$key As $value";
-            }
-            else {
-                $from[] = $value;
-            }
-        }
-        return join(', ', $from);
     }
 
 

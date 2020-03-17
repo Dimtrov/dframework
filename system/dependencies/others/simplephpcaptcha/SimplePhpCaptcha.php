@@ -23,8 +23,6 @@
 //  See readme.md for usage, demo, and licensing info
 //
 
-namespace dFramework\dependencies\others\simplephpcaptcha;
-
 
 use dFramework\core\exception\Exception;
 use dFramework\core\Helpers;
@@ -35,8 +33,8 @@ class SimplePhpCaptcha
      * @var array  Defaults configurations
      */
     private $config = [
-        'bg_path' => __DIR__ . DIRECTORY_SEPARATOR,
-        'font_path' => __DIR__ . DIRECTORY_SEPARATOR,
+        'bg_path' => __DIR__ . DS . 'backgrounds' .DS,
+        'font_path' => __DIR__ . DS . 'fonts' . DS,
         'min_length' => 5,
         'max_length' => 5,
         'backgrounds' => [
@@ -108,14 +106,17 @@ class SimplePhpCaptcha
             $captcha_code .= substr($captcha_config['characters'], mt_rand() % (strlen($captcha_config['characters'])), 1);
         }
 
-        $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__, 2));
+        $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__, 3));
         $dir = end($dir);
 
-        $image_src = Helpers::instance()->site_url($dir.'/dependencies/simplephpcaptcha/show.php?df_captcha&amp;sid='.urlencode(microtime()));
+        $image_src = Helpers::instance()->site_url($dir.'/dependencies/others/simplephpcaptcha/show.php?df_captcha&amp;sid='.urlencode(microtime()));
 
         $captcha_config['code'] = base64_encode(md5(uniqid()).$captcha_code);
-        $_SESSION['df_captcha']['config'] = serialize($captcha_config);
-        $_SESSION['df_captcha']['code'] = serialize(hash('sha512', $captcha_code));
+
+        $_SESSION['df_security']['captcha'] = [
+            'code' => serialize(hash('sha512', $captcha_code)),
+            'config' => serialize($captcha_config)
+        ];
 
         return $image_src;
 

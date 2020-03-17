@@ -50,20 +50,21 @@
 
 if(isset($_GET['df_captcha']))
 {
-    require_once dirname(__FILE__) . '/securimage.php';
+    require_once __DIR__ . DIRECTORY_SEPARATOR . 'securimage.php';
 
+    session_name('df_app_sessions');
     session_start();
 
-    if(empty($_SESSION['df_captcha']['config']))
+    if(empty($_SESSION['df_security']['captcha']['config']))
     {
         exit;
     }
-    $captcha_config = unserialize($_SESSION['df_captcha']['config']);
+    $captcha_config = unserialize($_SESSION['df_security']['captcha']['config']);
     if(empty($captcha_config) OR !is_array($captcha_config))
     {
         exit;
     }
-    unset($_SESSION['df_captcha']['config']);
+    unset($_SESSION['df_security']['captcha']['config']);
 
 
     $img = new securimage($captcha_config);

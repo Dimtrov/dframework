@@ -43,7 +43,7 @@ class Cache
     /**
      * @var string Repertoire de stockage des fichiers mis en cache
      */
-    private $cache_dir = VIEW_DIR.'__caches'.DS;
+    private $cache_dir = VIEW_DIR . 'reserved' . DS . 'cache' . DS;
 
     /**
      * @var int duree de validite du cache en minute
@@ -53,7 +53,7 @@ class Cache
     /**
      * @var string extension des fichiers de cache
      */
-    private $cache_ext = '.cache';
+    private $cache_ext = '.tmp';
 
     /**
      * @var string

@@ -72,5 +72,7 @@ class Autoloader
         }
     }
 }
+
 \dFramework\Autoloader::load();
-\dFramework\core\dFramework::init();
+
+require_once SYST_DIR . 'constants'.DIRECTORY_SEPARATOR.'constants.php';

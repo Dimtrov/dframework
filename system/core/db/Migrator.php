@@ -26,6 +26,7 @@
  * @category    Db
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since		2.1
  * @file		/system/core/db/Migrator.php
  */
 
@@ -45,7 +46,7 @@ class Migrator
     /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR.'migrations'.DS;
+    private $save_folder = RESOURCE_DIR . 'migrations' . DS;
 
     /**
      * @var string

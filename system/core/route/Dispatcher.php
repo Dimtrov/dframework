@@ -144,7 +144,7 @@ class Dispatcher
      */
     public static function loadController($controllerClassFile, $controllerClass, $method, ?array $parameters = null)
     {
-        if('cli' === \php_sapi_name())
+        if('cli' === php_sapi_name())
         {
             return;
         }

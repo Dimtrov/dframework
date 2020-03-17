@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__.'/../public/.bootstrap.php';
+
+echo "\n *******  Traitement en cours  ******** \n";
+
+$mapper = (new \dFramework\core\loader\ClassMapper)->process();
+
+if($mapper->export_result_in_file(SYST_DIR.'constants'.DS.'.classmap.php'))
+{
+    echo count($mapper->get_result_as_array())." Classes rescencées avec succès\n";
+}
+else 
+{
+    echo 'Une erreur s\'est produite lors du reccueil des classes';
+}
+exit(1);

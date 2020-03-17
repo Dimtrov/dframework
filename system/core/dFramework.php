@@ -7,9 +7,9 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
@@ -40,6 +40,19 @@ class dFramework
 {
     const VERSION = '3.0';
 
+	/**
+	 * @var array Liste des extensions requises pour le fonctionnement du framework
+	 */
+	public static $required_extensions = [
+        'pdo', 
+        'reflection', 
+        'openssl', 
+        'dom', 
+        'xml', 
+        'fileinfo'
+    ];
+	
+	
     /**
      * @throws Exception
      * @throws \ReflectionException
@@ -49,9 +62,7 @@ class dFramework
      */
     public static function init()
     {
-        self::checkPHPVersion('7.0');
-
-        require_once SYST_DIR . 'constants'.DIRECTORY_SEPARATOR.'constants.php';
+        self::checkPHPVersion('7.1');
 
         /**
          * Lance la capture des exceptions et erreurs
@@ -86,7 +97,7 @@ class dFramework
      * Checks if PHP version is compatible and all extension needed are loaded.
      * @param string $minVersion Min supported version.
      */
-    private static function checkPHPVersion($minVersion="5.3.6")
+    private static function checkPHPVersion($minVersion = "7.1")
     {
         if (version_compare(phpversion(), $minVersion, '<'))
         {
@@ -101,8 +112,7 @@ class dFramework
      */
     private static function checkExtension()
     {
-        $extensions = ['pdo', 'reflection'];
-        foreach ($extensions As $extension)
+        foreach (self::$required_extensions As $extension)
         {
             if (!extension_loaded($extension))
             {

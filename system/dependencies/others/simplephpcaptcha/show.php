@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 
@@ -24,6 +24,8 @@
 //  See readme.md for usage, demo, and licensing info
 //
 // Adapter par Dimitric Sitchet Tomkeu pour dFramework
+//
+// Disponible depuis la version 2.1
 
 
 
@@ -60,18 +62,19 @@ if( !function_exists('hex2rgb') )
 // Draw the image
 if( isset($_GET['df_captcha']) )
 {
+    session_name('df_app_sessions');
     session_start();
 
-    if(empty($_SESSION['df_captcha']['config']))
+    if(empty($_SESSION['df_security']['captcha']['config']))
     {
         exit;
     }
-    $captcha_config = unserialize($_SESSION['df_captcha']['config']);
+    $captcha_config = unserialize($_SESSION['df_security']['captcha']['config']);
     if(empty($captcha_config) OR !is_array($captcha_config))
     {
         exit;
     }
-    unset($_SESSION['df_captcha']['config']);
+    unset($_SESSION['df_security']['captcha']['config']);
 
     $captcha_config['code'] = base64_decode($captcha_config['code']);
     $captcha_config['code'] = substr($captcha_config['code'], 32);
@@ -81,7 +84,18 @@ if( isset($_GET['df_captcha']) )
     $background = $captcha_config['bg_path'].$captcha_config['backgrounds'][mt_rand(0, count($captcha_config['backgrounds']) -1)];
 
     // Verify background file exists
-    if( !file_exists($background) ) throw new Exception('Background file not found: ' . $background);
+    if( !file_exists($background)) 
+    {
+        throw new Exception('Background file not found: ' . $background);
+    }
+    // Select font randomly
+    $font = $captcha_config['font_path'].$captcha_config['fonts'][mt_rand(0, count($captcha_config['fonts']) - 1)];
+
+    // Verify font file exists
+    if( !file_exists($font) ) 
+    {
+        throw new Exception('Font file not found: ' . $font);
+    }
 
     list($bg_width, $bg_height, $bg_type, $bg_attr) = getimagesize($background);
 
@@ -92,12 +106,6 @@ if( isset($_GET['df_captcha']) )
 
     // Determine text angle
     $angle = mt_rand( $captcha_config['angle_min'], $captcha_config['angle_max'] ) * (mt_rand(0, 1) == 1 ? -1 : 1);
-
-    // Select font randomly
-    $font = $captcha_config['font_path'].$captcha_config['fonts'][mt_rand(0, count($captcha_config['fonts']) - 1)];
-
-    // Verify font file exists
-    if( !file_exists($font) ) throw new Exception('Font file not found: ' . $font);
 
     //Set the font size.
     $font_size = mt_rand($captcha_config['min_font_size'], $captcha_config['max_font_size']);

@@ -6,7 +6,7 @@ define('BASEPATH', dirname(SYST_DIR).DS);
 
 define('VIEW_DIR', APP_DIR . 'views' . DS);
 
-define('LAYOUT_DIR', APP_DIR . 'layouts' . DS);
+define('LAYOUT_DIR', VIEW_DIR . 'reserved' . DS . 'layouts' . DS);
 
 define('CONTROLLER_DIR', APP_DIR . 'controllers' . DS);
 

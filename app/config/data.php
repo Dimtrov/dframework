@@ -51,7 +51,7 @@ $data['encryption'] = [
      * 
      * @var string
      */
-    'key' => 't568hujkjdfghjudv45rt6y7u3edf3eq',
+    'key'       => 't568hujkjdfghjudv45rt6y7u3edf3eq',
 
     /**
      * ALGO
@@ -59,7 +59,7 @@ $data['encryption'] = [
      * 
      * @var string
      */
-    'algo' => 'CAST5-CBC',
+    'algo'      => 'CAST5-CBC',
 
     /**
      * ADD_HMAC
@@ -67,7 +67,15 @@ $data['encryption'] = [
      * 
      * @var bool
      */
-    'add_hmac' => true,
+    'add_hmac'  => true,
+
+    /**
+     * SALT
+     *  Definit la cle a utiliser comme salt dans le processus d'haschage de mot de passe
+     * 
+     * @var string
+     */
+    'salt'      => '',
 ];
 
 
@@ -78,14 +86,6 @@ $data['encryption'] = [
 | This section will contain the sessions settings of your application.
 */
 $data['session'] = [
-    /**
-     * NAME
-     *  Definit le nom de la session de votre application
-     * 
-     * @var string
-     */
-    'name' => 'df_app',
-
     /**
      * CACHE_LIMITER 
      */

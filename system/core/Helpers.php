@@ -223,6 +223,18 @@ class Helpers
     }
 
 
+
+    /**
+     * Return IP of current user
+     * 
+     * @return string
+     */
+    public function ip_address() : string
+    {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+
     /**
      * @param $url
      * @return string

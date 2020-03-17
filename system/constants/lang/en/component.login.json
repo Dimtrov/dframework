@@ -1,0 +1,16 @@
+{
+    "deja_connecter"            : "You are already logged in. Please refresh the page for continuer.",
+    "remplissez_tous_les_champs": "Please complete all the fields of form.",
+    "entrez_le_login"           : "Please enter the {login}.",
+    "entrez_le_mdp"             : "Please enter the {password}.",
+    "login_mdp_incorrect"       : "incorrect {login} or {password}.",
+    "verifiez_votre_entree"     : "Check your {entry}.",
+    "utilisateur_innexistant"   : "Unknow user in our database.",
+    "mdp_incorrect"             : "The {password} that you have enter is incorrect.",
+    "nbr_tentatives_epuiser"    : "You have -atteint- the maximal number of trying connection. Retry tomorrow.",
+    "nbr_tentatives_restant"    : "Il vous reste {nbr_tentatives} tentative(s).",
+    "essayer_autre_compte"      : "Try with an another {login}.",
+    "mdp_rater_plusieurs_fois"  : "You have faild the {password} more than {nbr_fois} time.",
+    "token_invalide"            : "Invalid token key",
+    "token_innexistant"         : "This form is invalid. We don't have a token key"
+}

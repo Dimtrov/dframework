@@ -15,6 +15,7 @@
  * @version     3.0
  */
 
+namespace dFramework\core\security;
 
 /**
  * Session
@@ -31,7 +32,6 @@
  * @credit      PHP-Session - By Josantonius <https://github.com/Josantonius/PHP-Session>
  */
 
-namespace dFramework\core\security;
 
 use dFramework\core\Config;
 
@@ -79,11 +79,13 @@ class Session
      */
     public static function start() : bool
     {
+        Csrf::instance()->deleteExpires();
+        
         if (self::$sessionStarted === false) 
         {
             $config = Config::get('data.session');
             
-	        session_name($config['name']);
+	        session_name('df_app_sessions');
             session_cache_limiter($config['cache_limiter']);
             session_set_cookie_params(0, '/');
             if('nocache' != $config['cache_limiter'])

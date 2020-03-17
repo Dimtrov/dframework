@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
 /**
@@ -26,6 +26,7 @@
  * @category    Exception
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       2.0
  */
 
 
@@ -56,10 +57,7 @@ class Exception extends \Exception
     public static function init() : void
     {
         set_error_handler(function($level, $message, $file, $line){
-            echo 'Erreur : ' .$message. '<br>';
-            echo 'Niveau de l\'erreur : ' .$level. '<br>';
-            echo 'Erreur dans le fichier : ' .$file. '<br>';
-            echo 'Emplacement de l\'erreur : ' .$line. '<br>';
+            self::_display_error($level, $message, $file, $line);
         });
 
         set_exception_handler(function($exception){
@@ -106,6 +104,16 @@ class Exception extends \Exception
     {
         $this->renderView();
     }
+
+
+
+
+    private static function _display_error($level, $message, $file, $line)
+    {
+        echo '<pre>'.print_r(func_get_args(), true).'</pre>';
+        exit;
+    }
+
 
 
     /**

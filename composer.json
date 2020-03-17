@@ -4,7 +4,7 @@
     "type": "Project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
     "homepage": "https://dimtrov.hebfree.org/works/dframework",
-    "version": "2.1",
+    "version": "3.0",
     "license": "MPL-2",
     "authors": [
         {
@@ -27,8 +27,5 @@
       "psr-4": {
         "App\\": "app\\class"
       }
-    },
-    "scripts": {
-      "mapClasses": "php bin/mapper"
     }
 }
