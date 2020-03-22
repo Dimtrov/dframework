@@ -35,6 +35,7 @@ use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\core\route\Router;
 use dFramework\core\security\Session;
+use MirazMac\Requirements\Checker As envChecker;
 
 class dFramework
 {
@@ -62,7 +63,7 @@ class dFramework
      */
     public static function init()
     {
-        self::checkPHPVersion('7.1');
+        self::checkRequirements();
 
         /**
          * Lance la capture des exceptions et erreurs
@@ -97,28 +98,20 @@ class dFramework
      * Checks if PHP version is compatible and all extension needed are loaded.
      * @param string $minVersion Min supported version.
      */
-    private static function checkPHPVersion($minVersion = "7.1")
+    private static function checkRequirements()
     {
-        if (version_compare(phpversion(), $minVersion, '<'))
+        $checker = (new envChecker)
+            ->requirePhpVersion('>=7.1')
+            ->requirePhpExtensions(self::$required_extensions)
+            ->requireDirectory(SYST_DIR, envChecker::CHECK_IS_READABLE)
+            ->requireDirectory(APP_DIR, envChecker::CHECK_IS_READABLE);
+
+        $output = $checker->check();
+        if (! $checker->isSatisfied()) 
         {
-            echo 'The PHP Version of your server is not compatible with this framework. please use the version <b>'.$minVersion.'</b> or more';
-            exit(3);
+            echo '<h3>An error encourred</h3>';
+            exit(join('<br/> ', $checker->getErrors()));
         }
-        self::checkExtension();
     }
 
-    /**
-     * Verify if all extensions needed are loaded
-     */
-    private static function checkExtension()
-    {
-        foreach (self::$required_extensions As $extension)
-        {
-            if (!extension_loaded($extension))
-            {
-                echo 'Error: <b>'.ucfirst($extension).'</b> Extension is not loaded. Configure PHP with this extension.';
-                exit(3);
-            }
-        }
-    }
 }

@@ -37,6 +37,63 @@ use dFramework\core\exception\Exception;
 
 class Tableau
 {
+    const SORT_ASC = 1;
+
+    CONST SORT_DESC = 2;
+
+    /**
+     * Sort an array in ASC/DESC order relativly to a specific position
+     * 
+     * @param array $data Array to sort
+     * @param string $field String to describe field position
+     * @param int $direction Direction of sort based on class constants
+     * @return array Sorted array
+     */
+    public static function sort(array $data, string $field, int $direction = SORT_ASC)
+    {
+        function getSortField($element, $field)
+        {
+            $field = explode('.', $field);
+                
+            foreach($field As $key) 
+            {
+                if (is_object($element) AND isset($element->$key)) 
+                {
+                    $element = $element->$key;
+                } 
+                elseif (isset($element[$key])) 
+                {
+                    $element = $element[$key];
+                } 
+                else 
+                {
+                    break;
+                }
+            }
+            return $element;
+        }
+        usort($data, function($a, $b) use($field, $direction) {
+            $cmp1 = getSortField($a, $field);
+            $cmp2 = getSortField($b, $field);
+            
+            if ($cmp1 == $cmp2) 
+            {
+                return 0;
+            }
+            if ($direction == self::SORT_ASC) 
+            {
+                return ($cmp1 < $cmp2) ? -1 : 1;
+            } 
+            else 
+            {
+                return ($cmp1 < $cmp2) ? 1 : -1;
+            }
+        });
+
+        return $data;
+    }
+
+
 
     /**
      * Get a single value specified by $path out of $data.

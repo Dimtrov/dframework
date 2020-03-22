@@ -2,6 +2,14 @@
 .vscode
 vendor
 public/css
+public/font
 public/js
 public/img
 public/lib
+app/class
+app/controllers
+app/entities
+app/helpers
+app/libraries
+app/models
+app/resources

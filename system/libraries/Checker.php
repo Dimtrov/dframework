@@ -7,41 +7,35 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
  * @version     3.0
  */
 
 /**
- * Validator
+ * Checker
  *
- * Form Validator
+ * The dFramework datas checker
  *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/Validator.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Checker.html
  * @since       2.0
+ * @file        /system/libraries/Checker.php
  */
 
 
-class dF_Validator
+class dF_Checker
 {
     private $field = [];
 
     private $use_input_field = false;
 
 
-    /**
-     * dF_Validator constructor.
-     */
-    public function __construct()
-    {
-
-    }
 
     /**
      * @param bool $using
@@ -91,118 +85,12 @@ class dF_Validator
     }
 
     /**
-     * Verifie si une donnee est une date valide
-     *
-     * @param $value
-     * @param string $format
-     * @return bool
-     * @throws Exception
-     */
-    public function is_date($value, string $format = 'dd/mm/yyyy')
-    {
-        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
-        $format = strtoupper($format);
-
-        if(in_array($format, ['DMY', 'DDMMYY']))
-        {
-            $day    = substr($value, 0, 2);
-            $month  = substr($value, 2, 2);
-            $year   = substr($value, 4, 2);
-        }
-        else if(in_array($format, ['D/M/Y', 'D:M:Y', 'D-M-Y', 'D_M_Y', 'D M Y', 'D.M.Y']))
-        {
-            $day    = substr($value, 0, 2);
-            $month  = substr($value, 3, 2);
-            $year   = substr($value, 6, 2);
-        }
-        else if(in_array($format, ['MDY', 'MMDDYY']))
-        {
-            $day    = substr($value, 2, 2);
-            $month  = substr($value, 0, 2);
-            $year   = substr($value, 4, 2);
-        }
-        else if(in_array($format, ['M/D/Y', 'M:D:Y', 'M-D-Y', 'M_D_Y', 'M D Y', 'M.D.Y']))
-        {
-            $day    = substr($value, 3, 2);
-            $month  = substr($value, 0, 2);
-            $year   = substr($value, 6, 2);
-        }
-        else if(in_array($format, ['YMD', 'YYMMDD']))
-        {
-            $day    = substr($value, 4, 2);
-            $month  = substr($value, 2, 2);
-            $year   = substr($value, 0, 2);
-        }
-        else if(in_array($format, ['Y/M/D', 'Y:M:D', 'Y-M-D', 'Y_M_D', 'Y M D', 'Y.M.D']))
-        {
-            $day    = substr($value, 6, 2);
-            $month  = substr($value, 3, 2);
-            $year   = substr($value, 0, 2);
-        }
-        else if(in_array($format, ['DDMMYYYY']))
-        {
-            $day    = substr($value, 0, 2);
-            $month  = substr($value, 2, 2);
-            $year   = substr($value, 4, 4);
-        }
-        else if(in_array($format, ['DD/MM/YYYY','DD:MM:YYYY','DD-MM-YYYY','DD_MM_YYYY','DD MM YYYY','DD.MM.YYYY']))
-        {
-            $day    = substr($value, 0, 2);
-            $month  = substr($value, 3, 2);
-            $year   = substr($value, 6, 4);
-        }
-        else if(in_array($format, ['MMDDYYYY']))
-        {
-            $day    = substr($value, 2, 2);
-            $month  = substr($value, 0, 2);
-            $year   = substr($value, 4, 4);
-        }
-        else if(in_array($format, ['MM/DD/YYYY', 'MM:DD:YYYY', 'MM-DD-YYYY', 'MM_DD_YYYY', 'MM DD YYYY', 'MM.DD.YYYY']))
-        {
-            $day    = substr($value, 3, 2);
-            $month  = substr($value, 0, 2);
-            $year   = substr($value, 6, 4);
-        }
-        else if(in_array($format, ['YYYYMMDD']))
-        {
-            $day    = substr($value, 6, 2);
-            $month  = substr($value, 4, 2);
-            $year   = substr($value, 0, 4);
-        }
-        else if(in_array($format, ['YYYY/MM/DD','YYYY:MM:DD','YYYY-MM-DDDD','YYYY_MM_DD','YYYY MM DDDD','YYYY.MM.DD']))
-        {
-            $day    = substr($value, 8, 2);
-            $month  = substr($value, 5, 2);
-            $year   = substr($value, 0, 4);
-        }
-        else
-        {
-            throw new Exception('Unsupported type of format for the date. Please see the manual for more information');
-        }
-        $day = (int) $day; $month = (int) $month; $year = (int) $year;
-
-        if($month < 1 OR $month > 12)
-        {
-            return false;
-        }
-        if(in_array($month, [1, 3, 5, 7, 8, 10, 12]))
-        {
-            return ($day >= 1 AND $day <= 31);
-        }
-        if ($month == 2)
-        {
-            return (($day >= 1 AND $day <= 28) OR ($day == 29 AND ($year % 4) == 0));
-        }
-        return ($day >= 1 AND $day <= 30);
-    }
-
-
-    /**
      * Verifie si une donne ne contient que des caractere alphabetique ou que c'est un tableau qui n'a que des caractere aphabetique
+     * 
      * @param string|array $value
      * @return bool
      */
-    public function is_alpha($value) : bool
+    public function is_alpha($value)
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         if(is_array($value))
@@ -228,7 +116,6 @@ class dF_Validator
         }
         return false;
     }
-
     /**
      * Verifie si une donne ne contient que des caractere alphanumerique ou que c'est un tableau qui n'a que des caractere aphanumerique
      *
@@ -260,6 +147,58 @@ class dF_Validator
             return ($strlen > 0 AND preg_match("#^(?:[[:alnum:]]){".$strlen."}$#", $value));
         }
         return false;
+    }
+
+    /**
+     * Verifie si une donnee est une date de naissance valide
+     *
+     * @param $value
+     * @param string $format
+     * @return bool
+     */
+    public function is_birthday($value, $format = 'dd/mm/yyyy')
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+
+        if(true !== $this->is_date($value, $format)) 
+        {
+            return false;
+        }
+        
+        $date = self::formatDate($value, $format);        
+        rsort($date);
+        $date = implode('-', $date);
+        
+        return ((new DateTime()) > (new DateTime($date)));
+    }
+    /**
+     * Verifie si une donnee est une date valide
+     *
+     * @param $value
+     * @param string $format
+     * @return bool
+     * @throws Exception
+     */
+    public function is_date($value, string $format = 'dd/mm/yyyy')
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+
+        list($day, $month, $year) = self::formatDate($value, $format);        
+        $day = (int) $day; $month = (int) $month; $year = (int) $year;
+
+        if($month < 1 OR $month > 12)
+        {
+            return false;
+        }
+        if(in_array($month, [1, 3, 5, 7, 8, 10, 12]))
+        {
+            return ($day >= 1 AND $day <= 31);
+        }
+        if ($month == 2)
+        {
+            return (($day >= 1 AND $day <= 28) OR ($day == 29 AND ($year % 4) == 0));
+        }
+        return ($day >= 1 AND $day <= 30);
     }
 
     /**
@@ -316,7 +255,8 @@ class dF_Validator
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
 
-        if($natif === true) {
+        if($natif === true) 
+        {
             return !(filter_var($value, FILTER_VALIDATE_URL) === false);
         }
         // Regex realisée par Scott Gonzalez: http://projects.scottsplayground.com/iri/
@@ -408,6 +348,11 @@ class dF_Validator
                 $message = ($status === true) ? 'Ok' : 'La donnée demandée n\'existe pas dans les entrées';
             }
 
+            if(preg_match('#^is_birthday\[(.+)\]$#isU', $function, $params))
+            {
+                $status = $this->is_birthday($input, $params[1]); $code = 1;
+                $message = ($status === true) ? 'Ok' : 'Entrez une date de naissance valide';
+            }
             if(preg_match('#^is_date\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_date($input, $params[1]); $code = 1;
@@ -469,4 +414,90 @@ class dF_Validator
         return $status;
     }
 
+
+
+
+    private static function formatDate($date, $format)
+    {
+        $format = strtoupper($format);
+
+        if(in_array($format, ['DMY', 'DDMMYY']))
+        {
+            $day    = substr($date, 0, 2);
+            $month  = substr($date, 2, 2);
+            $year   = substr($date, 4, 2);
+        }
+        else if(in_array($format, ['D/M/Y', 'D:M:Y', 'D-M-Y', 'D_M_Y', 'D M Y', 'D.M.Y']))
+        {
+            $day    = substr($date, 0, 2);
+            $month  = substr($date, 3, 2);
+            $year   = substr($date, 6, 2);
+        }
+        else if(in_array($format, ['MDY', 'MMDDYY']))
+        {
+            $day    = substr($date, 2, 2);
+            $month  = substr($date, 0, 2);
+            $year   = substr($date, 4, 2);
+        }
+        else if(in_array($format, ['M/D/Y', 'M:D:Y', 'M-D-Y', 'M_D_Y', 'M D Y', 'M.D.Y']))
+        {
+            $day    = substr($date, 3, 2);
+            $month  = substr($date, 0, 2);
+            $year   = substr($date, 6, 2);
+        }
+        else if(in_array($format, ['YMD', 'YYMMDD']))
+        {
+            $day    = substr($date, 4, 2);
+            $month  = substr($date, 2, 2);
+            $year   = substr($date, 0, 2);
+        }
+        else if(in_array($format, ['Y/M/D', 'Y:M:D', 'Y-M-D', 'Y_M_D', 'Y M D', 'Y.M.D']))
+        {
+            $day    = substr($date, 6, 2);
+            $month  = substr($date, 3, 2);
+            $year   = substr($date, 0, 2);
+        }
+        else if(in_array($format, ['DDMMYYYY']))
+        {
+            $day    = substr($date, 0, 2);
+            $month  = substr($date, 2, 2);
+            $year   = substr($date, 4, 4);
+        }
+        else if(in_array($format, ['DD/MM/YYYY','DD:MM:YYYY','DD-MM-YYYY','DD_MM_YYYY','DD MM YYYY','DD.MM.YYYY']))
+        {
+            $day    = substr($date, 0, 2);
+            $month  = substr($date, 3, 2);
+            $year   = substr($date, 6, 4);
+        }
+        else if(in_array($format, ['MMDDYYYY']))
+        {
+            $day    = substr($date, 2, 2);
+            $month  = substr($date, 0, 2);
+            $year   = substr($date, 4, 4);
+        }
+        else if(in_array($format, ['MM/DD/YYYY', 'MM:DD:YYYY', 'MM-DD-YYYY', 'MM_DD_YYYY', 'MM DD YYYY', 'MM.DD.YYYY']))
+        {
+            $day    = substr($date, 3, 2);
+            $month  = substr($date, 0, 2);
+            $year   = substr($date, 6, 4);
+        }
+        else if(in_array($format, ['YYYYMMDD']))
+        {
+            $day    = substr($date, 6, 2);
+            $month  = substr($date, 4, 2);
+            $year   = substr($date, 0, 4);
+        }
+        else if(in_array($format, ['YYYY/MM/DD','YYYY:MM:DD','YYYY-MM-DDDD','YYYY_MM_DD','YYYY MM DDDD','YYYY.MM.DD']))
+        {
+            $day    = substr($date, 8, 2);
+            $month  = substr($date, 5, 2);
+            $year   = substr($date, 0, 4);
+        }
+        else
+        {
+            throw new Exception('Unsupported type of format for the date. Please see the manual for more information');
+        }
+
+        return [$day, $month, $year];
+    }
 }

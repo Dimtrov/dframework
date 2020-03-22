@@ -1,0 +1,6 @@
+<?php
+echo "\n ***** dFravmework v3 ***** \n";
+echo "\n Serveur en cours de demarrage ... \n";
+system('php -S localhost:'.$port.' -t public');
+echo "\n Le serveur a demarré. Veuillez ouvrir votre navigateur a l'adresse <http://localhost:".$port."> \n";
+system('ECHO OFF');

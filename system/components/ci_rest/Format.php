@@ -15,7 +15,7 @@
  * @version     3.0
  */
 
-namespace dFramework\components\rest;
+namespace dFramework\components\ci_rest;
 
 /**
  * REST Format class
