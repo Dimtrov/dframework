@@ -1,18 +1,34 @@
 #!/usr/bin/env php
 <?php
 
+
+
 require_once __DIR__.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'.bootstrap.php';
 
 
-$app = new Ahc\Cli\Application('dFramework', '3.0.0');
+$app = new Ahc\Cli\Application('dFramework', 'v3.0.0');
+
+$app->add(new dFramework\core\cli\Server);
+
+
+
+/* 
 
 $app
-    ->command('start', 'Start the PHP Dev Server for development of your application', 's')
+    ->command('start', 'Demarre le serveur interne de PHP pour le developpement de votre application', 's')
         ->arguments('[port]', 'Le port sur lequel vous souhaitez lancer votre serveur de developpement')
         ->action(function($port) {
             $port = (empty($port) OR !is_numeric($port)) ? 3200 : intval($port);
 
             include_once __DIR__.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.'start-server';
-        });
+        })
+        ->tap()
+    ->command('mapdep', 'Map et ajoute les classes des dependances du framework au fichier d\'autoloader')
+        ->action(function() {
 
+        });
+ */
+
+ 
+$app->logo('Ascii art logo of your app');
 $app->handle($_SERVER['argv']);

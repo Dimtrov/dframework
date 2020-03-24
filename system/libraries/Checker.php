@@ -18,13 +18,13 @@
 /**
  * Checker
  *
- * The dFramework datas checker
+ * The native dFramework datas checker
  *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Checker.html
- * @since       2.0
+ * @since       1.0
  * @file        /system/libraries/Checker.php
  */
 
@@ -49,7 +49,9 @@ class dF_Checker
 
 
     /**
-     * @param string ...$vars
+     * Verifie si un champ existe(et n'est pas vide) parmi les champs utilisés par le validateur
+     * 
+     * @param string ...$vars Liste des champs à vérifier l'existance
      * @return bool
      */
     public function inField(string ...$vars)
@@ -67,8 +69,10 @@ class dF_Checker
     }
 
     /**
-     * @param $value
-     * @param array|string $array
+     * Verifie si une valeur existe dans un tableau ou une chaine separée par des point-virgules
+     * 
+     * @param mixed $value Valeur que l'on souhaite verifier l'existance
+     * @param array|string $array tableau de valeur ou chaine de valeurs séparées par des points-virgule 
      * @return bool
      * @throws Exception
      */
@@ -87,7 +91,7 @@ class dF_Checker
     /**
      * Verifie si une donne ne contient que des caractere alphabetique ou que c'est un tableau qui n'a que des caractere aphabetique
      * 
-     * @param string|array $value
+     * @param string|array $value Donnée à verifier
      * @return bool
      */
     public function is_alpha($value)
@@ -95,7 +99,7 @@ class dF_Checker
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         if(is_array($value))
         {
-            foreach ($value as $k => $v)
+            foreach ($value As $k => $v)
             {
                 if(!is_string($v))
                 {
@@ -119,7 +123,7 @@ class dF_Checker
     /**
      * Verifie si une donne ne contient que des caractere alphanumerique ou que c'est un tableau qui n'a que des caractere aphanumerique
      *
-     * @param string|array $value
+     * @param string|array $value Donnée à verifier
      * @return bool
      */
     public function is_alphanum($value)
@@ -152,8 +156,8 @@ class dF_Checker
     /**
      * Verifie si une donnee est une date de naissance valide
      *
-     * @param $value
-     * @param string $format
+     * @param string $value Donnée à verifier
+     * @param string $format Format de la date
      * @return bool
      */
     public function is_birthday($value, $format = 'dd/mm/yyyy')
@@ -174,8 +178,8 @@ class dF_Checker
     /**
      * Verifie si une donnee est une date valide
      *
-     * @param $value
-     * @param string $format
+     * @param string $value Donnée à verifier
+     * @param string $format Format de la date
      * @return bool
      * @throws Exception
      */
@@ -204,7 +208,7 @@ class dF_Checker
     /**
      * Verifie si une donnee est une adresse email valide
      *
-     * @param mixed $value
+     * @param mixed $value 
      * @return bool
      */
     public function is_email($value)

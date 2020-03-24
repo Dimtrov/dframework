@@ -32,9 +32,9 @@
 
 namespace dFramework\core\exception;
 
-
-
 use Throwable;
+use Whoops\Handler\PrettyPageHandler;
+use Whoops\Run;
 
 class Exception extends \Exception
 {
@@ -55,25 +55,10 @@ class Exception extends \Exception
      *
      */
     public static function init() : void
-    {
-        set_error_handler(function($level, $message, $file, $line){
-            self::_display_error($level, $message, $file, $line);
-        });
-
-        set_exception_handler(function($exception){
-            $refletion = new \ReflectionClass($exception);
-            $namespace = $refletion->getNamespaceName();
-
-            if(strpos($namespace, __NAMESPACE__) !== false)
-            {
-                $exception->__toString();
-            }
-            else
-            {
-                echo "Exception non attrapée : " , $exception->getMessage(), "<br><br>";
-                echo "File : " , $exception->getFile(), " -- ", $exception->getLine() , "<br>";
-            }
-        });
+    {   
+        $whoops  =  new Run();
+        $whoops->pushHandler(new PrettyPageHandler); 
+        $whoops->register();
     }
 
 
@@ -106,13 +91,6 @@ class Exception extends \Exception
     }
 
 
-
-
-    private static function _display_error($level, $message, $file, $line)
-    {
-        echo '<pre>'.print_r(func_get_args(), true).'</pre>';
-        exit;
-    }
 
 
 

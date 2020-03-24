@@ -330,8 +330,6 @@ class Dispatcher
                 }
             }
         }
-        // Sets a session variable for storing latest executed controller, method and parameters
-        $this->bindControllerToSession();
     }
 
     /**
@@ -357,27 +355,4 @@ class Dispatcher
         return $str;
     }
 
-    /**
-     * Binds current controller and all its parameters into an appropriate
-     * session's variable.
-     *
-     * @note We use this useful session variable to perform some
-     * user actions like browser history back action.
-     */
-    private function bindControllerToSession()
-    {
-        $last_executed_controller = $this->controllerSEOClassName;
-        $last_executed_method = strtolower($this->method);
-        $last_executed_parameters = @implode("/", $this->methodParameters);
-        @$get = $_GET;
-        unset($get["getState"]);
-        unset($get["url"]);
-        $last_get_parameters = @http_build_query($get);
-        @$post = $_POST;
-        unset($post["getState"]);
-        unset($post["url"]);
-        $last_post_parameters = @http_build_query($post);
-        $latest= array($last_executed_method,$last_executed_parameters,$last_get_parameters,$last_post_parameters);
-        $_SESSION[$last_executed_controller] = serialize($latest);
-    }
 }
