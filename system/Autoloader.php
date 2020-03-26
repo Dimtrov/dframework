@@ -15,6 +15,7 @@
  * @version     3.0
  */
 
+namespace dFramework;
 
 /**
  * Autoloader
@@ -26,10 +27,6 @@
  * @subpackage	null
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  */
-
-
-namespace dFramework;
-
 
 class Autoloader
 {
@@ -50,7 +47,7 @@ class Autoloader
     {
         if(strpos($input, __NAMESPACE__ . '\\') !== false)
         {
-            $input = str_replace('dFramework\\', '', $input);
+            $input = str_replace(__NAMESPACE__ . '\\', '', $input);
             $input = explode('\\', $input);
 
             $class = array_pop($input);

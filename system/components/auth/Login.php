@@ -15,7 +15,17 @@
  * @version     3.0
  */
 
+ 
 namespace dFramework\components\auth;
+
+use dFramework\core\db\Query;
+use dFramework\core\security\Session;
+use dFramework\core\security\Csrf;
+use dFramework\core\utilities\Utilities;
+use dFramework\core\data\Request;
+use dFramework\core\Helpers;
+use dFramework\core\loader\Load;
+
 
 /**
  * Login
@@ -30,16 +40,6 @@ namespace dFramework\components\auth;
  * @since       2.2
  * @file        /system/components/auth/Login.php
  */
-
-
-use dFramework\core\db\Query;
-use dFramework\core\security\Session;
-use dFramework\core\security\Csrf;
-use dFramework\core\utilities\Utilities;
-use dFramework\core\data\Request;
-use dFramework\core\Helpers;
-use dFramework\core\loader\Load;
-
 
 class Login
 {   
@@ -297,7 +297,12 @@ class Login
         return true;
     }
 
-
+    /**
+     * Verifie si on n'essaie pas une attaque par brute force avec un login precis
+     * 
+     * @param string $login
+     * @return bool
+     */
     public function bruteForce($login) : bool
     {
         if(!is_int($this->_params['failed_login_attempts']) OR $this->_params['failed_login_attempts'] < 1)
@@ -351,25 +356,7 @@ class Login
      */
     protected function load_from_session()
     {
-        $auth_session = Session::get('auth');
-        if(empty($auth_session))
-        {
-            $this->logout();
-        }
-        else if(empty($auth_session['login']) OR empty($auth_session['password']))
-        {
-            $this->logout();
-        }
-        else if(empty($auth_session['uid']) OR empty($auth_session['ip']) OR $auth_session['ip'] !== Helpers::instance()->ip_address())
-        {
-            $this->logout();
-        }
-        else if(1 < $this->_params['inactivity_timeout'] AND (empty($auth_session['expire_on']) OR time() >= $auth_session['expire_on']))
-        {
-            $this->logout();
-        }
-        else 
-        {
+        $this->checkSession(function($auth_session) {
             if(1 < $this->_params['inactivity_timeout'])
             {
                 Session::set('auth.expire_on', time() + (60 * $this->_params['inactivity_timeout']));
@@ -378,7 +365,7 @@ class Login
                 'login'    => $auth_session['login'],
                 'password' => $auth_session['password'],
             ];
-        }
+        });
     }
 
     /**
@@ -390,15 +377,17 @@ class Login
     protected function save_session($login, $password)
     {
         $this->_user = [
-            'login' => $login,
+            'login'    => $login,
             'password' => $password
         ];
         $auth = [
             'login'    => $login,
             'password' => $password,
-    
-            'uid'   => sha1(uniqid('', true) . '_' . mt_rand()),
-            'ip' => Helpers::instance()->ip_address()
+
+            'uid'      => sha1(uniqid('', true) . '_' . mt_rand()),
+            'uua'      => sha1($_SERVER['HTTP_USER_AGENT']),
+            'ure'      => sha1(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)),
+            'uip'      => Helpers::instance()->ip_address(),
         ];
         if(1 < $this->_params['inactivity_timeout'])
         {
@@ -444,6 +433,44 @@ class Login
             return false;
         }
         return true;
+    }
+
+
+    private function checkSession(callable $callback)
+    {
+        $auth_session = Session::get('auth');
+        if(empty($auth_session))
+        {
+            $this->logout();
+        }
+        else if(empty($auth_session['login']) OR empty($auth_session['password']))
+        {
+            $this->logout();
+        }
+        else if(empty($auth_session['uid']))
+        {
+            $this->logout();
+        }
+        else if(empty($auth_session['uip']) OR $auth_session['uip'] !== Helpers::instance()->ip_address())
+        {
+            $this->logout();
+        }
+        else if(empty($auth_session['uua']) OR $auth_session['uua'] !== sha1($_SERVER['HTTP_USER_AGENT']))
+        {
+            $this->logout();
+        }
+        else if(empty($auth_session['ure']) OR $auth_session['ure'] !== sha1(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)))
+        {
+            $this->logout();
+        }
+        else if(1 < $this->_params['inactivity_timeout'] AND (empty($auth_session['expire_on']) OR time() >= $auth_session['expire_on']))
+        {
+            $this->logout();
+        }
+        else 
+        {
+            call_user_func_array($callback, $auth_session);
+        }        
     }
 
     /**

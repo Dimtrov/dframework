@@ -7,20 +7,25 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.0
  */
+
+
+namespace dFramework\core\db;
+
+use dFramework\core\exception\DatabaseException;
+use dFramework\core\exception\Exception;
 
 /**
  * Migrator
  *
  * Database version manager
  *
- * @class       Migrator
  * @package		dFramework
  * @subpackage	Core
  * @category    Db
@@ -30,11 +35,6 @@
  * @file		/system/core/db/Migrator.php
  */
 
-namespace dFramework\core\db;
-
-
-use dFramework\core\exception\DatabaseException;
-use dFramework\core\exception\Exception;
 
 class Migrator
 {
@@ -64,6 +64,8 @@ class Migrator
     }
 
     /**
+     * Sauvegarde une base de donnee
+     * 
      * @param string $version
      */
     public function down(string $version)
@@ -118,6 +120,7 @@ class Migrator
 
     /**
      * suppression des anciennes sauvegardes
+     * 
      * @param int $duration Ancienneté des fichiers à conserver en minute
      */
     public function deleteOldFile(int $duration = 7200)

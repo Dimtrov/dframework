@@ -1,36 +1,59 @@
 <?php
+/**
+ *  dFramework
+ *
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.0
+ */
+
 
 namespace dFramework\core;
 
 use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
-use dFramework\dependencies\envms\fluentpdo\Query as FluentQuery;
+use Envms\FluentPDO\Query as FluentPDOQuery;
+
 
 /**
- * Membres
+ * Model
+ *
+ * A global model of application
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       1.0
+ * @file		/system/core/Model.php
  */
+
 class Model extends Query
 {
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * @var FluentQuery|null
      */
     private $fluent = null;
 
     /**
-     * @return FluentQuery|null
+     * Renvoie une instance de l'objet FluentPDO a utiliser pour faire des query builder avances
+     * 
+     * @return FluentPDOQuery|null
      */
     public function fluent()
     {
         if(null === $this->fluent)
         {
             try {
-                $this->fluent = new FluentQuery($this->db->pdo());
+                $this->fluent = new FluentPDOQuery($this->db->pdo());
             }
             catch (\Exception $e) {
                 die('Impossible de charger &laquo;<b> FluentPDO </b>&raquo; : ' . $e->getMessage());
@@ -45,6 +68,8 @@ class Model extends Query
     private $migrator = null;
 
     /**
+     * Retourne l'objet Migrator pour faire les migrations des bases de donnees
+     * 
      * @return Migrator|null
      */
     protected function migrator() : ?Migrator
@@ -63,6 +88,7 @@ class Model extends Query
 
     /**
      * Do backup for database
+     * 
      * @param string $version
      */
     public function downDbTo(string $version)
@@ -85,7 +111,7 @@ class Model extends Query
     /**
      *  Returns the last inserted id.
      *
-     * @param $name
+     * @param string|null $name Nom de la table dans laquelle on veut recuperer le dernier Id
      * @return string
      */
     public function lastId($name = null)
@@ -115,18 +141,18 @@ class Model extends Query
 
 
     /**
-     * @param $key
-     * @param $value
-     * @param $table
+     * Verifie s'il existe un champ avec une donnee specifique dans une table de la base de donnee
+     * 
+     * @param string $key Le nom du champ de la table
+     * @param mixed $value La valeur recherchee
+     * @param string $table La table dans laquelle on veut faire la recherche
      * @return bool
      */
-    public function exist($key, $value, $table)
+    public function exist(string $key, $value, string $table) : bool
     {
         return $this->free_db()->from($table)
                 ->where($key . ' = ?')->params([$value])
                 ->count() > 0;
     }
-
-
 
 }

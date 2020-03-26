@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * dFramework
@@ -11,12 +12,18 @@
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @link	    https://dimtrov.hebfree.org/works/dframework
  * @version     3.0
  */
 
+require_once __DIR__.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'.bootstrap.php';
 
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.php';
+$app = new Ahc\Cli\Application('dFramework', \dFramework\core\dFramework::VERSION);
 
-dFramework\core\dFramework::init();
+$app
+    ->add(new dFramework\core\cli\Server, 'serve')
+    ->add(new \dFramework\core\cli\Mapper, 'map');
+ 
+$app->logo(file_get_contents(SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'df-ascii-logo.txt'));
+$app->handle($_SERVER['argv']);

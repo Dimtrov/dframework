@@ -1,15 +1,45 @@
-<?php 
+<?php
+/**
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019, Dimtrov Sarl
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @link	    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.0
+ */
+
 
 namespace dFramework\core\cli;
 
+use Ahc\Cli\Helper\Shell;
 use Ahc\Cli\Input\Command;
-use Ahc\Cli\Output\Color;
+use Ahc\Cli\Output\Writer;
 
+
+/**
+ * Server
+ *
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Cli
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
+ * @since       3.0
+ * @file        /system/core/cli/Server.php
+ */
 class Server extends Command
 {
     public function __construct()
     {
-        parent::__construct('Server');
+        parent::__construct('server', 'Service de lancement du serveur de developpemt');
 
         $this
             ->argument('[port]', 'Le port sur lequel vous souhaitez demarrer le serveur. 3200 par defaut', 3200)
@@ -22,22 +52,26 @@ class Server extends Command
             );
     }
 
-    // When app->handle() locates `init` command it automatically calls `execute()`
-    // with correct $ball and $apple values
     public function execute($port)
     {
         $port = str_replace(['port=', 'p='], '', $port);
         $port = (empty($port) OR !is_numeric($port)) ? 3200 : intval($port);
+        try{
+            $io = $this->app()->io();
+            $writer = new Writer;
 
-        $io = $this->app()->io();
-        $color = New Color;
-
-        $io->write($color->info("\nServeur en cours de demarrage\n"), true);
-
-        system('php -S localhost:'.$port);
-
-        $io->write($color->ok("\nLe serveur a demarré. Veuillez ouvrir votre navigateur a l'adresse <http://localhost:".$port.">\n"), true);
-
-        system('ECHO OFF');
+            $io->write("\n ---- Serveur en cours de démarrage ----", true);
+            $writer->colors("\t <blue> Le serveur a démarré avec succès. </end><eol>\t  <white>Veuillez ouvrir votre navigateur a l'adresse</end> <boldGreen><http://localhost:".$port."></end><eol>");
+            $writer->bold->colors("\n\t<bgGreen> dFramework v3.0.0 </end></eol>");
+            
+            $shell = new Shell('php -S localhost:'.$port.' -t public');
+            $shell->setOptions(dirname(\WEBROOT), null, 10.5)->execute()->isRunning();
+            
+            $shell->stop();
+            $shell->kill();
+        }
+        catch(\Exception $e) { }
+        
+        return true;
     }
 }

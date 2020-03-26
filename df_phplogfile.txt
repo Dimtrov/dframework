@@ -1,2 +1,12 @@
 [17-Mar-2020 16:09:37 UTC] PHP Fatal error:  Class dFramework\components\rest\Controller contains 1 abstract method and must therefore be declared abstract or implement the remaining methods (dFramework\core\Controller::index) in E:\Codes-sources\dimtrov.dev\www\dframework\system\components\rest\Controller.php on line 8
 [17-Mar-2020 16:10:31 UTC] PHP Fatal error:  Class dFramework\components\rest\Controller contains 1 abstract method and must therefore be declared abstract or implement the remaining methods (dFramework\core\Controller::index) in E:\Codes-sources\dimtrov.dev\www\dframework\system\components\rest\Controller.php on line 8
+[24-Mar-2020 16:11:58 UTC] PHP Warning:  Uncaught Whoops\Exception\ErrorException: require_once(E:\Codes-sources\dimtrov.dev\www\dframework\app\views\home\a.php): failed to open stream: No such file or directory in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php:128
+Stack trace:
+#0 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(128): Whoops\Run->handleError(2, 'require_once(E:...', 'E:\\Codes-source...', 128, Array)
+#1 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(128): require_once()
+#2 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(64): dFramework\core\output\View->create()
+#3 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\Controller.php(132): dFramework\core\output\View->__construct('a', Array, 'home')
+#4 E:\Codes-sources\dimtrov.dev\www\dframework\app\controllers\HomeController.php(10): dFramework\core\Controller->view('a')
+#5 [internal function]: HomeController->index()
+#6 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\route\Dis in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 128
+[24-Mar-2020 16:11:59 UTC] PHP Fatal error:  dFramework\core\output\View::create(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dframework\app\views\home\a.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 128

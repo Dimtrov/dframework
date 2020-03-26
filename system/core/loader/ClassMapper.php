@@ -7,21 +7,27 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  *
  */
 
+
+namespace dFramework\core\loader;
+
+use dFramework\core\Config;
+use dFramework\core\exception\Exception;
+
+
 /**
  * ClassMapper
  *
  *  Load a file the application require
  *
- * @class       ClassMapper
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
@@ -29,13 +35,6 @@
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.0
  */
-
-namespace dFramework\core\loader;
-
-
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
-
 class ClassMapper 
 {
 	/**

@@ -1,6 +1,4 @@
 <?php
-namespace dFramework\dependencies\others\createzip;
-
 /**
  * Class to dynamically create a zip file (archive) of file(s) and/or directory
  *

@@ -291,6 +291,4 @@ class Session
         return false;
     }
 
-
-
 }

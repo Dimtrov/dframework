@@ -15,12 +15,16 @@
  *  @version    3.0
  */
 
+
+namespace dFramework\core;
+
+use dFramework\core\exception\ConfigException;
+
 /**
  * Config
  *
- * Configuration of application
+ * Make, Get and Set the configurations of application
  *
- * @class       Config
  * @package		dFramework
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
@@ -28,11 +32,6 @@
  * @since       1.0
  * @file		/system/core/Config.php
  */
-
-namespace dFramework\core;
-
-use dFramework\core\exception\ConfigException;
-
 
 class Config
 {
