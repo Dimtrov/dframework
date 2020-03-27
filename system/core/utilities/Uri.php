@@ -1,57 +1,39 @@
 <?php
 /**
- * CodeIgniter
+ * dFramework
  *
- * An open source application development framework for PHP
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019, Dimtrov Sarl
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014 - 2018, British Columbia Institute of Technology
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package	CodeIgniter
- * @author	EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
- * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
- * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
- * @since	Version 1.0.0
- * @filesource
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @homepage	https://dimtrov.hebfree.org/works/dframework
+ * @version     3.0
  */
 
  namespace dFramework\core\utilities;
+
+ use dFramework\core\Config;
+
 
 /**
  * URI Class
  *
  * Parses URIs and determines routing
  *
- * @package		CodeIgniter
- * @subpackage	Libraries
- * @category	URI
- * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/libraries/uri.html
+ * @package		dFramework
+ * @subpackage	Core
+ * @category	Utilities
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since		3.0
+ * @credit		CodeIgniter - https://codeigniter.com/user_guide/libraries/uri.html - EllisLab Dev Team
+ * @file		/system/core/utilities/Uri.php
  */
- 
- use dFramework\core\Config;
- 
  
 class Uri {
 
@@ -538,8 +520,8 @@ class Uri {
 	 *
 	 * Fetches an URI Segment and adds a slash to it.
 	 *
-	 * @used-by	CI_URI::slash_segment()
-	 * @used-by	CI_URI::slash_rsegment()
+	 * @used-by	Uri::slash_segment()
+	 * @used-by	Uri::slash_rsegment()
 	 *
 	 * @param	int	$n	Index
 	 * @param	string	$where	Where to add the slash ('trailing' or 'leading')
@@ -561,9 +543,6 @@ class Uri {
 
 		return $leading.$this->$which($n).$trailing;
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Segment Array
 	 *
@@ -573,9 +552,6 @@ class Uri {
 	{
 		return $this->segments;
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Routed Segment Array
 	 *
@@ -585,9 +561,6 @@ class Uri {
 	{
 		return $this->rsegments;
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Total number of segments
 	 *
@@ -597,9 +570,6 @@ class Uri {
 	{
 		return count($this->segments);
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Total number of routed segments
 	 *
@@ -609,21 +579,15 @@ class Uri {
 	{
 		return count($this->rsegments);
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Fetch URI string
 	 *
-	 * @return	string	CI_URI::$uri_string
+	 * @return	string	
 	 */
 	public function uri_string()
 	{
 		return $this->uri_string;
 	}
-
-	// --------------------------------------------------------------------
-
 	/**
 	 * Fetch Re-routed URI string
 	 *

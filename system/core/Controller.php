@@ -277,6 +277,7 @@ abstract class Controller
     private function autoloadLibraries()
     {
         $libraries = (array) Config::get('autoload.libraries');
+
         foreach ($libraries As $key => $value)
         {
             if(is_string($key) AND is_string($value))
@@ -288,6 +289,8 @@ abstract class Controller
                 $this->loadLibrary($value);
             }
         }
+
+        $this->loadLibrary('Debug');
     }
 
 

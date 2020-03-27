@@ -258,14 +258,8 @@ class Config
                     Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
                 ');
         }
-
-
-        if (!empty(self::$_config['data']['log_file']) AND is_string(self::$_config['data']['log_file']))
-        {
-            ini_set('log_errors', 1);
-
-            ini_set('error_log', BASEPATH . self::$_config['data']['log_file']);
-        }
+        ini_set('log_errors', 1);
+        ini_set('error_log', APP_DIR.'logs'.DS.'dflogs');
 
 
         self::$_config['general']['compress_output'] = self::$_config['general']['compress_output'] ?? 'auto';

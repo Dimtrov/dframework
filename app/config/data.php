@@ -28,17 +28,6 @@
 */
 
 
-
-/*
-|--------------------------------------------------------------------------
-|PHP ERRORS SAVE
-|--------------------------------------------------------------------------
-|
-| Specifie le fichier où seront renseignées les erreurs d'execution
-|   Le fichier specifié prend ses bases à la racine du site (au meme niveau que le fichier.htaccess)
-*/
-$data['log_file'] = 'df_phplogfile.txt';
-
 /*
 |--------------------------------------------------------------------------
 | Encryption Key

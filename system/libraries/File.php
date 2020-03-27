@@ -220,11 +220,11 @@ class dF_File
     /**
 	 * Create a file with or without 
      * 
-	 * @param string $content
 	 * @param string $path
+	 * @param string $content
 	 * @return bool
 	 */
-	public function mkfile(string $content = '', ?string $path = null) : bool
+	public function mkfile(?string $path = null, string $content = '') : bool
 	{
 		$this->test_var($path, $this->path);
 		

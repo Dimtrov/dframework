@@ -15,9 +15,9 @@
  * @version     3.0
  */
 
-use dFramework\dependencies\others\dumpr\Core;
-use dFramework\dependencies\others\dumpr\Type;
-use dFramework\dependencies\others\unreal4u\debugInfo;
+use dump_r\Core;
+use dump_r\Type;
+use unreal4u\debugInfo;
 
 /**
  * Debug
@@ -33,7 +33,7 @@ use dFramework\dependencies\others\unreal4u\debugInfo;
 
 class dF_Debug
 {
-    public function dump($raw, $ret = false, $html = true, $depth = 1e3, $expand = 1e3)
+    public function dump($raw, $html = true, $depth = 1e3, $expand = 1e3)
     {
         // typenode classification
         Type::hook('*', function ($raw, Type $type, $path) {
@@ -132,7 +132,7 @@ class dF_Debug
             return $type;
         });
 
-        return Core::dump_r($raw, $ret, $html, $depth, $expand);
+        return Core::dump_r($raw, false, $html, $depth, $expand);
     }
 
 
@@ -142,7 +142,7 @@ class dF_Debug
      * @param string $message
      * @return string
      */
-    public function var_dump($var, $print = true, $message = '')
+    public function v_dump($var, $print = true, $message = '')
     {
         return debugInfo::debug($var, $print, $message);
     }
@@ -153,7 +153,7 @@ class dF_Debug
      * @param string $directory
      * @return bool
      */
-    public function file_dump($message = '', $filename = '', $directory = '')
+    public function f_dump($message = '', $filename = '', $directory = '')
     {
         return debugInfo::debugFile($message, $filename, $directory);
     }

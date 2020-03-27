@@ -28,7 +28,7 @@ namespace dFramework\core\security;
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/class_security_xss.html
  * @since       2.2.0
- * @file        /system/core/seurity/Session.php
+ * @file        /system/core/security/Session.php
  * @credit      PHP-Session - By Josantonius <https://github.com/Josantonius/PHP-Session>
  */
 

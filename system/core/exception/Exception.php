@@ -15,6 +15,13 @@
  * @version     3.0
  */
 
+
+namespace dFramework\core\exception;
+
+use Throwable;
+use Whoops\Handler\PrettyPageHandler;
+use Whoops\Run;
+
 /**
  * Exception
  *
@@ -27,14 +34,8 @@
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.0
+ * @file        /system/core/exception/Exception.php
  */
-
-
-namespace dFramework\core\exception;
-
-use Throwable;
-use Whoops\Handler\PrettyPageHandler;
-use Whoops\Run;
 
 class Exception extends \Exception
 {
@@ -55,9 +56,11 @@ class Exception extends \Exception
      *
      */
     public static function init() : void
-    {   
+    {  
+       
         $whoops  =  new Run();
         $whoops->pushHandler(new PrettyPageHandler); 
+        $whoops->pushHandler([New Log, 'register']);
         $whoops->register();
     }
 
