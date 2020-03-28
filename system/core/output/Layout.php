@@ -7,21 +7,27 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
- *
  */
+
+
+namespace dFramework\core\output;
+
+use dFramework\core\Config;
+use dFramework\core\route\Dispatcher;
+use dFramework\core\utilities\Tableau;
+use dFramework\core\exception\LoadException;
 
 /**
  * Layout
  *
  * Responsible for sending final output to the browser.
  *
- * @class       Layout
  * @package		dFramework
  * @subpackage	Core
  * @category    Output
@@ -31,17 +37,6 @@
  * @file		/system/core/output/Layout.php
  */
 
-namespace dFramework\core\output;
-
-use dFramework\core\Config;
-use dFramework\core\route\Dispatcher;
-use dFramework\core\utilities\Tableau;
-use dFramework\core\exception\LoadException;
-use phpDocumentor\Reflection\Types\Void_;
-
-/**
- * Class Layout
- */
 class Layout
 {
     /**
@@ -350,7 +345,7 @@ class Layout
         {
 			if(!file_exists(LAYOUT_DIR.$layout.'.php'))
 			{
-				throw new LoadException('
+				LoadException::except('
 					Impossible de charger le template <b>'.$layout.'</b>.
 					<br>
 					Le fichier &laquo; '.LAYOUT_DIR.$layout.'.php &raquo; n\'existe pas
@@ -473,6 +468,8 @@ class Layout
      */
     public static function stylesBundle(?string $config = null) : void
     {
+        Config::load('layout');
+
         $config = ($config === null) ? self::$_layout : $config;
         $lib_styles = array_merge((array) Config::get('layout.'.$config.'.lib_styles'), self::$_vars['df_lib_css'] ?? []);
         if(!empty($lib_styles))
@@ -492,6 +489,8 @@ class Layout
      */
     public static function scriptsBundle(?string $config = null) : void
     {
+        Config::load('layout');
+        
         $config = ($config === null) ? self::$_layout : $config;
         $lib_scripts = array_merge((array) Config::get('layout.'.$config.'.lib_scripts'), self::$_vars['df_lib_js'] ?? []);
         if(!empty($lib_scripts))

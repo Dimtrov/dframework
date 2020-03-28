@@ -18,10 +18,7 @@
 
 namespace dFramework\core\exception;
 
-use dF_Ua;
-use dFramework\core\data\Request;
 use Josantonius\Json\Json;
-
 
 /**
  * Log
@@ -128,15 +125,12 @@ class Log
 		$msg .= 'An error of level '.$code.'('.$type.') was generated in file '.$file.' on line '.$line.".\n";
 		$msg .= 'The error message was: "'.$message.'"';
 		
-		$ua = new dF_Ua;
-		$request = new Request;
-
 		$this->saveError(array_merge(compact('level', 'type', 'ertype', 'code', 'message', 'file', 'line'), [
 			'date'        => date('d.m.Y @ H:i'),
-			'page'        => $request->here(),
-			'referrer'    => $ua->referrer(),
-			'ip'          => $request->clientIp(),
-			'user_agent'  => $ua->userAgent(),
+			'page'        => ($_SERVER['HTTP_HOST'] ?? '').($_SERVER['REQUEST_URI'] ?? null),
+			'referrer'    => $_SERVER['HTTP_REFERER'] ?? null,
+			'ip'          => $_SERVER['REMOTE_ADDR'],
+			'user_agent'  => $_SERVER['HTTP_USER_AGENT'] ?? null,
 			'description' => $msg
 		]));
 

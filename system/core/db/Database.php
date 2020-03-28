@@ -7,28 +7,15 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
 
-/**
- * Database
- *
- * Initialise a database process of application
- *
- * @class       Database
- * @package		dFramework
- * @subpackage	Core
- * @category    Db
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @file		/system/core/db/Database.php
- */
-
+ 
 namespace dFramework\core\db;
 
 use dFramework\core\Config;
@@ -37,6 +24,21 @@ use dFramework\core\exception\Exception;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
+
+
+/**
+ * Database
+ *
+ * Initialise a database process of application
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Db
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       1.0
+ * @file		/system/core/db/Database.php
+ */
 
 class Database
 {
@@ -76,6 +78,8 @@ class Database
      */
     public function use(string $db_setting)
     {
+        Config::load('database');
+        
         $this->db_selected = strtolower($db_setting);
         $this->config = (array) Config::get('database.'.$this->db_selected);
         $this->check();
@@ -83,8 +87,6 @@ class Database
 
     /**
      * Check if the configuration information of the database is correct
-     *
-     * @throws DatabaseException
      */
     private function check()
     {
@@ -93,7 +95,7 @@ class Database
 
         if(empty($config) OR !is_array($config))
         {
-            throw new DatabaseException('
+            DatabaseException::except('
                 The <b>'.$dbs.'</b> database configuration is required. <br>
                 Please open the "'.Config::$_config_file['database'].'" file to correct it
             ');
@@ -104,7 +106,7 @@ class Database
         {
             if(!array_key_exists($key, $config))
             {
-                throw new DatabaseException('
+                DatabaseException::except('
                     The <b>'.$key.'</b> key of the '.$dbs.' database configuration don\'t exist. <br>
                     Please fill it in array $config["database"]["'.$dbs.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo
                 ');
@@ -115,7 +117,7 @@ class Database
         {
             if(!in_array($key, ['password','options','prefix', 'debug']) AND empty($value)) 
 			{
-                throw new DatabaseException('
+                DatabaseException::except('
                     The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
                     Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo
                 ');
@@ -125,10 +127,24 @@ class Database
         $dbms = (strtolower($config['dbms']) === 'mariadb') ? 'mysql' : strtolower($config['dbms']);
         if(!in_array($dbms, ['mysql','oracle','sqlite','sybase']))
         {
-            throw new DatabaseException('
+            DatabaseException::except('
                 The DBMS (<b>'.$dbms.'</b>) you entered for '.$dbs.' database is not supported by dFramework. <br>
                 Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo
             ');
+        }
+
+        $config['debug'] = $config['debug'] ?? 'auto';
+        if(!in_array($config['debug'], ['auto', true, false]))
+        {
+            DatabaseException::except('
+                The <b>database['.$dbs.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
+                <br>
+                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file to correct it
+            ');
+        }
+        else if($config['debug'] === 'auto')
+        {
+            $this->config['debug'] = (Config::get('general.environment') === 'dev');
         }
 
         $this->initialize();

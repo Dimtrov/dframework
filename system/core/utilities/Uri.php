@@ -15,10 +15,10 @@
  * @version     3.0
  */
 
+ 
  namespace dFramework\core\utilities;
 
  use dFramework\core\Config;
-
 
 /**
  * URI Class
@@ -35,7 +35,8 @@
  * @file		/system/core/utilities/Uri.php
  */
  
-class Uri {
+class Uri 
+{
 
 	/**
 	 * List of cached URI segments

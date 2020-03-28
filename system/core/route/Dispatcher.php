@@ -7,35 +7,16 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  */
 
-/**
- * Dispatcher
- *
- * Dispatch a url request by creating the appropriate MVC controller
- * instance and runs its method by passing it the parameters.
- *
- * @class       Dispatcher
- * @package		dFramework
- * @subpackage	Core
- * @category    Route
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/class_dispatcher.html
- * @since       1.0
- * @file        /system/core/route/Dispatcher.php
- * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
- */
-
-
+ 
 namespace dFramework\core\route;
-
-
 
 use dFramework\core\Config;
 use dFramework\core\exception\LoadException;
@@ -43,6 +24,21 @@ use dFramework\core\exception\RouterException;
 use dFramework\core\loader\DIC;
 use dFramework\core\data\Request;
 use ReflectionMethod;
+/**
+ * Dispatcher
+ *
+ * Dispatch a url request by creating the appropriate MVC controller
+ * instance and runs its method by passing it the parameters.
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Route
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since       1.0
+ * @file        /system/core/route/Dispatcher.php
+ * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
+ */
 
 /**
  * A url request must be in the formats:
@@ -138,8 +134,6 @@ class Dispatcher
      * @param $controllerClass
      * @param $method
      * @param array|null $parameters
-     * @throws LoadException
-     * @throws RouterException
      * @throws \ReflectionException
      */
     public static function loadController($controllerClassFile, $controllerClass, $method, ?array $parameters = null)
@@ -160,7 +154,7 @@ class Dispatcher
 
         if(!file_exists($controllerClassFile))
         {
-            throw new LoadException('
+            LoadException::except('
                 Can\'t load controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>. 
                 <br> 
                 The file &laquo; '.$controllerClassFile.' &raquo; do not exist
@@ -171,11 +165,11 @@ class Dispatcher
 
         if (true !== class_exists($controllerClass))
         {
-            throw new RouterException('
+            RouterException::except('
                 Impossible to load the controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
                 <br> 
                 The file &laquo; '.$controllerClassFile.' &raquo; do not contain class <b>'.$controllerClass.'</b>
-            ');
+            ', 404);
         }
         else
         {
@@ -186,15 +180,15 @@ class Dispatcher
                 $reflection = new ReflectionMethod($controllerClass, $method);
                 if($reflection->getName() == "__construct")
                 {
-                    throw new RouterException("Access denied to __construct", 403);
+                    RouterException::except("Access denied to __construct", 403);
                 }
                 if(preg_match('#^_#i', $reflection->getName()))
                 {
-                    throw new RouterException("Access denied to ". $reflection->getName(), 403);
+                    RouterException::except("Access denied to ". $reflection->getName(), 403);
                 }
                 if ($reflection->isProtected() OR $reflection->isPrivate())
                 {
-                    throw new RouterException("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
+                    RouterException::except("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
                 }
 
                 $parameters = $reflection->getParameters(); $required_parameters = 0;
@@ -206,7 +200,7 @@ class Dispatcher
                 }
                 if ($required_parameters > count($instance->methodParameters))
                 {
-                    throw new RouterException('
+                    RouterException::except('
                         Parameters error
                         <br>
                         The method <b>'.$method . '</b> of class '.$controllerClass.' require 
@@ -224,7 +218,7 @@ class Dispatcher
             }
             else
             {
-                throw new RouterException('&laquo;<b>'.$method.'</b> method &raquo; is not defined in '.get_class($controller), 404);
+                RouterException::except('&laquo;<b>'.$method.'</b> method &raquo; is not defined in '.get_class($controller), 404);
             }
         }
     }

@@ -63,7 +63,6 @@ class Config
      */
     private static $_required_config  = [
         'data'      => ['encryption', 'session'],
-        'database'  => ['default'],
         'general'   => ['environment', 'charset'],
         'route'     => ['default_controller'],
     ];
@@ -138,7 +137,7 @@ class Config
      */
     public static function init()
     {
-        self::load();
+        self::load(['autoload', 'data', 'general', 'route']);
 
         self::checkRequired();
 
@@ -147,24 +146,63 @@ class Config
         self::initialize();
     }
 
-
     /**
-     * Load the applications configurations
+     * Load the specific configucation in the scoope
+     * 
+     * @param string|string[] $config
+     * @param string|null $config_file
      */
-    private static function load()
+    public static function load($config, ?string $config_file = null)
     {
-        if (empty(self::$_config))
+        if(is_array($config))
         {
-            foreach (self::$_config_file As $key => $value)
+            foreach($config As $key => $value)
             {
-                if(!file_exists($value))
+                if (!is_string($value) OR empty($value))
                 {
                     continue;
                 }
-                self::$_config = array_merge(self::$_config, require_once($value));
+                if(is_string($key))
+                {
+                    $config_file = $value;
+                    $conf = $key;
+                }
+                else 
+                {
+                    $config_file = null;
+                    $conf = $value;
+                }
+                self::load($conf, $config_file);
             }
         }
+        else if(is_string($config))
+        {
+            if(empty($config_file))
+            {
+                if(!empty(self::$_config_file[$config]))
+                {
+                    $config_file = self::$_config_file[$config];
+                }
+                else 
+                {
+                    $config_file = APP_DIR . 'config' . DS . $config . '.php';
+                }
+            }
+            if (!file_exists($config_file))
+            {
+                ConfigException::except('Unable to loader the <b>'.$config.'</b> configuration because the &laquo; '.$config_file.' &raquo; file does not exist', 404);
+            }
+            if(!in_array($config_file, get_included_files()))
+            {
+                self::$_config = array_merge(self::$_config, require($config_file));
+            }
+        }
+        else 
+        {
+            return false;
+        }
     }
+
 
     /**
      * Check if the required configurations is enter
@@ -177,7 +215,7 @@ class Config
             {
                 if(empty(self::get($key.'.'.$item)))
                 {
-                    throw new ConfigException('
+                    ConfigException::except('
                         The <b>'.$key.'['.$item.']</b> configuration is required. 
                         <br>
                         Please edit &laquo; '.self::$_config_file[$key].' &raquo; file to correct it
@@ -186,7 +224,6 @@ class Config
             }
         }
     }
-
 
     private static function setDefaultVar()
     {
@@ -230,8 +267,6 @@ class Config
         }
     }
 
-
-
     /**
      * Initialize the system configuration with data from config file
      *
@@ -252,7 +287,7 @@ class Config
                 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
                 break;
             default:
-                throw new ConfigException('
+                ConfigException::except('
                     The <b>general[environment]</b> configuration is not set correctly (Accept values: dev/prod/test). 
                     <br>
                     Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
@@ -265,7 +300,7 @@ class Config
         self::$_config['general']['compress_output'] = self::$_config['general']['compress_output'] ?? 'auto';
         if(!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
         {
-            throw new ConfigException('
+            ConfigException::except('
                 The <b>general[compress_output]</b> configuration is not set correctly (Accept values: auto/true/false). 
                 <br>
                 Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
@@ -274,23 +309,6 @@ class Config
         else if(self::$_config['general']['compress_output'] === 'auto')
         {
             self::$_config['general']['compress_output'] = (self::$_config['general']['environment'] !== 'dev');
-        }
-
-        foreach (self::$_config['database'] As $key => $value)
-        {
-            self::$_config['database'][$key]['debug'] = self::$_config['database'][$key]['debug'] ?? 'auto';
-            if(!in_array(self::$_config['database'][$key]['debug'], ['auto', true, false]))
-            {
-                throw new ConfigException('
-                    The <b>database['.$key.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
-                    <br>
-                    Please edit &laquo; '.self::$_config_file['database'].' &raquo; file to correct it
-                ');
-            }
-            else if(self::$_config['database'][$key]['debug'] === 'auto')
-            {
-                self::$_config['database'][$key]['debug'] = (self::$_config['general']['environment'] === 'dev');
-            }
         }
 
         /* ----------------
@@ -302,7 +320,7 @@ class Config
             $config = strtolower(self::get('data.session.cache_limiter'));
             if(!in_array($config, $autorize))
             {
-                throw new ConfigException('
+                ConfigException::except('
                     The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).'). 
                     <br>
                     Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
@@ -312,7 +330,7 @@ class Config
         }
         if(isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
         {
-            throw new ConfigException('
+            ConfigException::except('
                 The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values. 
                 <br>
                 Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it

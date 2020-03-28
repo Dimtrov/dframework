@@ -14,21 +14,7 @@
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.0
  */
-
-/**
- * Data
- *
- * Pre-processes global input data for security
- *
- * @class       Data
- * @package		dFramework
- * @subpackage	Core
- * @category    Data
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/data
- * @since       1.0.0
- * @file        /system/core/data/Data.php
- */
+ 
 
 namespace dFramework\core\data;
 
@@ -36,6 +22,19 @@ use dFramework\core\Config;
 use dFramework\core\security\Session;
 use dFramework\core\security\Xss;
 
+/**
+ * Data
+ *
+ * Pre-processes global input data for security
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Data
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since       1.0
+ * @file        /system/core/data/Data.php
+ */
 
 class Data
 {

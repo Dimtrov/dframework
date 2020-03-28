@@ -20,8 +20,8 @@ namespace dFramework\core;
 
 use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
-use Envms\FluentPDO\Query as FluentPDOQuery;
-
+use dFramework\core\exception\Exception;
+use Envms\FluentPDO\Query As FluentPDOQuery;
 
 /**
  * Model
@@ -56,7 +56,7 @@ class Model extends Query
                 $this->fluent = new FluentPDOQuery($this->db->pdo());
             }
             catch (\Exception $e) {
-                die('Impossible de charger &laquo;<b> FluentPDO </b>&raquo; : ' . $e->getMessage());
+                Exception::show('Impossible de charger &laquo;<b> FluentPDO </b>&raquo; : ' . $e->getMessage());
             }
         }
         return $this->fluent;
@@ -80,7 +80,7 @@ class Model extends Query
                 $this->migrator = new Migrator($this->db);
             }
             catch (\Exception $e) {
-                die('Impossible de charger l\'objet Migrator : ' . $e->getMessage());
+                Exception::show('Impossible de charger l\'objet Migrator : ' . $e->getMessage());
             }
         }
         return $this->migrator;

@@ -16,6 +16,8 @@
  */
 
 
+namespace dFramework\core\security;
+
 /**
  * Csrf
  *
@@ -25,13 +27,11 @@
  * @subpackage	Core
  * @category	Security
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/class_security_xss.html
- * @since       2.2.0
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since       2.2
  * @file        /system/core/seurity/Csrf.php
  * @credit      PHP-CSRF-Security-class - by Malik Umer Farooq <https://www.facebook.com/malikumerfarooq01/>
  */
-
-namespace dFramework\core\security;
 
 
 class Csrf
@@ -441,6 +441,4 @@ class Csrf
         return true;			
     }
     
-
-
 }

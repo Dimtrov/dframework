@@ -39,25 +39,11 @@ use Whoops\Run;
 
 class Exception extends \Exception
 {
-
     /**
-     * Exception constructor.
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
-     */
-    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
-    }
-
-
-    /**
-     *
+     * Initialise la capture des exception
      */
     public static function init() : void
     {  
-       
         $whoops  =  new Run();
         $whoops->pushHandler(new PrettyPageHandler); 
         $whoops->pushHandler([New Log, 'register']);
@@ -82,18 +68,17 @@ class Exception extends \Exception
         die($message);
     }
 
-
-
-
-    /**
-     * @return string|void
-     */
-    public function __toString()
+    public static function except(string $message, int $code = 0)
     {
-        $this->renderView();
+        $class = get_called_class();
+        $class = trim(str_replace('Exception', '', $class));
+        $class = (empty($class)) ? 'General' : $class;
+
+        $backtrace = debug_backtrace();
+
+        var_dump($message, $class);
+        die();
     }
-
-
 
 
 

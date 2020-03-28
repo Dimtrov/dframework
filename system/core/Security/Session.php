@@ -15,7 +15,10 @@
  * @version     3.0
  */
 
+
 namespace dFramework\core\security;
+
+use dFramework\core\Config;
 
 /**
  * Session
@@ -26,14 +29,11 @@ namespace dFramework\core\security;
  * @subpackage	Core
  * @category	Security
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/class_security_xss.html
- * @since       2.2.0
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since       2.2
  * @file        /system/core/security/Session.php
  * @credit      PHP-Session - By Josantonius <https://github.com/Josantonius/PHP-Session>
  */
-
-
-use dFramework\core\Config;
 
 class Session
 {

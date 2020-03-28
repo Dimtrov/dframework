@@ -15,13 +15,19 @@
  * @version     3.0
  */
 
+
+namespace dFramework\core\data;
+
+use dFramework\core\Config;
+use dFramework\core\exception\Exception;
+use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Utilities;
 /**
  * Request
  *
  * A class that helps wrap Request information and particulars about a single request.
  * Provides methods commonly used to introspect on the request headers and request body.
  *
- * @class       Request
  * @package		dFramework
  * @subpackage	Core
  * @category    Data
@@ -31,14 +37,6 @@
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/data/Request.php
  */
-
-namespace dFramework\core\data;
-
-
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
-use dFramework\core\utilities\Tableau;
-use dFramework\core\utilities\Utilities;
 
 class Request
 {
@@ -238,7 +236,7 @@ class Request
         {
             if (isset($detect['value']))
             {
-                return env($detect['env']) == $detect['value'];
+                return \env($detect['env']) == $detect['value'];
             }
             if (isset($detect['pattern']))
             {

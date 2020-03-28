@@ -19,7 +19,6 @@
 namespace dFramework\core\db;
 
 use dFramework\core\exception\DatabaseException;
-use dFramework\core\exception\Exception;
 
 /**
  * Migrator
@@ -34,7 +33,6 @@ use dFramework\core\exception\Exception;
  * @since		2.1
  * @file		/system/core/db/Migrator.php
  */
-
 
 class Migrator
 {
@@ -109,7 +107,7 @@ class Migrator
 
         if(!file_exists($file) OR !is_readable($file))
         {
-            throw new DatabaseException('
+            DatabaseException::except('
                 Impossible de charger la migration <b>'.$filename.'</b>
                 <br>
                 Le fichier de &laquo; '.$file.' &raquo; n\'existe pas ou n\'est pas accessible en lecture

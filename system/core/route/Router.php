@@ -7,37 +7,35 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  */
+
+
+namespace dFramework\core\route;
+
+use dFramework\core\Config;
+use dFramework\core\exception\RouterException;
+use dFramework\core\utilities\Tableau;
+use dFramework\core\data\Request;
 
 /**
  * Router
  *
  * Make a route
  *
- * @class       Router
  * @package		dFramework
  * @subpackage	Core
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_router.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.0
  * @file	    /system/core/route/Router.php
  */
-
-
-namespace dFramework\core\route;
-
-
-use dFramework\core\Config;
-use dFramework\core\exception\RouterException;
-use dFramework\core\utilities\Tableau;
-use dFramework\core\data\Request;
 
 class Router
 {
@@ -136,7 +134,7 @@ class Router
         $instance = self::instance();
         if(!isset($instance->namedRoutes[$name]))
         {
-            throw new RouterException('No route matches this name', 404);
+            RouterException::except('No route matches this name', 404);
         }
         return $instance->namedRoutes[$name]->getUrl($params);
     }

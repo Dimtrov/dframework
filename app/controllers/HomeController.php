@@ -7,7 +7,7 @@ class HomeController extends Controller
 
     public function index()
     {
-        //$this->debug->v_dump($this);
+        $this->debug->dump($_SERVER);
     }
 
 }

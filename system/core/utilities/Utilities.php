@@ -15,7 +15,10 @@
  *  @version    3.0
  */
 
+
 namespace dFramework\core\utilities;
+
+use dFramework\core\Config;
  
 /**
  * Utilities
@@ -30,8 +33,6 @@ namespace dFramework\core\utilities;
  * @since       2.1
  * @file        /system/core/utilities/Utilities.php
  */
-
-use dFramework\core\Config;
 
 class Utilities
 {
@@ -49,7 +50,7 @@ class Utilities
         {
             foreach ($values as $key => $value)
             {
-                $values[$key] = stripslashes_deep($value);
+                $values[$key] = self::stripslashes_deep($value);
             }
         }
         else
@@ -84,14 +85,13 @@ class Utilities
     {
         $lenght = (empty($lenght) OR !is_int($lenght)) ? 8 : $lenght;
         $characters = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
-        $password = '';
-        
+        shuffle($characters);
+        $password = array_rand($characters, $lenght);
+        if(is_array($password))
+        {
+            return join('', $password);
+        }
+        return (string) $password;
     }
-
-
-
-
-
-
 
 }

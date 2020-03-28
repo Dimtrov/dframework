@@ -16,6 +16,8 @@
  */
 
 
+namespace dFramework\core\security;
+
 /**
  * Xss
  *
@@ -25,14 +27,11 @@
  * @subpackage	Core
  * @category	Security
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/class_security_xss.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       1.2
  * @file        /system/core/seurity/Xss.php
  * @credit      wArLeY_AntiXSS v1.0 - by Evert Ulises German Soto <GoPanga.com>
  */
-
-namespace dFramework\core\security;
-
 
 class Xss
 {

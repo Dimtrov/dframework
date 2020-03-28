@@ -15,25 +15,23 @@
  *  @version    3.0
  */
 
+
+namespace dFramework\core\utilities;
+
+use dFramework\core\exception\Exception;
+
 /**
  * Tableau
  *
- *
- * @class       Tableau
  * @package		dFramework
  * @subpackage	Core
  * @category    Utilities
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/class_utilities_tableau.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.1
  * @file        /system/core/utilities/Tableau.php
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  */
-
-namespace dFramework\core\utilities;
-
-
-use dFramework\core\exception\Exception;
 
 class Tableau
 {

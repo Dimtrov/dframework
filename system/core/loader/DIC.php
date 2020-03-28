@@ -7,33 +7,30 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    2.1
- *
+ *  @version    3.0
  */
+
+
+namespace dFramework\core\loader;
 
 /**
  * DIC
  *
  *  Dependency Injector Container
  *
- * @class       DIC
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemcore/dic
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @since       2.0
+ * @file        /system/core/loader/DIC.php
  */
-
-namespace dFramework\core\loader;
-
-
-use dFramework\core\exception\LoadException;
-use ReflectionClass;
 
 class DIC
 {
@@ -95,7 +92,7 @@ class DIC
      */
     public static function setInstance($instance)
     {
-        $reflection = new ReflectionClass($instance);
+        $reflection = new \ReflectionClass($instance);
 
         self::instance()->instances[$reflection->getName()] = $instance;
     }
@@ -104,7 +101,7 @@ class DIC
     /**
      * @param string $key
      * @return mixed
-     * @throws LoadException
+     * @throws \Exception
      * @throws \ReflectionException
      */
     public static function get(string $key)
@@ -123,10 +120,10 @@ class DIC
             }
             else
             {
-                $reflected_class = new ReflectionClass($key);
+                $reflected_class = new \ReflectionClass($key);
                 if(true !== $reflected_class->isInstantiable())
                 {
-                    throw new LoadException($key. ' is not an instantiable class');
+                    throw new \Exception($key. ' is not an instantiable class');
                 }
                 else
                 {

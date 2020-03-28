@@ -16,22 +16,8 @@
  */
 
 
-/**
- * Controller
- *
- * A global controller of system
- *
- * @class       Controller
- * @package		dFramework
- * @subpackage	Core
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/Controller.html
- * @since       1.0
- * @file		/system/core/Controller.php
- */
-
+ 
 namespace dFramework\core;
-
 
 use dFramework\core\data\Data;
 use dFramework\core\data\Request;
@@ -41,6 +27,19 @@ use dFramework\core\output\Cache;
 use dFramework\core\output\Layout;
 use dFramework\core\output\View;
 use ReflectionClass;
+
+/**
+ * Controller
+ *
+ * A global controller of system
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/Controller.html
+ * @since       1.0
+ * @file		/system/core/Controller.php
+ */
 
 abstract class Controller
 {
@@ -92,7 +91,6 @@ abstract class Controller
 
     /**
      * @param int ...$object
-     * @throws exception\Exception
      */
     protected function useObject(int... $object)
     {
@@ -124,7 +122,7 @@ abstract class Controller
      * @return View
      * @throws \ReflectionException
      */
-    protected function view(string $view, array $vars = []) : View
+    final protected function view(string $view, array $vars = []) : View
     {
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
@@ -137,7 +135,7 @@ abstract class Controller
      * @param array|null $data
      * @return Layout
      */
-    protected function layout(string $layout, ?array $data = []): Layout
+    final protected function layout(string $layout, ?array $data = []): Layout
     {
         return new Layout($layout, $data);
     }
@@ -147,9 +145,8 @@ abstract class Controller
      * @param string $model
      * @param string|null $alias
      * @throws \ReflectionException
-     * @throws exception\LoadException
      */
-    protected function loadModel(string $model, string $alias = null)
+    final protected function loadModel(string $model, string $alias = null)
     {
         Load::model($this, $model, $alias);
     }
@@ -161,10 +158,8 @@ abstract class Controller
      * @param string|null $alias
      * @param mixed $var 
      * @throws \ReflectionException
-     * @throws exception\Exception
-     * @throws exception\LoadException
      */
-    protected function loadLibrary($library, string $alias = null, &$var = null)
+    final protected function loadLibrary($library, string $alias = null, &$var = null)
     {
         Load::library($this, $library, $alias);
         
@@ -182,9 +177,8 @@ abstract class Controller
      * Charge un helper
      * 
      * @param string ...$helpers
-     * @throws exception\Exception
      */
-    protected function loadHelper(string ...$helpers)
+    final protected function loadHelper(string ...$helpers)
     {
         Load::helper($helpers);
     }
@@ -196,9 +190,8 @@ abstract class Controller
      * @param mixed $var 
      * @param string|null $locale
      * @since 3.0
-     * @throws exception\LoadException
      */
-    protected function loadLang(string $file, &$var, ?string $locale = null)
+    final protected function loadLang(string $file, &$var, ?string $locale = null)
     {
         Load::lang($file, $var, $locale, true);
     }
@@ -211,9 +204,8 @@ abstract class Controller
      * @param string $model
      * @return Controller
      * @throws \ReflectionException
-     * @throws exception\LoadException
      */
-    protected function setModel(string $model) : self
+    final protected function setModel(string $model) : self
     {
         $this->loadModel($model, 'model');
         return $this;
@@ -222,8 +214,6 @@ abstract class Controller
 
     /**
      * @throws \ReflectionException
-     * @throws exception\LoadException
-     * @throws exception\Exception
      */
     private function getElements()
     {
@@ -236,7 +226,6 @@ abstract class Controller
 
     /**
      * @throws \ReflectionException
-     * @throws exception\LoadException
      */
     private function getModel()
     {
@@ -251,7 +240,6 @@ abstract class Controller
 
     /**
      * @throws \ReflectionException
-     * @throws exception\LoadException
      */
     private function autoloadModels()
     {
@@ -271,8 +259,6 @@ abstract class Controller
 
     /**
      * @throws \ReflectionException
-     * @throws exception\Exception
-     * @throws exception\LoadException
      */
     private function autoloadLibraries()
     {

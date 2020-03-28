@@ -7,69 +7,50 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  */
 
+
+ namespace dFramework\core\exception;
+
+ use dFramework\core\Config;
+ use dFramework\core\output\View;
+
 /**
- * Config
+ * LoadException
  *
- * Configuration of application
+ * Manage exceptions of files loading system
  *
- * @class       LoadException
  * @package		dFramework
  * @subpackage	Core
  * @category    Exception
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.0
+ * @file    	/system/core/exception/LoadException.php
  */
-
-
-namespace dFramework\core\exception;
-
-
-use dFramework\core\Config;
-use dFramework\core\output\View;
-use Throwable;
 
 class LoadException extends Exception
 {
-
-    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
+    public static function except(string $message, int $code = 0)
     {
-        parent::__construct($message, $code, $previous);
-    }
-
-
-    /**
-     * @return string|void
-     */
-    public function __toString()
-    {
-        if(Config::get('general.environment') === 'dev')
+        if($code === 404 AND Config::get('general.environment') !== 'dev')
         {
-            $this->renderView('Load Exception');
+            Config::set('general.use_template_engine', false);
+            (new View('/reserved/errors/404', [
+                'heading' => 'Page Not Found',
+                'message' => 'The page you requested was not found.'
+            ]))->render();
+            exit;
         }
         else
         {
-            $this->notFound();
+            parent::except($message, $code);
         }
     }
-
-
-    protected function notFound()
-    {
-        Config::set('general.use_template_engine', false);
-        (new View('/errors/404', [
-            'heading' => 'Page Not Found',
-            'message' => 'The page you requested was not found.'
-        ]))->render();
-        exit;
-    }
-
 }

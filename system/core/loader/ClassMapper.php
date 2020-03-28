@@ -13,15 +13,10 @@
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
- *
  */
 
 
 namespace dFramework\core\loader;
-
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
-
 
 /**
  * ClassMapper

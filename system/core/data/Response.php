@@ -7,13 +7,21 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version     3.0
  */
+
+
+namespace dFramework\core\data;
+
+use DateTime;
+use DateTimeZone;
+use dFramework\core\Config;
+use dFramework\core\exception\Exception;
 
 /**
  * Response
@@ -24,21 +32,14 @@
  * a custom response class it should subclass this object in order to ensure compatibility.
 
  *
- * @class       Response
  * @package		dFramework
  * @subpackage	Core
  * @category    Data
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/data/Response.php
  */
-
-namespace dFramework\core\data;
-
-
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
 
 class Response
 {
@@ -839,9 +840,9 @@ class Response
      */
     public function sharable($public = null, $time = null) {
         if ($public === null) {
-            $public = array_key_exists('public', $this->_cacheDirectives);
-            $private = array_key_exists('private', $this->_cacheDirectives);
-            $noCache = array_key_exists('no-cache', $this->_cacheDirectives);
+            $public = array_key_exists('public', (array)$this->_cacheDirectives);
+            $private = array_key_exists('private', (array)$this->_cacheDirectives);
+            $noCache = array_key_exists('no-cache', (array)$this->_cacheDirectives);
             if (!$public && !$private && !$noCache) {
                 return null;
             }
@@ -923,7 +924,7 @@ class Response
             }
             $this->_setCacheControl();
         }
-        return array_key_exists('must-revalidate', $this->_cacheDirectives);
+        return array_key_exists('must-revalidate', (array)$this->_cacheDirectives);
     }
 
     /**
@@ -1344,7 +1345,7 @@ class Response
      *   to a file, `APP` will be prepended to the path.
      * @param array $options Options See above.
      * @return void
-     * @throws NotFoundException
+     * @throws Exception
      */
     public function file($path, $options = array()) {
         $options += array(
@@ -1353,22 +1354,19 @@ class Response
         );
 
         if (strpos($path, '..') !== false) {
-            throw new NotFoundException(__d(
-                'cake_dev',
-                'The requested file contains `..` and will not be read.'
-            ));
+            throw new Exception('The requested file contains `..` and will not be read.');
         }
 
         if (!is_file($path)) {
-            $path = APP . $path;
+            $path = \BASEPATH . $path;
         }
 
         $file = new File($path);
         if (!$file->exists() || !$file->readable()) {
-            if (Configure::read('debug')) {
-                throw new NotFoundException(__d('cake_dev', 'The requested file %s was not found or not readable', $path));
+            if (Config::get('general.environment') === 'dev') {
+                throw new Exception('The requested file "'.$path.'" was not found or not readable');
             }
-            throw new NotFoundException(__d('cake', 'The requested file was not found'));
+            throw new Exception('The requested file was not found');
         }
 
         $extension = strtolower($file->ext());

@@ -7,35 +7,34 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.0
  */
 
+
+namespace dFramework\core\loader;
+
+use dFramework\core\Config;
+use dFramework\core\Controller;
+use dFramework\core\exception\LoadException;
+
 /**
  * Load
  *
- *  Load a file the application require
+ *  Load the files that the application needs
  *
- * @class       Load
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       1.0
+ * @file        /system/core/loader/Load.php
  */
-
-
-namespace dFramework\core\loader;
-
-
-use dFramework\core\Config;
-use dFramework\core\Controller;
-use dFramework\core\exception\LoadException;
 
 class Load
 {
@@ -61,7 +60,7 @@ class Load
             {
                 if (!in_array($module, $modules))
                 {
-                    throw new LoadException('
+                    LoadException::except('
                         The <b>' . $module . '</b> module is unchargeable element. (Accept values: ' . join('/', $modules) . ')
                         <br>
                         Please edit &laquo; ' . Config::$_config_file['autoload'] . ' &raquo; file to correct it
@@ -109,7 +108,7 @@ class Load
 
             if(!file_exists($file))
             {
-                throw new LoadException('
+                LoadException::except('
                     Impossible de charger les fonctions <b>'.$func.'</b>. 
                     <br> 
                     Le fichier &laquo; '.$file.' &raquo; n\'existe pas
@@ -188,7 +187,7 @@ class Load
         {
             if(!file_exists($model_path))
             {
-                throw new LoadException('
+                LoadException::except('
                     Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
                     <br> 
                     Le fichier &laquo; '.$model_path.' &raquo; n\'existe pas
@@ -198,7 +197,7 @@ class Load
 
             if(!class_exists($model))
             {
-                throw new LoadException('
+                LoadException::except('
                     Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
                     <br> 
                     Le fichier &laquo; '.$model_path.' &raquo; ne contient pas de classe <b>'.$model.'</b>
@@ -215,9 +214,7 @@ class Load
      * @param Controller $object
      * @param string|array $library
      * @param null|string $alias
-     * @throws LoadException
      * @throws \ReflectionException
-     * @throws \dFramework\core\exception\Exception
      */
     public static function library(Controller &$object, $library, string $alias = null) : void
     {
@@ -251,8 +248,6 @@ class Load
      * @param $library
      * @param bool $app
      * @return mixed
-     * @since 3.0
-     * @throws LoadException
      * @throws \ReflectionException
      */
     private static function _library($library, bool $app = false)
@@ -270,7 +265,7 @@ class Load
         {
             if(!file_exists($file))
             {
-                throw new LoadException('
+                LoadException::except('
                     Impossible de charger la librairie <b>'.$library.'</b>. 
                     <br> 
                     Le fichier &laquo; '.$file.' &raquo; n\'existe pas
@@ -281,7 +276,7 @@ class Load
             $library = ($app === false) ? "dF_$library" : $library;
             if(!class_exists($library))
             {
-                throw new LoadException('
+                LoadException::except('
                     Impossible de charger la librarie <b>'.$library.'</b>. 
                     <br> 
                     Le fichier &laquo; '.$file.' &raquo; ne contient pas de classe <b>'.$library.'</b>
@@ -299,7 +294,6 @@ class Load
      * @param string|null $locale
      * @param bool $app
      * @since 3.0
-     * @throws exception\LoadException
      */
     public static function lang(string $file, &$var, ?string $locale = null, bool $app = false)
     {
@@ -309,12 +303,12 @@ class Load
         }
         $file = preg_replace('#\.json$#i', '', $file);
         $filename = (true === $app) 
-            ? RESSOURCE_DIR . 'lang' . DS . $locale . DS . $file . '.json'
+            ? RESOURCE_DIR . 'lang' . DS . $locale . DS . $file . '.json'
             : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
         if(true !== file_exists($filename))
         {
-            throw new LoadException('
+            LoadException::except('
                 Impossible de charger le fichier de langue <b>'.$file.'</b>. 
                 <br> 
                 Le fichier &laquo; '.$filename.' &raquo; n\'existe pas.
@@ -322,7 +316,7 @@ class Load
         }
         if(false === ($lang = file_get_contents($filename)))
         {
-            throw new LoadException('
+            LoadException::except('
                 Impossible de charger le fichier de langue <b>'.$file.'</b>. 
                 <br> 
                 Le fichier &laquo; '.$filename.' &raquo; est innaccessible en lecture.

@@ -16,6 +16,8 @@
  */
 
 
+namespace dFramework\core\utilities;
+
 /**
  * Debbuger
  *
@@ -30,9 +32,6 @@
  * @file        /system/core/utilities/Debugger.php
  * @credit      php-jcktraker - by Stéphane Bouvry (jacksay@jacksay.com) - https://github.com/Jacksay/php-jcktraker
  */
-
-namespace dFramework\core\utilities;
-
 
 class Debugger
 {

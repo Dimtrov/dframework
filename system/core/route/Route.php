@@ -7,35 +7,31 @@
  * This content is released under the MIT License (MIT)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Group Corp. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MIT	MIT License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
  * @version     3.0
  */
 
+
+namespace dFramework\core\route;
+
 /**
  * Route
  *
- * /////
- *
- * @class       Route
  * @package		dFramework
  * @subpackage	Core
  * @category    Route
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/class_route_route.html
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.0
- * @file	/system/core/route/Route.php
+ * @file        /system/core/route/Route.php
  */
-
-namespace dFramework\core\route;
-
 
 class Route
 {
-
     /**
      * @var string
      */

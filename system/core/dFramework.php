@@ -15,27 +15,26 @@
  *  @version    3.0
  */
 
-/**
- * dFramework
- *
- * Initialisation of process
- *
- * @class       dFramework
- * @package		dFramework
- * @subpackage	Core
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @since       1.0
- */
-
 
 namespace dFramework\core;
-
 
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\core\route\Router;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
+
+/**
+ * dFramework
+ *
+ * Initialisation of application processing
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @since       1.0
+ * @file        /system/core/dFramework.php
+ */
 
 class dFramework
 {
