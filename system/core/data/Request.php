@@ -21,7 +21,7 @@ namespace dFramework\core\data;
 use dFramework\core\Config;
 use dFramework\core\exception\Exception;
 use dFramework\core\utilities\Tableau;
-use dFramework\core\utilities\Utilities;
+use dFramework\core\utilities\Utils;
 /**
  * Request
  *
@@ -677,7 +677,7 @@ class Request
         }
         if (ini_get('magic_quotes_gpc') === '1')
         {
-            $this->data = Utilities::stripslashes_deep($this->data);
+            $this->data = Utils::stripslashes_deep($this->data);
         }
         if (env('HTTP_X_HTTP_METHOD_OVERRIDE'))
         {
@@ -721,7 +721,7 @@ class Request
     {
         if (ini_get('magic_quotes_gpc') === '1')
         {
-            $query = Utilities::stripslashes_deep($_GET);
+            $query = Utils::stripslashes_deep($_GET);
         }
         else
         {

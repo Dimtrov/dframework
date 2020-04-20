@@ -16,13 +16,15 @@
  * @version     3.0
  */
 
+
 require_once __DIR__.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'.bootstrap.php';
 
 
-$app = new Ahc\Cli\Application('dFramework', \dFramework\core\dFramework::VERSION);
+$app = new Ahc\Cli\Application('dFramework', dFramework\core\dFramework::VERSION);
 
 $app
-    ->add(new dFramework\core\cli\Server, 'serve')
-    ->add(new \dFramework\core\cli\Mapper, 'map');
+    ->add(new dFramework\core\cli\Server, 'serve', true)
+    ->add(new dFramework\core\cli\Mapper, 'map')
+    ->add(new dFramework\core\cli\Less, 'less');
  
 $app->handle($_SERVER['argv']);

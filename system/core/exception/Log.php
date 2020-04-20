@@ -125,7 +125,7 @@ class Log
 		$msg .= 'An error of level '.$code.'('.$type.') was generated in file '.$file.' on line '.$line.".\n";
 		$msg .= 'The error message was: "'.$message.'"';
 		
-		$this->saveError(array_merge(compact('level', 'type', 'ertype', 'code', 'message', 'file', 'line'), [
+		$this->saveError(array_merge(compact('code', 'type', 'ertype', 'code', 'message', 'file', 'line'), [
 			'date'        => date('d.m.Y @ H:i'),
 			'page'        => ($_SERVER['HTTP_HOST'] ?? '').($_SERVER['REQUEST_URI'] ?? null),
 			'referrer'    => $_SERVER['HTTP_REFERER'] ?? null,

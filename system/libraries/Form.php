@@ -15,7 +15,6 @@
  * @version     3.0
  */
 
-use dFramework\core\data\Data;
 use dFramework\core\data\Request;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Tableau;

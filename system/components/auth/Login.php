@@ -21,7 +21,7 @@ namespace dFramework\components\auth;
 use dFramework\core\db\Query;
 use dFramework\core\security\Session;
 use dFramework\core\security\Csrf;
-use dFramework\core\utilities\Utilities;
+use dFramework\core\utilities\Utils;
 use dFramework\core\data\Request;
 use dFramework\core\Helpers;
 use dFramework\core\loader\Load;
@@ -422,7 +422,7 @@ class Login
     protected function checkPwd(string $pass, string $hash, &$remaining, string $login) : bool
     {
         $remaining = null;
-        if(Utilities::hashpass(trim($pass)) !== trim($hash))
+        if(Utils::hashpass(trim($pass)) !== trim($hash))
         {
             if(true === $this->_params['show_remaining_attempts'] AND is_int($this->_params['failed_login_attempts']) AND 1 < $this->_params['failed_login_attempts'])
             {

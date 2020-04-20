@@ -95,10 +95,10 @@ class dF_Debug
                 $type->class[] = 'SQL';
 
             // JSON
-            else if ($raw{0} == '{' && $json = json_decode($raw)) {
+            else if ($raw[0] == '{' && $json = json_decode($raw)) {
                 $type->class[] = 'JSON\Object';
                 $type->inter = $json;
-            } else if ($raw{0} == '[' && $json = json_decode($raw)) {
+            } else if ($raw[0] == '[' && $json = json_decode($raw)) {
                 $type->class[] = 'JSON\Array0';
                 $type->inter = $json;
             }

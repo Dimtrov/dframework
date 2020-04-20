@@ -92,7 +92,7 @@ abstract class Controller
     /**
      * @param int ...$object
      */
-    protected function useObject(int... $object)
+    final protected function useObject(int... $object)
     {
         foreach ($object As $value)
         {
@@ -127,7 +127,7 @@ abstract class Controller
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
-        return new View($view, $vars, strtolower($path));
+        return new View($view, $vars, $path);
     }
 
     /**

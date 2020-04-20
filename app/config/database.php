@@ -38,13 +38,13 @@ $database['default'] = [
     'host'      => 'localhost',
     'username'  => 'root',
     'password'  => '',
-    'database'  => 'dimtrov',
+    'database'  => 'test',
     'debug'     => 'auto',
     'charset'   => 'utf8',
     'collation' => 'utf8_general_ci',
     'prefix'    => '',
     'options'   => [
-        'column_case' => 'lower'
+        'column_case' => 'inherit'
     ]
 ];
 

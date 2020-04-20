@@ -19,9 +19,10 @@
 namespace dFramework\core\utilities;
 
 use dFramework\core\Config;
- 
+use Josantonius\Json\Json;
+
 /**
- * Utilities
+ * Utils
  *
  * Utilitaires generals
  *
@@ -31,10 +32,10 @@ use dFramework\core\Config;
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.1
- * @file        /system/core/utilities/Utilities.php
+ * @file        /system/core/utilities/Utils.php
  */
 
-class Utilities
+class Utils
 {
 
     /**
@@ -61,8 +62,34 @@ class Utilities
     }
 
     /**
+     * Recupere le contenu d'un fichier JSON et le renvoie sous forme de tableau
+     * 
+     * @since 3.0
+     * @param string $filename Chemin vers le fichier json a recuperer
+     * @return array|false
+     */
+    public function json2arr(string $filename)
+    {
+        return Json::fileToArray($filename);
+    }
+
+    /**
+     * Enregistre le contenu d'un tableau au format JSON dans un fichier 
+     * 
+     * @since 3.0
+     * @param array $array Tableau a sauvegarder
+     * @param string $filename Chemin vers le fichier json de sauvegarde
+     * @return bool
+     */
+    public function arr2json(array $array, string $filename) : bool
+    {
+        return Json::arrayToFile($array, $filename);
+    }
+
+    /**
      * Hash user's password with SHA512, base64_encode, ROT13 and salts !
      * 
+     * @since 3.0
      * @param string $password
      * @return string 
      */
@@ -80,7 +107,13 @@ class Utilities
         );
     }
 
-
+    /**
+     * Genere un mot de passe aleatoire d'une longueur specifiee
+     * 
+     * @since 3.0
+     * @param int $lenght
+     * @return string
+     */
     public static function randomPass(int $lenght = 8) : string 
     {
         $lenght = (empty($lenght) OR !is_int($lenght)) ? 8 : $lenght;

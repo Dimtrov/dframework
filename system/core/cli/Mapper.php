@@ -32,7 +32,6 @@ use dFramework\core\loader\ClassMapper;
  * @subpackage	Core
  * @category    Cli
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
  * @since       3.0
  * @file        /system/core/cli/Mapper.php
  */

@@ -51,6 +51,25 @@ if ( ! function_exists('is_localfile'))
     }
 }
 
+if(!function_exists('is_online'))
+{
+    /**
+     * Test if a application is running in local or online
+     * 
+     * @return bool
+     */
+    function is_online()
+    {
+        return (
+            !in_array($_SERVER['HTTP_HOST'], ['localhost','127.0.0.1'])
+            AND !preg_match('#\.dev$#', $_SERVER['HTTP_HOST'])
+            AND !preg_match('#\.lab$#', $_SERVER['HTTP_HOST'])
+            AND !preg_match('#\.loc(al)?$#', $_SERVER['HTTP_HOST'])
+            AND !preg_match('#^192\.168#', $_SERVER['HTTP_HOST'])
+        );
+    }
+}
+
 if (!function_exists('is_ajax_request')) {
     /**
      * Test to see if a request contains the HTTP_X_REQUESTED_WITH header.

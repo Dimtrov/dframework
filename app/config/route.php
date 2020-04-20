@@ -21,10 +21,9 @@
 
 $route['default_controller'] = 'Home';
 
+/*
 $route['/works/([a-z-]+)/?$'] = 'Works::work';
 
-
-/*
 $route['/posts']['GET'] = function () {
     echo 'dimitri ';
 };

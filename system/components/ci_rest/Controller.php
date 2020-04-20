@@ -37,7 +37,6 @@ use dFramework\core\exception\Exception;
 use dFramework\core\Controller As dF_Controller;
 use dFramework\core\loader\Load;
 use dFramework\core\route\Dispatcher;
-use dFramework\core\security\Session;
 use dFramework\core\security\Xss;
 use dFramework\core\utilities\Uri;
 use dFramework\core\db\Query;

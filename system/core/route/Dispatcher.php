@@ -15,7 +15,7 @@
  *  @version    3.0
  */
 
- 
+
 namespace dFramework\core\route;
 
 use dFramework\core\Config;
@@ -24,6 +24,7 @@ use dFramework\core\exception\RouterException;
 use dFramework\core\loader\DIC;
 use dFramework\core\data\Request;
 use ReflectionMethod;
+
 /**
  * Dispatcher
  *
@@ -155,8 +156,8 @@ class Dispatcher
         if(!file_exists($controllerClassFile))
         {
             LoadException::except('
-                Can\'t load controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>. 
-                <br> 
+                Can\'t load controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
+                <br>
                 The file &laquo; '.$controllerClassFile.' &raquo; do not exist
             ', 404);
         }
@@ -167,59 +168,74 @@ class Dispatcher
         {
             RouterException::except('
                 Impossible to load the controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
-                <br> 
+                <br>
                 The file &laquo; '.$controllerClassFile.' &raquo; do not contain class <b>'.$controllerClass.'</b>
             ', 404);
         }
         else
         {
             $controller = DIC::get($controllerClass);
-
-            if (method_exists($controller, $method))
+            if (method_exists($controller, '_remap'))
             {
-                $reflection = new ReflectionMethod($controllerClass, $method);
-                if($reflection->getName() == "__construct")
+                if (is_array($instance->methodParameters))
                 {
-                    RouterException::except("Access denied to __construct", 403);
-                }
-                if(preg_match('#^_#i', $reflection->getName()))
-                {
-                    RouterException::except("Access denied to ". $reflection->getName(), 403);
-                }
-                if ($reflection->isProtected() OR $reflection->isPrivate())
-                {
-                    RouterException::except("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
-                }
-
-                $parameters = $reflection->getParameters(); $required_parameters = 0;
-                foreach ($parameters AS $parameter)
-                {
-                    if(true !== $parameter->isOptional()) {
-                        $required_parameters++;
-                    }
-                }
-                if ($required_parameters > count($instance->methodParameters))
-                {
-                    RouterException::except('
-                        Parameters error
-                        <br>
-                        The method <b>'.$method . '</b> of class '.$controllerClass.' require 
-                        <b>'.$required_parameters.'</b> parameters, '.count($instance->methodParameters).' was send  
-                    ', 400);
-                }
-                if (count($instance->methodParameters) > 0)
-                {
-                    call_user_func_array(array($controller, $method), $instance->methodParameters );
+                    array_unshift($instance->methodParameters, $method);
                 }
                 else
                 {
-                    call_user_func(array($controller, $method));
+                    $instance->methodParameters = [$method];
                 }
+                $method = '_remap';
             }
-            else
+            else if (! method_exists($controller, $method))
             {
                 RouterException::except('&laquo;<b>'.$method.'</b> method &raquo; is not defined in '.get_class($controller), 404);
             }
+        }
+
+        $reflection = new ReflectionMethod($controllerClass, $method);
+
+        if ($reflection->getName() == "__construct")
+        {
+            RouterException::except("Access denied to __construct", 403);
+        }
+        if (!in_array($reflection->getName(), ['_remap']) AND preg_match('#^_#i', $reflection->getName()))
+        {
+            RouterException::except("Access denied to ". $reflection->getName(), 403);
+        }
+        if ($reflection->isProtected() OR $reflection->isPrivate())
+        {
+            RouterException::except("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
+        }
+
+        if($method !== '_remap')
+        {
+            $parameters = $reflection->getParameters();
+            $required_parameters = 0;
+            foreach ($parameters AS $parameter)
+            {
+                if(true !== $parameter->isOptional()) {
+                    $required_parameters++;
+                }
+            }
+            if ($required_parameters > count($instance->methodParameters))
+            {
+                RouterException::except('
+                    Parameters error
+                    <br>
+                    The method <b>'.$method . '</b> of class '.$controllerClass.' require
+                    <b>'.$required_parameters.'</b> parameters, '.count($instance->methodParameters).' was send
+                ', 400);
+            }
+        }
+
+        if (count($instance->methodParameters) > 0)
+        {
+            call_user_func_array([$controller, $method], $instance->methodParameters );
+        }
+        else
+        {
+            call_user_func([$controller, $method]);
         }
     }
 
