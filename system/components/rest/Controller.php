@@ -3,7 +3,10 @@
 
 namespace dFramework\components\rest;
 
+use dFramework\core\Config;
 use dFramework\core\Controller as CoreController;
+use dFramework\core\loader\Load;
+use dFramework\core\route\Dispatcher;
 use dFramework\core\utilities\Uri;
 
 class Controller extends CoreController
@@ -46,7 +49,7 @@ class Controller extends CoreController
      *
      * @var array
      */
-    protected $allowed_http_methods = ['get', 'delete', 'post', 'put', 'options', 'patch', 'head'];
+    protected $allowed_methods = ['get', 'delete', 'post', 'put', 'options', 'patch', 'head'];
 
     /**
      * Contains details about the REST API
@@ -122,10 +125,7 @@ class Controller extends CoreController
 
 
 
-    /**
-     * Uri
-     */
-    private $_uri = null;
+    private $_lang;
 
     public function index(){}
 
@@ -133,160 +133,37 @@ class Controller extends CoreController
     {
         parent::__construct();
 
-        $this->response->type('application/json; charset=UTF-8');
-
-        $this->_uri = Uri::instance();
-
-        $this->_runMethod();
+        $this->response->type('application/json');
+        $this->response->charset(strtolower(Config::get('general.charset') ?? 'utf-8'));
+        
+        Load::lang('component.rest', $this->_lang, null, false);
+        $this->_lang = (array) $this->_lang;
     }
 
 
-    protected function response($data, int $status = self::HTTP_OK)
+    protected function response($data, int $status = self::HTTP_OK, bool $continue = false)
     {
         $this->response->statusCode($status);
         $this->response->body(json_encode($data));
-        
-        return $this->response->send();
-    }
+        $this->response->send();
 
-
-    private function _runMethod()
-    {
-        // Create an argument container if it doesn't exist e.g. _get_args
-        if (isset($this->{'_'.strtolower($this->request->method()).'_args'}) === false) 
+        if (!$continue)
         {
-            $this->{'_'.strtolower($this->request->method()).'_args'} = [];
-        }
-
-        // Set up the query parameters
-        $this->_parse_query();
-
-        // Set up the GET variables
-        $this->_get_args = array_merge($this->_get_args, $this->_uri->ruri_to_assoc());
-
-        $this->{'_parse_'.strtolower($this->request->method())}();
-
-        // Fix parse method return arguments null
-        if ($this->{'_'.strtolower($this->request->method()).'_args'} === null) 
-        {
-            $this->{'_'.strtolower($this->request->method()).'_args'} = [];
-        }
-
-        //get header vars
-        $this->_head_args = $this->request->accepts();
-
-        // Merge both for one mega-args variable
-        $this->_args = array_merge(
-            $this->_get_args,
-            $this->_options_args,
-            $this->_patch_args,
-            $this->_head_args,
-            $this->_put_args,
-            $this->_post_args,
-            $this->_delete_args,
-            $this->{'_'.strtolower($this->request->method()).'_args'}
-        );
-/* 
-        // Only allow ajax requests
-        if ($this->request->is('ajax') === false AND $this->_config['rest_ajax_only']) 
-        {
-            // Display an error response
-            $this->response([
-                $this->_config['rest_status_field_name']  => false,
-                $this->_config['rest_message_field_name'] => $this->_lang['text_rest_ajax_only'],
-            ], self::HTTP_NOT_ACCEPTABLE);
-        } */
-
-        
-    }
-
-
-
-
-     /**
-     * Parse the GET request arguments.
-     *
-     * @return void
-     */
-    protected function _parse_get()
-    {
-        // Merge both the URI segments and query parameters
-        $this->_get_args = array_merge($this->_get_args, $this->_query_args);
-    }
-
-    /**
-     * Parse the POST request arguments.
-     *
-     * @return void
-     */
-    private function _parse_post()
-    {
-        $this->_post_args = $this->request->data;
-    }
-    /**
-     * Parse the PUT request arguments.
-     *
-     * @return void
-     */
-    private function _parse_put()
-    {
-        $this->_put_args = $this->input->input_stream();
-    }
-    /**
-     * Parse the HEAD request arguments.
-     *
-     * @return void
-     */
-    protected function _parse_head()
-    {
-        // Parse the HEAD variables
-        parse_str(parse_url($this->data->server('REQUEST_URI'), PHP_URL_QUERY), $head);
-
-        // Merge both the URI segments and HEAD params
-        $this->_head_args = array_merge($this->_head_args, $head);
-    }
-    /**
-     * Parse the OPTIONS request arguments.
-     *
-     * @return void
-     */
-    protected function _parse_options()
-    {
-        // Parse the OPTIONS variables
-        parse_str(parse_url($this->data->server('REQUEST_URI'), PHP_URL_QUERY), $options);
-
-        // Merge both the URI segments and OPTIONS params
-        $this->_options_args = array_merge($this->_options_args, $options);
-    }
-    /**
-     * Parse the PATCH request arguments.
-     *
-     * @return void
-     */
-    protected function _parse_patch()
-    {
-        $this->_patch_args = $this->data->input_stream();
-    }
-    /**
-     * Parse the DELETE request arguments.
-     *
-     * @return void
-     */
-    protected function _parse_delete()
-    {
-        // These should exist if a DELETE request
-        if (strtolower($this->request->method()) === 'delete') {
-            $this->_delete_args = $this->data->input_stream();
+            exit;
         }
     }
-    /**
-     * Parse the query parameters.
-     *
-     * @return void
-     */
-    protected function _parse_query()
+
+
+    protected function allowed_methods(string ...$methods)
     {
-        $this->_query_args = $this->request->query;
+        $methods = array_map(function($str) {
+            return strtolower($str);
+        }, $methods);
+
+        if (!in_array(strtolower($this->request->method()), $methods))
+        {
+            return $this->response($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
+        }
     }
 
 }

@@ -18,7 +18,7 @@ class Requests_Utility_CaseInsensitiveDictionary implements ArrayAccess, Iterato
 	 *
 	 * @var array
 	 */
-	protected $data = array();
+	public $data = array();
 
 	/**
 	 * Creates a case insensitive dictionary.

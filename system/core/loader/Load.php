@@ -122,6 +122,8 @@ class Load
 
 
     /**
+     * Charge un model a un controleur donné
+     * 
      * @param Controller $object
      * @param string|array $model
      * @param string $alias
@@ -167,7 +169,6 @@ class Load
             }
         }
     }
-
     /**
      * @param $model
      * @return null
@@ -209,8 +210,102 @@ class Load
         }
     }
 
+    /**
+     * Charge un autre controller dans un controleur donné
+     * 
+     * @param Controller $object
+     * @param string|array $controller
+     * @param string $alias
+     * @since 3.0.2
+     * @throws LoadException
+     * @throws \ReflectionException
+     */
+    public static function controller(Controller &$object, $controller, string $alias)
+    {
+        if (!empty($controller) AND is_array($controller))
+        {
+            foreach ($controller As $key => $value)
+            {
+                if (!empty($key) AND is_string($key))
+                {
+                    if (!empty($value) AND is_string($value))
+                    {
+                        $property = strtolower($value);
+                        $object->$property = self::_controller($key);
+                    }
+                    else
+                    {
+                        $property = explode('/', $key); 
+                        $property = strtolower(end($property));
+                        $object->$property = self::_controller($key);
+                    }
+                }
+                else if (!empty($value) AND is_string($value))
+                {
+                    $property = strtolower($value);
+                    $object->$property = self::_controller($value);
+                }
+            }
+        }
+        if (!empty($controller) AND is_string($controller))
+        {
+            if (!empty($alias) AND is_string($alias)) 
+            {
+                $property = strtolower($alias);
+                $object->$property = self::_controller($controller);
+            }
+            else
+            {
+                $property = explode('/', $controller); 
+                $property = strtolower(end($property));
+                $object->$property = self::_controller($controller);
+            }
+        } 
+    }
+    /**
+     * @param $controller
+     * @return null
+     * @throws LoadException
+     * @throws \ReflectionException
+     */
+    private static function _controller($controller)
+    {
+        $controller = str_replace('.'.pathinfo($controller, PATHINFO_EXTENSION), '', $controller);
+        $controller = (!preg_match('#Controller$#', $controller)) ? $controller.'Controller' : $controller;
+
+        $part_controller = pathinfo($controller);
+        $controller = ucfirst($part_controller['filename']);
+        $controller_path = CONTROLLER_DIR.trim(str_replace('/', DS, $part_controller['dirname']), DS).DS.$controller.'.php';
+
+        if (! self::is_loaded($controller, 'controllers'))
+        {
+            if (! file_exists($controller_path))
+            {
+                LoadException::except('
+                    Impossible de charger le controlleur <b>'.str_replace('Controller', '', $controller).'</b>. 
+                    <br> 
+                    Le fichier &laquo; '.$controller_path.' &raquo; n\'existe pas
+                ');
+            }
+            require_once $controller_path;
+
+            if (! class_exists($controller))
+            {
+                LoadException::except('
+                    Impossible de charger le controlleur <b>'.str_replace('Controller', '', $controller).'</b>. 
+                    <br> 
+                    Le fichier &laquo; '.$controller_path.' &raquo; ne contient pas de classe <b>'.$controller.'</b>
+                ');
+            }
+            self::loaded($controller, 'controllers');
+
+            return DIC::get($controller);
+        }
+    }
 
     /**
+     * Charge une librairie dans un controlleur donné
+     * 
      * @param Controller $object
      * @param string|array $library
      * @param null|string $alias
@@ -243,7 +338,6 @@ class Load
             $object->$property = self::_library($library, preg_match('#^my_#i', $lib));
         }
     }
-
     /**
      * @param $library
      * @param bool $app

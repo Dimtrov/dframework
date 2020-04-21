@@ -142,13 +142,26 @@ abstract class Controller
 
 
     /**
-     * @param string $model
+     * Charge un model
+     * 
+     * @param string|array $model
      * @param string|null $alias
      * @throws \ReflectionException
      */
-    final protected function loadModel(string $model, string $alias = null)
+    final protected function loadModel($model, string $alias = null)
     {
         Load::model($this, $model, $alias);
+    }
+
+    /**
+     * Charge un autre controller 
+     * 
+     * @param string|array $controller
+     * @param string|null $alias
+     */
+    final protected function loadController($controller, string $alias = null)
+    {
+        Load::controller($this, $controller, $alias);
     }
 
     /**

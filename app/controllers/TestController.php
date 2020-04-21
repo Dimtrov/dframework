@@ -6,8 +6,11 @@ class TestController extends RestController
 	
 
 	
-	public function index_get($id = null)
+	public function index($id = null)
 	{
+		$this->allowed_methods('post');
+		
+
 		$data = $this->model->getArticles($id);
 		
 		echo $this->response($data);

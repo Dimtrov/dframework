@@ -111,6 +111,7 @@ class Dispatcher
     public static function init()
     {
         $instance = self::getInstance();
+        $instance->parseUrlAndSetAttributes();
 
         $controllerClass = ucfirst($instance->controllerSEOClassName);
         $method = !empty($instance->method) ? $instance->method : 'index';
@@ -125,7 +126,65 @@ class Dispatcher
         $controllerClass .= 'Controller';
 
         self::loadController($controllerClassFile, $controllerClass, $method);
+    }
 
+    /**
+     * Dispatch current url and return differents part
+     * 
+     * @return array Part of current url (controller, method, parameters)
+     */
+    public static function dispatchUrl() : array
+    {
+        $instance = self::getInstance();
+
+        // Defaults variable 
+        $default_controller = Config::get('route.default_controller');
+        $controller_class = $instance->underscoreToCamelCase($default_controller, true);
+        $controllerSEOClassName = strtolower($default_controller);
+        $method = 'index';
+        $methodParameters = [];
+
+        if($instance->current_subsystem == "/") {
+            $instance->current_subsystem = "";
+        }
+        if(is_string($instance->urlToDispatch) AND (isset($instance->urlToDispatch[-1]) AND  $instance->urlToDispatch[-1] == '/'))
+        {
+            $instance->urlToDispatch = substr($instance->urlToDispatch, 0, -1);
+        }
+        $urlSegments = explode("/", $instance->urlToDispatch);
+
+        // First segment is the controller  - store its name ad SEO name if controller is passed
+        if ($urlSegments[0] != "")
+        {
+            $controller_class = $instance->current_subsystem . $instance->underscoreToCamelCase($urlSegments[0], true);
+            $controllerSEOClassName = strtolower($urlSegments[0]);
+        }
+
+        // Second segment is a controller Method
+        if (isset($urlSegments[1]))
+        {
+            $method = $instance->underscoreToCamelCase($urlSegments[1]);
+
+            // If a method is present, then all the other right segments are
+            // considered as method's parameters
+            if (count($urlSegments) > 2)
+            {
+                $temp = array_slice($urlSegments, 2, count($urlSegments) - 1);
+                $i = 0;
+                foreach ($temp as $key => $value) 
+                {
+                    $methodParameters[$i] = $value;
+                    $i++;
+                }
+            }
+        }
+
+        return [
+            'controller' => $controller_class, 
+            'controller_seo' => $controllerSEOClassName,
+            'method' => $method,
+            'parameters' => $methodParameters,
+        ];
     }
 
     /**
@@ -161,7 +220,7 @@ class Dispatcher
                 The file &laquo; '.$controllerClassFile.' &raquo; do not exist
             ', 404);
         }
-        /** @var TYPE_NAME $controllerClassFile */
+
         require_once $controllerClassFile;
 
         if (true !== class_exists($controllerClass))
@@ -278,12 +337,11 @@ class Dispatcher
         {
             $url = preg_replace('#^'.$current_subsystem.'/?#', '', $url);
         }
-        $this->current_subsystem =  str_replace("\\","/", $current_subsystem). "/";
+        $this->current_subsystem =  str_replace("\\", DS, $current_subsystem). DS;
         $this->urlToDispatch = $url;
-
-        $this->parseUrlAndSetAttributes();
     }
 
+    
     /**
      * Parses url by assuming controller/method/parameter_1/parameter_2/...etc.
      * positioning format and sets class attributes
@@ -291,55 +349,12 @@ class Dispatcher
      */
     private function parseUrlAndSetAttributes()
     {
-        if($this->current_subsystem == "/") {
-            $this->current_subsystem = "";
-        }
-        if(is_string($this->urlToDispatch) AND (isset($this->urlToDispatch[-1]) AND  $this->urlToDispatch[-1] == '/'))
-        {
-            $this->urlToDispatch = substr($this->urlToDispatch, 0, -1);
-        }
-        $urlSegments = explode("/", $this->urlToDispatch);
+        $pageInfos = self::dispatchUrl();
 
-        // First segment is the controller  - store its name ad SEO name if controller is passed
-        if ($urlSegments[0] != "")
-        {
-            $this->controller_class = $this->current_subsystem . $this->underscoreToCamelCase($urlSegments[0],true);
-            $this->controllerSEOClassName = strtolower($urlSegments[0]);
-        }
-
-        // if  root subsystem
-        else if ($this->current_subsystem == "")
-        {
-            $default_controller = Config::get('route.default_controller');
-            $this->controller_class = $this->underscoreToCamelCase($default_controller, true);
-            $this->controllerSEOClassName = strtolower($default_controller);
-        }
-
-        // if root child subsystem
-        else
-        {
-            $default_controller = Config::get('route.default_controller');
-            $this->controller_class = $this->underscoreToCamelCase($default_controller, true);
-            $this->controllerSEOClassName = strtolower($default_controller);
-        }
-
-        // Second segment is a controller Method
-        if (isset($urlSegments[1]))
-        {
-            $this->method = $this->underscoreToCamelCase($urlSegments[1]);
-
-            // If a method is present, then all the other right segments are
-            // considered as method's parameters
-            if (count($urlSegments) > 2)
-            {
-                $temp = array_slice($urlSegments, 2, count($urlSegments) - 1);
-                $i = 0;
-                foreach ($temp as $key => $value) {
-                    $this->methodParameters[$i] = $value;
-                    $i++;
-                }
-            }
-        }
+        $this->method = $pageInfos['method'];
+        $this->methodParameters = $pageInfos['parameters'];
+        $this->controller_class = $pageInfos['controller'];
+        $this->controllerSEOClassName = $pageInfos['controller_seo'];
     }
 
     /**

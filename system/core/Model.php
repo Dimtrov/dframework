@@ -45,7 +45,7 @@ class Model extends Query
 
     /**
      * Renvoie une instance de l'objet FluentPDO a utiliser pour faire des query builder avances
-     * 
+     *
      * @return FluentPDOQuery|null
      */
     public function fluent()
@@ -69,7 +69,7 @@ class Model extends Query
 
     /**
      * Retourne l'objet Migrator pour faire les migrations des bases de donnees
-     * 
+     *
      * @return Migrator|null
      */
     protected function migrator() : ?Migrator
@@ -88,7 +88,7 @@ class Model extends Query
 
     /**
      * Do backup for database
-     * 
+     *
      * @param string $version
      */
     public function downDbTo(string $version)
@@ -130,19 +130,39 @@ class Model extends Query
     }
 
     /**
-     * Starts the transaction
+     * Start a transaction
      *
-     * @return boolean, true on success or false on failure
+     * @return bool
      */
-    public function beginTransaction()
+    public function beginTransaction() : bool
     {
         return $this->db->pdo()->beginTransaction();
+    }
+
+    /**
+     * Validate a transaction
+     *
+     * @return bool
+     */
+    public function commit() : bool
+    {
+        return $this->db->pdo()->commit();
+    }
+
+    /**
+     * Cancel a transaction
+     *
+     * @return bool
+     */
+    public function rollback() : bool
+    {
+        return $this->db->pdo()->rollback();
     }
 
 
     /**
      * Verifie s'il existe un champ avec une donnee specifique dans une table de la base de donnee
-     * 
+     *
      * @param string $key Le nom du champ de la table
      * @param mixed $value La valeur recherchee
      * @param string $table La table dans laquelle on veut faire la recherche

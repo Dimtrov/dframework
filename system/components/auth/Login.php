@@ -85,7 +85,7 @@ class Login
         'show_remaining_attempts' => true,
         /**
          * Definit la duree d'inactivite (en minutes) conduisant a la deconnexion automatique de l'utilisateur
-         *  (Si l'utilisateur n'ouvre auxune page durant cet intervalle de temps, il sera automatiquement deconnecter)
+         *  (Si l'utilisateur n'ouvre aucune page durant cet intervalle de temps, il sera automatiquement deconnecter)
          *  (Si inferieur a 1, le systeme de deconnexion automatique sera desactivé)
          */
         'inactivity_timeout'    => 0,
@@ -337,6 +337,7 @@ class Login
 
     /**
      * Recupere les information d'un utilisateur en base de donnees
+     * 
      * @param string $login
      */
     protected function load_user($login)
@@ -347,7 +348,9 @@ class Login
         $request = $query
             ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($this->_params['fields'][0] ?? 'login').' = ?', [$login]);
         
-        return $request->fetch(\PDO::FETCH_ASSOC);
+        $response = $request->fetch(\PDO::FETCH_ASSOC);
+        $request->closeCursor();
+        return $response;
     }
 
     /**
@@ -356,9 +359,13 @@ class Login
     protected function load_from_session()
     {
         $this->checkSession(function($auth_session) {
-            if(1 < $this->_params['inactivity_timeout'])
+            if (1 < $this->_params['inactivity_timeout'])
             {
                 Session::set('auth.expire_on', time() + (60 * $this->_params['inactivity_timeout']));
+            }
+            if (empty($auth_session) OR !is_array($auth_session)) 
+            {
+                $auth_session = Session::get('auth');
             }
             $this->_user = [
                 'login'    => $auth_session['login'],
@@ -385,7 +392,7 @@ class Login
 
             'uid'      => sha1(uniqid('', true) . '_' . mt_rand()),
             'uua'      => sha1($_SERVER['HTTP_USER_AGENT']),
-            'ure'      => sha1(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)),
+            'ure'      => sha1(parse_url($_SERVER['HTTP_REFERER'] ?? null, PHP_URL_HOST)),
             'uip'      => Helpers::instance()->ip_address(),
         ];
         if(1 < $this->_params['inactivity_timeout'])
@@ -458,7 +465,7 @@ class Login
         {
             $this->logout();
         }
-        else if(empty($auth_session['ure']) OR $auth_session['ure'] !== sha1(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)))
+        else if(empty($auth_session['ure']) OR $auth_session['ure'] !== sha1(parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_HOST)))
         {
             $this->logout();
         }
