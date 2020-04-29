@@ -238,7 +238,8 @@ class Dispatcher
             {
                 if (is_array($instance->methodParameters))
                 {
-                    array_unshift($instance->methodParameters, $method);
+                    // array_unshift($instance->methodParameters, $method);
+					$instance->methodParameters = [$method, $instance->methodParameters];
                 }
                 else
                 {

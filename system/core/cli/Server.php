@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
@@ -21,7 +21,7 @@ namespace dFramework\core\cli;
 use Ahc\Cli\Helper\Shell;
 use Ahc\Cli\Input\Command;
 use Ahc\Cli\Output\Writer;
-
+use dFramework\core\dFramework;
 
 /**
  * Server
@@ -62,7 +62,7 @@ class Server extends Command
 
             $io->write("\n ---- Serveur en cours de démarrage ----", true);
             $writer->colors("\t <blue> Le serveur a démarré avec succès. </end><eol>\t  <white>Veuillez ouvrir votre navigateur a l'adresse</end> <boldGreen><http://localhost:".$port."></end><eol>");
-            $writer->bold->colors("\n\t<bgGreen> dFramework v3.0.0 </end></eol>");
+            $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
             
             $shell = new Shell('php -S localhost:'.$port.' -t public');
             $shell->setOptions(dirname(\WEBROOT), null, 10.5)->execute()->isRunning();

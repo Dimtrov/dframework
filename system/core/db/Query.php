@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
-
 
 namespace dFramework\core\db;
 
@@ -154,7 +153,6 @@ class Query
         return $this;
     }
 
-
     /**
      * @param string $table
      * @param string $condition
@@ -211,6 +209,16 @@ class Query
     protected function whereIn(string $conditions, array $param) : self
     {
         $this->where($conditions.' IN ('.implode(',', $param).')');
+        return $this;
+    }
+    /**
+     * @param string $conditions
+     * @param array $param
+     * @return Query
+     */
+    protected function whereNotIn(string $conditions, array $param) : self
+    {
+        $this->where($conditions.' NOT IN ('.implode(',', $param).')');
         return $this;
     }
 
@@ -342,8 +350,21 @@ class Query
 
 
     /**
-     * Renvoie le statement d'une requete
+     * Decrit la structure d'une table
      * 
+     * @param string $table
+     * @since 3.1
+     * @return mixed
+     */
+    protected function describe(string $table)
+    {
+        $table = htmlspecialchars($table);
+        return $this->query('DESCRIBE '.$table)->fetch();
+    }
+
+    /**
+     * Renvoie le statement d'une requete
+     *
      * @return string
      */
     protected function getSql() : string
@@ -362,7 +383,7 @@ class Query
 
     /**
      * Recupere tous les resultats d'une requete en BD
-     * 
+     *
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
@@ -375,7 +396,7 @@ class Query
     }
     /**
      * Recupere le premier resultat d'une requete en BD
-     * 
+     *
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
@@ -388,7 +409,7 @@ class Query
     }
     /**
      * Recupere le dernier resultat d'une requete en BD
-     * 
+     *
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
@@ -401,7 +422,7 @@ class Query
     }
     /**
      * Recupere un resultat precis dans les resultat d'une requete en BD
-     * 
+     *
      * @param int $index L'index de l'enregistrement a recupperer
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
@@ -415,7 +436,7 @@ class Query
     }
 
 
-    
+
 
 
     /**
@@ -431,7 +452,7 @@ class Query
             $pdoStatement->bindValue(
                 is_int($key) ? $key + 1 : $key,
                 $value,
-                is_int($value) OR is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+                (is_int($value) OR is_bool($value)) ? PDO::PARAM_INT : PDO::PARAM_STR
             );
         }
         $pdoStatement->execute();
@@ -449,7 +470,7 @@ class Query
 
     /**
      * Compile et renvoie un tableau  contenant les resultatas issus de la bD
-     * 
+     *
      * @return array
      */
     private function buildResult(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
@@ -492,7 +513,7 @@ class Query
 
     /**
      * Compile et renvoie la liste des tables pour le statement des requetes INSERT
-     * 
+     *
      * @return string
      */
     private function buildTable() : string
@@ -500,21 +521,21 @@ class Query
         $from = [];
         foreach ($this->table As $key => $value)
         {
-            if(is_string($key)) 
+            if(is_string($key))
             {
                 $from[] = "$key As $value";
             }
-            else 
+            else
             {
                 $from[] = $value;
             }
         }
         return join(', ', $from);
     }
-    
+
     /**
      * Renvoie le statement d'une requete INSERT
-     * 
+     *
      * @return string
      */
     private function getInsert() : string
@@ -537,7 +558,7 @@ class Query
     }
     /**
      * Renvoie le statement d'une requete UPDATE
-     * 
+     *
      * @return string
      */
     private function getUpdate() : string
@@ -565,7 +586,7 @@ class Query
     }
     /**
      * Renvoie le statement d'une requete DELETE
-     * 
+     *
      * @return string
      */
     private function getDelete() : string
@@ -582,7 +603,7 @@ class Query
     }
     /**
      * Renvoie le statement d'une requete SELECT
-     * 
+     *
      * @return string
      */
     private function getSelect() : string
@@ -627,6 +648,4 @@ class Query
         }
         return join(' ', $parts);
     }
-
-
 }

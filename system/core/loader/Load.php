@@ -41,8 +41,14 @@ class Load
     /**
      * @var array
      */
-    private static $loads = [];
-
+    private static $loads = [
+        'controllers' => [],
+        'helpers' => [],
+        'langs' => [],
+        'libraries' => [],
+        'models' => []
+    ];
+    
 
     /**
      * @throws LoadException
@@ -97,16 +103,16 @@ class Load
      * @param bool $app
      * @throws LoadException
      */
-    private static  function  _helper(string $func, bool $app = false)
+    private static function  _helper(string $func, bool $app = false)
     {
         $func = trim($func);
-        if(!self::is_loaded($func, 'helpers'))
+        if (!self::is_loaded('helpers', $func))
         {
             $file = ($app === false)
                 ? SYST_DIR.'helpers'.DS.$func.'.php'
                 : APP_DIR.'helpers'.DS.$func.'.php';
 
-            if(!file_exists($file))
+            if (!file_exists($file))
             {
                 LoadException::except('
                     Impossible de charger les fonctions <b>'.$func.'</b>. 
@@ -114,7 +120,7 @@ class Load
                     Le fichier &laquo; '.$file.' &raquo; n\'existe pas
                 ');
             }
-            self::loaded($func, 'helpers');
+            self::loaded('helpers', $func);
 
             require_once $file;
         }
@@ -132,40 +138,43 @@ class Load
      */
     public static function model(Controller &$object, $model, string $alias = null)
     {
-        if(!empty($model) AND is_array($model))
+        if (!empty($model) AND is_array($model))
         {
-            foreach ($model as $key => $value)
+            foreach ($model As $key => $value)
             {
-                if(!empty($key) AND is_string($key))
+                if (!empty($key) AND is_string($key))
                 {
-                    if(!empty($value) AND is_string($value))
+                    if (!empty($value) AND is_string($value))
                     {
                         $property = strtolower($value);
-                        $object->$property = self::_model($key);
+                        $object->{$property} = self::_model($key);
                     }
                     else
                     {
-                        $property = explode('/', $key); $property = strtolower(end($property));
-                        $object->$property = self::_model($key);
+                        $property = explode('/', $key); 
+                        $property = strtolower(end($property));
+                        $object->{$property} = self::_model($key);
                     }
                 }
                 else if(!empty($value) AND is_string($value))
                 {
                     $property = strtolower($value);
-                    $object->$property = self::_model($value);
+                    $object->{$property} = self::_model($value);
                 }
             }
         }
-        if(!empty($model) AND is_string($model))
+        if (!empty($model) AND is_string($model))
         {
-            if(!empty($alias) AND is_string($alias)) {
+            if (!empty($alias) AND is_string($alias)) 
+            {
                 $property = strtolower($alias);
-                $object->$property = self::_model($model);
+                $object->{$property} = self::_model($model);
             }
             else
             {
-                $property = explode('/', $model); $property = strtolower(end($property));
-                $object->$property = self::_model($model);
+                $property = explode('/', $model); 
+                $property = strtolower(end($property));
+                $object->{$property} = self::_model($model);
             }
         }
     }
@@ -184,9 +193,9 @@ class Load
         $model = ucfirst($part_model['filename']);
         $model_path = MODEL_DIR.trim(str_replace('/', DS, $part_model['dirname']), DS).DS.$model.'.php';
 
-        if(!self::is_loaded($model, 'models'))
+        if (!self::is_loaded('models', $model))
         {
-            if(!file_exists($model_path))
+            if (!file_exists($model_path))
             {
                 LoadException::except('
                     Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
@@ -196,7 +205,7 @@ class Load
             }
             require_once $model_path;
 
-            if(!class_exists($model))
+            if (!class_exists($model))
             {
                 LoadException::except('
                     Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
@@ -204,10 +213,9 @@ class Load
                     Le fichier &laquo; '.$model_path.' &raquo; ne contient pas de classe <b>'.$model.'</b>
                 ');
             }
-            self::loaded($model, 'models');
-
-            return DIC::get($model);
+            self::loaded('models', $model, DIC::get($model));
         }
+        return self::get_loaded('models', $model);
     }
 
     /**
@@ -231,19 +239,19 @@ class Load
                     if (!empty($value) AND is_string($value))
                     {
                         $property = strtolower($value);
-                        $object->$property = self::_controller($key);
+                        $object->{$property} = self::_controller($key);
                     }
                     else
                     {
                         $property = explode('/', $key); 
                         $property = strtolower(end($property));
-                        $object->$property = self::_controller($key);
+                        $object->{$property} = self::_controller($key);
                     }
                 }
                 else if (!empty($value) AND is_string($value))
                 {
                     $property = strtolower($value);
-                    $object->$property = self::_controller($value);
+                    $object->{$property} = self::_controller($value);
                 }
             }
         }
@@ -252,13 +260,13 @@ class Load
             if (!empty($alias) AND is_string($alias)) 
             {
                 $property = strtolower($alias);
-                $object->$property = self::_controller($controller);
+                $object->{$property} = self::_controller($controller);
             }
             else
             {
                 $property = explode('/', $controller); 
                 $property = strtolower(end($property));
-                $object->$property = self::_controller($controller);
+                $object->{$property} = self::_controller($controller);
             }
         } 
     }
@@ -277,7 +285,7 @@ class Load
         $controller = ucfirst($part_controller['filename']);
         $controller_path = CONTROLLER_DIR.trim(str_replace('/', DS, $part_controller['dirname']), DS).DS.$controller.'.php';
 
-        if (! self::is_loaded($controller, 'controllers'))
+        if (! self::is_loaded('controllers', $controller))
         {
             if (! file_exists($controller_path))
             {
@@ -297,10 +305,9 @@ class Load
                     Le fichier &laquo; '.$controller_path.' &raquo; ne contient pas de classe <b>'.$controller.'</b>
                 ');
             }
-            self::loaded($controller, 'controllers');
-
-            return DIC::get($controller);
+            self::loaded('controllers', $controller, DIC::get($controller));
         }
+        return self::get_loaded('controllers', $controller);
     }
 
     /**
@@ -313,29 +320,31 @@ class Load
      */
     public static function library(Controller &$object, $library, string $alias = null) : void
     {
-        if(!empty($library) AND is_array($library))
+        if (!empty($library) AND is_array($library))
         {
-            foreach ($library as $key => $value)
+            foreach ($library As $key => $value)
             {
-                if(!empty($key) AND is_string($key))
+                if (!empty($key) AND is_string($key))
                 {
                     $lib = explode('/', $key); $lib = end($lib);
                     $property = strtolower(!empty($value) AND is_string($value) ? $value : $key);
-                    $object->$property = self::_library($key, preg_match('#^my_#i', $lib));
+                    $object->{$property} = self::_library($key, preg_match('#^my_#i', $lib));
                 }
-                else if(!empty($value) AND is_string($value))
+                else if (!empty($value) AND is_string($value))
                 {
-                    $lib = explode('/', $value); $lib = end($lib);
+                    $lib = explode('/', $value); 
+                    $lib = end($lib);
                     $property = strtolower($value);
-                    $object->$property = self::_library($value, preg_match('#^my_#i', $lib));
+                    $object->{$property} = self::_library($value, preg_match('#^my_#i', $lib));
                 }
             }
         }
         if(!empty($library) AND is_string($library))
         {
-            $lib = explode('/', $library); $lib = end($lib);
+            $lib = explode('/', $library); 
+            $lib = end($lib);
             $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $library);
-            $object->$property = self::_library($library, preg_match('#^my_#i', $lib));
+            $object->{$property} = self::_library($library, preg_match('#^my_#i', $lib));
         }
     }
     /**
@@ -355,9 +364,9 @@ class Load
         $library = explode('/', trim($library)); 
         $library = end($library);
 
-        if(!self::is_loaded($library, 'libraries'))
+        if(!self::is_loaded('libraries', $library))
         {
-            if(!file_exists($file))
+            if (!file_exists($file))
             {
                 LoadException::except('
                     Impossible de charger la librairie <b>'.$library.'</b>. 
@@ -368,7 +377,7 @@ class Load
             require_once $file;
 
             $library = ($app === false) ? "dF_$library" : $library;
-            if(!class_exists($library))
+            if (!class_exists($library))
             {
                 LoadException::except('
                     Impossible de charger la librarie <b>'.$library.'</b>. 
@@ -376,10 +385,9 @@ class Load
                     Le fichier &laquo; '.$file.' &raquo; ne contient pas de classe <b>'.$library.'</b>
                 ');
             }
-            self::loaded($library, 'librairies');
-
-            return DIC::get($library);
+            self::loaded('libraries', $library, DIC::get($library));
         }
+        return self::get_loaded('libraries', $library);
     }
 
     /**
@@ -391,7 +399,7 @@ class Load
      */
     public static function lang(string $file, &$var, ?string $locale = null, bool $app = false)
     {
-        if(empty($locale))
+        if (empty($locale))
         {
             $locale = Config::get('general.language');
         }
@@ -400,7 +408,7 @@ class Load
             ? RESOURCE_DIR . 'lang' . DS . $locale . DS . $file . '.json'
             : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
-        if(true !== file_exists($filename))
+        if (true !== file_exists($filename))
         {
             LoadException::except('
                 Impossible de charger le fichier de langue <b>'.$file.'</b>. 
@@ -408,7 +416,7 @@ class Load
                 Le fichier &laquo; '.$filename.' &raquo; n\'existe pas.
             ');
         }
-        if(false === ($lang = file_get_contents($filename)))
+        if (false === ($lang = file_get_contents($filename)))
         {
             LoadException::except('
                 Impossible de charger le fichier de langue <b>'.$file.'</b>. 
@@ -419,26 +427,44 @@ class Load
         $var = json_decode($lang);
     }
 
+    
+    
     /**
-     * @param $element
+     * Verifie si un element est chargé dans la liste des modules
+     * 
      * @param string $module
+     * @param $element
      * @return bool
      */
-    private static function is_loaded($element, $module) : bool
+    private static function is_loaded(string $module, $element) : bool
     {
-        if(!isset(self::$loads[$module]) OR !is_array(self::$loads[$module]))
+        if (!isset(self::$loads[$module]) OR !is_array(self::$loads[$module]))
         {
             return false;
         }
         return (in_array($element, self::$loads[$module]));
     }
     /**
-     * @param $element
+     * Ajoute un element aux elements chargés
+     * 
      * @param string $module
+     * @param string $element
+     * @param mixed|null $value
      * @return void
      */
-    private static function loaded($element, $module) : void 
+    private static function loaded(string $module, $element, $value = null) : void 
     {
-        self::$loads[$module][] = $element;
+        self::$loads[$module][$element] = $value;
+    }    
+    /**
+     * Renvoie un element chargé
+     *
+     * @param  string $module
+     * @param  string $element
+     * @return mixed
+     */
+    private static function get_loaded(string $module, $element)
+    {
+        return self::$loads[$module][$element] ?? null;
     }
 }

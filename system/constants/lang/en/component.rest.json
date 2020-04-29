@@ -1,6 +1,7 @@
 {
     "invalid_api_key"      : "Invalid API key %s",
     "invalid_credentials"  : "Invalid credentials",
+    "token_not_found"      : "Access token not found",
     "ip_denied"            : "IP denied",
     "ip_unauthorized"      : "IP unauthorized",
     "unauthorized"         : "Unauthorized",

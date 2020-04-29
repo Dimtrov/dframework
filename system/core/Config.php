@@ -84,19 +84,29 @@ class Config
         $config = explode('.', $config);
         $count = count($config);
 
-        if($count == 1) {
+        if (empty(self::$_config[$config[0]]))
+        {
+            self::load($config[0]);
+        }
+
+        if ($count == 1) 
+        {
             return self::$_config[$config[0]] ?? null;
         }
-        if($count == 2) {
+        if ($count == 2) 
+        {
             return self::$_config[$config[0]][$config[1]] ?? null;
         }
-        if($count == 3) {
+        if ($count == 3) 
+        {
             return self::$_config[$config[0]][$config[1]][$config[2]] ?? null;
         }
-        if($count == 4) {
+        if ($count == 4) 
+        {
             return self::$_config[$config[0]][$config[1]][$config[2]][$config[3]] ?? null;
         }
-        if($count == 5) {
+        if ($count == 5) 
+        {
             return self::$_config[$config[0]][$config[1]][$config[2]][$config[3]][$config[4]] ?? null;
         }
         return null;
@@ -113,19 +123,24 @@ class Config
         $config = explode('.', $config);
         $count = count($config);
 
-        if($count == 1) {
+        if ($count == 1) 
+        {
             self::$_config[$config[0]] = $value;
         }
-        if($count == 2) {
+        if ($count == 2) 
+        {
             self::$_config[$config[0]][$config[1]] = $value;
         }
-        if($count == 3) {
+        if ($count == 3) 
+        {
             self::$_config[$config[0]][$config[1]][$config[2]] = $value;
         }
-        if($count == 4) {
+        if ($count == 4) 
+        {
             self::$_config[$config[0]][$config[1]][$config[2]][$config[3]] = $value;
         }
-        if($count == 5) {
+        if ($count == 5) 
+        {
             self::$_config[$config[0]][$config[1]][$config[2]][$config[3]][$config[4]] = $value;
         }
     }
@@ -147,22 +162,22 @@ class Config
     }
 
     /**
-     * Load the specific configucation in the scoope
+     * Load the specific configuration in the scoope
      * 
      * @param string|string[] $config
      * @param string|null $config_file
      */
     public static function load($config, ?string $config_file = null)
     {
-        if(is_array($config))
+        if (is_array($config))
         {
-            foreach($config As $key => $value)
+            foreach ($config As $key => $value)
             {
-                if (!is_string($value) OR empty($value))
+                if (! is_string($value) OR empty($value))
                 {
                     continue;
                 }
-                if(is_string($key))
+                if (is_string($key))
                 {
                     $config_file = $value;
                     $conf = $key;
@@ -175,11 +190,11 @@ class Config
                 self::load($conf, $config_file);
             }
         }
-        else if(is_string($config))
+        else if (is_string($config))
         {
-            if(empty($config_file))
+            if (empty($config_file))
             {
-                if(!empty(self::$_config_file[$config]))
+                if (! empty(self::$_config_file[$config]))
                 {
                     $config_file = self::$_config_file[$config];
                 }
@@ -188,11 +203,15 @@ class Config
                     $config_file = APP_DIR . 'config' . DS . $config . '.php';
                 }
             }
-            if (!file_exists($config_file))
+            if (! file_exists($config_file))
             {
-                ConfigException::except('Unable to loader the <b>'.$config.'</b> configuration because the &laquo; '.$config_file.' &raquo; file does not exist', 404);
+                ConfigException::except('
+                    Unable to loader the <b>'.$config.'</b> configuration 
+                    <br> 
+                    The &laquo; '.$config_file.' &raquo; file does not exist
+                ', 404);
             }
-            if(!in_array($config_file, get_included_files()))
+            if (! in_array($config_file, get_included_files()))
             {
                 self::$_config = array_merge(self::$_config, require($config_file));
             }

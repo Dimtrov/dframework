@@ -12,10 +12,15 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
-namespace dFramework\components\ci_rest;
+
+namespace dFramework\components\rest;
+
+use dFramework\core\exception\Exception;
+use dFramework\core\loader\Load;
+use dFramework\core\data\Data;
 
 /**
  * REST Format class
@@ -27,16 +32,10 @@ namespace dFramework\components\ci_rest;
  * @category    Rest
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       3.0
+ * @since       3.1
  * @credit      CI Rest Server - by Chris Kacerguis <chriskacerguis@gmail.com> - https://github.com/chriskacerguis/ci-restserver
  * @file        /system/components/rest/Format.php
  */
-
-
-use dFramework\core\exception\Exception;
-use dFramework\core\loader\Load;
-use dFramework\core\data\Data;
-
 
 class Format
 {
@@ -54,11 +53,6 @@ class Format
      * Json output format.
      */
     const JSON_FORMAT = 'json';
-
-    /**
-     * HTML output format.
-     */
-    const HTML_FORMAT = 'html';
 
     /**
      * PHP output format.
@@ -255,62 +249,6 @@ class Format
         return $structure->asXML();
     }
 
-    /**
-     * Format data as HTML.
-     *
-     * @param mixed|null $data Optional data to pass, so as to override the data passed
-     *                         to the constructor
-     *
-     * @return mixed
-     */
-    public function to_html($data = null)
-    {
-        // If no data is passed as a parameter, then use the data passed
-        // via the constructor
-        if ($data === null AND func_num_args() === 0) 
-        {
-            $data = $this->_data;
-        }
-        // Cast as an array if not already
-        if (is_array($data) === false) 
-        {
-            $data = (array) $data;
-        }
-
-        // Check if it's a multi-dimensional array
-        if (isset($data[0]) AND count($data) !== count($data, COUNT_RECURSIVE)) 
-        {
-            // Multi-dimensional array
-            $headings = array_keys($data[0]);
-        } 
-        else 
-        {
-            // Single array
-            $headings = array_keys($data);
-            $data = [$data];
-        }
-    /*
-        A REVOIR
-        // je ne souhaite pas integrer la librarie "table" de CodeIgniter (du moins pas pour le moment)
-        // donc soit je vais annuler cette option, soit je vais implementer mon propre tablue html
-
-        // Load the table library
-        $this->_CI->load->library('table');
-
-        $this->_CI->table->set_heading($headings);
-
-        foreach ($data as $row) {
-            // Suppressing the "array to string conversion" notice
-            // Keep the "evil" @ here
-            $row = @array_map('strval', $row);
-
-            $this->_CI->table->add_row($row);
-        }
-
-        return $this->_CI->table->generate();
-
-    */    
-    }
 
     /**
      * @link http://www.metashock.de/2014/02/create-csv-file-in-memory-php/

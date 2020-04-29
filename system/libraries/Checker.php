@@ -50,7 +50,7 @@ class dF_Checker
 
     /**
      * Verifie si un champ existe(et n'est pas vide) parmi les champs utilisés par le validateur
-     * 
+     *
      * @param string ...$vars Liste des champs à vérifier l'existance
      * @return bool
      */
@@ -70,9 +70,9 @@ class dF_Checker
 
     /**
      * Verifie si une valeur existe dans un tableau ou une chaine separée par des point-virgules
-     * 
+     *
      * @param mixed $value Valeur que l'on souhaite verifier l'existance
-     * @param array|string $array tableau de valeur ou chaine de valeurs séparées par des points-virgule 
+     * @param array|string $array tableau de valeur ou chaine de valeurs séparées par des points-virgule
      * @return bool
      * @throws Exception
      */
@@ -90,7 +90,7 @@ class dF_Checker
 
     /**
      * Verifie si une donne ne contient que des caractere alphabetique ou que c'est un tableau qui n'a que des caractere aphabetique
-     * 
+     *
      * @param string|array $value Donnée à verifier
      * @return bool
      */
@@ -164,15 +164,15 @@ class dF_Checker
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        if(true !== $this->is_date($value, $format)) 
+        if(true !== $this->is_date($value, $format))
         {
             return false;
         }
-        
-        $date = self::formatDate($value, $format);        
+
+        $date = self::formatDate($value, $format);
         rsort($date);
         $date = implode('-', $date);
-        
+
         return ((new DateTime()) > (new DateTime($date)));
     }
     /**
@@ -187,7 +187,7 @@ class dF_Checker
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        list($day, $month, $year) = self::formatDate($value, $format);        
+        list($day, $month, $year) = self::formatDate($value, $format);
         $day = (int) $day; $month = (int) $month; $year = (int) $year;
 
         if($month < 1 OR $month > 12)
@@ -208,7 +208,7 @@ class dF_Checker
     /**
      * Verifie si une donnee est une adresse email valide
      *
-     * @param mixed $value 
+     * @param mixed $value
      * @return bool
      */
     public function is_email($value)
@@ -249,6 +249,50 @@ class dF_Checker
     }
 
     /**
+     * Verifie si une donnees correspond a un numero valide
+     *
+     * @param  $value
+     * @param  $country
+     * @return bool
+     */
+    public function is_tel($value, $country = 'cm')
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
+
+        $tel = trim(str_replace(['+', ' '], '', (string) $value));
+        if (preg_match('/\D/', $tel))
+        {
+            return false;
+        }
+        $country = (empty($country)) ? $this->getCountryFromIndicatif($tel) : $country;
+        $country = (empty($country)) ? 'cm' : strtolower($country);
+
+        if ($country == 'cm')
+        {
+            $indicatif = '\+?237\s?';
+            return (
+                preg_match('#^'.$indicatif.'6\s?[5-9]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel) OR
+                preg_match('#^'.$indicatif.'(2|3|4)\s?[2-3]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel)
+            );
+        }
+        if($country == 'fr')
+        {
+            $indicatif = '\+?33\s?';
+            return preg_match('#^'.$indicatif.'0[1-68]([-. ]?[0-9]{2}){4}$#', $tel);
+        }
+        switch ($country)
+        {
+            case 'bj' : $indicatif = '\+?229\s?'; break;
+            case 'ci' : $indicatif = '\+?225\s?'; break;
+            case 'ml' : $indicatif = '\+?223\s?'; break;
+            case 'sn' : $indicatif = '\+?221\s?'; break;
+            case 'tg' : $indicatif = '\+?\s?'; break;
+            default : $indicatif = ''; break;
+        }
+        return preg_match('#^'.$indicatif.'([-. ]?[0-9]+)+$#', $tel);
+    }
+
+    /**
      * Verifie si une donnee est une url
      *
      * @param $value
@@ -259,14 +303,14 @@ class dF_Checker
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
 
-        if($natif === true) 
+        if($natif === true)
         {
             return !(filter_var($value, FILTER_VALIDATE_URL) === false);
         }
         // Regex realisée par Scott Gonzalez: http://projects.scottsplayground.com/iri/
         /*
-            Si vous voulez utilser mon regex, la voici -o)
-            if(!preg_match('#^(https?|ftp|steam)://([a-z0-9._/-]+)$#i', $value)){...}
+            Si vous voulez utilser ma propre regex, la voici -o)
+            return preg_match('#^(https?|ftp|steam)://([a-z0-9._/-]+)$#i', $value);
         */
         return preg_match("/^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i", $value);
     }
@@ -383,7 +427,14 @@ class dF_Checker
                 $code = 3;
                 $message = ($status === true) ? 'Ok' : 'Entrez une adresse ip valide';
             }
-
+			
+            if(preg_match('#^is_tel\[(.+)\]$#isU', $function, $params))
+            {
+                $status = $this->is_tel($input, $params[1]);
+                $code = 3;
+                $message = ($status === true) ? 'Ok' : 'Entrez un numero de telephone valide';
+            }
+			
             if(preg_match('#^is_url\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_url($input, (bool) $params[1]);
@@ -503,5 +554,35 @@ class dF_Checker
         }
 
         return [$day, $month, $year];
+    }
+
+    private function getCountryFromIndicatif($tel)
+    {
+        if(preg_match('#^\+?237\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'cm';
+        }
+        if(preg_match('#^\+?229\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'bj';
+        }
+        if(preg_match('#^\+?225\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'ci';
+        }
+        if(preg_match('#^\+?223\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'ml';
+        }
+        if(preg_match('#^\+?221\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'sn';
+        }
+        //if(preg_match('#^\+?\s?([-. ]?[0-9]+)+$#', $tel)) { return 'tg'; }
+        if(preg_match('#^\+?33\s?([-. ]?[0-9]+)+$#', $tel))
+        {
+            return 'fr';
+        }
+        return '';
     }
 }

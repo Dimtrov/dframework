@@ -7,13 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
- *
+ *  @version    3.1
  */
 
 
@@ -28,6 +27,18 @@
 */
 
 
+
+
+/*
+|--------------------------------------------------------------------------
+| REST Language File
+|--------------------------------------------------------------------------
+|
+| Language file to load from the language directory
+|
+*/
+$rest['language'] = 'en';
+
 /*
 |--------------------------------------------------------------------------
 | HTTP protocol
@@ -40,6 +51,23 @@ $rest['force_https'] = false;
 
 /*
 |--------------------------------------------------------------------------
+| Allowable Methods
+|--------------------------------------------------------------------------
+|
+| List of authorize method to access in web service
+|
+*/
+$rest['allowed_methods'] = [
+  'GET',
+  'POST',
+  'OPTIONS',
+  'PUT',
+  'PATCH',
+  'DELETE',
+];
+
+/*
+|--------------------------------------------------------------------------
 | REST Output Format
 |--------------------------------------------------------------------------
 |
@@ -49,36 +77,12 @@ $rest['force_https'] = false;
 | 'csv':        Comma separated file
 | 'json':       Uses json_encode(). Note: If a GET query string
 |               called 'callback' is passed, then jsonp will be returned
-| 'html'        HTML using the table library in CodeIgniter
 | 'php':        Uses var_export()
 | 'serialized':  Uses serialize()
 | 'xml':        Uses simplexml_load_string()
 |
 */
-$rest['rest_default_format'] = 'json';
-
-/*
-|--------------------------------------------------------------------------
-| REST Supported Output Formats
-|--------------------------------------------------------------------------
-|
-| The following setting contains a list of the supported/allowed formats.
-| You may remove those formats that you don't want to use.
-| If the default format $rest['rest_default_format'] is missing within
-| $rest['rest_supported_formats'], it will be added silently during
-| REST_Controller initialization.
-|
-*/
-$rest['rest_supported_formats'] = [
-    'json',
-    'array',
-    'csv',
-    'html',
-    'jsonp',
-    'php',
-    'serialized',
-    'xml',
-];
+$rest['return_format'] = 'json';
 
 /*
 |--------------------------------------------------------------------------
@@ -88,7 +92,7 @@ $rest['rest_supported_formats'] = [
 | The field name for the status inside the response
 |
 */
-$rest['rest_status_field_name'] = 'status';
+$rest['status_field_name'] = 'status';
 
 /*
 |--------------------------------------------------------------------------
@@ -98,145 +102,42 @@ $rest['rest_status_field_name'] = 'status';
 | The field name for the message inside the response
 |
 */
-$rest['rest_message_field_name'] = 'error';
+$rest['message_field_name'] = 'error';
 
 /*
 |--------------------------------------------------------------------------
-| Enable Emulate Request
+| REST Handle Exceptions
 |--------------------------------------------------------------------------
 |
-| Should we enable emulation of the request (e.g. used in Mootools request)
+| Handle exceptions caused by the controller
 |
 */
-$rest['enable_emulate_request'] = true;
+$rest['handle_exceptions'] = true;
 
 /*
 |--------------------------------------------------------------------------
-| REST Realm
+| Global IP Blacklisting
 |--------------------------------------------------------------------------
 |
-| Name of the password protected REST API displayed on login dialogs
+| Prevent connections to the REST server from blacklisted IP addresses
 |
-| e.g: My Secret REST API
+| Usage:
+| 1. Set to TRUE and add any IP address to 'ip_blacklist'
 |
 */
-$rest['rest_realm'] = 'REST API';
+$rest['ip_blacklist_enabled'] = false;
 
 /*
 |--------------------------------------------------------------------------
-| REST Login
+| REST IP Blacklist
 |--------------------------------------------------------------------------
 |
-| Set to specify the REST API requires to be logged in
+| Prevent connections from the following IP addresses
 |
-| FALSE     No login required
-| 'basic'   Unsecured login
-| 'digest'  More secured login
-| 'session' Check for a PHP session variable. See 'auth_source' to set the
-|           authorization key
+| e.g: ['123.456.789.0', '987.654.32.1']
 |
 */
-$rest['rest_auth'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST Login Source
-|--------------------------------------------------------------------------
-|
-| Is login required and if so, the user store to use
-|
-| ''        Use config based users or wildcard testing
-| 'ldap'    Use LDAP authentication
-| 'library' Use a authentication library
-|
-| Note: If 'rest_auth' is set to 'session' then change 'auth_source' to the name of the session variable
-|
-*/
-$rest['auth_source'] = 'ldap';
-
-/*
-|--------------------------------------------------------------------------
-| Allow Authentication and API Keys
-|--------------------------------------------------------------------------
-|
-| Where you wish to have Basic, Digest or Session login, but also want to use API Keys (for limiting
-| requests etc), set to TRUE;
-|
-*/
-$rest['allow_auth_and_keys'] = true;
-$rest['strict_api_and_auth'] = true; // force the use of both api and auth before a valid api request is made
-
-/*
-|--------------------------------------------------------------------------
-| REST Login Class and Function
-|--------------------------------------------------------------------------
-|
-| If library authentication is used define the class and function name
-|
-| The function should accept two parameters: class->function($username, $password)
-| In other cases override the function _perform_library_auth in your controller
-|
-| For digest authentication the library function should return already a stored
-| md5(username:restrealm:password) for that username
-|
-| e.g: md5('admin:REST API:1234') = '1e957ebc35631ab22d5bd6526bd14ea2'
-|
-*/
-$rest['auth_library_class'] = '';
-$rest['auth_library_function'] = '';
-
-/*
-|--------------------------------------------------------------------------
-| Override auth types for specific class/method
-|--------------------------------------------------------------------------
-|
-| Set specific authentication types for methods within a class (controller)
-|
-| Set as many config entries as needed.  Any methods not set will use the default 'rest_auth' config value.
-|
-| e.g:
-|
-|           $rest['auth_override_class_method']['deals']['view'] = 'none';
-|           $rest['auth_override_class_method']['deals']['insert'] = 'digest';
-|           $rest['auth_override_class_method']['accounts']['user'] = 'basic';
-|           $rest['auth_override_class_method']['dashboard']['*'] = 'none|digest|basic';
-|
-| Here 'deals', 'accounts' and 'dashboard' are controller names, 'view', 'insert' and 'user' are methods within. An asterisk may also be used to specify an authentication method for an entire classes methods. Ex: $rest['auth_override_class_method']['dashboard']['*'] = 'basic'; (NOTE: leave off the '_get' or '_post' from the end of the method name)
-| Acceptable values are; 'none', 'digest' and 'basic'.
-|
-*/
- $rest['auth_override_class_method']['deals']['view'] = 'none';
- $rest['auth_override_class_method']['deals']['insert'] = 'digest';
- $rest['auth_override_class_method']['accounts']['user'] = 'basic';
- $rest['auth_override_class_method']['dashboard']['*'] = 'basic';
-
-// ---Uncomment list line for the wildard unit test
-$rest['auth_override_class_method']['wildcard_test_cases']['*'] = 'basic';
-
-/*
-|--------------------------------------------------------------------------
-| Override auth types for specific 'class/method/HTTP method'
-|--------------------------------------------------------------------------
-|
-| example:
-|
-|            $rest['auth_override_class_method_http']['deals']['view']['get'] = 'none';
-|            $rest['auth_override_class_method_http']['deals']['insert']['post'] = 'none';
-|            $rest['auth_override_class_method_http']['deals']['*']['options'] = 'none';
-*/
-
-// ---Uncomment list line for the wildard unit test
-$rest['auth_override_class_method_http']['wildcard_test_cases']['*']['options'] = 'basic';
-
-/*
-|--------------------------------------------------------------------------
-| REST Login Usernames
-|--------------------------------------------------------------------------
-|
-| Array of usernames and passwords for login, if ldap is configured this is ignored
-|
-*/
-$rest['rest_valid_logins'] = ['admin' => '1234'];
+$rest['ip_blacklist'] = [];
 
 /*
 |--------------------------------------------------------------------------
@@ -253,17 +154,7 @@ $rest['rest_valid_logins'] = ['admin' => '1234'];
 |    restrict certain methods to IPs in your white-list
 |
 */
-$rest['rest_ip_whitelist_enabled'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST Handle Exceptions
-|--------------------------------------------------------------------------
-|
-| Handle exceptions caused by the controller
-|
-*/
-$rest['rest_handle_exceptions'] = true;
+$rest['ip_whitelist_enabled'] = false;
 
 /*
 |--------------------------------------------------------------------------
@@ -278,263 +169,7 @@ $rest['rest_handle_exceptions'] = true;
 | 127.0.0.1 and 0.0.0.0 are allowed by default
 |
 */
-$rest['rest_ip_whitelist'] = '';
-
-/*
-|--------------------------------------------------------------------------
-| Global IP Blacklisting
-|--------------------------------------------------------------------------
-|
-| Prevent connections to the REST server from blacklisted IP addresses
-|
-| Usage:
-| 1. Set to TRUE and add any IP address to 'rest_ip_blacklist'
-|
-*/
-$rest['rest_ip_blacklist_enabled'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST IP Blacklist
-|--------------------------------------------------------------------------
-|
-| Prevent connections from the following IP addresses
-|
-| e.g: '123.456.789.0, 987.654.32.1'
-|
-*/
-$rest['rest_ip_blacklist'] = '';
-
-/*
-|--------------------------------------------------------------------------
-| REST Database Group
-|--------------------------------------------------------------------------
-|
-| Connect to a database group for keys, logging, etc. It will only connect
-| if you have any of these features enabled
-|
-*/
-$rest['rest_database_group'] = 'default';
-
-/*
-|--------------------------------------------------------------------------
-| REST API Keys Table Name
-|--------------------------------------------------------------------------
-|
-| The table name in your database that stores API keys
-|
-*/
-$rest['rest_keys_table'] = 'keys';
-
-/*
-|--------------------------------------------------------------------------
-| REST Enable Keys
-|--------------------------------------------------------------------------
-|
-| When set to TRUE, the REST API will look for a column name called 'key'.
-| If no key is provided, the request will result in an error. To override the
-| column name see 'rest_key_column'
-|
-| Default table schema:
-|   CREATE TABLE `keys` (
-|       `id` INT(11) NOT NULL AUTO_INCREMENT,
-|       `user_id` INT(11) NOT NULL,
-|       `key` VARCHAR(40) NOT NULL,
-|       `level` INT(2) NOT NULL,
-|       `ignore_limits` TINYINT(1) NOT NULL DEFAULT '0',
-|       `is_private_key` TINYINT(1)  NOT NULL DEFAULT '0',
-|       `ip_addresses` TEXT NULL DEFAULT NULL,
-|       `date_created` INT(11) NOT NULL,
-|       PRIMARY KEY (`id`)
-|   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-|
-*/
-$rest['rest_enable_keys'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST Table Key Column Name
-|--------------------------------------------------------------------------
-|
-| If not using the default table schema in 'rest_enable_keys', specify the
-| column name to match e.g. my_key
-|
-*/
-$rest['rest_key_column'] = 'key';
-
-/*
-|--------------------------------------------------------------------------
-| REST API Limits method
-|--------------------------------------------------------------------------
-|
-| Specify the method used to limit the API calls
-|
-| Available methods are :
-| $rest['rest_limits_method'] = 'IP_ADDRESS'; // Put a limit per ip address
-| $rest['rest_limits_method'] = 'API_KEY'; // Put a limit per api key
-| $rest['rest_limits_method'] = 'METHOD_NAME'; // Put a limit on method calls
-| $rest['rest_limits_method'] = 'ROUTED_URL';  // Put a limit on the routed URL
-|
-*/
-$rest['rest_limits_method'] = 'ROUTED_URL';
-
-/*
-|--------------------------------------------------------------------------
-| REST Key Length
-|--------------------------------------------------------------------------
-|
-| Length of the created keys. Check your default database schema on the
-| maximum length allowed
-|
-| Note: The maximum length is 40
-|
-*/
-$rest['rest_key_length'] = 40;
-
-/*
-|--------------------------------------------------------------------------
-| REST API Key Variable
-|--------------------------------------------------------------------------
-|
-| Custom header to specify the API key
-
-| Note: Custom headers with the X- prefix are deprecated as of
-| 2012/06/12. See RFC 6648 specification for more details
-|
-*/
-$rest['rest_key_name'] = 'X-API-KEY';
-
-/*
-|--------------------------------------------------------------------------
-| REST Enable Logging
-|--------------------------------------------------------------------------
-|
-| When set to TRUE, the REST API will log actions based on the column names 'key', 'date',
-| 'time' and 'ip_address'. This is a general rule that can be overridden in the
-| $this->method array for each controller
-|
-| Default table schema:
-|   CREATE TABLE `logs` (
-|       `id` INT(11) NOT NULL AUTO_INCREMENT,
-|       `uri` VARCHAR(255) NOT NULL,
-|       `method` VARCHAR(6) NOT NULL,
-|       `params` TEXT DEFAULT NULL,
-|       `api_key` VARCHAR(40) NOT NULL,
-|       `ip_address` VARCHAR(45) NOT NULL,
-|       `time` INT(11) NOT NULL,
-|       `rtime` FLOAT DEFAULT NULL,
-|       `authorized` VARCHAR(1) NOT NULL,
-|       `response_code` smallint(3) DEFAULT '0',
-|       PRIMARY KEY (`id`)
-|   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-|
-*/
-$rest['rest_enable_logging'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST API Logs Table Name
-|--------------------------------------------------------------------------
-|
-| If not using the default table schema in 'rest_enable_logging', specify the
-| table name to match e.g. my_logs
-|
-*/
-$rest['rest_logs_table'] = 'logs';
-
-/*
-|--------------------------------------------------------------------------
-| REST Method Access Control
-|--------------------------------------------------------------------------
-| When set to TRUE, the REST API will check the access table to see if
-| the API key can access that controller. 'rest_enable_keys' must be enabled
-| to use this
-|
-| Default table schema:
-|   CREATE TABLE `access` (
-|       `id` INT(11) unsigned NOT NULL AUTO_INCREMENT,
-|       `key` VARCHAR(40) NOT NULL DEFAULT '',
-|       `all_access` TINYINT(1) NOT NULL DEFAULT '0',
-|       `controller` VARCHAR(50) NOT NULL DEFAULT '',
-|       `date_created` DATETIME DEFAULT NULL,
-|       `date_modified` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-|       PRIMARY KEY (`id`)
-|    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-|
-*/
-$rest['rest_enable_access'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST API Access Table Name
-|--------------------------------------------------------------------------
-|
-| If not using the default table schema in 'rest_enable_access', specify the
-| table name to match e.g. my_access
-|
-*/
-$rest['rest_access_table'] = 'access';
-
-/*
-|--------------------------------------------------------------------------
-| REST API Param Log Format
-|--------------------------------------------------------------------------
-|
-| When set to TRUE, the REST API log parameters will be stored in the database as JSON
-| Set to FALSE to log as serialized PHP
-|
-*/
-$rest['rest_logs_json_params'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST Enable Limits
-|--------------------------------------------------------------------------
-|
-| When set to TRUE, the REST API will count the number of uses of each method
-| by an API key each hour. This is a general rule that can be overridden in the
-| $this->method array in each controller
-|
-| Default table schema:
-|   CREATE TABLE `limits` (
-|       `id` INT(11) NOT NULL AUTO_INCREMENT,
-|       `uri` VARCHAR(255) NOT NULL,
-|       `count` INT(10) NOT NULL,
-|       `hour_started` INT(11) NOT NULL,
-|       `api_key` VARCHAR(40) NOT NULL,
-|       PRIMARY KEY (`id`)
-|   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-|
-| To specify the limits within the controller's __construct() method, add per-method
-| limits with:
-|
-|       $this->methods['METHOD_NAME']['limit'] = [NUM_REQUESTS_PER_HOUR];
-|
-| See application/controllers/api/example.php for examples
-*/
-$rest['rest_enable_limits'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| REST API Limits Table Name
-|--------------------------------------------------------------------------
-|
-| If not using the default table schema in 'rest_enable_limits', specify the
-| table name to match e.g. my_limits
-|
-*/
-$rest['rest_limits_table'] = 'limits';
-
-/*
-|--------------------------------------------------------------------------
-| REST Ignore HTTP Accept
-|--------------------------------------------------------------------------
-|
-| Set to TRUE to ignore the HTTP Accept and speed up each request a little.
-| Only do this if you are using the $this->rest_format or /format/xml in URLs
-|
-*/
-$rest['rest_ignore_http_accept'] = false;
+$rest['ip_whitelist'] = [];
 
 /*
 |--------------------------------------------------------------------------
@@ -549,108 +184,41 @@ $rest['rest_ignore_http_accept'] = false;
 | Hint: This is good for production environments
 |
 */
-$rest['rest_ajax_only'] = false;
+$rest['ajax_only'] = false;
 
 /*
 |--------------------------------------------------------------------------
-| REST Language File
+| REST Auth
 |--------------------------------------------------------------------------
 |
-| Language file to load from the language directory
+| Set to specify the REST API requires to be logged in
 |
+| FALSE     No login required
+| 'jwt'     Jeton Web Token with Bearer header
+| 'session' Check for a PHP session variable. See 'auth_source' to set the
+|           authorization key
 */
-$rest['rest_language'] = 'en';
+$rest['auth'] = false;
 
 /*
 |--------------------------------------------------------------------------
-| CORS Check
+| REST JWT Configuration
 |--------------------------------------------------------------------------
 |
-| Set to TRUE to enable Cross-Origin Resource Sharing (CORS). Useful if you
-| are hosting your API on a different domain from the application that
-| will access it through a browser
+| Set the configuration of jwt algorithm's
 |
 */
-$rest['check_cors'] = false;
+$rest['jwt'] = [
+    /**
+     * Cle du token
+     */
+    'key' => 'df_jwt_key',
+    /**
+     * Temps d'expiration du token en minute
+     */
+    'exp_time' => 5,
 
-/*
-|--------------------------------------------------------------------------
-| CORS Allowable Headers
-|--------------------------------------------------------------------------
-|
-| If using CORS checks, set the allowable headers here
-|
-*/
-$rest['allowed_cors_headers'] = [
-  'Origin',
-  'X-Requested-With',
-  'Content-Type',
-  'Accept',
-  'Access-Control-Request-Method',
 ];
-
-/*
-|--------------------------------------------------------------------------
-| CORS Allowable Methods
-|--------------------------------------------------------------------------
-|
-| If using CORS checks, you can set the methods you want to be allowed
-|
-*/
-$rest['allowed_cors_methods'] = [
-  'GET',
-  'POST',
-  'OPTIONS',
-  'PUT',
-  'PATCH',
-  'DELETE',
-];
-
-/*
-|--------------------------------------------------------------------------
-| CORS Allow Any Domain
-|--------------------------------------------------------------------------
-|
-| Set to TRUE to enable Cross-Origin Resource Sharing (CORS) from any
-| source domain
-|
-*/
-$rest['allow_any_cors_domain'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| CORS Allowable Domains
-|--------------------------------------------------------------------------
-|
-| Used if $rest['check_cors'] is set to TRUE and $rest['allow_any_cors_domain']
-| is set to FALSE. Set all the allowable domains within the array
-|
-| e.g. $rest['allowed_origins'] = ['http://www.example.com', 'https://spa.example.com']
-|
-*/
-$rest['allowed_cors_origins'] = [];
-
-/*
-|--------------------------------------------------------------------------
-| CORS Forced Headers
-|--------------------------------------------------------------------------
-|
-| If using CORS checks, always include the headers and values specified here
-| in the OPTIONS client preflight.
-| Example:
-| $rest['forced_cors_headers'] = [
-|   'Access-Control-Allow-Credentials' => 'true'
-| ];
-|
-| Added because of how Sencha Ext JS framework requires the header
-| Access-Control-Allow-Credentials to be set to true to allow the use of
-| credentials in the REST Proxy.
-| See documentation here:
-| http://docs.sencha.com/extjs/6.5.2/classic/Ext.data.proxy.Rest.html#cfg-withCredentials
-|
-*/
-$rest['forced_cors_headers'] = [];
-
 
 
 return compact('rest');

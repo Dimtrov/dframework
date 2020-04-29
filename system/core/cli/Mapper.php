@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
@@ -22,6 +22,7 @@ use Ahc\Cli\Input\Command;
 use Ahc\Cli\IO\Interactor;
 use Ahc\Cli\Output\Color;
 use Ahc\Cli\Output\Writer;
+use dFramework\core\dFramework;
 use dFramework\core\loader\ClassMapper;
 
 /**
@@ -93,7 +94,7 @@ class Mapper extends Command
                    echo $color->error("\t Une erreur s'est produite pendant le mapping des classes");
                 }
 
-                $writer->bold->colors("\n\t<bgGreen> dFramework v3.0.0 </end></eol>");
+                $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
             }
 
         }

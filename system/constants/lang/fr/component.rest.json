@@ -1,6 +1,7 @@
 {
     "invalid_api_key"      : "La clef d'API %s est invalide",
     "invalid_credentials"  : "Authentification invalide",
+    "token_not_found"      : "Jeton d'authentification non trouvé",
     "ip_denied"            : "IP refusée",
     "ip_unauthorized"      : "IP non-autorisée",
     "unauthorized"         : "Non autorisé",

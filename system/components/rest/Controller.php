@@ -1,17 +1,46 @@
 <?php 
+/**
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019, Dimtrov Sarl
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.1
+ */
 
 
 namespace dFramework\components\rest;
 
 use dFramework\core\Config;
 use dFramework\core\Controller as CoreController;
+use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
-use dFramework\core\route\Dispatcher;
-use dFramework\core\utilities\Uri;
+use Firebase\JWT\JWT;
 
+
+/**
+ * dFramework Rest Controller
+ * 
+ * A fully RESTful server implementation for dFramework (inspired by CodeIgniter) using one library, one config file and one controller.
+ *
+ * @package		dFramework
+ * @subpackage	Components
+ * @category    Rest
+ * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       3.1
+ * @credit      CI Rest Server - by Chris Kacerguis <chriskacerguis@gmail.com> - https://github.com/chriskacerguis/ci-restserver
+ * @file        /system/components/rest/Controller.php
+ */
 class Controller extends CoreController
 {
-
     /**
      * Common HTTP status codes and their respective description.
      *
@@ -30,140 +59,464 @@ class Controller extends CoreController
 
 
     /**
-     * This defines the rest format
-     * Must be overridden it in a controller so that it is set.
-     *
-     * @var string|null
-     */
-    protected $rest_format = null;
-
-    /**
-     * Defines the list of method properties such as limit, log and level.
+     * List of allowed REST format.
      *
      * @var array
      */
-    protected $methods = [];
-
+    private $allowed_format = [
+        'json',
+        'array',
+        'csv',
+    // 'html',
+        'jsonp',
+        'php',
+        'serialized',
+        'xml',
+    ];
     /**
-     * List of allowed HTTP methods.
+     * List all supported methods, the first will be the default format.
      *
      * @var array
      */
-    protected $allowed_methods = ['get', 'delete', 'post', 'put', 'options', 'patch', 'head'];
-
+    protected $_supported_formats = [
+        'json'       => 'application/json',
+        'array'      => 'application/json',
+        'csv'        => 'application/csv',
+    // 'html'       => 'text/html',
+        'jsonp'      => 'application/javascript',
+        'php'        => 'text/plain',
+        'serialized' => 'application/vnd.php.serialized',
+        'xml'        => 'application/xml',
+    ];
     /**
-     * Contains details about the REST API
-     * Fields: db, ignore_limits, key, level, user_id
-     * Note: This is a dynamic object (stdClass).
-     *
-     * @var object
-     */
-    protected $rest = null;
-
+     * Configurations of rest controller 
+     */    
+    private $_config;
     /**
-     * The arguments for the GET request method.
-     *
-     * @var array
+     * Language variables of rest controller
      */
-    protected $_get_args = [];
-
-    /**
-     * The arguments for the POST request method.
-     *
-     * @var array
-     */
-    protected $_post_args = [];
-
-    /**
-     * The arguments for the PUT request method.
-     *
-     * @var array
-     */
-    protected $_put_args = [];
-
-    /**
-     * The arguments for the DELETE request method.
-     *
-     * @var array
-     */
-    protected $_delete_args = [];
-
-    /**
-     * The arguments for the PATCH request method.
-     *
-     * @var array
-     */
-    protected $_patch_args = [];
-
-    /**
-     * The arguments for the HEAD request method.
-     *
-     * @var array
-     */
-    protected $_head_args = [];
-
-    /**
-     * The arguments for the OPTIONS request method.
-     *
-     * @var array
-     */
-    protected $_options_args = [];
-
-    /**
-     * The arguments for the query parameters.
-     *
-     * @var array
-     */
-    protected $_query_args = [];
-
-    /**
-     * The arguments from GET, POST, PUT, DELETE, PATCH, HEAD and OPTIONS request methods combined.
-     *
-     * @var array
-     */
-    protected $_args = [];
-
-
-
     private $_lang;
 
-    public function index(){}
 
+    protected $payload;
+
+    
     public function __construct()
     {
         parent::__construct();
+        $this->_config = Config::get('rest');
 
-        $this->response->type('application/json');
-        $this->response->charset(strtolower(Config::get('general.charset') ?? 'utf-8'));
-        
-        Load::lang('component.rest', $this->_lang, null, false);
-        $this->_lang = (array) $this->_lang;
+        $locale = $this->_config['language'] ?? null;
+        $locale = !empty($locale) ? $locale : Config::get('general.language');
+        $locale = !empty($locale) ? $locale : 'en';
+        Load::lang('component.rest', $this->_lang, $locale, false);
+        $this->_lang = (array) $this->_lang;   
     }
 
+    public function _remap($method, $params = [])
+    {
+        $class = get_called_class();
+        
+        // Sure it exists, but can they do anything with it?
+        if (!method_exists($class, $method)) 
+        {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => $this->_lang['unknown_method'],
+            ], self::HTTP_METHOD_NOT_ALLOWED);
+        }
 
+        // Call the controller method and passed arguments
+        try {
+            call_user_func_array([new $class, $method], $params);
+        } 
+        catch (Exception $ex) {
+            if ($this->_config['handle_exceptions'] === false) 
+            {
+                throw $ex;
+            }
+            // If the method doesn't exist, then the error will be caught and an error response shown
+            Exception::Throw($ex);
+        }
+    }
+    public function index(){}
+
+
+    
+    /**
+     * Verifie si les informations du processus sont valide ou pas
+     * 
+     * @throws Exception
+     */
+    protected function checkProcess()
+    {
+        $this->_checkDevProcess();
+        $this->_checkClientProcess();
+    }
+
+    /**
+     * Rend une reponse au client
+     * 
+     * @param $data Les donnees a renvoyer
+     * @param int $status Le statut de la reponse
+     * @param bool $continue Specifie si on continue d'executer le script apres avoir envoyer les donnees ou pas
+     */
     protected function response($data, int $status = self::HTTP_OK, bool $continue = false)
     {
+        ob_start();
+        
+        // If the HTTP status is not NULL, then cast as an integer
+        if ($status !== null) 
+        {
+            // So as to be safe later on in the process
+            $status = (int) $status;
+        }
+
+        // If data is NULL and no HTTP status code provided, then display, error and exit
+        if ($data === null AND $status === null) 
+        {
+            $status = self::HTTP_NOT_FOUND;
+        }
+
+        $this->response->charset(strtolower(Config::get('general.charset') ?? 'utf-8'));
         $this->response->statusCode($status);
-        $this->response->body(json_encode($data));
-        $this->response->send();
-
-        if (!$continue)
+        
+        $this->_parseResponse($data);
+        
+        if ($continue === false) 
         {
+            // Display the data and exit execution
+            $this->response->send();
             exit;
-        }
-    }
-
-
-    protected function allowed_methods(string ...$methods)
-    {
-        $methods = array_map(function($str) {
-            return strtolower($str);
-        }, $methods);
-
-        if (!in_array(strtolower($this->request->method()), $methods))
+        } 
+        else 
         {
-            return $this->response($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
+            if (is_callable('fastcgi_finish_request')) 
+            {
+                // Terminates connection and returns response to client on PHP-FPM.
+                $this->response->send();
+                ob_end_flush();
+                fastcgi_finish_request();
+                ignore_user_abort(true);
+            } 
+            else 
+            {
+                // Legacy compatibility.
+                ob_end_flush();
+            }
+        }
+        ob_end_flush();
+    }
+
+    
+    /**
+     * Specifie que seules les requetes ajax sont acceptees
+     *
+     * @return self
+     */
+    final protected function ajax_only() : self
+    {
+        $this->_config['ajax_only'] = true;
+        return $this;
+    }
+    /**
+     * Definit les methodes authorisees par le web service
+     * 
+     * @param string ...$methods
+     * @return Controller
+     */
+    final protected function allowed_methods(string ...$methods) : self
+    {
+        $this->_config['allowed_methods'] = array_map(function($str) {
+            return strtoupper($str);
+        }, $methods);
+        return $this;
+    }
+    /**
+     * Definit le format de donnees a renvoyer au client
+     * 
+     * @param string $format
+     * @return Controller
+     */
+    final protected function return_format(string $format) : self
+    {
+        $this->_config['return_format'] = $format;
+        return $this;
+    }
+    /**
+     * N'autorise que les acces pas https
+     *
+     * @return Controller
+     */
+    final protected function force_https() : self
+    {
+        $this->_config['force_https'] = true;
+        return $this;
+    }    
+    /**
+     * auth
+     *
+     * @param  string|false $type
+     * @return Controller
+     */
+    final protected function auth($type) : self 
+    {
+        $this->_config['auth'] = $type;
+        return $this;
+    }    
+    /**
+     * Definit la liste des adresses IP a bannir
+     * Le premier argument doit etre un boolean specifiant si on active la blacklist ou pas
+     * Les autres arguments sont des IP a bannir. Si le premier argument vaut "false", la suite ne sert plus a rien
+     *
+     * @param  mixed $params
+     * @return Controller
+     */
+    final protected function ip_blacklist(...$params) : self 
+    {
+        $params = func_get_args();
+        $this->_config['ip_blacklist_enabled'] = (bool) array_shift($params);
+        $this->_config['ip_blacklist'] = array_merge($this->_config['ip_blacklist'] ?? [], $params);
+        return $this;
+    }    
+    /**
+     * Definit la liste des adresses IP qui sont autorisees a acceder a la ressources
+     * Le premier argument doit etre un boolean specifiant si on active la whitelist ou pas
+     * Les autres arguments sont des IP a autoriser. Si le premier argument vaut "false", la suite ne sert plus a rien
+     *
+     * @param  mixed $params
+     * @return self
+     */
+    final protected function ip_whitelist(...$params) : self 
+    {
+        $params = func_get_args();
+        $this->_config['ip_whitelist_enabled'] = (bool) array_shift($params);
+        $this->_config['ip_whitelist'] = array_merge($this->_config['ip_whitelist'] ?? [], $params);
+        return $this;
+    }
+
+    final protected function generateToken(array $data = []) : string
+    {
+        $jwt_conf = $this->_config['jwt'];
+
+        $payload = array_merge([
+            'iat' => time(),
+            'iss' => base_url(),
+            'exp' => time() + (60 * $jwt_conf['exp_time'])
+        ], $data);
+        
+        try {
+            return JWT::encode($payload, $jwt_conf['key']);
+        }
+        catch(\Exception $e) {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => 'JWT Exception : ' . $e->getMessage(),
+            ], self::HTTP_INTERNAL_ERROR);
         }
     }
 
+
+    
+    /**
+     * Formatte les donnees a envoyer au bon format
+     * 
+     * @param $data Les donnees a envoyer
+     */
+    private function _parseResponse($data)
+    {
+        $format = strtolower($this->_config['return_format']);
+
+        // If the format method exists, call and return the output in that format
+        if (method_exists(Format::class, 'to_'.$format)) 
+        {
+            // CORB protection
+            // First, get the output content.
+            $output = Format::factory($data)->{'to_'.$format}();
+
+            // Set the format header
+            // Then, check if the client asked for a callback, and if the output contains this callback :
+            if (isset($this->request->query['callback']) AND $format == 'json' AND preg_match('/^'.$this->request->query['callback'].'/', $output)) 
+            {
+                $this->response->type($this->_supported_formats['jsonp']);
+            } 
+            else 
+            {
+                $this->response->type($this->_supported_formats[$format]);
+            }
+
+            // An array must be parsed as a string, so as not to cause an array to string error
+            // Json is the most appropriate form for such a data type
+            if ($format === 'array') 
+            {
+                $output = Format::factory($output)->{'to_json'}();
+            }
+        } 
+        else 
+        {
+            // If an array or object, then parse as a json, so as to be a 'string'
+            if (is_array($data) OR is_object($data)) 
+            {
+                $data = Format::factory($data)->{'to_json'}();
+            }
+            // Format is not supported, so output the raw data as a string
+            $output = $data;
+        }
+
+        $this->response->body($output);
+    }
+
+    /**
+     * Verifie si les informations fournis par le developpeurs du ws sont conforme aux attentes du composant
+     * 
+     * @throws Exception
+     */
+    private function _checkDevProcess()
+    {
+        if (! in_array(strtolower($this->_config['return_format']), $this->allowed_format))
+        {
+            throw new Exception('Le format de retour "'.$this->_config['return_format'].'" n\'est pas pris en compte');
+        }
+    }
+
+    /**
+     * Verifie si les informations fournis par le client du ws sont conforme aux attentes du developpeur
+     * 
+     * @throws Exception
+     */
+    private function _checkClientProcess()
+    {
+        // Verifie si la requete est en ajax
+        if (true !== $this->request->is('ajax') AND true === $this->_config['ajax_only'])
+        {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => $this->_lang['ajax_only'],
+            ], self::HTTP_NOT_ACCEPTABLE);
+        }
+
+        // Verifie si la requete est en https
+        if (true !== $this->request->is('https') AND true === $this->_config['force_https']) 
+        {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => $this->_lang['unsupported'],
+            ], self::HTTP_FORBIDDEN);
+        }
+
+        // Verifie si la methode utilisee pour la requete est autorisee
+        if (true !== in_array(strtoupper($this->request->method()), $this->_config['allowed_methods']))
+        {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => $this->_lang['unknown_method'],
+            ], self::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        // Verifie que l'ip qui emet la requete n'est pas dans la blacklist
+        if (true === $this->_config['ip_blacklist_enabled'])
+        {
+            $this->_config['ip_blacklist'] = join(',', $this->_config['ip_blacklist']);
+            
+            // Match an ip address in a blacklist e.g. 127.0.0.0, 0.0.0.0
+            $pattern = sprintf('/(?:,\s*|^)\Q%s\E(?=,\s*|$)/m', $this->request->clientIp());
+            
+            // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
+            if (preg_match($pattern, $this->_config['ip_blacklist'])) 
+            {
+                // Display an error response
+                return $this->response([
+                    $this->_config['status_field_name']  => false,
+                    $this->_config['message_field_name'] => $this->_lang['ip_denied'],
+                ], self::HTTP_UNAUTHORIZED);
+            }
+        }
+
+        // Verifie que l'ip qui emet la requete est dans la whitelist
+        if (true === $this->_config['ip_whitelist_enabled'])
+        {
+            $whitelist = $this->_config['ip_whitelist'];
+            array_push($whitelist, '127.0.0.1', '0.0.0.0');
+
+            foreach ($whitelist as &$ip) 
+            {
+                // As $ip is a reference, trim leading and trailing whitespace, then store the new value
+                // using the reference
+                $ip = trim($ip);
+            }
+
+            if (true !== in_array($this->request->clientIp(), $whitelist)) 
+            {
+                return $this->response([
+                    $this->_config['status_field_name']  => false,
+                    $this->_config['message_field_name'] => $this->_lang['ip_unauthorized'],
+                ], self::HTTP_UNAUTHORIZED);
+            }
+        }
+
+        // Verifie l'authentification du client
+        if (false !== $this->_config['auth'])
+        {
+            if ('bearer' === strtolower($this->_config['auth']))
+            {
+                $token = $this->getBearerToken();
+                try {
+                    $this->payload = JWT::decode($token, $this->_config['jwt']['key']);
+                }
+                catch(\Exception $e) {
+                    return $this->response([
+                        $this->_config['status_field_name']  => false,
+                        $this->_config['message_field_name'] => 'JWT Exception : ' . $e->getMessage(),
+                    ], self::HTTP_INTERNAL_ERROR);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Recupere le token d'acces a partier des headers
+     */
+    final protected function getBearerToken()
+    {
+        $headers = $this->getAuthorizationHeader();
+        if (empty($headers))
+        {
+            return $this->response([
+                $this->_config['status_field_name']  => false,
+                $this->_config['message_field_name'] => $this->_lang['token_not_found'],
+            ], self::HTTP_UNAUTHORIZED);
+        }
+        if (preg_match('/Bearer\s(\S+)/', $headers, $matches))
+        {
+            return $matches[1];
+        }
+    }
+    private function getAuthorizationHeader()
+    {
+        $header = null;
+        if (isset($_SERVER['Authorization']))
+        {
+            $header = trim($_SERVER['Authorization']);
+        }
+        else if (isset($_SERVER['HTTP_AUTHORIZATION']))
+        {
+            // Ngnix or fast CGI
+            $header = trim($_SERVER['HTTP_AUTHORIZATION']);
+        }
+        else if (function_exists('apache_request_headers'))
+        {
+            $requestHeaders = apache_request_headers();
+
+            $requestHeaders = array_combine(
+                array_map('ucwords', array_keys($requestHeaders)), 
+                array_values(($requestHeaders))
+            );
+            if (isset($requestHeaders['Authorization']))
+            {
+                $header = trim($requestHeaders['Authorization']);
+            }
+        }
+        return $header;
+    }
 }
