@@ -1,6 +1,8 @@
 <?php
 
 use dFramework\core\Controller;
+use dFramework\core\utilities\Debugger as UtilitiesDebugger;
+use Tracy\Debugger;
 
 class HomeController extends Controller
 {
@@ -20,10 +22,4 @@ class HomeController extends Controller
         echo 'Page '.$a;
     }
 
-    public function _remap($method, $params = [])
-    {
-        echo 'Remapper';
-
-        $this->debug->dump(func_get_args());
-    }
 }

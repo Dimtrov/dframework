@@ -59,12 +59,8 @@ class Mapper extends Command
 
         if(!$this->app AND !$this->dept)
         {
-            echo $color->warn('Veuillez selectionner une option pour pouvoir lancer le mappind des classes');
+            echo $color->warn('Veuillez selectionner une option pour pouvoir lancer le mapping des classes. <eol/>');
             $this->showHelp();
-        }
-        // Collect missing opts/args
-        if ($this->app) {
-            $this->set('app', $io->prompt('Entrer le dossier des classes a mapper'));
         }
     }
     public function execute()
@@ -74,29 +70,44 @@ class Mapper extends Command
             $color = new Color;
             $writer = new Writer();
 
+            $io->write("\n *******  Mapping des classes en cours de traitement  ******** \n", true);
+
             if($this->app) 
             {
-                $io->boldYellow('Fonctionnalite en cours de test. Indisponible pour le moment');
+                $mapper = new ClassMapper([\APP_DIR], [
+                    'excluded_folders' => [
+                        \CONTROLLER_DIR,
+                        \MODEL_DIR,
+                        \RESOURCE_DIR,
+                        \APP_DIR.'class',
+                    ]
+                ]);
+                $export_file = \RESOURCE_DIR.'.classmap.php';
             }
-            else if($this->dept) 
+            else 
             {
-                $io->write("\n *******  Mapping des classes en cours de traitement  ******** \n", true);
-
-                $mapper = (new ClassMapper())->process();
-
-                if($mapper->export_result_in_file(SYST_DIR.'constants'.DS.'.classmap.php'))
-                {
-                    $io->write("\t --- Traitement terminé", true);
-                   echo $color->ok("\t ".count($mapper->get_result_as_array())." Classes remappées avec succès \n");
-                }
-                else 
-                {
-                   echo $color->error("\t Une erreur s'est produite pendant le mapping des classes");
-                }
-
-                $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+                $mapper = new ClassMapper([\SYST_DIR] , [
+                    'excluded_paths' => [
+                        \SYST_DIR.'components',
+                        \SYST_DIR.'core',
+                        \SYST_DIR.'constants',
+                    ]
+                ]);
+                $export_file = \SYST_DIR.'constants'.\DS.'.classmap.php';
             }
 
+            $mapper->process();
+            
+            if($mapper->export_result_in_file($export_file))
+            {
+                $io->write("\t --- Traitement terminé", true);
+               echo $color->ok("\t ".count($mapper->get_result_as_array())." Classes collectées avec succès \n");
+            }
+            else 
+            {
+               echo $color->error("\t Une erreur s'est produite lors de la collecte des classes");
+            }
+            $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
         }
         catch(\Exception $e) { }
         

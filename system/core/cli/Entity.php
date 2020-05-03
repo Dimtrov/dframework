@@ -22,8 +22,10 @@ use Ahc\Cli\Input\Command;
 use Ahc\Cli\IO\Interactor;
 use Ahc\Cli\Output\Color;
 use Ahc\Cli\Output\Writer;
+use dFramework\core\db\Hydrator;
+use dFramework\core\db\Query;
 use dFramework\core\dFramework;
-use dFramework\core\loader\ClassMapper;
+use Exception;
 
 /**
  * Entity
@@ -39,74 +41,144 @@ use dFramework\core\loader\ClassMapper;
  */
 class Entity extends Command
 {
+    private 
+        $color,
+        $io,
+        $writer;
+
+
     public function __construct()
     {
         parent::__construct('entity', 'Service d\'hydratation des entites et de remplissage de base de donnees');
 
+        $this->color = new Color;
+        $this->io = new Interactor();
+        $this->writer = new Writer();
+
         $this
-            ->option('-g --generate', 'Genere un ou plusieurs fichier d\'entité')
+            ->option('-c --create', 'Cree un ou plusieurs fichier d\'entité')
+            ->option('-g --generate', 'Genere les fichiers d\'entité de toutes les tables de la base de donnees')
             ->option('-p --populate', 'Remplit une table de la base de donnees')
-            ->option('-d --database', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
+            ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
             // Usage examples:
             ->usage(
-                '<bold>  dbot entity -g users</end> <comment> => Genere le fichier d\'entite "/app/entities/UsersEntity.php" faisant reference a la table users</end><eol/>' .
-                '<bold>  dbot entity -g customers/bills</end> <comment> => Genere le fichier d\'entite "/app/entities/customers/BillsEntity.php" faisant reference a la table bills</end><eol/>' .
-                '<bold>  dbot entity -g users&customers/bills</end> <comment> => Genere les fichier d\'entite "/app/entities/UsersEntity.php" et "/app/entities/customers/BillsEntity.php" faisant reference aux tables users et bills respectivement</end><eol/>' .
+                '<bold>  dbot entity -c users</end> <comment> => Genere le fichier d\'entite "/app/entities/UsersEntity.php" faisant reference a la table users</end><eol/>' .
+                '<bold>  dbot entity -c customers/bills</end> <comment> => Genere le fichier d\'entite "/app/entities/customers/BillsEntity.php" faisant reference a la table bills</end><eol/>' .
+                '<bold>  dbot entity -c users+customers/bills</end> <comment> => Genere les fichiers d\'entite "/app/entities/UsersEntity.php" et "/app/entities/customers/BillsEntity.php" faisant reference aux tables users et bills respectivement</end><eol/>' .
+                '<eol/>'.
+                '<bold>  dbot entity -g</end> <comment> => Genere les fichiers d\'entite de toutes les tables de la base de donnees dans le dossier "/app/entities/"</end><eol/>' .
                 '<eol/>'.
                 '<bold>  dbot entity -p users</end> <comment> => Crée 5 enregistrements dans la table users</end><eol/>' .
                 '<bold>  dbot entity -p bills:30</end> <comment> => Crée 30 enregistrements dans la table bills</end><eol/>' .
-                '<bold>  dbot entity -p users&bills:30</end> <comment> => Crée 5 enregistrements dans la table users et 30 enregistrements dans la table bills</end><eol/>' 
+                '<bold>  dbot entity -p users+bills:30</end> <comment> => Crée 5 enregistrements dans la table users et 30 enregistrements dans la table bills</end><eol/>' 
             );
     }
 
     // This method is auto called before `self::execute()` and receives `Interactor $io` instance
     public function interact(Interactor $io)
     {
-        $color = new Color;
-
-        if(!$this->app AND !$this->dept)
+        if (!$this->create AND !$this->generate AND !$this->populate)
         {
-            echo $color->warn('Veuillez selectionner une option pour pouvoir lancer le mappind des classes');
+            echo $this->color->warn("Veuillez selectionner une option pour pouvoir executer cette tache. \n");
             $this->showHelp();
-        }
-        // Collect missing opts/args
-        if ($this->app) {
-            $this->set('app', $io->prompt('Entrer le dossier des classes a mapper'));
         }
     }
     public function execute()
     {
         try{
-            $io = $this->app()->io();
-            $color = new Color;
-            $writer = new Writer();
-
-            if($this->app) 
+            if (!$this->generate)
             {
-                $io->boldYellow('Fonctionnalite en cours de test. Indisponible pour le moment');
-            }
-            else if($this->dept) 
-            {
-                $io->write("\n *******  Mapping des classes en cours de traitement  ******** \n", true);
-
-                $mapper = (new ClassMapper())->process();
-
-                if($mapper->export_result_in_file(SYST_DIR.'constants'.DS.'.classmap.php'))
+                $entry = trim($this->create ?? $this->populate);
+                if (!empty($entry) AND $entry != '1')
                 {
-                    $io->write("\t --- Traitement terminé", true);
-                   echo $color->ok("\t ".count($mapper->get_result_as_array())." Classes remappées avec succès \n");
+                    $tables = explode('+', $entry);   
+
+                    foreach ($tables As $table) 
+                    {
+                        if($this->create) 
+                        {
+                            $this->create($table);
+                        }
+                        else 
+                        {
+                            $this->populate($table);
+                        }
+                    }
+
+                    $this->io->write("\t --- Traitement terminé", true);
+                    if ($this->create) 
+                    {
+                        echo $this->color->ok("\t ".count($tables)." Entités créées avec succès \n");
+                    }
+                    else 
+                    {
+                        echo $this->color->ok("\t ".count($tables)." tables remplies avec succès \n");
+                    }
+                    $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
                 }
                 else 
                 {
-                   echo $color->error("\t Une erreur s'est produite pendant le mapping des classes");
+                    echo $this->color->warn("Syntaxe incorrect. Veuillez consulter la documentation. \n");
+                    $this->showHelp();
                 }
-
-                $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
             }
-
+            else 
+            {
+                $this->generate();
+            }
         }
         catch(\Exception $e) { }
         
         return true;
+    }
+
+    private function create($table)
+    {
+        $table = explode('/', $table);
+        if (count($table) == 1) 
+        {
+            $table = $table[0];
+            $filename = '';
+        }
+        else 
+        {
+            $t = array_pop($table);
+            $filename = \implode(\DS, $table).\DS;
+            $table = $t;
+        }
+        try {
+            Hydrator::makeEntityClass($table, \ENTITY_DIR.$filename);
+        }
+        catch(Exception $e) {}
+    }
+
+    private function populate($table)
+    {
+
+    }
+
+    private function generate()
+    {
+        try {
+            $tables = (new Query())->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM);
+            foreach ($tables As $key => $value) 
+            {
+                $tables[$key] = ['tables' => $value[0]];
+            }
+            echo $this->color->info("Votre base de données compte < ".count($tables)." > tables \n");
+            $this->writer->table($tables);
+
+            if ($this->io->confirm('Voullez-vous générer toutes les classes d\'entités correspondantes ?')) 
+            {
+                foreach ($tables As $table)
+                {
+                    $this->create($table['tables']);
+                }
+                $this->io->write("\t --- Traitement terminé", true);
+                echo $this->color->ok("\t ".count($tables)." Entités créées avec succès \n");
+                $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+            }
+        }
+        catch(Exception $e) {}
     }
 }

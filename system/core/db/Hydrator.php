@@ -12,13 +12,14 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
 namespace dFramework\core\db;
 
 use dFramework\core\Config;
+use dFramework\core\dFramework;
 use dFramework\core\exception\HydratorException;
 use dFramework\core\utilities\Chaine;
 
@@ -121,9 +122,6 @@ class Hydrator
      */
     public static function makeEntityClass(string $class, string $file, string $db_setting = 'default')
     {
-        $file = preg_replace('#'.ucfirst($class).'\.php$#i', '', $file);
-        $file = rtrim($file, DS).DS.ucfirst($class).'.php';
-
         $class = preg_replace('#Entity$#i', '', $class);
 
         try {
@@ -151,7 +149,8 @@ class Hydrator
      */
     private static function getProperties(array $columns, &$properties)
     {
-        $properties = (array) $properties; $properties = []; $i = 0;
+        $properties = []; 
+        $i = 0;
 
         foreach ($columns As $column)
         {
@@ -159,9 +158,21 @@ class Hydrator
             {
                 continue;
             }
-
-            $properties[$i]['name'] = self::getProperty($column->field);
-            $properties[$i]['null'] = strtolower($column->null);
+            foreach ($column As $key => $value) 
+            {
+                $column->{strtolower($key)} = $value;
+                if ($key != strtolower($key))
+                {
+                    unset($column->{$key});
+                }
+            }
+            
+            
+            $properties[$i]['name'] = $column->field;
+            
+            $properties[$i]['key'] = strtolower($column->key ?? '');
+            $properties[$i]['extra'] = $column->extra ?? null;
+            $properties[$i]['null'] = strtolower($column->null ?? '');
 
             if(preg_match('#^(int|longint|smallint)#i', $column->type))
             {
@@ -201,24 +212,36 @@ class Hydrator
      */
     private static function writeProperties(array $properties, &$render, $class)
     {
+        $class = \ucfirst($class);
+        
         foreach ($properties As $property)
         {
+            /* Definition de la cle primaire */
+            if (isset($property['key']) AND $property['key'] == 'pri')
+            {
+                $render .= "\n\t /** \n \t * @var string";
+                $render .= "\n\t */\n";
+                $render .= "\t protected \$pk = '".$property['name']."'\n";
+            }
+            // On camelcase les attributs
+            $property['name'] = self::getProperty($property['name']);
+
             /* Generation des proprietes */
             $render .= "\n\t /** \n \t * @var ".$property['type'].(($property['null'] === 'yes') ? "|null" : "");
             $render .= "\n\t */\n";
             $render .= "\t private $".$property['name'];
-            if(isset($property['default']))
+            if (isset($property['default']))
             {
                 $render .= ' = '.$property['default'];
             }
-            else if($property['null'] === 'yes')
+            else if ($property['null'] === 'yes')
             {
                 $render .= ' = null';
             }
             $render .= ";\n";
 
             /* Generation des getters */
-            $render .= "\n\t /** \n \t *@return ".$property['type'].(($property['null'] === 'yes') ? "|null" : "");
+            $render .= "\n\t /** \n \t * @return ".$property['type'].(($property['null'] === 'yes') ? "|null" : "");
             $render .= "\n\t */\n";
             $render .= "\t public function get".ucfirst($property['name'])."()";
             if($property['type'] !== 'mixed')
@@ -253,15 +276,21 @@ class Hydrator
      * @param $file
      */
     private static function createFile($render, $class, $file)
-    {
-        $class = $class.'Entity';
+    { 
+        $class = ucfirst($class).'Entity'; 
+        $file = preg_replace('#'.$class.'\.php$#i', '', $file);
+        if (!is_dir($file)) {
+            \mkdir($file);
+        }
+        $file = rtrim($file, DS).DS.$class.'.php';
+    
         $return = '';
 
         $return .= "<?php \n";
-        $return .= "/** \n * Created by dFramework. \n * Date: ".date('d/m/Y - H:i:s')." \n * Entity: ".$class." \n*/";
+        $return .= "/** \n * Created by dFramework v".dFramework::VERSION.". \n * Date: ".date('d/m/Y - H:i:s')." \n * Entity: ".$class." \n*/";
 
         $return .= "\n\n";
-        $return .= "class ".$class."\n{".$render."\n}";
+        $return .= "class ".$class." extends dFramework\core\Entity \n{".$render."\n}";
 
         $fp = fopen($file, 'w');
         fwrite($fp, $return);

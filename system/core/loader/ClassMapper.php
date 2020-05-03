@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -171,12 +171,19 @@ class ClassMapper
 				{
 					continue;
 				}
-				foreach($this->paths As $path)
+				foreach ($this->paths As $path)
 				{
-					if($path === SYST_DIR)
+					/* 
+					if($path === \SYST_DIR)
 					{
-						$realpath = '{SYST_DIR}'.str_replace(SYST_DIR, '', $realpath);
-					}
+						$realpath = '{SYST_DIR}'.str_replace(\SYST_DIR, '', $realpath);
+					} 
+					*/
+					$app_dir = str_replace('\\', '\\\\', \APP_DIR);
+					$syst_dir = str_replace('\\', '\\\\', \SYST_DIR);
+					
+					$realpath = \preg_replace("#$app_dir#i", '{APP_DIR}', $realpath);
+					$realpath = \preg_replace("#$syst_dir#i", '{SYST_DIR}', $realpath);
 				}
 				$tokens            = token_get_all($file_data, TOKEN_PARSE);
 				$entities          = $this->parse_tokens($tokens, $file_data);

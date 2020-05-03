@@ -12,13 +12,13 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
 namespace dFramework\core\exception;
 
-use Throwable;
+use Tracy\Debugger;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
@@ -27,7 +27,6 @@ use Whoops\Run;
  *
  * General system exception of application
  *
- * @class       Exception
  * @package		dFramework
  * @subpackage	Core
  * @category    Exception
@@ -44,10 +43,11 @@ class Exception extends \Exception
      */
     public static function init() : void
     {  
+        Debugger::enable();
         $whoops  =  new Run();
         $whoops->pushHandler(new PrettyPageHandler); 
         $whoops->pushHandler([New Log, 'register']);
-        $whoops->register();
+        $whoops->register(); 
     }
 
 
