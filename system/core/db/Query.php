@@ -159,9 +159,9 @@ class Query
      * @param string $type
      * @return Query
      */
-    protected function join(string $table, string $condition, string $type = 'left'): self
+    protected function join(string $table, string $condition, string $type = 'inner'): self
     {
-        $type = (!in_array(strtolower($type), ['left', 'right', 'inner'])) ? 'left' : strtolower($type);
+        $type = (!in_array(strtolower($type), ['left', 'right', 'inner'])) ? 'inner' : strtolower($type);
         $this->joins[$type][] = [$this->db->config['prefix'].$table, $condition];
         return $this;
     }
@@ -358,9 +358,21 @@ class Query
      */
     protected function describe(string $table)
     {
-        $table = htmlspecialchars($table);
-        return $this->query('DESCRIBE '.$table)->fetch();
+        return $this->query('DESCRIBE '.($this->db->config['prefix'] ?? '').$table)->fetchAll();
     }
+
+    /**
+     * Vide toute la table
+     * 
+     * @param string $table
+     * @since 3.1
+     * @return mixed
+     */
+    protected function truncate(string $table)
+    {
+        return $this->query('TRUNCATE '.($this->db->config['prefix'] ?? '').$table)->fetchAll();
+    }
+
 
     /**
      * Renvoie le statement d'une requete
@@ -406,6 +418,21 @@ class Query
     protected function first(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
     {
         return $this->result($mode, $class, $dir)[0] ?? null;
+    }
+    /**
+     * Recupere le premier resultat d'une requete en BD
+     *
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @since 3.1
+     * @alias first()
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function one(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
+    {
+        return $this->first($mode, $class, $dir);
     }
     /**
      * Recupere le dernier resultat d'une requete en BD

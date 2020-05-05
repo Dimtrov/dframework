@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -180,7 +180,7 @@ if ( ! function_exists('underscore'))
 	 */
 	function underscore($str)
 	{
-		return preg_replace('/[\s]+/', '_', trim(MB_ENABLED ? mb_strtolower($str) : strtolower($str)));
+		return preg_replace('/[\s]+/', '_', trim(strtolower($str)));
 	}
 }
 
@@ -199,7 +199,7 @@ if ( ! function_exists('humanize'))
 	 */
 	function humanize($str, $separator = '_')
 	{
-		return ucwords(preg_replace('/['.preg_quote($separator).']+/', ' ', trim(MB_ENABLED ? mb_strtolower($str) : strtolower($str))));
+		return ucwords(preg_replace('/['.preg_quote($separator).']+/', ' ', trim(strtolower($str))));
 	}
 }
 

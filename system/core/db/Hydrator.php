@@ -18,11 +18,7 @@
 
 namespace dFramework\core\db;
 
-use dFramework\core\Config;
-use dFramework\core\dFramework;
-use dFramework\core\exception\HydratorException;
-use dFramework\core\utilities\Chaine;
-
+use dFramework\core\generator\Entity;
 /**
  * Hydrator
  *
@@ -46,7 +42,7 @@ class Hydrator
      * @param string $dir
      * @return mixed
      */
-    public static function hydrate(array $array, string $class, string $dir = '')
+    public static function hydrate(array $datas, string $class, string $dir = '')
     {
         $class = preg_replace('#Entity#isU', '', $class) . 'Entity';
         
@@ -56,244 +52,26 @@ class Hydrator
 
         $file = $dir . ucfirst($class) . '.php';
 
-        if(true !== is_file($file))
+        if (!is_file($file))
         {
-            fopen($file, 'w');
+            self::makeEntityClass($class, $dir);
         }
         require_once $file;
 
-        if(true !== class_exists($class))
-        {
-            self::makeEntityClass($class, $file);
-        }
         $instance = new $class();
 
-        foreach ($array As $key => $value)
-        {
-            $property = lcfirst(self::getProperty($key));
-            //$instance->$property = $value;
-            $method = self::getSetter($key);
-            if(method_exists($instance, $method)) {
-               $instance->$method($value);
-            }
-            else {
-                $instance->$property = $value;
-            }
-        }
+        \call_user_func_array([$instance, 'hydrate'], $datas);
+
         return $instance;
     }
 
-
-    /**
-     * @param string $fieldName
-     * @return string
-     */
-    private static function getSetter(string $fieldName) : string
-    {
-        return 'set'. self::getProperty($fieldName);
-    }
-
-    /**
-     * @param string $fieldName
-     * @return string
-     */
-    private static function getProperty(string $fieldName) : string
-    {
-        $case = Config::get('data.hydrator.case');
-        if(strtolower($case) === 'camel')
-        {
-            return Chaine::toCamelCase($fieldName);
-        }
-        else if(strtolower($case) === 'pascal')
-        {
-            return Chaine::toPascalCase($fieldName);
-        }
-        else
-        {
-            return $fieldName;
-        }
-    }
-
-
     /**
      * @param string $class
-     * @param string $file
+     * @param string $dir
      * @param string $db_setting
      */
-    public static function makeEntityClass(string $class, string $file, string $db_setting = 'default')
+    public static function makeEntityClass(string $class, string $dir, string $db_setting = 'default')
     {
-        $class = preg_replace('#Entity$#i', '', $class);
-
-        try {
-            $columns = (new Query($db_setting))->db->pdo()->query('DESCRIBE '.$class)->fetchAll(\PDO::FETCH_OBJ);
-        }
-        catch (\PDOException $e) {
-            HydratorException::except('
-                Impossible d\'hydrater l\'entite <b>'.$class.'</b>. 
-                Vous pouvez resoudre ce probleme en creant manuellement la classe '.$class.'Entity 
-                <br>
-                <i>&laquo; '.$e->getMessage().' &raquo;</i>
-            ');
-        }
-
-        self::getProperties($columns, $properties);
-        self::writeProperties($properties, $render, $class);
-        self::createFile($render, $class, $file);
-    }
-
-    /**
-     * Permet de creer les proprietes de la classe a partir des champs de la base de donnees
-     *
-     * @param array $columns
-     * @return array
-     */
-    private static function getProperties(array $columns, &$properties)
-    {
-        $properties = []; 
-        $i = 0;
-
-        foreach ($columns As $column)
-        {
-            if(!($column instanceof \stdClass))
-            {
-                continue;
-            }
-            foreach ($column As $key => $value) 
-            {
-                $column->{strtolower($key)} = $value;
-                if ($key != strtolower($key))
-                {
-                    unset($column->{$key});
-                }
-            }
-            
-            
-            $properties[$i]['name'] = $column->field;
-            
-            $properties[$i]['key'] = strtolower($column->key ?? '');
-            $properties[$i]['extra'] = $column->extra ?? null;
-            $properties[$i]['null'] = strtolower($column->null ?? '');
-
-            if(preg_match('#^(int|longint|smallint)#i', $column->type))
-            {
-                $properties[$i]['type'] = 'int';
-            }
-            else if(preg_match('#^(varchar|text|char)#i', $column->type))
-            {
-                $properties[$i]['type'] = 'string';
-            }
-            else if(preg_match('#^(decimal|float)#i', $column->type))
-            {
-                $properties[$i]['type'] = 'float';
-            }
-            else if(preg_match('#^(boolean|tinyint)#i', $column->type))
-            {
-                $properties[$i]['type'] = 'bool';
-            }
-            else
-            {
-                $properties[$i]['type'] = 'mixed';
-            }
-
-            if(isset($column->default) AND (is_numeric($column->default) OR $column->default !== ''))
-            {
-                $properties[$i]['default'] = $column->default;
-            }
-            $i++;
-        }
-        return $properties;
-    }
-
-    /**
-     * Ecrit les proprietes de la classe, les getters et les setters
-     *
-     * @param array $properties
-     * @param $render
-     */
-    private static function writeProperties(array $properties, &$render, $class)
-    {
-        $class = \ucfirst($class);
-        
-        foreach ($properties As $property)
-        {
-            /* Definition de la cle primaire */
-            if (isset($property['key']) AND $property['key'] == 'pri')
-            {
-                $render .= "\n\t /** \n \t * @var string";
-                $render .= "\n\t */\n";
-                $render .= "\t protected \$pk = '".$property['name']."'\n";
-            }
-            // On camelcase les attributs
-            $property['name'] = self::getProperty($property['name']);
-
-            /* Generation des proprietes */
-            $render .= "\n\t /** \n \t * @var ".$property['type'].(($property['null'] === 'yes') ? "|null" : "");
-            $render .= "\n\t */\n";
-            $render .= "\t private $".$property['name'];
-            if (isset($property['default']))
-            {
-                $render .= ' = '.$property['default'];
-            }
-            else if ($property['null'] === 'yes')
-            {
-                $render .= ' = null';
-            }
-            $render .= ";\n";
-
-            /* Generation des getters */
-            $render .= "\n\t /** \n \t * @return ".$property['type'].(($property['null'] === 'yes') ? "|null" : "");
-            $render .= "\n\t */\n";
-            $render .= "\t public function get".ucfirst($property['name'])."()";
-            if($property['type'] !== 'mixed')
-            {
-                $render .= " : " . (($property['null'] === 'yes') ? "?" : "").$property['type'];
-            }
-            $render .= "\n\t {";
-            $render .= "\n\t\t return \$this->".$property['name'].";";
-            $render .= "\n\t }";
-            $render .= "\n";
-
-            /* Generation des setters */
-            $render .= "\n\t /** \n \t * @param ".$property['type'].(($property['null'] === 'yes') ? "|null" : "")." $".$property['name'];
-            $render .= "\n\t * @return ".$class."Entity";
-            $render .= "\n\t */\n";
-            $render .= "\t public function set".ucfirst($property['name'])."(".(($property['null'] === 'yes') ? "?" : "").(($property['type'] !== 'mixed') ? $property['type'] : '')." $".$property['name'].(($property['null'] === 'yes') ? " = null" : "").") : self";
-            $render .= "\n\t {";
-            $render .= "\n\t\t \$this->".$property['name']." = $".$property['name'].";";
-            $render .= "\n\t\t return \$this;";
-            $render .= "\n\t }";
-            $render .= "\n";
-
-            $render .= "\n";
-        }
-    }
-
-    /**
-     * Enregistre le code de la classe dans le fichiers
-     *
-     * @param $render
-     * @param $class
-     * @param $file
-     */
-    private static function createFile($render, $class, $file)
-    { 
-        $class = ucfirst($class).'Entity'; 
-        $file = preg_replace('#'.$class.'\.php$#i', '', $file);
-        if (!is_dir($file)) {
-            \mkdir($file);
-        }
-        $file = rtrim($file, DS).DS.$class.'.php';
-    
-        $return = '';
-
-        $return .= "<?php \n";
-        $return .= "/** \n * Created by dFramework v".dFramework::VERSION.". \n * Date: ".date('d/m/Y - H:i:s')." \n * Entity: ".$class." \n*/";
-
-        $return .= "\n\n";
-        $return .= "class ".$class." extends dFramework\core\Entity \n{".$render."\n}";
-
-        $fp = fopen($file, 'w');
-        fwrite($fp, $return);
-        fclose($fp);
+        (new Entity($db_setting))->generate($class, $dir);
     }
 }

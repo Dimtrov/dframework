@@ -16,27 +16,39 @@
  */
 
  
-namespace dFramework\core\maker;
+namespace dFramework\core\generator;
 
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
-use dFramework\core\route\Dispatcher;
+use dFramework\core\db\Manager;
 
 /**
- * maker\Entity
+ * Generator
  *
- * Generate a file for entities class
+ * Generate a class file
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Maker
+ * @category    Generator
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.1
- * @file		/system/core/maker/Entity.php
+ * @file		/system/core/generator/Generator.php
  */
 
-class Entity
+abstract class Generator
 {
-    
+
+    protected $manager;
+        
+    /**
+     * __construct
+     *
+     * @param string $db_setting
+     * @return void
+     */
+    public function __construct(string $db_setting = 'default')
+    {
+        $this->manager = new Manager($db_setting);
+    }
+
+    abstract protected function createFile($render, $class, $dir);
 }

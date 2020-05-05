@@ -18,6 +18,8 @@
 
 namespace dFramework\core;
 
+use dFramework\core\utilities\Chaine;
+
 /**
  * Entity
  *
@@ -33,5 +35,24 @@ namespace dFramework\core;
 
 class Entity extends Model
 {
-    
+        
+    /**
+     * getProperty
+     *
+     * @param string $fieldName
+     * @return string
+     */
+    public static function getProperty(string $fieldName) : string
+    {
+        $case = Config::get('data.hydrator.case');
+        if (strtolower($case) === 'camel')
+        {
+            return Chaine::toCamelCase($fieldName);
+        }
+        if (strtolower($case) === 'pascal')
+        {
+            return Chaine::toPascalCase($fieldName);
+        }
+        return $fieldName;
+    }
 }

@@ -25,6 +25,7 @@ use Ahc\Cli\Output\Writer;
 use dFramework\core\db\Hydrator;
 use dFramework\core\db\Query;
 use dFramework\core\dFramework;
+use dFramework\core\generator\Model;
 use Exception;
 
 /**
@@ -138,19 +139,42 @@ class Entity extends Command
         if (count($table) == 1) 
         {
             $table = $table[0];
-            $filename = '';
+            $dirname = '';
         }
         else 
         {
-            $t = array_pop($table);
-            $filename = \implode(\DS, $table).\DS;
-            $table = $t;
+            $tmp = array_pop($table);
+            $dirname = \implode(\DS, $table).\DS;
+            $table = $tmp;
         }
         try {
-            Hydrator::makeEntityClass($table, \ENTITY_DIR.$filename);
+            Hydrator::makeEntityClass($table, $dirname);
         }
         catch(Exception $e) {}
     }
+
+    private function associateModel($table)
+    {
+        $table = explode('/', $table);
+        if (count($table) == 1) 
+        {
+            $table = $table[0];
+            $dirname = '';
+        }
+        else 
+        {
+            $tmp = array_pop($table);
+            $dirname = \implode(\DS, $table).\DS;
+            $table = $tmp;
+        }
+        try {
+            $model = new Model();
+            $model->generate($table, $dirname);
+        }
+        catch(Exception $e) {}
+    }
+
+
 
     private function populate($table)
     {
@@ -176,6 +200,16 @@ class Entity extends Command
                 }
                 $this->io->write("\t --- Traitement terminé", true);
                 echo $this->color->ok("\t ".count($tables)." Entités créées avec succès \n");
+                
+                if ($this->io->confirm('Souhaitez-vous générer les modèles associés ?'))
+                {
+                    foreach ($tables As $table)
+                    {
+                        $this->associateModel($table['tables']);
+                    }
+                    $this->io->write("\t --- Traitement terminé", true);
+                    echo $this->color->ok("\t ".count($tables)." modèles associés avec succès \n");
+                }
                 $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
             }
         }

@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -26,6 +26,7 @@ namespace dFramework\core\utilities;
  * @category    Utilities
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       2.1
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/utilities/Chaine.php
  */
@@ -59,6 +60,17 @@ class Chaine
     public static function toPascalCase(string $str) : string
     {
         return join('', array_map('ucfirst', explode('_', $str)));
+    }
+
+    public static function toSnakeCase(string $str) : string 
+    {
+        if ( preg_match ( '/[A-Z]/', $str ) === 0) 
+        { 
+            return $str; 
+        }
+        return strtolower(preg_replace_callback('/([a-z])([A-Z])/', function ($a) {
+            return $a[1] . "_" . strtolower ($a[2]); 
+        }, $str));
     }
 
 
