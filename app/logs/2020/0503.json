@@ -1,0 +1,30 @@
+[
+    {
+        "code": 0,
+        "type": "ERROR",
+        "ertype": "error",
+        "message": "syntax error, unexpected 'Some' (T_STRING), expecting ',' or ';'",
+        "file": "E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\app\\controllers\\HomeController.php",
+        "line": 17,
+        "date": "03.05.2020 @ 19:45",
+        "page": "dframework.local\/",
+        "referrer": null,
+        "ip": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/81.0.4044.129 Safari\/537.36",
+        "description": "An error of level 0(ERROR) was generated in file E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\app\\controllers\\HomeController.php on line 17.\nThe error message was: \"syntax error, unexpected 'Some' (T_STRING), expecting ',' or ';'\""
+    },
+    {
+        "code": 0,
+        "type": "ERROR",
+        "ertype": "error",
+        "message": "syntax error, unexpected '}', expecting ',' or ';'",
+        "file": "E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\app\\controllers\\HomeController.php",
+        "line": 12,
+        "date": "03.05.2020 @ 19:22",
+        "page": "dframework.local\/",
+        "referrer": null,
+        "ip": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/81.0.4044.129 Safari\/537.36",
+        "description": "An error of level 0(ERROR) was generated in file E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\app\\controllers\\HomeController.php on line 12.\nThe error message was: \"syntax error, unexpected '}', expecting ',' or ';'\""
+    }
+]
