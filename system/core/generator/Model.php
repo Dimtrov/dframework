@@ -136,19 +136,19 @@ final class Model extends Generator
         extract($variables);
 
         $hydrate  = "\$this->free_db() \n";
-        $hydrate .= "\t->insert(\$$class) \n";
+        $hydrate .= "\t->insert($".\singular($class)."_infos) \n";
         $hydrate .= "\t->into('$class'); \n";
         $hydrate .= "\nreturn \$this->lastId();";
 
         $m = (new Method('create'))
             ->setPublic()
             ->addComment("Ajoute 1 ".\singular($class)." dans la base de donnés \n")
-            ->addComment('@param array $'.$class)
+            ->addComment('@param array $'.\singular($class)."_infos")
             ->addComment('@return int|null')
             ->setReturnNullable()
             ->setReturnType('int')
             ->setParameters([
-                (new Parameter($class))
+                (new Parameter(\singular($class).'_infos'))
                     ->setType('array')
             ])
             ->setBody($hydrate);
@@ -158,10 +158,10 @@ final class Model extends Generator
     private function addReadMethod(ClassType &$generator, array $variables)
     {
         extract($variables);
-
         $class_name = Chaine::toPascalCase($class.'Entity');
+        $fks = $this->manager->getFks($class);
 
-    // Liste de tous les enregistrements
+    // Liste des enregistrements
         $hydrate  = "\$this->free_db() \n";
         $hydrate .= "\t->select() \n";
         $hydrate .= "\t->from('$class'); \n";
@@ -181,8 +181,7 @@ final class Model extends Generator
             ])
             ->setBody($hydrate);
         $generator->addMember($m);
-        
-
+ 
     // Enregistrement unique
         $hydrate  = "\$this->free_db() \n";
         $hydrate .= "\t->select() \n";
@@ -213,6 +212,68 @@ final class Model extends Generator
             ->setBody($hydrate);
         $generator->addMember($m);
 
+    // Enregistrements avec jointures de table
+        if (count($fks) > 0)
+        {
+            $body_method  = "\$this->free_db() \n";
+            $body_method .= "\t->select() \n";
+            $body_method .= "\t->from('".$class."')";
+            foreach ($fks As $fk) 
+            {
+                $body_method .= "\n\t->join('".$fk->referenced_table_name."', '".$class.".".$fk->column_name." = ".$fk->referenced_table_name.".".$fk->referenced_column_name."', 'inner')";
+            }
+            $body_method .= "; \n";
+            $body_method .= "if (\$hydrate) { \n";
+                $body_method .= "\treturn \$this->result(DF_FCLA, ".$class_name."::class); \n";
+            $body_method .= "} \n";
+            $body_method .= "return \$this->result(); \n";
+            
+            $m = (new Method('read_join'))
+                ->setPublic()
+                ->addComment('@param bool $hydrate')
+                ->addComment('@return stdClass[]|'.$class_name.'[]')
+                ->setParameters([
+                    (new Parameter('hydrate'))->setType('bool')->setDefaultValue(false),
+                ])
+                ->setBody($body_method);
+            $generator->addMember($m);
+        }
+    
+    // Enregistrement unique avec jointures de table
+        if (count($fks) > 0)
+        {
+            $body_method  = "\$this->free_db() \n";
+            $body_method .= "\t->select() \n";
+            $body_method .= "\t->from('$class')";
+            foreach ($fks As $fk) 
+            {
+                $body_method .= "\n\t->join('".$fk->referenced_table_name."', '".$class.".".$fk->column_name." = ".$fk->referenced_table_name.".".$fk->referenced_column_name."', 'inner')";
+            }
+            foreach ($pks As $pk)
+            {
+                $body_method .= "\n\t->where('".$class.".$pk = ?')->params([\$$pk])";
+            }
+            $body_method .= "; \nif (\$hydrate) { \n";
+                $body_method .= "\treturn \$this->first(DF_FCLA, ".$class_name."::class); \n";
+            $body_method .= "} \n";
+            $body_method .= "return \$this->result(); \n";
+            
+            $m = (new Method('read_join_pk'))
+                ->setPublic();
+            $params = [];
+            foreach ($pks As $pk) 
+            {
+                $m->addComment('@param mixed $'.$pk);
+                $params[] = (new Parameter($pk));
+            }
+            $m->addComment('@param bool $hydrate')
+                ->addComment('@return stdClass|'.$class_name)
+                ->setParameters(array_merge($params, [
+                    (new Parameter('hydrate'))->setType('bool')->setDefaultValue(false),
+                ]))
+                ->setBody($body_method);
+            $generator->addMember($m);
+        }
 
     // Enregistrements limitees
          $hydrate  = "\$this->free_db() \n";
@@ -238,55 +299,37 @@ final class Model extends Generator
              ->setBody($hydrate);
          $generator->addMember($m);
 
-        
-    // Enregistrements avec jointures de table
-        $fks = $this->manager->getFks($class);
-        if (count($fks) > 0)
+    // Enregistrements limitees avec jointures
+        if (\count($fks) > 0)
         {
-            $hydrate  = "\$one = false; \n";
-            $hydrate .= "\$this->free_db() \n";
-            $hydrate .= "\t->select() \n";
-            $hydrate .= "\t->from('$class')";
+            $body_method  = "\$this->free_db() \n";
+            $body_method .= "\t->select() \n";
+            $body_method .= "\t->from('".$class."')";
             foreach ($fks As $fk) 
             {
-                $hydrate .= "\n\t->join('".$fk->referenced_table_name."', '".$class.".".$fk->column_name." = ".$fk->referenced_table_name.".".$fk->referenced_column_name."', 'inner')";
+                $body_method .= "\n\t->join('".$fk->referenced_table_name."', '".$class.".".$fk->column_name." = ".$fk->referenced_table_name.".".$fk->referenced_column_name."', 'inner')";
             }
-            $hydrate .= ";";
-            foreach ($pks As $pk)
-            {
-                $hydrate .= "\nif (\$$pk !== null) {\n";
-                    $hydrate .= "\t\$this->where('$pk = ?')->params([\$$pk]); \n";
-                    $hydrate .= "\t\$one = true; \n";
-                $hydrate .= "}";
-            }
-            $hydrate .= "\nif (\$hydrate) { \n";
-                $hydrate .= "\tif (\$one) { \n";
-                    $hydrate .= "\t\treturn \$this->first(DF_FCLA, ".$class_name."::class); \n";
-                $hydrate .= "\t} \n";
-                $hydrate .= "\treturn \$this->result(DF_FCLA, ".$class_name."::class); \n";
-            $hydrate .= "} \n";
-            $hydrate .= "if (\$one) { \n";
-                $hydrate .= "\treturn \$this->first(); \n";
-            $hydrate .= "} \n";
-            $hydrate .= "return \$this->result(); \n";
-            
-            $m = (new Method('read_join'))
-                ->setPublic();
-            $params = [];
-            foreach ($pks As $pk) 
-            {
-                $m->addComment('@param mixed|null $'.$pk);
-                $params[] = (new Parameter($pk))->setDefaultValue(null)->setNullable();
-            }
-            $m->addComment('@param bool $hydrate')
-                ->addComment('@return stdClass[]|'.$class_name.'[]|stdClass|'.$class_name)
-                ->setParameters(array_merge($params, [
+            $body_method .= "\n\t->limit(\$limit, \$offset); \n";
+            $body_method .= "if (\$hydrate) { \n";
+                $body_method .= "\treturn \$this->result(DF_FCLA, ".$class_name."::class); \n";
+            $body_method .= "} \n";
+            $body_method .= "return \$this->result(); \n";
+            $m = (new Method('read_join_limit'))
+                ->setPublic()
+                ->addComment('@param int $limit')
+                ->addComment('@param int $offset')
+                ->addComment('@param bool $hydrate')
+                ->addComment('@return stdClass[]|'.$class_name.'[]')
+                ->setParameters([
+                    (new Parameter('limit'))->setType('int'),
+                    (new Parameter('offset'))->setType('int')->setDefaultValue(0),
                     (new Parameter('hydrate'))->setType('bool')->setDefaultValue(false),
-                ]))
-                ->setBody($hydrate);
+                ])
+                ->setBody($body_method);
             $generator->addMember($m);
-    
-        }   
+       
+        }
+       
     }
 
     private function addUpdateMethod(ClassType &$generator, array $variables)
@@ -294,7 +337,7 @@ final class Model extends Generator
         \extract($variables);
 
         $hydrate  = "\$this->free_db() \n";
-        $hydrate .= "\t->set(\$$class) ";
+        $hydrate .= "\t->set($".\singular($class)."_infos) ";
         foreach ($pks As $pk) 
         {
             $hydrate .= "\n\t->where('".$pk." = ?')->params([$".$pk."])";
@@ -302,32 +345,32 @@ final class Model extends Generator
         $hydrate .= "\n\t->update('$class'); \n";
         $m = (new Method('edit'))
             ->setPublic()
-            ->addComment("Modifie les données rélatives à 1 ".\singular($class)." précise \n");
+            ->addComment("Modifie les données rélatives à 1 enregistrement dans la table ".$class." \n");
         $params = [];
         foreach ($pks As $pk) 
         {
             $m->addComment('@param mixed $'.$pk);
             $params[] = new Parameter($pk);
         }
-        $m->addComment('@param array $'.$class)
+        $m->addComment('@param array $'.\singular($class).'_infos')
             ->addComment('@return void')
             ->setParameters(array_merge($params, [
-                (new Parameter($class))->setType('array'),
+                (new Parameter(singular($class).'_infos'))->setType('array'),
             ]))
             ->setBody($hydrate);
         $generator->addMember($m);
 
         
         $hydrate  = "\$this->free_db() \n";
-        $hydrate .= "\t->set(\$$class) \n";
+        $hydrate .= "\t->set($".\singular($class)."_infos) \n";
         $hydrate .= "\t->update('$class'); \n";
         $m = (new Method('refactor'))
             ->setPublic()
             ->addComment("Modifie toutes les données de la table ".$class." \n")
-            ->addComment('@param array $'.$class)
+            ->addComment('@param array $'.\singular($class).'_infos')
             ->addComment('@return void')
             ->setParameters([
-                (new Parameter($class))->setType('array'),
+                (new Parameter(singular($class).'_infos'))->setType('array'),
             ])
             ->setBody($hydrate);
         $generator->addMember($m);

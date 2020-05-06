@@ -6,3 +6,23 @@
 [21-Apr-2020 22:23:42 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 20480 bytes) in E:\Codes-sources\dimtrov.dev\www\dframework\system\components\rest\Controller.php on line 127
 [03-May-2020 18:59:05 UTC] PHP Fatal error:  require_once(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Home\toto.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126
 [03-May-2020 19:04:44 UTC] PHP Fatal error:  require_once(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Home\toto.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126
+[05-May-2020 23:27:33 UTC] PHP Warning:  Uncaught Whoops\Exception\ErrorException: require_once(E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Etudiants\index.php): failed to open stream: No such file or directory in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php:126
+Stack trace:
+#0 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(126): Whoops\Run->handleError(2, 'require_once(E:...', 'E:\\Codes-source...', 126, Array)
+#1 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(126): require_once()
+#2 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(62): dFramework\core\output\View->create()
+#3 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\Controller.php(130): dFramework\core\output\View->__construct('index', Array, 'Etudiants')
+#4 E:\Codes-sources\dimtrov.dev\www\dframework\app\controllers\EtudiantsController.php(26): dFramework\core\Controller->view('index', Array)
+#5 [internal function]: EtudiantsController->index()
+#6 E:\Codes-sources\dimtrov.d in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126
+[05-May-2020 23:27:33 UTC] PHP Fatal error:  dFramework\core\output\View::create(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Etudiants\index.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126
+[06-May-2020 17:51:43 UTC] PHP Warning:  Uncaught Whoops\Exception\ErrorException: require_once(E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Etudiants\index.php): failed to open stream: No such file or directory in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php:126
+Stack trace:
+#0 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(126): Whoops\Run->handleError(2, 'require_once(E:...', 'E:\\Codes-source...', 126, Array)
+#1 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(126): require_once()
+#2 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php(62): dFramework\core\output\View->create()
+#3 E:\Codes-sources\dimtrov.dev\www\dframework\system\core\Controller.php(130): dFramework\core\output\View->__construct('index', Array, 'Etudiants')
+#4 E:\Codes-sources\dimtrov.dev\www\dframework\app\controllers\EtudiantsController.php(27): dFramework\core\Controller->view('index', Array)
+#5 [internal function]: EtudiantsController->index()
+#6 E:\Codes-sources\dimtrov.d in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126
+[06-May-2020 17:51:43 UTC] PHP Fatal error:  dFramework\core\output\View::create(): Failed opening required 'E:\Codes-sources\dimtrov.dev\www\dframework\app\views\Etudiants\index.php' (include_path='.;C:/laragon/etc/php/pear') in E:\Codes-sources\dimtrov.dev\www\dframework\system\core\output\View.php on line 126

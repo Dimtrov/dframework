@@ -18,6 +18,8 @@
 
 namespace dFramework\core\utilities;
 
+use Jawira\CaseConverter\Convert;
+
 /**
  * Chaine
  *
@@ -34,43 +36,24 @@ namespace dFramework\core\utilities;
 class Chaine
 {
 
-    /**
-     * Transforme une chaine simple au format camelcase
-     *
-     * @param string $str
-     * @return string
-     */
-    public static function toCamelCase(string $str) : string
+    public static function __callStatic($name, $arguments)
     {
-        $i = ['-', '_'];
-        $str = preg_replace('/([a-z])([A-Z])/', "\\1 \\2", $str);
-        $str = preg_replace('@[^a-zA-Z0-9\-_ ]+@', '', $str);
-        $str = str_replace($i, ' ', $str);
-        $str = str_replace(' ', '', ucwords(strtolower($str)));
-        $str = strtolower(substr($str,0,1)).substr($str,1);
-        return $str;
-    }
+        /**
+         * Conversion de casse d'ecriture
+         */
+        if (\preg_match("#^to(.*)(Case)?$#", $name))
+        {
+            $available_case = ['camel', 'pascal', 'snake', 'ada', 'macro', 'kebab', 'train', 'cobol', 'lower', 'upper', 'title', 'sentence', 'dot'];
 
-    /**
-     * Transforme une chaine simple au format pascalcase
-     *
-     * @param string $str
-     * @return string
-     */
-    public static function toPascalCase(string $str) : string
-    {
-        return join('', array_map('ucfirst', explode('_', $str)));
-    }
-
-    public static function toSnakeCase(string $str) : string 
-    {
-        if ( preg_match ( '/[A-Z]/', $str ) === 0) 
-        { 
-            return $str; 
-        }
-        return strtolower(preg_replace_callback('/([a-z])([A-Z])/', function ($a) {
-            return $a[1] . "_" . strtolower ($a[2]); 
-        }, $str));
+            $name = preg_replace("#Case$#", '', $name);
+            $name = str_replace('to', '', \strtolower($name));
+            if (\in_array($name, $available_case))
+            {
+                $name = 'to'.\ucfirst($name);
+                return (new Convert($arguments[0]))->$name();
+            }
+            return $arguments[0];
+        }   
     }
 
 

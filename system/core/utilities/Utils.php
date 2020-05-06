@@ -108,6 +108,19 @@ class Utils
     }
 
     /**
+     * Compare password and Hash user's
+     *
+     * @since 3.0
+     * @param string $pass
+     * @param string $hash
+     * @return string
+     */
+    public static function passcompare(string $pass, string $hash)
+    {
+        return ($hash === self::hashpass($pass));
+    }
+    
+    /**
      * Genere un mot de passe aleatoire d'une longueur specifiee
      * 
      * @since 3.0

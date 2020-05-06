@@ -23,6 +23,7 @@ use dFramework\core\exception\LoadException;
 use dFramework\core\exception\RouterException;
 use dFramework\core\loader\DIC;
 use dFramework\core\data\Request;
+use dFramework\core\utilities\Chaine;
 use ReflectionMethod;
 
 /**
@@ -139,7 +140,7 @@ class Dispatcher
 
         // Defaults variable 
         $default_controller = Config::get('route.default_controller');
-        $controller_class = $instance->underscoreToCamelCase($default_controller, true);
+        $controller_class = Chaine::toPascalCase($default_controller);
         $controllerSEOClassName = strtolower($default_controller);
         $method = 'index';
         $methodParameters = [];
@@ -156,14 +157,14 @@ class Dispatcher
         // First segment is the controller  - store its name ad SEO name if controller is passed
         if ($urlSegments[0] != "")
         {
-            $controller_class = $instance->current_subsystem . $instance->underscoreToCamelCase($urlSegments[0], true);
+            $controller_class = $instance->current_subsystem . Chaine::toPascalCase($urlSegments[0]);
             $controllerSEOClassName = strtolower($urlSegments[0]);
         }
 
         // Second segment is a controller Method
         if (isset($urlSegments[1]))
         {
-            $method = $instance->underscoreToCamelCase($urlSegments[1]);
+            $method = $instance->underscoreMethod($urlSegments[1]);
 
             // If a method is present, then all the other right segments are
             // considered as method's parameters
@@ -365,20 +366,13 @@ class Dispatcher
      * @param bool $pascalCase . If true uses Pascal Case. Default false, uses Camel Case
      * @return string
      */
-    private function underscoreToCamelCase(string $string, bool $pascalCase = false) : string
+    private function underscoreMethod(string $string) : string
     {
-        if( $pascalCase == true )
+        if (\preg_match("#-#", $string))
         {
-            $string[0] = strtoupper($string[0]);
+            return Chaine::toSnakeCase($string);
         }
-        $str=$string;
-        $i = array("-","_");
-        $str = preg_replace('/([a-z])([A-Z])/', "\\1 \\2", $str);
-        $str = preg_replace('@[^a-zA-Z0-9\-_ ]+@', '', $str);
-        $str = str_replace($i, ' ', $str);
-        $str = str_replace(' ', '', ucwords(strtolower($str)));
-        $str = strtolower(substr($str,0,1)).substr($str,1);
-        return $str;
+        return Chaine::toCamelCase($string);
     }
 
 }

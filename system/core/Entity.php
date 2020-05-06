@@ -45,14 +45,12 @@ class Entity extends Model
     public static function getProperty(string $fieldName) : string
     {
         $case = Config::get('data.hydrator.case');
-        if (strtolower($case) === 'camel')
+        $case = \strtolower($case);
+        if (\in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
         {
-            return Chaine::toCamelCase($fieldName);
-        }
-        if (strtolower($case) === 'pascal')
-        {
-            return Chaine::toPascalCase($fieldName);
-        }
+            $case = 'to'.$case;
+            return Chaine::{$case}($fieldName);
+        }        
         return $fieldName;
     }
 }

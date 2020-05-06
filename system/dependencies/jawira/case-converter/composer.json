@@ -1,0 +1,42 @@
+{
+  "name": "jawira/case-converter",
+  "type": "library",
+  "description": "Convert strings between 13 naming conventions: Snake case, Camel case, Pascal case, Kebab case, Ada case, Train case, Cobol case, Macro case, Upper case, Lower case, Sentence case, Title case and Dot notation.",
+  "keywords": [
+    "Ada case",
+    "Camel case",
+    "Cobol case",
+    "Dot notation",
+    "Kebab case",
+    "Lower case",
+    "Macro case",
+    "Pascal case",
+    "Sentence case",
+    "Snake case",
+    "Title case",
+    "Train case",
+    "Upper case"
+  ],
+  "homepage": "https://jawira.github.io/case-converter/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jawira Portugal",
+      "email": "dev@tugal.be",
+      "homepage": "http://jawira.com/"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "ext-mbstring": "*"
+  },
+  "suggest": {
+    "pds/skeleton": "PHP Package Development Standards",
+    "phing/phing": "PHP Build Tool"
+  },
+  "autoload": {
+    "psr-4": {
+      "Jawira\\CaseConverter\\": "src/"
+    }
+  }
+}

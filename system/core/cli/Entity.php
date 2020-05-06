@@ -22,9 +22,11 @@ use Ahc\Cli\Input\Command;
 use Ahc\Cli\IO\Interactor;
 use Ahc\Cli\Output\Color;
 use Ahc\Cli\Output\Writer;
+use dFramework\core\Config;
 use dFramework\core\db\Hydrator;
 use dFramework\core\db\Query;
 use dFramework\core\dFramework;
+use dFramework\core\generator\Controller;
 use dFramework\core\generator\Model;
 use Exception;
 
@@ -92,30 +94,14 @@ class Entity extends Command
                 $entry = trim($this->create ?? $this->populate);
                 if (!empty($entry) AND $entry != '1')
                 {
-                    $tables = explode('+', $entry);   
-
-                    foreach ($tables As $table) 
+                    if($this->create) 
                     {
-                        if($this->create) 
-                        {
-                            $this->create($table);
-                        }
-                        else 
-                        {
-                            $this->populate($table);
-                        }
-                    }
-
-                    $this->io->write("\t --- Traitement terminé", true);
-                    if ($this->create) 
-                    {
-                        echo $this->color->ok("\t ".count($tables)." Entités créées avec succès \n");
+                        $this->create($entry);
                     }
                     else 
                     {
-                        echo $this->color->ok("\t ".count($tables)." tables remplies avec succès \n");
+                        $this->populate($entry);
                     }
-                    $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
                 }
                 else 
                 {
@@ -133,7 +119,80 @@ class Entity extends Command
         return true;
     }
 
-    private function create($table)
+
+    private function create($entry)
+    {
+        $tables = explode('+', $entry);   
+        $nbr_tables = count($tables);
+        
+        if ($nbr_tables > 1) 
+        {
+            $msg_entity = [
+                'confirm' => '',
+                'success' => $nbr_tables.' Entités créées avec succès',
+            ];
+            $msg_model = [
+                'confirm' => 'Souhaitez-vous générer leurs modèles ?',
+                'success' => $nbr_tables.' modèles générés avec succès',
+            ];
+            $msg_controller = [
+                'confirm' => 'Souhaitez-vous générer les contrôlleurs associés ?',
+                'success' => $nbr_tables.' contrôlleurs générés avec succès',
+            ];
+          //  echo $this->color->ok("\t\t ". \n");
+        }
+        else  
+        {
+            $msg_entity = [
+                'confirm' => '',
+                'success' => 'Entité créée avec succès',
+            ];
+            $msg_model = [
+                'confirm' => 'Souhaitez-vous générer son modèle ?',
+                'success' => 'Modèle généré avec succès',
+            ];
+            $msg_controller = [
+                'confirm' => 'Souhaitez-vous générer le contrôlleurs associé ?',
+                'success' => 'Contrôlleur généré avec succès',
+            ];
+        }
+        
+        foreach ($tables As $table) 
+        {
+            $this->associateEntity($table);
+        }
+        $this->io->write("\t --- Traitement terminé", true);
+        echo $this->color->ok("\t\t ".$msg_entity['success']." \n");  
+            
+        if ($this->io->confirm($msg_model['confirm']))
+        {
+            foreach ($tables As $table)
+            {
+                $this->associateModel($table);
+            }
+            $this->io->write("\t --- Traitement terminé", true);
+            echo $this->color->ok("\t\t ".$msg_model['success']." \n");
+        }
+                
+        if ($this->io->confirm($msg_controller['confirm']))
+        {
+            $controller_type = [
+                Controller::SIMPLE_CONTROLLER => 'Contrôlleur classic', 
+                Controller::REST_CONTROLLER => 'Contrôlleur REST'
+            ];
+            $choice = $this->io->choice('Selectionnez le type de contrôlleur à générer', $controller_type, Controller::SIMPLE_CONTROLLER);
+            foreach ($tables As $table)
+            {
+                $this->associateController($table, $choice);
+            }
+            $this->io->write("\t --- Traitement terminé", true);
+            echo $this->color->ok("\t\t ".$msg_controller['success']." \n");
+        }
+
+        $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+    }
+
+    private function associateEntity($table)
     {
         $table = explode('/', $table);
         if (count($table) == 1) 
@@ -152,7 +211,6 @@ class Entity extends Command
         }
         catch(Exception $e) {}
     }
-
     private function associateModel($table)
     {
         $table = explode('/', $table);
@@ -170,6 +228,26 @@ class Entity extends Command
         try {
             $model = new Model();
             $model->generate($table, $dirname);
+        }
+        catch(Exception $e) {}
+    }
+    private function associateController($table, $controller_type)
+    {
+        $table = explode('/', $table);
+        if (count($table) == 1) 
+        {
+            $table = $table[0];
+            $dirname = '';
+        }
+        else 
+        {
+            $tmp = array_pop($table);
+            $dirname = \implode(\DS, $table).\DS;
+            $table = $tmp;
+        }
+        try {
+            $controller = new Controller();
+            $controller->generate($table, $controller_type, $dirname);
         }
         catch(Exception $e) {}
     }
@@ -194,23 +272,11 @@ class Entity extends Command
 
             if ($this->io->confirm('Voullez-vous générer toutes les classes d\'entités correspondantes ?')) 
             {
-                foreach ($tables As $table)
+                foreach ($tables As $key => $value) 
                 {
-                    $this->create($table['tables']);
+                    $tables[$key] = $value['tables'];
                 }
-                $this->io->write("\t --- Traitement terminé", true);
-                echo $this->color->ok("\t ".count($tables)." Entités créées avec succès \n");
-                
-                if ($this->io->confirm('Souhaitez-vous générer les modèles associés ?'))
-                {
-                    foreach ($tables As $table)
-                    {
-                        $this->associateModel($table['tables']);
-                    }
-                    $this->io->write("\t --- Traitement terminé", true);
-                    echo $this->color->ok("\t ".count($tables)." modèles associés avec succès \n");
-                }
-                $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+                $this->create(join('+', $tables));
             }
         }
         catch(Exception $e) {}

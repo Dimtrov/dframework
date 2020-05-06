@@ -208,6 +208,19 @@ class Controller extends CoreController
         ob_end_flush();
     }
 
+    /**
+     * Renvoi un message d'erreur au client
+     * 
+     * @param string $error_msg Le message a enyoyer
+     * @param int $http_code Le code de statut de la reponse
+     */
+    protected function send_error(string $error_msg, int $http_code = self::HTTP_BAD_REQUEST)
+    {
+        return $this->response([
+            $this->_config['status_field_name']  => false,
+            $this->_config['message_field_name'] => $error_msg,
+        ], $http_code, false);
+    }
     
     /**
      * Specifie que seules les requetes ajax sont acceptees
@@ -389,28 +402,19 @@ class Controller extends CoreController
         // Verifie si la requete est en ajax
         if (true !== $this->request->is('ajax') AND true === $this->_config['ajax_only'])
         {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => $this->_lang['ajax_only'],
-            ], self::HTTP_NOT_ACCEPTABLE);
+            return $this->send_error($this->_lang['ajax_only'], self::HTTP_NOT_ACCEPTABLE);
         }
 
         // Verifie si la requete est en https
         if (true !== $this->request->is('https') AND true === $this->_config['force_https']) 
         {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => $this->_lang['unsupported'],
-            ], self::HTTP_FORBIDDEN);
+            return $this->send_error($this->_lang['unsupported'], self::HTTP_FORBIDDEN);
         }
 
         // Verifie si la methode utilisee pour la requete est autorisee
         if (true !== in_array(strtoupper($this->request->method()), $this->_config['allowed_methods']))
         {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => $this->_lang['unknown_method'],
-            ], self::HTTP_METHOD_NOT_ALLOWED);
+            return $this->send_error($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
         }
 
         // Verifie que l'ip qui emet la requete n'est pas dans la blacklist
@@ -424,11 +428,7 @@ class Controller extends CoreController
             // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
             if (preg_match($pattern, $this->_config['ip_blacklist'])) 
             {
-                // Display an error response
-                return $this->response([
-                    $this->_config['status_field_name']  => false,
-                    $this->_config['message_field_name'] => $this->_lang['ip_denied'],
-                ], self::HTTP_UNAUTHORIZED);
+                return $this->send_error($this->_lang['ip_denied'], self::HTTP_UNAUTHORIZED);
             }
         }
 
@@ -447,10 +447,7 @@ class Controller extends CoreController
 
             if (true !== in_array($this->request->clientIp(), $whitelist)) 
             {
-                return $this->response([
-                    $this->_config['status_field_name']  => false,
-                    $this->_config['message_field_name'] => $this->_lang['ip_unauthorized'],
-                ], self::HTTP_UNAUTHORIZED);
+                return $this->send_error($this->_lang['ip_unauthorized'], self::HTTP_UNAUTHORIZED);
             }
         }
 
@@ -464,10 +461,7 @@ class Controller extends CoreController
                     $this->payload = JWT::decode($token, $this->_config['jwt']['key']);
                 }
                 catch(\Exception $e) {
-                    return $this->response([
-                        $this->_config['status_field_name']  => false,
-                        $this->_config['message_field_name'] => 'JWT Exception : ' . $e->getMessage(),
-                    ], self::HTTP_INTERNAL_ERROR);
+                    return $this->send_error('JWT Exception : ' . $e->getMessage(), self::HTTP_INTERNAL_ERROR);
                 }
             }
         }
@@ -477,22 +471,19 @@ class Controller extends CoreController
     /**
      * Recupere le token d'acces a partier des headers
      */
-    final protected function getBearerToken()
+    protected function getBearerToken()
     {
         $headers = $this->getAuthorizationHeader();
         if (empty($headers))
         {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => $this->_lang['token_not_found'],
-            ], self::HTTP_UNAUTHORIZED);
+            return $this->send_error($this->_lang['token_not_found'], self::HTTP_UNAUTHORIZED);
         }
         if (preg_match('/Bearer\s(\S+)/', $headers, $matches))
         {
             return $matches[1];
         }
     }
-    private function getAuthorizationHeader()
+    protected function getAuthorizationHeader()
     {
         $header = null;
         if (isset($_SERVER['Authorization']))

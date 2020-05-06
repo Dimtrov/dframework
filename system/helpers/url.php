@@ -59,7 +59,7 @@ if (!function_exists('redirect')) {
     function redirect($uri = '', $protocol = NULL)
     {
         header('Location: ' . site_url($uri, $protocol));
-        return;
+        exit(1);
     }
 }
 
