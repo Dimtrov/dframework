@@ -18,6 +18,7 @@
 
 namespace dFramework\core\exception;
 
+use dFramework\core\utilities\Debugger as UtilitiesDebugger;
 use Tracy\Debugger;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -47,7 +48,7 @@ class Exception extends \Exception
         $whoops  =  new Run();
         $whoops->pushHandler(new PrettyPageHandler); 
         $whoops->pushHandler([New Log, 'register']);
-        $whoops->register(); 
+        $whoops->register();
     }
 
 
@@ -56,7 +57,7 @@ class Exception extends \Exception
      */
     public static function Throw(\Exception $e)
     {
-        die('Exception: <br><pre>'.print_r($e, true).'</pre>');
+        Debugger::exceptionHandler($e);
     }
 
     /**
@@ -65,7 +66,8 @@ class Exception extends \Exception
      */
     public static function show(string $message, int $code = 0)
     {
-        die($message);
+        Debugger::fireLog($message);
+        UtilitiesDebugger::trac($message);
     }
 
     public static function except(string $message, int $code = 0)
@@ -73,11 +75,11 @@ class Exception extends \Exception
         $class = get_called_class();
         $class = trim(str_replace('Exception', '', $class));
         $class = (empty($class)) ? 'General' : $class;
+        $class = explode('\\', $class);
+        $class = end($class).' Exception';
 
         $backtrace = debug_backtrace();
-
-        var_dump($message, $class);
-        die();
+        self::renderView(\compact('message', 'code'), $class);
     }
 
 
@@ -85,9 +87,9 @@ class Exception extends \Exception
     /**
      * @param string $exception_type
      */
-    protected function renderView(string $exception_type = 'General Exception')
+    private static function renderView(array $details, string $exception_type = 'General Exception')
     {
-
+        \extract($details);
         ?>
         <!doctype html>
         <html lang="fr">
@@ -99,7 +101,7 @@ class Exception extends \Exception
             <title><?= $exception_type; ?></title>
             <style>
                 html {padding:0;margin:0;width:100%;height:100%;background:whitesmoke;}
-                body{padding:1em;margin:5% auto;width:70%;background:white;border:1px solid rgba(0, 0, 0, .1);font-family:sans-serif;}
+                body{padding:2.5em;margin:5% auto;width:50%;background:white;border:1px solid rgba(0, 0, 0, .1);font-family:sans-serif;}
                 h1{color:cornflowerblue;border-bottom:1px solid;}
                 dl{padding:5px;font-size:.9em;line-height:1.5em;}
                 .row{display:-ms-flexbox;display:flex;}
@@ -111,19 +113,11 @@ class Exception extends \Exception
         <h1><?= $exception_type; ?></h1>
         <dl class="row">
             <dt class="col-2">Code</dt>
-            <dd class="col-10"><?= $this->getCode(); ?></dd>
+            <dd class="col-10"><?= $code; ?></dd>
         </dl>
         <dl class="row">
             <dt class="col-2">Message</dt>
-            <dd class="col-10"><?= $this->getMessage(); ?></dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-2">File</dt>
-            <dd class="col-10"><?= $this->getFile(); ?></dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-2">Line</dt>
-            <dd class="col-10"><?= $this->getLine(); ?></dd>
+            <dd class="col-10"><?= $message; ?></dd>
         </dl>
 
         <hr size="1" style="margin-bottom: 0; margin-top: 2em">

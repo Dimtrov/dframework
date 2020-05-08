@@ -1271,7 +1271,7 @@ function scl_int2letter($int)
 
 
     if(!($cent_c=='0' || $cent_c=='') || !($dix_c=='0' || $dix_c=='')) {
-        $return .= $trio_c. ' ' .$secon_c. ' ' . $dev2;
+        $return .= $trio_c. ' ' .$secon_c;
     }
 
     return trim($return);

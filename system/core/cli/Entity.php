@@ -22,7 +22,6 @@ use Ahc\Cli\Input\Command;
 use Ahc\Cli\IO\Interactor;
 use Ahc\Cli\Output\Color;
 use Ahc\Cli\Output\Writer;
-use dFramework\core\Config;
 use dFramework\core\db\Hydrator;
 use dFramework\core\db\Query;
 use dFramework\core\dFramework;
@@ -256,7 +255,9 @@ class Entity extends Command
 
     private function populate($table)
     {
+        echo $this->color->info("Fonctionnalite indisponible pour le moment \n");
 
+        $this->writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
     }
 
     private function generate()

@@ -75,10 +75,10 @@ class Mapper extends Command
             if($this->app) 
             {
                 $mapper = new ClassMapper([\APP_DIR], [
-                    'excluded_folders' => [
-                        \CONTROLLER_DIR,
-                        \MODEL_DIR,
-                        \RESOURCE_DIR,
+                    'excluded_paths' => [
+                        rtrim(\CONTROLLER_DIR, DS),
+                        rtrim(\MODEL_DIR, DS),
+                        rtrim(\RESOURCE_DIR, DS),
                         \APP_DIR.'class',
                     ]
                 ]);

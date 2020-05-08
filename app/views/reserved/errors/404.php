@@ -49,8 +49,8 @@
 </head>
 <body>
 <div id="container">
-    <h1><?php echo $df_heading; ?></h1>
-    <p><?php echo $df_message; ?></p>
+    <h1><?php echo $heading; ?></h1>
+    <p><?php echo $message; ?></p>
 </div>
 </body>
 </html>

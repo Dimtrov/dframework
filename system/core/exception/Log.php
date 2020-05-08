@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
@@ -44,9 +44,27 @@ class Log
 		$file     = $exception->getFile();
 		$line     = $exception->getLine();
 		
-		$this->parseError($message, $code, $file, $line);
-		
+		$this->parseError($message, $code, $file, $line);	
 	}
+	
+	/**
+	 * Save PHP generated error messages
+	 *
+	 * @param string $message
+	 * @param int $code
+	 * @param string $file
+	 * @param int $line
+	 * @return	void
+	 */
+	public static function save($message, $code, $file, $line)
+	{
+		if(null === self::$instance) 
+		{
+			self::$instance = new self;
+		}
+		self::$instance->parseError($message, $code, $file, $line);
+	}
+	private static $instance = null;
 
 
 	private function parseError($message, $code, $file, $line)

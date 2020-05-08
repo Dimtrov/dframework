@@ -40,8 +40,3 @@ define('DF_MOD_DEP', 2); // Les erreurs liees aux dependances internes
  * Defines a constant for framework's classes directories
  */
 define("CLASSES", serialize([SYST_DIR . 'core']));
-
-/**
- * Defines a constant for application's subsystems directories
- */
-define("SUBSYSTEMS", serialize(\dFramework\core\route\Lister::listFolders(CONTROLLER_DIR)));

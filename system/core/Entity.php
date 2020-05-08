@@ -35,7 +35,10 @@ use dFramework\core\utilities\Chaine;
 
 class Entity extends Model
 {
-        
+    
+
+
+
     /**
      * getProperty
      *

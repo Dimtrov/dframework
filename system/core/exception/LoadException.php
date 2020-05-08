@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -41,16 +41,8 @@ class LoadException extends Exception
     {
         if($code === 404 AND Config::get('general.environment') !== 'dev')
         {
-            Config::set('general.use_template_engine', false);
-            (new View('/reserved/errors/404', [
-                'heading' => 'Page Not Found',
-                'message' => 'The page you requested was not found.'
-            ]))->render();
-            exit;
+            Errors::show404();
         }
-        else
-        {
-            parent::except($message, $code);
-        }
+        parent::except($message, $code);
     }
 }

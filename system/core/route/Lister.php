@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage   https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -69,7 +69,7 @@ class Lister
     {
         $directories = unserialize(CLASSES);
         $subSystems = [];
-        $definedSubSystems = unserialize(SUBSYSTEMS);
+        $definedSubSystems = self::listFolders();
 
         if (is_array($definedSubSystems))
         {
@@ -98,16 +98,16 @@ class Lister
     public static function getCurrentSubSystem(?string $url = '') : ?string
     {
         $currentSubSystem = "";
-        $subSystems = unserialize(SUBSYSTEMS);
+        $subSystems = self::listFolders();
 
         if (is_array($subSystems))
         {
-            foreach ($subSystems as $key => $value)
+            foreach ($subSystems As $value)
             {
-                $value = str_replace(DS, '/', $value);
-                if (substr($url, 0, strlen($value)) === $value)
+                $value = str_replace('/', DS, $value);
+                $temp = substr($url, 0, strlen($value));
+                if ($temp === $value)
                 {
-                    $temp = substr($url, 0, strlen($value));
                     if (strlen($temp) > strlen($currentSubSystem)) {
                         $currentSubSystem = $temp;
                     }

@@ -22,9 +22,10 @@ require_once __DIR__.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'.bootstra
 $app = new Ahc\Cli\Application('dFramework', dFramework\core\dFramework::VERSION);
 
 $app
-    ->add(new dFramework\core\cli\Server, 'serve', true)
+    ->add(new dFramework\core\cli\Server, 'serve')
     ->add(new dFramework\core\cli\Mapper, 'map')
     ->add(new dFramework\core\cli\Less)
-    ->add(new dFramework\core\cli\Entity);
+    ->add(new dFramework\core\cli\Entity)
+    ->add(new dFramework\core\cli\Migrate);
  
 $app->handle($_SERVER['argv']);

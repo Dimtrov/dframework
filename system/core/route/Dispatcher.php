@@ -199,6 +199,8 @@ class Dispatcher
      */
     public static function loadController($controllerClassFile, $controllerClass, $method, ?array $parameters = null)
     {
+        $controllerClassFile = str_replace(DS.DS, DS, $controllerClassFile);
+        
         if('cli' === php_sapi_name())
         {
             return;

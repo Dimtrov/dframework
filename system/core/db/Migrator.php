@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 
@@ -65,8 +65,9 @@ class Migrator
      * Sauvegarde une base de donnee
      * 
      * @param string $version
+     * @return string a path for saved file
      */
-    public function down(string $version)
+    public function down(string $version) : string
     {
         if(false === is_dir($this->save_folder))
         {
@@ -77,6 +78,7 @@ class Migrator
         }
         $filename = (!empty($this->filename)) ? $this->filename : $this->db->config['database'];
         $filename .= '_v'.$version.'.sql';
+        $save_file = rtrim($this->save_folder, DS).DS.$filename;
 
         $commande  = 'mysqldump';
         $commande .= ' --host=' . $this->db->config['host'];
@@ -94,9 +96,11 @@ class Migrator
         $commande .= ' --complete-insert';
         $commande .= ' --default-character-set=' . $this->db->config['charset'];
         $commande .= ' '.$this->db->config['database'] ;
-        $commande .= '  > '.rtrim($this->save_folder, DS).DS.$filename;
+        $commande .= '  > '.$save_file;
 
         system($commande);
+
+        return $save_file;
     }
 
     public function up(string $version)
