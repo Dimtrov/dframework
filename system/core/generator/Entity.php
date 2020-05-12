@@ -122,7 +122,7 @@ final class Entity extends Generator
      */
     private function writeProperties($class, $properties, &$render)
     {
-        $class_name = Chaine::toPascalCase($class.'Entity');
+        $class_name = Chaine::toPascalCase($class).'Entity';
         $generator = new ClassType($class_name);
 
         $generator 

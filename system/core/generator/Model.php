@@ -67,7 +67,7 @@ final class Model extends Generator
      */
     protected function writeProperties($class, &$render)
     {
-        $class_name = Chaine::toPascalCase($class.'Model');
+        $class_name = Chaine::toPascalCase($class).'Model';
         $generator = new ClassType($class_name);
 
         $generator 

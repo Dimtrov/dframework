@@ -122,20 +122,21 @@ class Utils
     
     /**
      * Genere un mot de passe aleatoire d'une longueur specifiee
-     * 
+     *
      * @since 3.0
      * @param int $lenght
      * @return string
      */
-    public static function randomPass(int $lenght = 8) : string 
+    public static function randomPass(int $lenght = 8) : string
     {
         $lenght = (empty($lenght) OR !is_int($lenght)) ? 8 : $lenght;
         $characters = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
         shuffle($characters);
-        $password = array_rand($characters, $lenght);
-        if(is_array($password))
+        $nbr_char = count($characters) - 1;
+        $password = '';
+        for($i = 0; $i < $lenght; $i++) 
         {
-            return join('', $password);
+            $password .= $characters[rand(0, $nbr_char)];
         }
         return (string) $password;
     }
