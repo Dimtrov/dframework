@@ -62,28 +62,31 @@ class Autoloader
 
             require_once __DIR__. DIRECTORY_SEPARATOR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
         }
-        else if (file_exists(SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php'))
+        else 
         {
-            $class_map_file = SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php';
-            if(true !== in_array($class_map_file, \get_included_files()))
+            if (file_exists(SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php'))
             {
-                self::$_class_map_syst = require $class_map_file;
+                $class_map_file = SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php';
+                if(true !== in_array($class_map_file, \get_included_files()))
+                {
+                    self::$_class_map_syst = require $class_map_file;
+                }
+                if(array_key_exists($input, self::$_class_map_syst))
+                {
+                    require_once str_replace('{SYST_DIR}', SYST_DIR, self::$_class_map_syst[$input]);
+                }
             }
-            if(array_key_exists($input, self::$_class_map_syst))
+            if (file_exists(APP_DIR.'resources'.DIRECTORY_SEPARATOR.'reserved'.DIRECTORY_SEPARATOR.'.classmap.php'))
             {
-                require_once str_replace('{SYST_DIR}', SYST_DIR, self::$_class_map_syst[$input]);
-            }
-        }
-        else if (file_exists(APP_DIR.'resources'.DIRECTORY_SEPARATOR.'.classmap.php'))
-        {
-            $class_map_file = APP_DIR.'resources'.DIRECTORY_SEPARATOR.'.classmap.php';
-            if(true !== in_array($class_map_file, \get_included_files()))
-            {
-                self::$_class_map_app = require $class_map_file;
-            }
-            if(array_key_exists($input, self::$_class_map_app))
-            {
-                require_once str_replace('{APP_DIR}', APP_DIR, self::$_class_map_app[$input]);
+                $class_map_file = APP_DIR.'resources'.DIRECTORY_SEPARATOR.'reserved'.DIRECTORY_SEPARATOR.'.classmap.php';
+                if(true !== in_array($class_map_file, \get_included_files()))
+                {
+                    self::$_class_map_app = require $class_map_file;
+                }
+                if(array_key_exists($input, self::$_class_map_app))
+                {
+                    require_once str_replace('{APP_DIR}', APP_DIR, self::$_class_map_app[$input]);
+                }
             }
         }
     }

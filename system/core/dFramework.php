@@ -64,17 +64,20 @@ class dFramework
      */
     public static function init()
     {
-        self::checkRequirements();
-
         /**
-         * Lance la capture des exceptions et erreurs
+         * Verifie les exigences systeme
          */
-        Exception::init();
+        self::checkRequirements();
 
         /**
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
         Config::init();
+
+        /**
+         * Lance la capture des exceptions et erreurs
+         */
+        Exception::init();
 
         /**
          * Demarre la session

@@ -1,5 +1,6 @@
 <?php
 
+use dFramework\core\data\Request;
 use dFramework\core\Helpers;
 
 if ( ! function_exists('site_url'))
@@ -42,7 +43,7 @@ if (!function_exists('current_url')) {
      */
     function current_url($url = '')
     {
-        return trim(Helpers::instance()->site_url(trim($_SERVER['REQUEST_URI'], '/') . (preg_match('#^/#', $url) ? $url : '/' . $url)), '/');
+        return site_url((new Request)->here().$url);
     }
 }
 

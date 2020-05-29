@@ -44,7 +44,7 @@ class Migrator
     /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR . 'migrations' . DS;
+    private $save_folder = RESOURCE_DIR . 'reserved'.DS.'migrations' . DS;
 
     /**
      * @var string
@@ -130,13 +130,10 @@ class Migrator
         $files = glob(rtrim($this->save_folder, DS).DS.'*');
         foreach ($files As $file)
         {
-            if(((time() - filemtime($file)) / 60) > $duration)
+            if (((time() - filemtime($file)) / 60) > $duration)
             {
                 unlink($file);
             }
         }
     }
-
-
-
 }

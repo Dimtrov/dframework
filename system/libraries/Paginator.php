@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version 2.0
+ * @version     3.1
  */
 
 use dFramework\core\db\Database;
@@ -28,7 +28,8 @@ use dFramework\core\exception\Exception;
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/validator
+ * @link		https://dimtrov.hebfree.org/docs/dframework/
+ * @since       2.0
  * @credit      Simple PDO MySQL pagination class -  By Ademola Abisayo Paul (sayopaul) https://github.com/sayopaul
  * @credit      Generate a Pagination (with Bootstrap) V1.0.0 - By Zheness https://github.com/Zheness/Pagination/ Github Repo
  */
@@ -41,7 +42,7 @@ class dF_Paginator
      */
     protected $db;
     /**
-     * @var bool Specifie if we run query to found a pagination information
+     * @var bool Specify if we run query to found a pagination information
      */
     protected $run_query = true;
     /**

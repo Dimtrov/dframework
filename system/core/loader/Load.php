@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
 
@@ -391,6 +391,8 @@ class Load
     }
 
     /**
+     * Charge un fichier de gestion de langue
+     * 
      * @param string $file
      * @param mixed $var 
      * @param string|null $locale
@@ -405,7 +407,7 @@ class Load
         }
         $file = preg_replace('#\.json$#i', '', $file);
         $filename = (true === $app) 
-            ? RESOURCE_DIR . 'lang' . DS . $locale . DS . $file . '.json'
+            ? RESOURCE_DIR . 'reserved'.DS.'lang' . DS . $locale . DS . $file . '.json'
             : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
         if (true !== file_exists($filename))

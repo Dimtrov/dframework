@@ -20,6 +20,7 @@ namespace dFramework\components\rest;
 
 use dFramework\core\Config;
 use dFramework\core\Controller as CoreController;
+use dFramework\core\data\Request;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use Firebase\JWT\JWT;
@@ -120,23 +121,25 @@ class Controller extends CoreController
         // Sure it exists, but can they do anything with it?
         if (!method_exists($class, $method)) 
         {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => $this->_lang['unknown_method'],
-            ], self::HTTP_METHOD_NOT_ALLOWED);
+            return $this->send_error($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
         }
 
         // Call the controller method and passed arguments
         try {
             call_user_func_array([new $class, $method], $params);
         } 
-        catch (Exception $ex) {
+        catch (\Throwable $ex) {
+            if (Config::get('general.environment') !== 'dev') 
+            {
+                $url = explode('?', (new Request)->here())[0];
+                return $this->send_error('Mauvaise utilisation de < '.$url.' >. Veuillez consulter la documentation de votre fournisseur', self::HTTP_BAD_REQUEST);
+            }
             if ($this->_config['handle_exceptions'] === false) 
             {
                 throw $ex;
             }
             // If the method doesn't exist, then the error will be caught and an error response shown
-            Exception::Throw($ex);
+           Exception::Throw($ex);
         }
     }
     public function index(){}
@@ -214,7 +217,7 @@ class Controller extends CoreController
      * @param string $error_msg Le message a enyoyer
      * @param int $http_code Le code de statut de la reponse
      */
-    protected function send_error(string $error_msg, int $http_code = self::HTTP_BAD_REQUEST)
+    protected function send_error(string $error_msg = "Une erreur s'est produite", int $http_code = self::HTTP_INTERNAL_ERROR)
     {
         return $this->response([
             $this->_config['status_field_name']  => false,
@@ -287,8 +290,19 @@ class Controller extends CoreController
      */
     final protected function ip_blacklist(...$params) : self 
     {
+        $this->_config['ip_blacklist_enabled'] = true;
+
         $params = func_get_args();
-        $this->_config['ip_blacklist_enabled'] = (bool) array_shift($params);
+        $enable = array_shift($params);
+        
+        if (is_bool($enable)) 
+        {
+            $this->_config['ip_blacklist_enabled'] = (bool) $enable;
+        } 
+        else 
+        {
+            array_unshift($params, $enable);
+        }
         $this->_config['ip_blacklist'] = array_merge($this->_config['ip_blacklist'] ?? [], $params);
         return $this;
     }    
@@ -302,12 +316,29 @@ class Controller extends CoreController
      */
     final protected function ip_whitelist(...$params) : self 
     {
+        $this->_config['ip_whitelist_enabled'] = true;
+
         $params = func_get_args();
-        $this->_config['ip_whitelist_enabled'] = (bool) array_shift($params);
+        $enable = array_shift($params);
+        
+        if (is_bool($enable)) 
+        {
+            $this->_config['ip_whitelist_enabled'] = (bool) $enable;
+        } 
+        else 
+        {
+            array_unshift($params, $enable);
+        }
         $this->_config['ip_whitelist'] = array_merge($this->_config['ip_whitelist'] ?? [], $params);
         return $this;
     }
 
+    /**
+     * Genere un token d'authentification
+     *
+     * @param array $data
+     * @return string
+     */
     final protected function generateToken(array $data = []) : string
     {
         $jwt_conf = $this->_config['jwt'];
@@ -322,10 +353,7 @@ class Controller extends CoreController
             return JWT::encode($payload, $jwt_conf['key']);
         }
         catch(\Exception $e) {
-            return $this->response([
-                $this->_config['status_field_name']  => false,
-                $this->_config['message_field_name'] => 'JWT Exception : ' . $e->getMessage(),
-            ], self::HTTP_INTERNAL_ERROR);
+            return $this->send_error('JWT Exception : ' . $e->getMessage(), self::HTTP_INTERNAL_ERROR);
         }
     }
 
@@ -414,7 +442,7 @@ class Controller extends CoreController
         // Verifie si la methode utilisee pour la requete est autorisee
         if (true !== in_array(strtoupper($this->request->method()), $this->_config['allowed_methods']))
         {
-            return $this->send_error($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
+            return $this->send_error($this->_lang['unknown_method'], self::HTTP_NOT_ACCEPTABLE);
         }
 
         // Verifie que l'ip qui emet la requete n'est pas dans la blacklist
@@ -458,7 +486,7 @@ class Controller extends CoreController
             {
                 $token = $this->getBearerToken();
                 try {
-                    $this->payload = JWT::decode($token, $this->_config['jwt']['key']);
+                    $this->payload = JWT::decode($token, $this->_config['jwt']['key'], ['HS256']);
                 }
                 catch(\Exception $e) {
                     return $this->send_error('JWT Exception : ' . $e->getMessage(), self::HTTP_INTERNAL_ERROR);

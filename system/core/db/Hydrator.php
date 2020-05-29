@@ -60,7 +60,10 @@ class Hydrator
 
         $instance = new $class();
 
-        \call_user_func_array([$instance, 'hydrate'], $datas);
+        if (method_exists($instance, 'hydrate')) 
+        {
+            $instance->hydrate($datas);
+        }
 
         return $instance;
     }

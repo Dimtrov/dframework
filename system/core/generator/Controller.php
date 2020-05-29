@@ -285,12 +285,12 @@ final class Controller extends Generator
         $body_method  = "\$this->allowed_methods('post')->checkProcess(); \n";
         $body_method .= "\$post = \$this->request->data; \n";
         $body_method .= "try { \n";
-            $body_method .= "\tforeach(\$post as \$key => \$value) { \n";
-                $body_method .= "\t\tif(!in_array(\$key, [".$attr."])) { unset(\$post[\$key]); } \n";
+            $body_method .= "\tforeach (\$post as \$key => \$value) { \n";
+                $body_method .= "\t\tif (!in_array(\$key, [".$attr."])) { unset(\$post[\$key]); } \n";
             $body_method .= "\t} \n";
             $body_method .= "\t\$this->loadLibrary('Checker'); \n";
             $body_method .= "\t\$this->checker->useInputField(true, \$post); \n";
-            $body_method .= "\tif(!\$this->checker->inField(".$attr.")) { \n";
+            $body_method .= "\tif (!\$this->checker->inField(".$attr.")) { \n";
                 $body_method .= "\t\t\$this->response([ \n";
                     $body_method .= "\t\t\t'success' => false, \n";
                     $body_method .= "\t\t\t'message' => 'Veuillez remplir tous les champs suivants : ".str_replace('\'', '', $attr)."' \n";
@@ -318,6 +318,7 @@ final class Controller extends Generator
         $generator->addMember($m);
     }
     
+
     private function addDetailsMethod(ClassType &$generator, array $variables)
     {
         if ($variables['controller_type'] === self::SIMPLE_CONTROLLER)
@@ -378,13 +379,13 @@ final class Controller extends Generator
         $args = trim($args, ',');
       
         $body_method  = "\$this->allowed_methods('get')->checkProcess(); \n";
-        $body_method .= "\$only_one = true; \n";
+        $body_method .= "\$only_one = false; \n";
         $body_method .= "\$args = func_get_args(); \n";
-        $body_method .= "foreach(\$args as \$arg) { \n";
-            $body_method .= "\tif(!empty(\$arg)) { \$only_one = false; } \n";
+        $body_method .= "foreach (\$args as \$arg) { \n";
+            $body_method .= "\tif (!empty(\$arg)) { \$only_one = true; break; } \n";
         $body_method .= "} \n";
         $body_method .= "try { \n";
-            $body_method .= "\tif(\$only_one) { \n";
+            $body_method .= "\tif (\$only_one) { \n";
                 $body_method .= "\t\t$".$singular_class." = ";
                 $body_method .= (\count($fks) > 0) ? "\$this->model->read_join_pk(".trim($args).");" : "\$this->model->read_pk(".trim($args).");";
                 $body_method .= "\n\t\tif (empty($".$singular_class.")) { \n";
@@ -404,7 +405,7 @@ final class Controller extends Generator
                 $body_method .= "\t\t]); \n";
             $body_method .= "\t} \n";
             $body_method .= "\t$".$plural_class." = ";
-            $body_method .= (\count($fks) > 0) ? "\$this->model->read_join();" : "\$this->model->read_pk();";
+            $body_method .= (\count($fks) > 0) ? "\$this->model->read_join();" : "\$this->model->read();";
             $body_method .= "\n\tif (empty($".$plural_class.")) { \n";
                 $body_method .= "\t\t// Aucun(e) ".$singular_class." enregistré(e) en base de données \n";
                 $body_method .= "\t\t// Traitements appropriés \n";
@@ -442,6 +443,7 @@ final class Controller extends Generator
             ->setBody($body_method);
         $generator->addMember($m);
     }
+
 
     private function addUpdateMethod(ClassType &$generator, array $variables)
     {
@@ -528,12 +530,12 @@ final class Controller extends Generator
         $body_method  = "\$this->allowed_methods('put')->checkProcess(); \n";
         $body_method .= "\$post = \$this->request->data; \n";
         $body_method .= "try { \n";
-            $body_method .= "\tforeach(\$post as \$key => \$value) { \n";
-                $body_method .= "\t\tif(!in_array(\$key, [".$attr."])) { unset(\$post[\$key]); } \n";
+            $body_method .= "\tforeach (\$post as \$key => \$value) { \n";
+                $body_method .= "\t\tif (!in_array(\$key, [".$attr."])) { unset(\$post[\$key]); } \n";
             $body_method .= "\t} \n";
             $body_method .= "\t\$this->loadLibrary('Checker'); \n";
             $body_method .= "\t\$this->checker->useInputField(true, \$post); \n";
-            $body_method .= "\tif(!\$this->checker->inField(".$attr.")) { \n";
+            $body_method .= "\tif (!\$this->checker->inField(".$attr.")) { \n";
                 $body_method .= "\t\treturn \$this->response([ \n";
                     $body_method .= "\t\t\t'success' => false, \n";
                     $body_method .= "\t\t\t'message' => 'Veuillez remplir tous les champs suivants : ".str_replace('\'', '', $attr)."' \n";
@@ -577,6 +579,7 @@ final class Controller extends Generator
             ->setBody($body_method);
         $generator->addMember($m);
     }
+
 
     private function addDeleteMethod(ClassType &$generator, array $variables)
     {

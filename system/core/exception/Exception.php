@@ -18,6 +18,7 @@
 
 namespace dFramework\core\exception;
 
+use dFramework\core\Config;
 use dFramework\core\utilities\Debugger as UtilitiesDebugger;
 use Tracy\Debugger;
 use Whoops\Handler\PrettyPageHandler;
@@ -44,18 +45,21 @@ class Exception extends \Exception
      */
     public static function init() : void
     {  
-        Debugger::enable();
-        $whoops  =  new Run();
-        $whoops->pushHandler(new PrettyPageHandler); 
-        $whoops->pushHandler([New Log, 'register']);
-        $whoops->register();
+        if (Config::get('general.environment') === 'dev') 
+        {
+            Debugger::enable();
+            $whoops  =  new Run();
+            $whoops->pushHandler(new PrettyPageHandler); 
+            $whoops->pushHandler([New Log, 'register']);
+            $whoops->register();
+        }
     }
 
 
     /**
-     * @param \Exception $e
+     * @param \Throwable $e
      */
-    public static function Throw(\Exception $e)
+    public static function Throw(\Throwable $e)
     {
         Debugger::exceptionHandler($e);
     }

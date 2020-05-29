@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
 /**
@@ -31,13 +31,22 @@
 
 class dF_Checker
 {
+    /**
+     * Les champs de donnees a utiliser pour les verifications
+     *
+     * @var array
+     */
     private $field = [];
-
+    /**
+     * Specifie si on utilise les champs de donnees pour la verification ou pas
+     *
+     * @var boolean
+     */
     private $use_input_field = false;
 
-
-
     /**
+     * Definit les champs de donnees a utiliser pour la verification
+     * 
      * @param bool $using
      * @param array $field
      */
@@ -59,7 +68,7 @@ class dF_Checker
         $status = true;
         foreach ($vars As $var)
         {
-            if($status === false)
+            if ($status === false)
             {
                 break;
             }
@@ -76,13 +85,15 @@ class dF_Checker
      * @return bool
      * @throws Exception
      */
-    public function in($value, $array)
+    public function in($value, $array) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
-        if(is_string($array)) {
+        if (is_string($array)) 
+        {
             $array = explode(';', $array);
         }
-        if(!is_array($array)) {
+        if (!is_array($array)) 
+        {
             throw new Exception('Unsupported parameter to second argument. use a string or array variable');
         }
         return in_array($value, $array);
@@ -94,26 +105,26 @@ class dF_Checker
      * @param string|array $value Donnée à verifier
      * @return bool
      */
-    public function is_alpha($value)
+    public function is_alpha($value) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
-        if(is_array($value))
+        if (is_array($value))
         {
             foreach ($value As $k => $v)
             {
-                if(!is_string($v))
+                if (!is_string($v))
                 {
                     return false;
                 }
                 $strlen = strlen($v);
-                if($strlen < 0 OR !preg_match("#^(?:[[:alpha:]]){".$strlen."}$#", $v))
+                if ($strlen < 0 OR !preg_match("#^(?:[[:alpha:]]){".$strlen."}$#", $v))
                 {
                     return false;
                 }
             }
             return true;
         }
-        if(is_string($value))
+        if (is_string($value))
         {
             $strlen = strlen($value);
             return ($strlen > 0 AND preg_match("#^(?:[[:alpha:]]){".$strlen."}$#", $value));
@@ -126,10 +137,10 @@ class dF_Checker
      * @param string|array $value Donnée à verifier
      * @return bool
      */
-    public function is_alphanum($value)
+    public function is_alphanum($value) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
-        if(is_array($value))
+        if (is_array($value))
         {
             foreach ($value As $v)
             {
@@ -145,7 +156,7 @@ class dF_Checker
             }
             return true;
         }
-        if(is_string($value))
+        if (is_string($value))
         {
             $strlen = strlen($value);
             return ($strlen > 0 AND preg_match("#^(?:[[:alnum:]]){".$strlen."}$#", $value));
@@ -160,11 +171,11 @@ class dF_Checker
      * @param string $format Format de la date
      * @return bool
      */
-    public function is_birthday($value, $format = 'dd/mm/yyyy')
+    public function is_birthday($value, $format = 'dd/mm/yyyy') : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        if(true !== $this->is_date($value, $format))
+        if (true !== $this->is_date($value, $format))
         {
             return false;
         }
@@ -183,18 +194,18 @@ class dF_Checker
      * @return bool
      * @throws Exception
      */
-    public function is_date($value, string $format = 'dd/mm/yyyy')
+    public function is_date($value, string $format = 'dd/mm/yyyy') : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
         list($day, $month, $year) = self::formatDate($value, $format);
         $day = (int) $day; $month = (int) $month; $year = (int) $year;
 
-        if($month < 1 OR $month > 12)
+        if ($month < 1 OR $month > 12)
         {
             return false;
         }
-        if(in_array($month, [1, 3, 5, 7, 8, 10, 12]))
+        if (in_array($month, [1, 3, 5, 7, 8, 10, 12]))
         {
             return ($day >= 1 AND $day <= 31);
         }
@@ -208,10 +219,10 @@ class dF_Checker
     /**
      * Verifie si une donnee est une adresse email valide
      *
-     * @param mixed $value
+     * @param mixed $value Donnée à vérifier
      * @return bool
      */
-    public function is_email($value)
+    public function is_email($value) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
         return !(filter_var($value, FILTER_VALIDATE_EMAIL) === false);
@@ -220,17 +231,18 @@ class dF_Checker
     /**
      * Verifie si deux donnees sont egales ou identique
      *
-     * @param mixed $a
-     * @param mixed $b
-     * @param bool $strict
+     * @param mixed $a Donnée à vérifier
+     * @param mixed $b Donnée à vérifier
+     * @param bool $strict Spécifie si on utilise le mode strict (comparaison de type) pour la vérification
      * @return bool
      */
-    public function is_equal($a, $b, $strict = false)
+    public function is_equal($a, $b, $strict = false) : bool
     {
         $a = (true == $this->use_input_field) ? ($this->field[$a] ?? null) : $a;
         $b = (true == $this->use_input_field) ? ($this->field[$b] ?? null) : $b;
 
-        if(true == $strict) {
+        if (true == $strict) 
+        {
             return $a === $b;
         }
         return $a == $b;
@@ -239,10 +251,10 @@ class dF_Checker
     /**
      * Verifie si une donnees correspond a une adresse ip valide
      *
-     * @param $value
+     * @param $value Donnée à vérifier
      * @return bool
      */
-    public function is_ip($value)
+    public function is_ip($value) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
         return !(filter_var($value, FILTER_VALIDATE_IP) === false);
@@ -251,15 +263,16 @@ class dF_Checker
     /**
      * Verifie si une donnees correspond a un numero valide
      *
-     * @param  $value
-     * @param  $country
+     * @param mixed $value Donnée à vérifier
+     * @param string|null $country Code ISO du pays d'appartenance du supposé numero
+     * @param bool $use_indicatif Spécifie si on utilise l'indicatif du pays lors de la vérification
      * @return bool
      */
-    public function is_tel($value, $country = 'cm')
+    public function is_tel($value, ?string $country = 'cm', bool $use_indicatif = true) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        $tel = trim(str_replace(['+', ' '], '', (string) $value));
+        $tel = trim(str_replace(['+','.',' ','-',',','_'], '', (string) $value));
         if (preg_match('/\D/', $tel))
         {
             return false;
@@ -269,24 +282,24 @@ class dF_Checker
 
         if ($country == 'cm')
         {
-            $indicatif = '\+?237\s?';
+            $indicatif = (true === $use_indicatif) ? '\+?237\s?' : '';
             return (
                 preg_match('#^'.$indicatif.'6\s?[5-9]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel) OR
                 preg_match('#^'.$indicatif.'(2|3|4)\s?[2-3]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel)
             );
         }
-        if($country == 'fr')
+        if ($country == 'fr')
         {
-            $indicatif = '\+?33\s?';
+            $indicatif = (true === $use_indicatif) ? '\+?33\s?' : '';
             return preg_match('#^'.$indicatif.'0[1-68]([-. ]?[0-9]{2}){4}$#', $tel);
         }
         switch ($country)
         {
-            case 'bj' : $indicatif = '\+?229\s?'; break;
-            case 'ci' : $indicatif = '\+?225\s?'; break;
-            case 'ml' : $indicatif = '\+?223\s?'; break;
-            case 'sn' : $indicatif = '\+?221\s?'; break;
-            case 'tg' : $indicatif = '\+?\s?'; break;
+            case 'bj' : $indicatif = (true === $use_indicatif) ? '\+?229\s?' : ''; break;
+            case 'ci' : $indicatif = (true === $use_indicatif) ? '\+?225\s?' : ''; break;
+            case 'ml' : $indicatif = (true === $use_indicatif) ? '\+?223\s?' : ''; break;
+            case 'sn' : $indicatif = (true === $use_indicatif) ? '\+?221\s?' : ''; break;
+            case 'tg' : $indicatif = (true === $use_indicatif) ? '\+?\s?' : ''; break;
             default : $indicatif = ''; break;
         }
         return preg_match('#^'.$indicatif.'([-. ]?[0-9]+)+$#', $tel);
@@ -295,15 +308,15 @@ class dF_Checker
     /**
      * Verifie si une donnee est une url
      *
-     * @param $value
-     * @param bool $natif
+     * @param $value Donnée à vérifier
+     * @param bool $natif Spécifie si on utilise la filtre natif de PHP pour la verification ou pas
      * @return bool
      */
-    public function is_url($value, bool $natif = false)
+    public function is_url($value, bool $natif = false) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
 
-        if($natif === true)
+        if ($natif === true)
         {
             return !(filter_var($value, FILTER_VALIDATE_URL) === false);
         }
@@ -318,11 +331,11 @@ class dF_Checker
     /**
      * Verifie si un chaine a exactement un nombre de caracteres precis
      *
-     * @param string $value
-     * @param int $length
+     * @param string $value Donnée à vérifier
+     * @param int $length Longueur récherchée
      * @return bool
      */
-    public function length(string $value, int $length)
+    public function length(string $value, int $length) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         return strlen(trim($value)) == $length;
@@ -330,9 +343,9 @@ class dF_Checker
     /**
      * Verifie si une chaine a une longueur comprise entre une valeur minimale et une valeur maximale
      *
-     * @param string $value
-     * @param int $min
-     * @param int $max
+     * @param string $value Donnée à vérifier
+     * @param int $min Longueur minimale récherchée
+     * @param int $max Longueur maximale récherchée
      * @param bool $inclusive
      * @return bool
      */
@@ -340,18 +353,18 @@ class dF_Checker
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        if(!$inclusive)
+        if (!$inclusive)
         {
              return (strlen(trim($value)) < $max AND strlen(trim($value)) > $min);
         }
         else
         {
-            return (strlen(trim($value)) <= $max && strlen(trim($value)) >= $min);
+            return (strlen(trim($value)) <= $max AND strlen(trim($value)) >= $min);
         }
     }
     /**
-     * @param $value
-     * @param int $length
+     * @param $value Donnée à vérifier
+     * @param int $length Longueur recherchée
      * @return bool
      */
     public function max_length(string $value, int $length)
@@ -360,8 +373,8 @@ class dF_Checker
         return strlen(trim($value)) <= $length;
     }
     /**
-     * @param string $value
-     * @param int $length
+     * @param string $value Donnée à vérifier
+     * @param int $length Longueur récherchée
      * @return bool
      */
     public function min_length(string $value, int $length)
@@ -372,9 +385,11 @@ class dF_Checker
 
 
     /**
-     * @param $input
-     * @param string $functions
-     * @param callable|null $callback
+     * Verifie une données en utilisant un groupe de fonctions simultanément
+     * 
+     * @param $input L'entrée à vérifier
+     * @param string $functions Les fonctions à utiliser (séparées par des pipes `|`)
+     * @param callable|null $callback Le callback à exécuter à la fin de la vérification
      * @return mixed
      * @throws Exception
      */
@@ -385,84 +400,89 @@ class dF_Checker
         $functions = explode('|', $functions);
         foreach ($functions As $function)
         {
-            if($status === false) {
+            if ($status === false) 
+            {
                 break;
             }
             $function = trim($function);
 
-            if(preg_match('#^in\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^in\[(.+)\]$#isU', $function, $params))
             {
-                $status = $this->in($input, $params[1]); $code = 1;
+                $status = $this->in($input, $params[1]); 
+                $code = 1;
                 $message = ($status === true) ? 'Ok' : 'La donnée demandée n\'existe pas dans les entrées';
             }
 
-            if(preg_match('#^is_birthday\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^is_birthday\[(.+)\]$#isU', $function, $params))
             {
-                $status = $this->is_birthday($input, $params[1]); $code = 1;
+                $status = $this->is_birthday($input, $params[1]); 
+                $code = 2;
                 $message = ($status === true) ? 'Ok' : 'Entrez une date de naissance valide';
             }
-            if(preg_match('#^is_date\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^is_date\[(.+)\]$#isU', $function, $params))
             {
-                $status = $this->is_date($input, $params[1]); $code = 1;
+                $status = $this->is_date($input, $params[1]);
+                $code = 3;
                 $message = ($status === true) ? 'Ok' : 'Entrez une date valide';
             }
 
-            if(preg_match('#^is_email$#isU', $function))
+            if (preg_match('#^is_email$#isU', $function))
             {
-                $status = $this->is_email($input); $code = 1;
+                $status = $this->is_email($input); 
+                $code = 4;
                 $message = ($status === true) ? 'Ok' : 'Entrez une adresse email valide';
             }
 
-            if(preg_match('#^is_equal\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^is_equal\[(.+)\]$#isU', $function, $params))
             {
                 $params[1] = explode(';', $params[1]);
                 $status = $this->is_equal($input, $params[1][0], $params[1][1] ?? false);
-                $code = 2;
+                $code = 5;
                 $message = ($status === true) ? 'Ok' : 'Les données ne correspondent pas';
             }
 
-            if(preg_match('#^is_ip$#isU', $function))
+            if (preg_match('#^is_ip$#isU', $function))
             {
                 $status = $this->is_ip($input);
-                $code = 3;
+                $code = 6;
                 $message = ($status === true) ? 'Ok' : 'Entrez une adresse ip valide';
             }
 			
-            if(preg_match('#^is_tel\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^is_tel\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_tel($input, $params[1]);
-                $code = 3;
+                $code = 7;
                 $message = ($status === true) ? 'Ok' : 'Entrez un numero de telephone valide';
             }
 			
-            if(preg_match('#^is_url\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^is_url\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_url($input, (bool) $params[1]);
-                $code = 3;
+                $code = 8;
                 $message = ($status === true) ? 'Ok' : 'Entrez une url valide';
             }
 
-            if(preg_match('#^length\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^length\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->length($input, $params[1]);
-                $code = 1;
+                $code = 9;
                 $message = ($status === true) ? 'Ok' : 'Entrez un chaine ayant '.$params[1].' caracteres';
             }
-            if(preg_match('#^max_length\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^max_length\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->max_length($input, $params[1]);
-                $code = 3;
+                $code = 10;
                 $message = ($status === true) ? 'Ok' : 'Entrez un chaine d\'au plus '.$params[1].' caracteres';
             }
-            if(preg_match('#^min_length\[(.+)\]$#isU', $function, $params))
+            if (preg_match('#^min_length\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->min_length($input, $params[1]);
-                $code = 2;
+                $code = 11;
                 $message = ($status === true) ? 'Ok' : 'Entrez un chaine d\'au moins '.$params[1].' caracteres';
             }
         }
 
-        if(!is_null($callback) AND is_callable($callback))
+        if (null !== $callback AND is_callable($callback))
         {
             return call_user_func_array($callback, compact('status', 'code', 'message'));
         }
@@ -470,9 +490,14 @@ class dF_Checker
     }
 
 
-
-
-    private static function formatDate($date, $format)
+    /**
+     * Formatte une date et renvoi le jour, le mois et l'année
+     *
+     * @param string $date
+     * @param string $format
+     * @return array
+     */
+    private static function formatDate($date, string $format) : array
     {
         $format = strtoupper($format);
 
@@ -556,7 +581,13 @@ class dF_Checker
         return [$day, $month, $year];
     }
 
-    private function getCountryFromIndicatif($tel)
+    /**
+     * Tente de recuperer le code ISO d'un pays a partir d'un numero de telephone (L'indicatif doit être specifié)
+     *
+     * @param string $tel
+     * @return string
+     */
+    private function getCountryFromIndicatif($tel) : string
     {
         if(preg_match('#^\+?237\s?([-. ]?[0-9]+)+$#', $tel))
         {

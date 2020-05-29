@@ -42,25 +42,69 @@ class Query
     public $db;
 
     private $crud = 'select';
-
+    /**
+     * Champs a selectionnés
+     *
+     * @var array
+     */
     private $fields = [];
+    /**
+     * Conditions de selections
+     *
+     * @var array
+     */
     private $conditions = [];
+    /**
+     * Paramètres ratachés aux conditions
+     *
+     * @var array
+     */
     private  $params = [];
+    /**
+     * Tables de selection
+     *
+     * @var array
+     */
     private $table = [];
+    /**
+     * Groupements de selections
+     *
+     * @var array
+     */
     private $group = [];
+    /**
+     * Limites de seletion
+     *
+     * @var string
+     */
     private $limit;
+    /**
+     * Ordre de selection
+     *
+     * @var array
+     */
     private $order = [];
+    /**
+     * Jointures de tables
+     *
+     * @var array
+     */
     private $joins = [];
 
 
-
+    /**
+     * Contructeur
+     *
+     * @param string $db_setting
+     */
     public function __construct($db_setting = 'default')
     {
         $this->use($db_setting);
     }
 
-
     /**
+     * Définit la configuration de base de données à utiliser
+     * 
      * @param string $db_setting
      * @return Database
      * @throws \dFramework\core\exception\DatabaseException
@@ -72,6 +116,8 @@ class Query
 
 
     /**
+     * Reinitialise les donnees du QueryBuilder
+     * 
      * @return Query
      */
     protected function free_db() : self
@@ -90,12 +136,23 @@ class Query
 
 
     /**
+     * Specifie les champs a selectionner en base de donnees
+     * 
      * @param string ...$fields
      * @return Query
      */
     protected function select(string ...$fields) : self
     {
-        if(empty($fields)) {
+        $empty = true;
+        foreach ($fields As $value) 
+        {
+            if (!empty($value))
+            {
+                $empty = false;
+                break;
+            }
+        }
+        if($empty) {
             $fields = ['*'];
         }
         $this->fields = array_merge($this->fields, $fields);
@@ -104,6 +161,8 @@ class Query
     }
 
     /**
+     * Compte le nombre de ligne dans une table
+     * 
      * @param string $column
      * @param string $alias
      * @return int
@@ -111,6 +170,7 @@ class Query
     protected function count(string $column = '*', string $alias = 'count'): int
     {
         $query = clone $this;
+        $query->fields = [];
         $nbr = $query->select('COUNT(' . $column . ') As ' . $alias)->run()->fetchColumn();
         $query->free_db();
         unset($query);
@@ -118,6 +178,8 @@ class Query
     }
 
     /**
+     * Definit les limites de selection des donnees
+     * 
      * @param int $limit
      * @param int $offset
      * @return Query
@@ -129,6 +191,8 @@ class Query
     }
 
     /**
+     * Definit l'ordre de sélection des données
+     * 
      * @param string $field
      * @param string $direction
      * @return Query
@@ -144,6 +208,8 @@ class Query
     }
 
     /**
+     * Definit un groupement pour les données sélectionnées
+     * 
      * @param string $field
      * @return Query
      */
@@ -154,6 +220,8 @@ class Query
     }
 
     /**
+     * Fait une jointure de table
+     * 
      * @param string $table
      * @param string $condition
      * @param string $type
@@ -167,6 +235,8 @@ class Query
     }
 
     /**
+     * Définit la table de sélection des données
+     * 
      * @param string|array $table
      * @param string|null $alias
      * @return Query
@@ -192,6 +262,8 @@ class Query
     }
 
     /**
+     * Définit une condition pour la sélection des données
+     * 
      * @param string ...$conditions
      * @return Query
      */
@@ -202,6 +274,8 @@ class Query
     }
 
     /**
+     * Définit une contion pour la sélection des données
+     * 
      * @param string $conditions
      * @param array $param
      * @return Query
@@ -212,6 +286,8 @@ class Query
         return $this;
     }
     /**
+     * Définit une condition pour lq sélection des données
+     * 
      * @param string $conditions
      * @param array $param
      * @return Query
@@ -223,6 +299,8 @@ class Query
     }
 
     /**
+     * Attache les paramètres aux conditions définies pour la sélection des données
+     * 
      * @param array $params
      * @return Query
      */
@@ -234,6 +312,8 @@ class Query
 
 
     /**
+     * Définit les données à insérer dans une table
+     * 
      * @param string|array $field
      * @param mixed|null $value
      * @param bool|null $escape
@@ -257,6 +337,8 @@ class Query
     }
 
     /**
+     * Insère des données dans une table
+     * 
      * @param string $table
      * @param array|null $data
      * @param bool $execute
@@ -268,10 +350,7 @@ class Query
         $this->from($table);
         if (is_array($data))
         {
-            foreach ($data As $key => $value)
-            {
-                $this->fields[$key] = $value;
-            }
+            $this->insert($data);
         }
         if(true === $execute)
         {
@@ -282,6 +361,8 @@ class Query
 
 
     /**
+     * Définit les données à modifier dans une table
+     *  
      * @param $field
      * @param $value
      * @param bool|null $escape
@@ -305,6 +386,8 @@ class Query
     }
 
     /**
+     * Modifie les données d'une table
+     * 
      * @param $table
      * @param array|null $data
      * @param bool $execute
@@ -316,10 +399,7 @@ class Query
         $this->from($table);
         if (is_array($data))
         {
-            foreach ($data As $key => $value)
-            {
-                $this->set($key, $value);
-            }
+            $this->set($data);
         }
         if(true === $execute)
         {
@@ -330,6 +410,8 @@ class Query
 
 
     /**
+     * Supprime les données dans une table
+     * 
      * @param null|string $table
      * @param bool $execute
      * @return Query|null|\PDOStatement
@@ -407,12 +489,27 @@ class Query
         return $this->buildResult($mode, $class, $dir);
     }
     /**
+     * Recupere tous les resultats d'une requete en BD
+     *
+     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
+     * @param null|string $class
+     * @param null|string $dir
+     * @since 3.1
+     * @alias result()
+     * @return array
+     * @throws \dFramework\core\exception\Exception
+     */
+    protected function all(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '') : array
+    {
+        return $this->result($mode, $class, $dir);
+    }
+    /**
      * Recupere le premier resultat d'une requete en BD
      *
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
-     * @return array
+     * @return object|array|null
      * @throws \dFramework\core\exception\Exception
      */
     protected function first(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
@@ -427,7 +524,7 @@ class Query
      * @param null|string $dir
      * @since 3.1
      * @alias first()
-     * @return array
+     * @return object|array|null
      * @throws \dFramework\core\exception\Exception
      */
     protected function one(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
@@ -463,10 +560,9 @@ class Query
     }
 
 
-
-
-
     /**
+     * Définit et execute une requête SQL
+     * 
      * @param string $statement
      * @param array $datas
      * @return \PDOStatement|null
@@ -487,6 +583,8 @@ class Query
     }
 
     /**
+     * Execute la requête SQL généré par le QueryBuilder
+     * 
      * @return \PDOStatement|null
      */
     protected function run()
@@ -496,7 +594,7 @@ class Query
 
 
     /**
-     * Compile et renvoie un tableau  contenant les resultatas issus de la bD
+     * Compile et renvoie un tableau  contenant les resultats issus de la bD
      *
      * @return array
      */
@@ -636,11 +734,12 @@ class Query
     private function getSelect() : string
     {
         $parts = ['SELECT'];
-        if(!empty($this->fields))
+        if (empty($this->fields))
         {
-            $parts[] = join(', ', $this->fields);
+            $this->fields = ['*'];
         }
-
+        $parts[] = join(', ', $this->fields);
+        
         $parts[] = 'FROM';
         $parts[] = $this->buildTable();
 
@@ -654,12 +753,12 @@ class Query
                 }
             }
         }
-        if(!empty($this->conditions))
+        if (!empty($this->conditions))
         {
             $parts[] = 'WHERE';
             $parts[] = '(' . join(') AND (', $this->conditions) . ')';
         }
-        if(!empty($this->group))
+        if (!empty($this->group))
         {
             $parts[] = 'GROUP BY';
             $parts[] = join(', ', $this->group);

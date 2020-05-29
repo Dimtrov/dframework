@@ -163,16 +163,36 @@ class Model extends Query
     /**
      * Verifie s'il existe un champ avec une donnee specifique dans une table de la base de donnee
      *
-     * @param string $key Le nom du champ de la table
+     * @param string|array $key Le nom du champ de la table
      * @param mixed $value La valeur recherchee
      * @param string $table La table dans laquelle on veut faire la recherche
+     * @throws Exception
      * @return bool
      */
-    public function exist(string $key, $value, string $table) : bool
+    public function exist($key, $value, string $table = null) : bool
     {
-        return $this->free_db()->from($table)
-                ->where($key . ' = ?')->params([$value])
-                ->count() > 0;
+        $process = false;
+        if (empty($table) AND is_array($key) AND is_string($value)) 
+        {
+            $process = true;
+            $data  = $key;
+            $table = $value;
+        }
+        if (!empty($table) AND is_string($key))
+        {
+            $process = true;
+            $data = [$key => $value];
+        }
+        if (true === $process)
+        {
+            $this->free_db()->from($table);
+            foreach ($data As $key => $value) 
+            {
+                $this->where($key . ' = ?')->params([$value]);
+            }
+            return $this->count() > 0;
+        }
+        throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
     }
 
 }

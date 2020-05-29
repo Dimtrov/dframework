@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.1
  */
 
  
@@ -36,7 +36,7 @@ use dFramework\core\loader\Load;
  * @category    Auth
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       2.2
+ * @since       3.0
  * @file        /system/components/auth/Login.php
  */
 
@@ -115,7 +115,14 @@ class Login
      */
     protected $_lang;
 
+    private $_antibrute_dir = RESOURCE_DIR . '_antibruteforce'. DS;
 
+    
+    /**
+     * Constructeur de classe
+     *
+     * @param string|null $locale
+     */
     public function __construct(string $locale = null)
     {
         $this->load_from_session();
@@ -123,20 +130,23 @@ class Login
         Load::lang('component.login', $this->_lang, $locale, false);
         $this->_lang = (array) $this->_lang;
     }
-
-
-    private static $_instance = null;
-    public static function instance(string $locale = null)
+    /**
+     * Recupetation de l'instance unique (Design pattern Singleton)
+     *
+     * @param string:null $locale
+     * @return self
+     */
+    public static function instance(string $locale = null) 
     {
-        if(null === self::$_instance)
+        if (null === self::$_instance)
         {
             $class = __CLASS__;
             self::$_instance = new $class($locale);
         }
         return self::$_instance;
     }
-
-
+    private static $_instance = null;
+    
 
     /**
      * Definit les parametres de connexion
@@ -147,11 +157,11 @@ class Login
      */
     public function set($param, $value = null) : self 
     {
-        if(is_string($param) AND null !== $value)
+        if (is_string($param) AND null !== $value)
         {
             $this->set([$param => $value]);
         }
-        else if(is_array($param))
+        else if (is_array($param))
         {
             $this->_params = array_merge($this->_params, $param);
         }
@@ -175,7 +185,7 @@ class Login
      */
     public function checkin(string $url = '')
     {
-        if(true === $this->isConnect())
+        if (true === $this->isConnect())
         {
             redirect($url);
         }
@@ -187,7 +197,7 @@ class Login
      */
     public function checkout(string $url = '')
     {
-        if(true !== $this->isConnect())
+        if (true !== $this->isConnect())
         {
             redirect($url);
         }
@@ -201,23 +211,23 @@ class Login
      */
     public function login(array $datas = []) : bool
     {
-        if(true === $this->isConnect())
+        if (true === $this->isConnect())
         {
             $this->errMsg = $this->_lang['deja_connecter'];
             return false;
         }
-        if(empty($datas))
+        if (empty($datas))
         {
             $datas = (new Request)->data;
         }
-        if(true === $this->_params['check_token'])
+        if (true === $this->_params['check_token'])
         {
-            if(empty($datas['formcsrftoken']))
+            if (empty($datas['formcsrftoken']))
             {
                 $this->errMsg = $this->_lang['token_innexistant'];
                 return false;
             }
-            if(true !== Csrf::instance()->verify($datas['formcsrftoken']))
+            if (true !== Csrf::instance()->verify($datas['formcsrftoken']))
             {
                 $this->errMsg = $this->_lang['token_invalide'];
                 return false;
@@ -226,10 +236,12 @@ class Login
         $login = explode(':', $this->_params['fields'][0] ?? 'login:login');
         $password = explode(':', $this->_params['fields'][1] ?? 'password:password');
 
-        $login_k = $login[0]; $login_v = ucfirst($login[1] ?? $login[0]);
-        $password_k = $password[0]; $password_v = ucfirst($password[1] ?? $password[0]);
+        $login_k = $login[0]; 
+        $login_v = ucfirst($login[1] ?? $login[0]);
+        $password_k = $password[0]; 
+        $password_v = ucfirst($password[1] ?? $password[0]);
 
-        if(empty($datas[$login_k]) OR empty($datas[$password_k]))
+        if (empty($datas[$login_k]) OR empty($datas[$password_k]))
         {
             $this->errMsg = $this->_lang['remplissez_tous_les_champs'];
             $this->errors = [
@@ -241,9 +253,9 @@ class Login
         }
         $user = $this->load_user($datas[$login_k]);
 
-        if(empty($user))
+        if (empty($user))
         {
-            if(true !== $this->_params['distinct_fields'])
+            if (true !== $this->_params['distinct_fields'])
             {
                 $this->errMsg = str_replace(['{login}', '{password}'], [$login_v, $password_v], $this->_lang['login_mdp_incorrect']);
                 $this->errors = [
@@ -259,7 +271,7 @@ class Login
             $this->logout();
             return false;
         }
-        if(true === $this->bruteForce($datas[$login_k]))
+        if (true === $this->bruteForce($datas[$login_k]))
         {
             $this->errMsg = $this->_lang['nbr_tentatives_epuiser'];
             $this->errors = [
@@ -269,9 +281,9 @@ class Login
             $this->logout();
             return false;
         }
-        if(true !== $this->checkPwd($datas[$password_k], $user[$password_k], $remaining, $datas[$login_k]))
+        if (true !== $this->checkPwd($datas[$password_k], $user[$password_k], $remaining, $datas[$login_k]))
         {
-            if(true !== $this->_params['distinct_fields'])
+            if (true !== $this->_params['distinct_fields'])
             {
                 $this->errMsg = str_replace(['{login}', '{password}'], [$login_v, $password_v], $this->_lang['login_mdp_incorrect']);
                 $this->errors = [
@@ -284,7 +296,7 @@ class Login
                 $this->errMsg = str_replace('{password}', '"'.$password_v.'"', $this->_lang['mdp_incorrect']);
                 $this->errors = [$password_k => str_replace('{entry}', '"'.$password_v.'"', $this->_lang['verifiez_votre_entree'])];
             }
-            if(null !== $remaining AND is_int($remaining))
+            if (null !== $remaining AND is_int($remaining))
             {
                 $this->errMsg .= "\n" . str_replace('{nbr_tentatives}', '<b>'.$remaining.'</b>', $this->_lang['nbr_tentatives_restant']);
             }
@@ -304,13 +316,13 @@ class Login
      */
     public function bruteForce($login) : bool
     {
-        if(!is_int($this->_params['failed_login_attempts']) OR $this->_params['failed_login_attempts'] < 1)
+        if (!is_int($this->_params['failed_login_attempts']) OR $this->_params['failed_login_attempts'] < 1)
         {
             return false;
         }
         list($existence_ft, $nbr_tentatives) = $this->getLoginTentatives($login);
      
-        if(($nbr_tentatives + 1) >= $this->_params['failed_login_attempts']) 
+        if (($nbr_tentatives + 1) >= $this->_params['failed_login_attempts']) 
         {
             return true;
         }
@@ -328,7 +340,7 @@ class Login
     {
         $this->clear_data();
         $this->clear_session();
-        if(null !== $callback AND is_callable($callback))
+        if (null !== $callback AND is_callable($callback))
         {
             call_user_func($callback);
         }
@@ -395,7 +407,7 @@ class Login
             'ure'      => sha1(parse_url($_SERVER['HTTP_REFERER'] ?? null, PHP_URL_HOST)),
             'uip'      => Helpers::instance()->ip_address(),
         ];
-        if(1 < $this->_params['inactivity_timeout'])
+        if (1 < $this->_params['inactivity_timeout'])
         {
             $auth['expire_on'] = time() + (60 * $this->_params['inactivity_timeout']);
         }
@@ -429,7 +441,8 @@ class Login
     protected function checkPwd(string $pass, string $hash, &$remaining, string $login) : bool
     {
         $remaining = null;
-        if(Utils::hashpass(trim($pass)) !== trim($hash))
+        
+        if (!Utils::passcompare($pass, $hash))
         {
             if(true === $this->_params['show_remaining_attempts'] AND is_int($this->_params['failed_login_attempts']) AND 1 < $this->_params['failed_login_attempts'])
             {
@@ -445,31 +458,31 @@ class Login
     private function checkSession(callable $callback)
     {
         $auth_session = Session::get('auth');
-        if(empty($auth_session))
+        if (empty($auth_session))
         {
             $this->logout();
         }
-        else if(empty($auth_session['login']) OR empty($auth_session['password']))
+        else if (empty($auth_session['login']) OR empty($auth_session['password']))
         {
             $this->logout();
         }
-        else if(empty($auth_session['uid']))
+        else if (empty($auth_session['uid']))
         {
             $this->logout();
         }
-        else if(empty($auth_session['uip']) OR $auth_session['uip'] !== Helpers::instance()->ip_address())
+        else if (empty($auth_session['uip']) OR $auth_session['uip'] !== Helpers::instance()->ip_address())
         {
             $this->logout();
         }
-        else if(empty($auth_session['uua']) OR $auth_session['uua'] !== sha1($_SERVER['HTTP_USER_AGENT']))
+        else if (empty($auth_session['uua']) OR $auth_session['uua'] !== sha1($_SERVER['HTTP_USER_AGENT']))
         {
             $this->logout();
         }
-        else if(empty($auth_session['ure']) OR $auth_session['ure'] !== sha1(parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_HOST)))
+        else if (empty($auth_session['ure']) OR $auth_session['ure'] !== sha1(parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_HOST)))
         {
             $this->logout();
         }
-        else if(1 < $this->_params['inactivity_timeout'] AND (empty($auth_session['expire_on']) OR time() >= $auth_session['expire_on']))
+        else if (1 < $this->_params['inactivity_timeout'] AND (empty($auth_session['expire_on']) OR time() >= $auth_session['expire_on']))
         {
             $this->logout();
         }
@@ -488,14 +501,14 @@ class Login
         $tentatives = 0; 
         $existence_ft = 0;
 
-        $fichier = RESOURCE_DIR . '_antibruteforce'. DS . sha1($login) . '.df';
-        if(file_exists($fichier))
+        $fichier = $this->_antibrute_dir . sha1($login) . '.df';
+        if (file_exists($fichier))
         {
             $fichier_tentatives = fopen($fichier, 'r');
             $contenu_tentatives = fgets($fichier_tentatives);
             $infos_tentatives = explode(';', $contenu_tentatives);
 
-            if($infos_tentatives[0] == date('d/m/Y'))
+            if ($infos_tentatives[0] == date('d/m/Y'))
             {
                 $tentatives = $infos_tentatives[1];
             }
@@ -512,8 +525,9 @@ class Login
     }
     private function setLoginTentatives($login, $existence_ft, $nbr_tentatives)
     {
-        $fichier = RESOURCE_DIR . '_antibruteforce'. DS . sha1($login) . '.df';
-        if(file_exists($fichier)) {
+        $fichier = $this->_antibrute_dir . sha1($login) . '.df';
+        if (file_exists($fichier)) 
+        {
             unlink($fichier);
         }
         $nb = ($existence_ft == 1 OR $existence_ft == 2) ? 1 : ($nbr_tentatives + 1);
@@ -525,8 +539,7 @@ class Login
     }
     private function unlinkTentatives($login)
     {
-        @unlink(RESOURCE_DIR . '_antibruteforce'. DS . sha1($login) . '.df');
+        @unlink($this->_antibrute_dir . sha1($login) . '.df');
         return;
     }
-
 }

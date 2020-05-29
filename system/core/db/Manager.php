@@ -194,5 +194,4 @@ class Manager
         }
         return $response;
     }
-
 }

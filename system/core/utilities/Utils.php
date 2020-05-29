@@ -113,9 +113,9 @@ class Utils
      * @since 3.0
      * @param string $pass
      * @param string $hash
-     * @return string
+     * @return bool
      */
-    public static function passcompare(string $pass, string $hash)
+    public static function passcompare(string $pass, string $hash) : bool
     {
         return ($hash === self::hashpass($pass));
     }

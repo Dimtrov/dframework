@@ -256,7 +256,7 @@ final class Model extends Generator
             $body_method .= "; \nif (\$hydrate) { \n";
                 $body_method .= "\treturn \$this->first(DF_FCLA, ".$class_name."::class); \n";
             $body_method .= "} \n";
-            $body_method .= "return \$this->result(); \n";
+            $body_method .= "return \$this->first(); \n";
             
             $m = (new Method('read_join_pk'))
                 ->setPublic();
