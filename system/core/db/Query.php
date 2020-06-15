@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
 namespace dFramework\core\db;
@@ -100,6 +100,16 @@ class Query
     public function __construct($db_setting = 'default')
     {
         $this->use($db_setting);
+    }
+    /**
+     * __toString Magic Method
+     *
+     * @since 3.2
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getSql();
     }
 
     /**
@@ -537,6 +547,7 @@ class Query
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
+     * @since 3.1
      * @return array
      * @throws \dFramework\core\exception\Exception
      */
@@ -551,6 +562,7 @@ class Query
      * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
      * @param null|string $class
      * @param null|string $dir
+     * @since 3.1
      * @return array
      * @throws \dFramework\core\exception\Exception
      */
@@ -579,6 +591,7 @@ class Query
             );
         }
         $pdoStatement->execute();
+        $pdoStatement->closeCursor();
         return $pdoStatement;
     }
 
@@ -589,7 +602,9 @@ class Query
      */
     protected function run()
     {
-        return $this->query($this->getSql(), $this->params);
+        $response = $this->query($this->getSql(), $this->params);
+        $this->free_db();
+        return $response;
     }
 
 
@@ -601,7 +616,6 @@ class Query
     private function buildResult(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
     {
         $query = $this->run();
-        $this->free_db();
 
         if($mode !== DF_FCLA)
         {

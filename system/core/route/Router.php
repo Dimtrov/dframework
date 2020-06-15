@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.2
  */
 
 
@@ -79,7 +79,7 @@ class Router
      */
     private static function instance() : ?self
     {
-        if(is_null(self::$_instance))
+        if (is_null(self::$_instance))
         {
             self::$_instance = new Router((new Request)->url ?? '/');
         }
@@ -100,7 +100,7 @@ class Router
         foreach ($routes As $key => $value)
         {
             $path = $key;
-            if(!is_array($value))
+            if (!is_array($value))
             {
                 $callable = $value;
                 $methods = ['post', 'put', 'patch', 'delete'];
@@ -108,17 +108,25 @@ class Router
                 {
                     $instance->add($path, $callable, strtoupper($method));
                 }
-                $method = 'get';
+                $methodes = ['get'];
             }
             else
             {
                 foreach ($value As $k => $v)
                 {
-                    $method = strtolower($k);
+                    $methodes = explode('|', $k);
                     $callable = $v;
                 }
             }
-            $instance->$method($path, $callable);
+            
+            foreach ($methodes As $method) 
+            {
+                if (is_string($method))
+                {
+                    $method = strtolower($method);
+                    $instance->{$method}($path, $callable);
+                }
+            }
         }
         $instance->run();
     }
@@ -132,7 +140,7 @@ class Router
     public static function url(string $name, array $params = [])
     {
         $instance = self::instance();
-        if(!isset($instance->namedRoutes[$name]))
+        if (!isset($instance->namedRoutes[$name]))
         {
             RouterException::except('No route matches this name', 404);
         }
@@ -198,7 +206,7 @@ class Router
     {
         $route = new Route($path, $callable);
         $this->routes[$method][] = $route;
-        if(is_string($callable))
+        if (is_string($callable))
         {
             $this->namedRoutes[$callable] = $route;
         }
@@ -213,18 +221,18 @@ class Router
     {
         $method = (new Request)->method();
         
-        if(empty($method) OR !isset($this->routes[strtoupper($method)]))
+        if (empty($method) OR !isset($this->routes[strtoupper($method)]))
         {
-            if('cli' !== php_sapi_name())
+            if ('cli' !== php_sapi_name())
             {
                 throw new RouterException('REQUEST_METHOD does not exist', 405);
             }
         }
-        if(!empty($this->routes[strtoupper($method)]))
+        if (!empty($this->routes[strtoupper($method)]))
         {
             foreach ($this->routes[strtoupper($method)] As $route)
             {
-                if($route->match($this->url))
+                if ($route->match($this->url))
                 {
                     return $route->call();
                 }
@@ -232,5 +240,4 @@ class Router
         }
         Dispatcher::init();
     }
-
 }

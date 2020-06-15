@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
 
 
@@ -21,6 +21,8 @@ namespace dFramework\core\loader;
 use dFramework\core\Config;
 use dFramework\core\Controller;
 use dFramework\core\exception\LoadException;
+use dFramework\core\Model;
+use InvalidArgumentException;
 
 /**
  * Load
@@ -59,7 +61,7 @@ class Load
     {
         $autoload = (array) Config::get('autoload');
 
-        if(!empty($autoload) AND is_array($autoload))
+        if (!empty($autoload) AND is_array($autoload))
         {
             $modules = ['helpers', 'libraries', 'models'];
             foreach ($autoload As $module => $loads)
@@ -76,7 +78,7 @@ class Load
         }
 
         $autoload = array_merge([
-            'system', 'url', 'assets', 'scl'
+            'system', 'url', 'assets'
         ], $autoload['helpers'] ?? []);
 
         foreach ($autoload As $load)
@@ -130,14 +132,17 @@ class Load
     /**
      * Charge un model a un controleur donné
      * 
-     * @param Controller $object
+     * @param Controller|Model $object
      * @param string|array $model
-     * @param string $alias
+     * @param string|null $alias
      * @throws LoadException
      * @throws \ReflectionException
      */
-    public static function model(Controller &$object, $model, string $alias = null)
+    public static function model(&$object, $model, ?string $alias = null)
     {
+        if (!$object instanceof Controller AND !$object instanceof Model) {
+            throw new InvalidArgumentException('Le parametre "$object" doit être une instance du Contrôleur ou du modèle');
+        }
         if (!empty($model) AND is_array($model))
         {
             foreach ($model As $key => $value)
@@ -223,12 +228,12 @@ class Load
      * 
      * @param Controller $object
      * @param string|array $controller
-     * @param string $alias
+     * @param string|null $alias
      * @since 3.0.2
      * @throws LoadException
      * @throws \ReflectionException
      */
-    public static function controller(Controller &$object, $controller, string $alias)
+    public static function controller(Controller &$object, $controller, ?string $alias = null)
     {
         if (!empty($controller) AND is_array($controller))
         {
@@ -339,7 +344,7 @@ class Load
                 }
             }
         }
-        if(!empty($library) AND is_string($library))
+        if (!empty($library) AND is_string($library))
         {
             $lib = explode('/', $library); 
             $lib = end($lib);
@@ -364,7 +369,7 @@ class Load
         $library = explode('/', trim($library)); 
         $library = end($library);
 
-        if(!self::is_loaded('libraries', $library))
+        if (!self::is_loaded('libraries', $library))
         {
             if (!file_exists($file))
             {

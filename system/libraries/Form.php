@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1.2
+ * @version     3.2
  */
 
 use dFramework\core\data\Request;
@@ -70,14 +70,14 @@ class dF_Form
      */
     public function value($key, $value = null) : self
     {
-        if(is_array($key))
+        if (is_array($key))
         {
-            foreach($key As $k => $v) 
+            foreach ($key As $k => $v) 
             {
                 $this->value($k, $v);
             }
         }
-        if(is_string($key))
+        if (is_string($key))
         {
             $this->datas = Tableau::merge($this->datas, [$key => $value]);
         }
@@ -92,14 +92,14 @@ class dF_Form
      */
     public function error($key, $value = null) : self
     {
-        if(is_array($key))
+        if (is_array($key))
         {
-            foreach($key As $k => $v) 
+            foreach ($key As $k => $v) 
             {
                 $this->error($k, $v);
             }
         }
-        if(is_string($key))
+        if (is_string($key))
         {
             $this->errors[$key] = $value;
         }
@@ -117,21 +117,21 @@ class dF_Form
      */
     public function surround($start = null, $end = null) : void
     {
-        if(false === $start OR false === $end)
+        if (false === $start OR false === $end)
         {
             $this->surround = [
                 'start' => '',
                 'end'   => ''
             ];
         }
-        else if(null === $start OR null === $end)
+        else if (null === $start OR null === $end)
         {
             $this->surround = [
                 'start' => '<div class="form-group">',
                 'end'   => '</div>'
             ];
         }
-        else if(is_string($start) AND is_string($end))
+        else if (is_string($start) AND is_string($end))
         {
             $this->surround = compact('start', 'end');
         }
@@ -467,7 +467,7 @@ HTML;
 
         $class = $attributes['class'] ?? '';
 
-        if(empty($attributes['class']) OR (!empty($attributes['class']) AND !preg_match('#btn-(primary|danger|default|secondary|warning|success|info)#i', strtolower($attributes['class']))))
+        if (empty($attributes['class']) OR (!empty($attributes['class']) AND !preg_match('#btn-(primary|danger|default|secondary|warning|success|info)#i', strtolower($attributes['class']))))
         {
             switch (strtolower($type)) {
                 case 'submit':
@@ -583,29 +583,56 @@ HTML;
      * @param array $options Options de la liste
      * @param array|null $attributes Attributs supplementaire
      * @param array|null $checked Cases qui seront automatiquement cochées
+     * @param bool|null $only Specifie si les elements a cocher doivent etre dans des blocs independants ou pas
      * @return string
      */
-    public function checkbox(string $key, array $options, ?array $attributes = [], $checked = null) : string
+    public function checkbox(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $only = false) : string
     {
         $key = $this->makeKey($key);
         $r = ''; $i = 0;
         $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
-        
-        foreach($options As $k => $v)
+
+        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+
+        foreach ($options As $k => $v)
         {
             $i++;
             $v = (string) $v;
-            if(!is_string(($k)))
+            if (!is_string(($k)))
             {
                 $k = $v;
             }
+            if ($k[0] === '_') 
+            {
+                $tmp = substr($k, 1);
+                if (is_numeric($tmp))
+                {
+                    $k = $tmp;
+                }
+            }
+            
             $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
 
+            if (true === $only)
+            {
+                $r .= $surround_start;
+            }
             $r .= '<input type="checkbox" name="'.$key.'[]" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
             $r .= '<label class="form-check-label" for="field_'.$key.$i.'">'.ucfirst($v).'</label>';
+            if (true === $only)
+            {
+                $r .= $this->surround['end'];
+            }
             $r .= "\n";
         }
-        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+
+        if (true === $only)
+        {
+            return <<<HTML
+                {$r}
+                {$this->getErrorFeedback($key)}
+HTML;
+        }
         return <<<HTML
             {$surround_start}
                 {$r}
@@ -621,30 +648,57 @@ HTML;
      * @param array $options Options de la liste
      * @param array|null $attributes Attributs supplementaire
      * @param array|null $checked Cases qui seront automatiquement cochées
+     * @param bool|null $only Specifie si les elements a cocher doivent etre dans des blocs independants ou pas
      * @return string
      */
-    public function radio(string $key, array $options, ?array $attributes = [], $checked = '') : string
+    public function radio(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $only = false) : string
     {
         $key = $this->makeKey($key);
         $r = ''; 
         $i = 0;
         $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
         
-        foreach($options As $k => $v)
+        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+        
+        foreach ($options As $k => $v)
         {
             $i++;
             $v = (string) $v;
-            if(!is_string(($k)))
+            if (!is_string(($k)))
             {
                 $k = $v;
             }
+            if ($k[0] === '_') 
+            {
+                $tmp = substr($k, 1);
+                if (is_numeric($tmp))
+                {
+                    $k = $tmp;
+                }
+            }
+            
             $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
 
+            if (true === $only)
+            {
+                $r .= $surround_start;
+            }
             $r .= '<input type="radio" name="'.$key.'" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
             $r .= '<label class="form-check-label" for="field_'.$key.$i.'">'.ucfirst($v).'</label>';
+            if (true === $only)
+            {
+                $r .= $this->surround['end'];
+            }
             $r .= "\n";
         }
-        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
+
+        if (true === $only)
+        {
+            return <<<HTML
+                {$r}
+                {$this->getErrorFeedback($key)}
+HTML;
+        }
         return <<<HTML
             {$surround_start}
                 {$r}
@@ -676,7 +730,7 @@ HTML;
     protected function getInputClass(string $key, ?string $class = '') : string
     {        
         $inputClass = Tableau::merge(explode(' ', $class), ['form-control']);
-        if(isset($this->errors[$key])) 
+        if (isset($this->errors[$key])) 
         {
             $inputClass[] = 'is-invalid';
         }
@@ -709,13 +763,18 @@ HTML;
     /**
      * Compile les autres attributs du champ
      *
-     * @param array $attributes Les attributs a compiler
+     * @param array|null $attributes Les attributs a compiler
      * @return string
      */
-    protected function getAttributes(array $attributes) : string
+    protected function getAttributes(?array $attributes) : string
     {
+        if (!is_array($attributes))
+        {
+            return '';    
+        }
         $reserved_attributes = ['type', 'name', 'class', 'id', 'value'];
-        foreach($reserved_attributes As $value)
+        
+        foreach ($reserved_attributes As $value)
         {
             $attributes = Tableau::remove($attributes, $value);
         }
@@ -723,11 +782,11 @@ HTML;
 
         foreach ($attributes As $key => $value) 
         {
-            if(is_string($key))
+            if (is_string($key))
             {
                 $return .= ' '.$key.'="'.$value . '"';
             }
-            if(is_int($key))
+            if (is_int($key))
             {
                 $return .= ' '.$value;
             }

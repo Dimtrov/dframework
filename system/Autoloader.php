@@ -12,19 +12,16 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
 namespace dFramework;
-
-use Nette\Loaders\RobotLoader;
 
 /**
  * Autoloader
  *
  * Autoload a dFramework system class
  *
- * @class       Autoloader
  * @package		dFramework
  * @subpackage	null
  * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
@@ -44,7 +41,7 @@ class Autoloader
 
     static function load()
     {
-        spl_autoload_register(array(__CLASS__, 'autoload'));
+        spl_autoload_register([__CLASS__, 'autoload']);
     }
 
     /**
@@ -73,7 +70,7 @@ class Autoloader
                 }
                 if(array_key_exists($input, self::$_class_map_syst))
                 {
-                    require_once str_replace('{SYST_DIR}', SYST_DIR, self::$_class_map_syst[$input]);
+                    require_once str_replace(['{SYST_DIR}', '\\'], [SYST_DIR, DIRECTORY_SEPARATOR], self::$_class_map_syst[$input]);
                 }
             }
             if (file_exists(APP_DIR.'resources'.DIRECTORY_SEPARATOR.'reserved'.DIRECTORY_SEPARATOR.'.classmap.php'))
@@ -85,7 +82,7 @@ class Autoloader
                 }
                 if(array_key_exists($input, self::$_class_map_app))
                 {
-                    require_once str_replace('{APP_DIR}', APP_DIR, self::$_class_map_app[$input]);
+                    require_once str_replace(['{APP_DIR}', '\\'], [APP_DIR, DIRECTORY_SEPARATOR], self::$_class_map_app[$input]);
                 }
             }
         }

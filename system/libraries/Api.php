@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
 
 
@@ -54,6 +54,16 @@ class dF_Api
 
 
     /**
+     * Les donnees renvoyees par le WS sont en JSON
+     */
+    const   JSON = 1;
+    /**
+     * Les donnees renvoyees par le WS sont en XML
+     */
+    const   XML = 2;
+
+
+    /**
      * @var string
      */
     private $base_url = '';
@@ -63,6 +73,10 @@ class dF_Api
      */
     private $return_type = self::DATAS;
 
+    /**
+     * @var int
+     */
+    private $format = self::JSON;
 
     /**
      * dF_Api constructor.
@@ -76,24 +90,37 @@ class dF_Api
      * Definit l'URL de base pour l'appel des services externes
      *
      * @param string $url
-     * @return void
+     * @return dF_Api
      */
-    public function baseUrl(string $url) : void
+    public function baseUrl(string $url) : self
     {
         $this->base_url = $url;
+        return $this;
     }
 
     /**
      * Definit le type de formatage du resultat
      *
-     * @param int $type dF_Api::FORMAT | dF_Api::BRUT
-     * @return void
+     * @param int $type dF_Api::BRUT|dF_Api::FORMAT|dF_APi::DATAS|dF_Api::METAS|dF_Api::HEADERS
+     * @return dF_Api
      */
-    public function returnType(int $type) : void
+    public function returnType(int $type) : self
     {
         $this->return_type = $type;
+        return $this;
     }
 
+    /**
+     * Definit le type de donnees renvoyee par le Web Service. Ceci permet de decoder les donnees automatiquement
+     *
+     * @param int $format dF_Api::JSON|dF_Api::XML
+     * @return self
+     */
+    public function format(int $format) : self 
+    {
+        $this->format = $format;
+        return $this;
+    }
 
 
     /**
@@ -282,13 +309,13 @@ class dF_Api
      */
     private function return(Requests_Response $response)
     {
-        if(self::HEADERS === $this->return_type)
-        {
-            return $response->headers;
-        }
-        if($this->return_type === self::BRUT)
+        if (self::BRUT === $this->return_type)
         {
             return $response;
+        }
+        if (self::HEADERS === $this->return_type)
+        {
+            return $response->headers;
         }
         $return = [
             'metas' => [
@@ -298,11 +325,15 @@ class dF_Api
             ],
             'datas' => $response->body
         ];
-        if(self::DATAS === $this->return_type)
+        if (self::DATAS === $this->return_type)
         {
+            if (self::JSON === $this->format) 
+            {
+                return json_decode($return['datas']);
+            }
             return $return['datas'];
         }
-        if(self::METAS === $this->return_type)
+        if (self::METAS === $this->return_type)
         {
             return $return['metas'];
         }

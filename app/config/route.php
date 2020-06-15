@@ -21,14 +21,16 @@
 
 $route['default_controller'] = 'Home';
 
-/*
-$route['/works/([a-z-]+)/?$'] = 'Works::work';
+$route['blog/joe']  =  'Home::users[12, toto]' ;
 
-$route['/posts']['GET'] = function () {
+/*
+$route['works/([a-z-]+)/?$'] = 'Works::work';
+
+$route['posts']['GET'] = function () {
     echo 'dimitri ';
 };
 
-$route['/posts/([0-9]+)-([a-z\-0-9]+)'] = function ($a, $b) {
+$route['posts/(:num)-(:slug)'] = function ($a, $b) {
     echo "Article $a : $b";
 };*/
 

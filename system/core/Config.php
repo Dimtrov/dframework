@@ -232,7 +232,7 @@ class Config
         {
             foreach ($value AS $item)
             {
-                if(empty(self::get($key.'.'.$item)))
+                if (empty(self::get($key.'.'.$item)))
                 {
                     ConfigException::except('
                         The <b>'.$key.'['.$item.']</b> configuration is required. 
@@ -317,7 +317,7 @@ class Config
 
 
         self::$_config['general']['compress_output'] = self::$_config['general']['compress_output'] ?? 'auto';
-        if(!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
+        if (!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
         {
             ConfigException::except('
                 The <b>general[compress_output]</b> configuration is not set correctly (Accept values: auto/true/false). 
@@ -325,7 +325,7 @@ class Config
                 Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
             ');
         }
-        else if(self::$_config['general']['compress_output'] === 'auto')
+        else if (self::$_config['general']['compress_output'] === 'auto')
         {
             self::$_config['general']['compress_output'] = (self::$_config['general']['environment'] !== 'dev');
         }
@@ -333,11 +333,11 @@ class Config
         /* ----------------
             Parametres de session
         ------------------- */
-        if(!empty(self::get('data.session.cache_limiter')))
+        if (!empty(self::get('data.session.cache_limiter')))
         {
             $autorize = ['public', 'private', 'nocache', 'private_no_expire'];
             $config = strtolower(self::get('data.session.cache_limiter'));
-            if(!in_array($config, $autorize))
+            if (!in_array($config, $autorize))
             {
                 ConfigException::except('
                     The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).'). 
@@ -347,7 +347,7 @@ class Config
             }
             self::set('data.session.cache_limiter', $config);
         }
-        if(isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
+        if (isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
         {
             ConfigException::except('
                 The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values. 

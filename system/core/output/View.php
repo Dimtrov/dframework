@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.1
  */
 
  
@@ -63,7 +63,7 @@ class View
     }
 
     /**
-     * show the view
+     * show the view in browser
      */
     public function render()
     {
@@ -71,6 +71,8 @@ class View
     }
 
     /**
+	 * Return the code of some view
+	 *
      * @param bool $compress
      * @return string
      */
@@ -93,6 +95,7 @@ class View
         }
         else
         {
+            $this->controller = strtolower(trim($this->controller, DS));
             $view = rtrim(VIEW_DIR.$this->controller.DS, DS).DS.str_replace(' ', '', $this->view);
         }
         $view = str_replace('/', DS, $view);
@@ -130,6 +133,4 @@ class View
 
         $this->content = $content;
     }
-
-
 }

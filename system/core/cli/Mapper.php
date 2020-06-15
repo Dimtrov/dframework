@@ -57,7 +57,7 @@ class Mapper extends Command
     {
         $color = new Color;
 
-        if(!$this->app AND !$this->dept)
+        if (!$this->app AND !$this->dept)
         {
             echo $color->warn('Veuillez selectionner une option pour pouvoir lancer le mapping des classes. <eol/>');
             $this->showHelp();
@@ -65,14 +65,14 @@ class Mapper extends Command
     }
     public function execute()
     {
-        try{
+        try {
             $io = $this->app()->io();
             $color = new Color;
             $writer = new Writer();
 
             $io->write("\n *******  Mapping des classes en cours de traitement  ******** \n", true);
 
-            if($this->app) 
+            if ($this->app) 
             {
                 $mapper = new ClassMapper([\APP_DIR], [
                     'excluded_paths' => [
@@ -82,7 +82,7 @@ class Mapper extends Command
                         \APP_DIR.'class',
                     ]
                 ]);
-                $export_file = \RESOURCE_DIR.'.classmap.php';
+                $export_file = \RESOURCE_DIR.'reserved'.\DS.'.classmap.php';
             }
             else 
             {
@@ -98,7 +98,7 @@ class Mapper extends Command
 
             $mapper->process();
             
-            if($mapper->export_result_in_file($export_file))
+            if ($mapper->export_result_in_file($export_file))
             {
                 $io->write("\t --- Traitement terminé", true);
                echo $color->ok("\t ".count($mapper->get_result_as_array())." Classes collectées avec succès \n");
@@ -109,7 +109,7 @@ class Mapper extends Command
             }
             $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
         }
-        catch(\Exception $e) { }
+        catch (\Exception $e) { }
         
         return true;
     }

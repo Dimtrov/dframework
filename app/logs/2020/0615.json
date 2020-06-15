@@ -1,0 +1,30 @@
+[
+    {
+        "code": 0,
+        "type": "ERROR",
+        "ertype": "error",
+        "message": "Call to undefined function env()",
+        "file": "E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\data\\Request.php",
+        "line": 239,
+        "date": "15.06.2020 @ 10:59",
+        "page": "localhost\/dframework\/",
+        "referrer": null,
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/83.0.4103.97 Safari\/537.36",
+        "description": "An error of level 0(ERROR) was generated in file E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\data\\Request.php on line 239.\nThe error message was: \"Call to undefined function env()\""
+    },
+    {
+        "code": 2,
+        "type": "E_WARNING",
+        "ertype": "warning",
+        "message": "explode() expects parameter 2 to be string, array given",
+        "file": "E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\route\\Route.php",
+        "line": 108,
+        "date": "15.06.2020 @ 10:08",
+        "page": "localhost\/dframework\/blog\/joe",
+        "referrer": null,
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/83.0.4103.97 Safari\/537.36",
+        "description": "An error of level 2(E_WARNING) was generated in file E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\route\\Route.php on line 108.\nThe error message was: \"explode() expects parameter 2 to be string, array given\""
+    }
+]

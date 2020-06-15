@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
 
 
@@ -21,6 +21,7 @@ namespace dFramework\core;
 use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
 use dFramework\core\exception\Exception;
+use dFramework\core\loader\Load;
 use Envms\FluentPDO\Query As FluentPDOQuery;
 
 /**
@@ -44,6 +45,12 @@ class Model extends Query
     private $fluent = null;
 
     /**
+     * @var Migrator|null
+     */
+    private $migrator = null;
+
+
+    /**
      * Renvoie une instance de l'objet FluentPDO a utiliser pour faire des query builder avances
      *
      * @return FluentPDOQuery|null
@@ -63,9 +70,47 @@ class Model extends Query
     }
 
     /**
-     * @var Migrator|null
+     * Charge un model
+     * 
+     * @param string|array $model
+     * @param string|null $alias
+     * @since 3.2
+     * @throws \ReflectionException
      */
-    private $migrator = null;
+    final protected function loadModel($model, ?string $alias = null)
+    {
+        Load::model($this, $model, $alias);
+    }
+    
+    /**
+     * Charge une api externe
+     *
+     * @param string $base_url
+     * @param string $var
+     * @since 3.2
+     * @return void
+     */
+    final protected function useApi(string $base_url, string $var = 'api')
+    {
+        require_once SYST_DIR . 'libraries' . DS . 'Api.php';
+        if (empty($this->{$var}) OR !$this->{$var} instanceof \dF_Api)
+        {
+            $this->{$var} = new \dF_Api;
+            $this->{$var}->baseUrl($base_url);
+        } 
+    }
+    /**
+     * Injecte un objet d'Api au model
+     *
+     * @param dF_Api $api
+     * @param string $var
+     * @since 3.2
+     * @return void
+     */
+    final public function initApi($api, string $var = 'api')
+    {
+        $this->{$var} = $api;
+    }
 
     /**
      * Retourne l'objet Migrator pour faire les migrations des bases de donnees
@@ -76,7 +121,8 @@ class Model extends Query
     {
         if(null === $this->migrator)
         {
-            try {
+            try 
+            {
                 $this->migrator = new Migrator($this->db);
             }
             catch (\Exception $e) {
@@ -109,12 +155,12 @@ class Model extends Query
 
 
     /**
-     *  Returns the last inserted id.
+     *  Retourne le dernier ID inserer par autoincrement dans une table.
      *
      * @param string|null $name Nom de la table dans laquelle on veut recuperer le dernier Id
      * @return string
      */
-    public function lastId($name = null)
+    final public function lastId($name = null)
     {
         return $this->db->pdo()->lastInsertId($name);
     }
@@ -124,37 +170,37 @@ class Model extends Query
      * @param null $name
      * @return string
      */
-    public function lastInsertId($name = null)
+    final public function lastInsertId($name = null)
     {
         return $this->lastId($name);
     }
 
     /**
-     * Start a transaction
+     * Initie une transaction
      *
      * @return bool
      */
-    public function beginTransaction() : bool
+    final public function beginTransaction() : bool
     {
         return $this->db->pdo()->beginTransaction();
     }
 
     /**
-     * Validate a transaction
+     * Valide une transaction
      *
      * @return bool
      */
-    public function commit() : bool
+    final public function commit() : bool
     {
         return $this->db->pdo()->commit();
     }
 
     /**
-     * Cancel a transaction
+     * Annulle une transaction
      *
      * @return bool
      */
-    public function rollback() : bool
+    final public function rollback() : bool
     {
         return $this->db->pdo()->rollback();
     }
@@ -169,7 +215,7 @@ class Model extends Query
      * @throws Exception
      * @return bool
      */
-    public function exist($key, $value, string $table = null) : bool
+    final public function exist($key, $value, string $table = null) : bool
     {
         $process = false;
         if (empty($table) AND is_array($key) AND is_string($value)) 
@@ -194,5 +240,4 @@ class Model extends Query
         }
         throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
     }
-
 }

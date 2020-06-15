@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.2
  */
 
 
@@ -136,7 +136,7 @@ class Layout
         $vars = Tableau::remove($vars, 'df_lib_css');
         $vars = Tableau::remove($vars, 'df_lib_js');
 
-        if(null !== $var)
+        if (null !== $var)
         {
             return $vars[$var] ?? [];
         }
@@ -153,7 +153,7 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['df_css']) OR (isset(self::$_vars['df_css']) AND !in_array($var, self::$_vars['df_css'])))
+            if (!isset(self::$_vars['df_css']) OR (isset(self::$_vars['df_css']) AND !in_array($var, self::$_vars['df_css'])))
             {
                 self::$_vars['df_css'][] = $var;
             }
@@ -186,7 +186,7 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['df_lib_css']) OR (isset(self::$_vars['df_lib_css']) AND !in_array($var, self::$_vars['df_lib_css'])))
+            if (!isset(self::$_vars['df_lib_css']) OR (isset(self::$_vars['df_lib_css']) AND !in_array($var, self::$_vars['df_lib_css'])))
             {
                 self::$_vars['df_lib_css'][] = $var;
             }
@@ -219,7 +219,7 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['df_js']) OR (isset(self::$_vars['df_js']) AND !in_array($var, self::$_vars['df_js'])))
+            if (!isset(self::$_vars['df_js']) OR (isset(self::$_vars['df_js']) AND !in_array($var, self::$_vars['df_js'])))
             {
                 self::$_vars['df_js'][] = $var;
             }
@@ -252,7 +252,7 @@ class Layout
     {
         foreach ($src As $var)
         {
-            if(!isset(self::$_vars['df_lib_js']) OR (isset(self::$_vars['df_lib_js']) AND !in_array($var, self::$_vars['df_lib_js'])))
+            if (!isset(self::$_vars['df_lib_js']) OR (isset(self::$_vars['df_lib_js']) AND !in_array($var, self::$_vars['df_lib_js'])))
             {
                 self::$_vars['df_lib_js'][] = $var;
             }
@@ -310,14 +310,14 @@ class Layout
      */
     public function setPageMeta($meta, ?string $value = null) : self
     {
-        if(is_array($meta))
+        if (is_array($meta))
         {
             foreach ($meta as $k => $v) 
             {
                 $this->setPageMeta($k, $v);
             }
         }
-        if(is_string($meta) AND !empty($value))
+        if (is_string($meta) AND !empty($value))
         {
             self::$_vars['df_pageMeta'][$meta] = $value; 
         }
@@ -341,9 +341,9 @@ class Layout
      */
     public function setLayout(string $layout) : self
     {
-        if(!empty($layout) AND is_string($layout))
+        if (!empty($layout) AND is_string($layout))
         {
-			if(!file_exists(LAYOUT_DIR.$layout.'.php'))
+			if (!file_exists(LAYOUT_DIR.$layout.'.php'))
 			{
 				LoadException::except('
 					Impossible de charger le template <b>'.$layout.'</b>.
@@ -364,9 +364,9 @@ class Layout
      */
     private static function instance() : self
     {
-        if(null === self::$_instance)
+        if (null === self::$_instance)
         {
-            self::$_instance = new Layout();
+            self::$_instance = new self;
         }
         return self::$_instance;
     }
@@ -402,9 +402,9 @@ class Layout
     {
         $name = strtolower($name);
         ob_start(function ($buffer) use ($name, $concat) {
-            if(isset(self::$_blocks[$name]))
+            if (isset(self::$_blocks[$name]))
             {
-                if($concat == self::B_PREPEND)
+                if ($concat == self::B_PREPEND)
                 {
                     self::$_blocks[$name] = $buffer . self::$_blocks[$name] ;
                 }
@@ -468,19 +468,20 @@ class Layout
      */
     public static function stylesBundle(?string $config = null) : void
     {
-        Config::load('layout');
-
         $config = ($config === null) ? self::$_layout : $config;
+        
         $lib_styles = array_merge((array) Config::get('layout.'.$config.'.lib_styles'), self::$_vars['df_lib_css'] ?? []);
-        if(!empty($lib_styles))
+        if (!empty($lib_styles))
         {
             lib_styles($lib_styles);
         }
+
         $styles = array_merge((array) Config::get('layout.'.$config.'.styles'), self::$_vars['df_css'] ?? []);
-        if(!empty($styles))
+        if (!empty($styles))
         {
             styles($styles);
         }
+
         self::show('css');
     }
     /**
@@ -489,19 +490,20 @@ class Layout
      */
     public static function scriptsBundle(?string $config = null) : void
     {
-        Config::load('layout');
-        
         $config = ($config === null) ? self::$_layout : $config;
+        
         $lib_scripts = array_merge((array) Config::get('layout.'.$config.'.lib_scripts'), self::$_vars['df_lib_js'] ?? []);
-        if(!empty($lib_scripts))
+        if (!empty($lib_scripts))
         {
             lib_scripts($lib_scripts);
         }
+
         $scripts = array_merge((array) Config::get('layout.'.$config.'.scripts'), self::$_vars['df_js'] ?? []);
-        if(!empty($scripts))
+        if (!empty($scripts))
         {
             scripts($scripts);
         }
+        
         self::show('js');
     }
 }

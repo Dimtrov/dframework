@@ -1,18 +1,18 @@
 <?php
 /**
- * dFramework
+ *  dFramework
  *
- * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Group Corp
- * This content is released under the MIT License (MIT)
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019, Dimtrov Sarl
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Group Corp. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    https://opensource.org/licenses/MIT	MIT License
- * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.2
  */
 
 
@@ -63,7 +63,14 @@ class Route
     public function match(string $url) : bool
     {
         $url = trim($url, '/');
-        if(!preg_match('#^'.$this->path.'$#i', $url, $matches))
+        $path = $this->path;
+
+        $path = str_replace('(:num)', '([0-9]+)', $path);
+        $path = str_replace('(:alpha)', '([a-zA-Z]+)', $path);
+        $path = str_replace('(:slug)', '([a-z0-9-]+)', $path);
+        $path = str_replace('(:any)', '([^ /]+)', $path);
+
+        if (!preg_match('#^'.$path.'$#i', $url, $matches))
         {
             return false;
         }
@@ -80,18 +87,32 @@ class Route
      */
     public function call()
     {
-        if(is_string($this->callable))
+        if (is_string($this->callable))
         {
-            $params = explode('::', $this->callable);
-            $controllerClassFile = explode('/', $params[0].'Controller');
+            $entries = explode('::', $this->callable);
+
+            $controllerClassFile = explode('/', $entries[0].'Controller');
             $controllerClass = array_pop($controllerClassFile);
-            $controllerClassFile = implode('/', $controllerClassFile);
+            $controllerClassFile = implode(DS, $controllerClassFile);
 
             $controllerClassFile = (empty($controllerClassFile))
                 ? CONTROLLER_DIR.$controllerClass
-                : CONTROLLER_DIR.rtrim($controllerClassFile, '/').DS.$controllerClass;
+                : CONTROLLER_DIR.rtrim($controllerClassFile, DS).DS.$controllerClass;
 
-            Dispatcher::loadController($controllerClassFile, $controllerClass, $params[1] ?? 'index', $this->matches);
+            if (!empty($entries[1]) AND preg_match('#^(.+)\[(.+)\]$#isU', $entries[1], $matches))
+            {
+                array_shift($matches);
+                $method = array_shift($matches);
+
+                $this->matches = explode(',', $matches[0]);
+            }
+    
+            Dispatcher::loadController(
+                $controllerClassFile, 
+                $controllerClass, 
+                $method ?? 'index', 
+                $this->matches
+            );
         }
         else
         {
@@ -107,7 +128,7 @@ class Route
     public function getUrl(array $params) : string
     {
         $path = $this->path;
-        foreach($params as $k => $v)
+        foreach ($params as $k => $v)
         {
             $path = str_replace(":$k", $v, $path);
         }
