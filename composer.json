@@ -4,12 +4,12 @@
     "type": "Project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
     "homepage": "https://dimtrov.hebfree.org/works/dframework",
-    "version": "3.0",
+    "version": "3.2",
     "license": "MPL-2",
     "authors": [
         {
             "name": "Dimitric Sitchet Tomkeu",
-            "email": "dev.dimitrisitchet@gmail.com",
+            "email": "dev.dst@gmail.com",
             "role": "Developer, CEO",
             "homepage": "https://dimtrov.hebfree.org/about"
         }

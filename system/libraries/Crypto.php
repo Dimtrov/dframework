@@ -7,16 +7,18 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
+
 
  use dFramework\core\Config;
  use dFramework\core\exception\Exception;
+
 
 /**
  * Crypto
@@ -25,11 +27,10 @@
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Crypto.html
  * @since       2.0
  */
-
 
 class dF_Crypto
 {
@@ -200,7 +201,7 @@ class dF_Crypto
                 Exception::Throw($e);
             }
         }
-        elseif (defined('MCRYPT_DEV_URANDOM'))
+        elseif (defined('MCRYPT_DEV_URANDOM') AND function_exists('mcrypt_create_iv'))
         {
             return mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
         }

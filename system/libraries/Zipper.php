@@ -7,29 +7,28 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
 
+
 use dFramework\core\exception\Exception;
-use dFramework\dependencies\others\createzip\CreateZipFile;
 use dFramework\dependencies\others\dunzip\{dUnzip2, dZip};
 
+
 /**
- * Zip
- *
+ * Zipper
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Zip.html
  * @since       2.0
  */
-
 
 class dF_Zipper
 {
@@ -40,7 +39,7 @@ class dF_Zipper
      */
     public function createZip(string $name, ?array $folders = [], ?array $files = [])
     {
-        if(!preg_match('#\.zip$#i', $name))
+        if (!preg_match('#\.zip$#i', $name))
         {
             $name .= '.zip';
         }
@@ -48,7 +47,7 @@ class dF_Zipper
 
         foreach ($folders As $k => $v)
         {
-            if(is_int($k) AND is_string($v))
+            if (is_int($k) AND is_string($v))
             {
                 $newzip->addDir($v);
             }
@@ -56,7 +55,7 @@ class dF_Zipper
 
         foreach ($files As $k => $v)
         {
-            if(is_string($k) AND is_string($v))
+            if (is_string($k) AND is_string($v))
             {
                 $newzip->addFile($k, $v);
             }
@@ -70,13 +69,13 @@ class dF_Zipper
      */
     public function unZip(string $name, ?string $file = null)
     {
-        if(!preg_match('#\.zip$#i', $name))
+        if (!preg_match('#\.zip$#i', $name))
         {
             $name .= '.zip';
         }
         $zip = new dUnzip2($name);
 
-        if(!empty($file))
+        if (!empty($file))
         {
             $zip->unzip(pathinfo($name, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$file);
         }
@@ -94,7 +93,7 @@ class dF_Zipper
      */
     public function zipFile(string $path, string $output = '/', string $name = '')
     {
-        if(!is_file($path) OR !is_readable($path))
+        if (!is_file($path) OR !is_readable($path))
         {
             Exception::show('Le chemin specifier pour le fichier à zipper ne correspond pas à un fichier lisible');
         }
@@ -133,7 +132,7 @@ class dF_Zipper
     private function makeZipFile(CreateZipFile $createZipFile, $name)
     {
         $zipName = (empty($name)) ? 'df-zip_'.md5(microtime().rand(0, 999999)) : $name;
-        if(!preg_match('#\.zip$#i', $zipName))
+        if (!preg_match('#\.zip$#i', $zipName))
         {
             $zipName .= '.zip';
         }

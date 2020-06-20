@@ -7,7 +7,7 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -22,7 +22,7 @@
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Api.html
  * @since       2.0.1
  * @file        /system/libraries/Api.php
@@ -79,12 +79,19 @@ class dF_Api
     private $format = self::JSON;
 
     /**
+     * @var array
+     */
+    private $headers = [];
+    
+    
+    /**
      * dF_Api constructor.
      */
     public function __construct()
     {
         Requests::register_autoloader();
     }
+
 
     /**
      * Definit l'URL de base pour l'appel des services externes
@@ -107,6 +114,18 @@ class dF_Api
     public function returnType(int $type) : self
     {
         $this->return_type = $type;
+        return $this;
+    }
+
+    /**
+     * Definit les entetes a toujours envoyees lors d'une requete
+     *
+     * @param array $headers
+     * @return dF_Api
+     */
+    public function setHeaders(array $headers = []) : self
+    {
+        $this->headers = $headers;
         return $this;
     }
 
@@ -187,6 +206,7 @@ class dF_Api
      */
     public function get(string $url, ?array $headers = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::get($this->url($url), $headers, $options));
     }
 
@@ -200,6 +220,7 @@ class dF_Api
      */
     public function head(string $url, ?array $headers = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::head($this->url($url), $headers, $options));
     }
 
@@ -213,6 +234,7 @@ class dF_Api
      */
     public function delete(string $url, ?array $headers = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::delete($this->url($url), $headers, $options));
     }
 
@@ -226,6 +248,7 @@ class dF_Api
      */
     public function trace(string $url, ?array $headers = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::trace($this->url($url), $headers, $options));
     }
 
@@ -240,6 +263,7 @@ class dF_Api
      */
     public function post(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::post($this->url($url), $headers, $data, $options));
     }
 
@@ -254,6 +278,7 @@ class dF_Api
      */
     public function put(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::put($this->url($url), $headers, $data, $options));
     }
 
@@ -268,6 +293,7 @@ class dF_Api
      */
     public function options(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::options($this->url($url), $headers, $data, $options));
     }
 
@@ -282,6 +308,7 @@ class dF_Api
      */
     public function patch(string $url, array $headers, ?array $data = [], ?array $options = [])
     {
+        $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
         return $this->return(Requests::patch($this->url($url), $headers, $data, $options));
     }
 

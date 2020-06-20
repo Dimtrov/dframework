@@ -7,23 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
- */
-
-/**
- * Captcha
- *
- *
- * @package		dFramework
- * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
- * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/captcha
- * @since       2.0
+ * @version     3.2
  */
 
 
@@ -33,6 +22,16 @@ use dFramework\core\{
     Helpers
 };
 
+/**
+ * Captcha
+ *
+ *
+ * @package		dFramework
+ * @subpackage	Library
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/captcha
+ * @since       2.0
+ */
 
 class dF_Captcha
 {
@@ -118,15 +117,15 @@ class dF_Captcha
      */
     public function set($config, $value = null)
     {
-        if(is_string($config))
+        if (is_string($config))
         {
-            if(empty($value))
+            if (empty($value))
             {
                 Exception::show('Vous devez attribuer une valeur pour modifier la clé <b>'.$config.'</b>');
             }
             $this->checkConfig($config, $value);
         }
-        else if(is_array($config))
+        else if (is_array($config))
         {
             foreach ($config As $key => $value)
             {
@@ -160,14 +159,16 @@ class dF_Captcha
     }
 
     /**
+     * Valide une reponse de captcha
+     * 
      * @param string $value
      * @return bool
      */
-    public function check($value) : bool
+    public function check(string $value) : bool
     {
-        if(!in_array($this->type, [self::IMAGE_SECURIMAGE, self::AUDIO_SECURIMAGE]))
+        if (!in_array($this->type, [self::IMAGE_SECURIMAGE, self::AUDIO_SECURIMAGE]))
         {
-            if(empty($_SESSION['df_security']['captcha']['code']))
+            if (empty($_SESSION['df_security']['captcha']['code']))
             {
                 return false;
             }
@@ -187,29 +188,31 @@ class dF_Captcha
 
 
     /**
-     * @param $config
-     * @param $value
+     * Verifie les parametres d'initialisation du captcha
+     * 
+     * @param string $config
+     * @param mixed $value
      */
     private function checkConfig($config, $value)
     {
         $config = strtolower($config);
 
-        if($this->type === self::MATH)
+        if ($this->type === self::MATH)
         {
-            if(!is_int($value) AND in_array($config, ['min', 'max']))
+            if (!is_int($value) AND in_array($config, ['min', 'max']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be an integer for "Captcha Math"');
             }
-            if($config == 'operation')
+            if ($config == 'operation')
             {
-                if(!is_string($value))
+                if (!is_string($value))
                 {
                     Exception::show('The parameter "<b>'.$config.'</b>" must be a string for "Captcha Math"');
                 }
                 $value = explode(',', $value); $accepts = ['+','-','x','*','/'];
                 foreach ($value As $item)
                 {
-                    if(!in_array($item, $accepts))
+                    if (!in_array($item, $accepts))
                     {
                         Exception::show('Le parametre "'.$config.'" ne peut prendre que les valeur "<b>'.join(',', $accepts).'</b>" pour  "Captcha Math"');
                     }
@@ -218,77 +221,77 @@ class dF_Captcha
             }
         }
 
-        if($this->type === self::IMAGE_NATIVE)
+        if ($this->type === self::IMAGE_NATIVE)
         {
-            if((!is_string($value) OR !file_exists($value)) AND in_array($config, ['bg_path', 'font_path']))
+            if ((!is_string($value) OR !file_exists($value)) AND in_array($config, ['bg_path', 'font_path']))
             {
                 Exception::show('Le parametre "<b>'.$config.'</b>" doit etre un chemin vers un dossier existant');
             }
-            if(!is_int($value) AND in_array($config, ['min_length', 'max_length', 'min_font_size', 'max_font_size', 'angle_min', 'angle_max', 'shadow_offset_x', 'shadow_offset_y']))
+            if (!is_int($value) AND in_array($config, ['min_length', 'max_length', 'min_font_size', 'max_font_size', 'angle_min', 'angle_max', 'shadow_offset_x', 'shadow_offset_y']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be an integer for "Native Captcha Image"');
             }
-            if(in_array($config, ['backgrounds', 'fonds']))
+            if (in_array($config, ['backgrounds', 'fonds']))
             {
-                if(!is_array($value))
+                if (!is_array($value))
                 {
                     Exception::show('Le parametre "<b>'.$config.'</b>" ne peut prendre q\'un tableau de caracteres pour "Native Captcha Image"');
                 }
                 foreach ($value As $item)
                 {
-                    if(empty($item) OR !is_string($item))
+                    if (empty($item) OR !is_string($item))
                     {
                         Exception::show('Le parametre "<b>'.$config.'</b>" ne peut prendre q\'un tableau de caracteres pour "Native Captcha Image"');
                     }
                 }
             }
-            if($config == 'characters' AND !is_string($value))
+            if ($config == 'characters' AND !is_string($value))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a string for "Native Captcha Image"');
             }
-            if((!is_string($value) OR !preg_match('#^\#([a-z0-9]{3,6})$#i', $value)) AND in_array($config,['color', 'shadow_color']))
+            if ((!is_string($value) OR !preg_match('#^\#([a-z0-9]{3,6})$#i', $value)) AND in_array($config,['color', 'shadow_color']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a valid HTML color for "Native Captcha Image"');
             }
-            if($config == 'shadow' AND !is_bool($value))
+            if ($config == 'shadow' AND !is_bool($value))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a boolean for "Native Captcha Image"');
             }
         }
 
-        if($this->type === self::IMAGE_SECURIMAGE OR $this->type === self::AUDIO_SECURIMAGE)
+        if ($this->type === self::IMAGE_SECURIMAGE OR $this->type === self::AUDIO_SECURIMAGE)
         {
-            if(!is_int($value) AND in_array($config, ['image_width', 'image_height', 'text_transparency_percentage', 'code_length', 'num_lines', 'noise_level']))
+            if (!is_int($value) AND in_array($config, ['image_width', 'image_height', 'text_transparency_percentage', 'code_length', 'num_lines', 'noise_level']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be an integer for "Securimage Captcha Image"');
             }
-            if($config == 'image_type' AND (!is_int($value) OR !in_array($value, [1, 2, 3])))
+            if ($config == 'image_type' AND (!is_int($value) OR !in_array($value, [1, 2, 3])))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be an integer between 1, 2, 3 for "Securimage Captcha Image"');
             }
-            if($config == 'captcha_type' AND (!is_int($value) OR !in_array($value, [0, 1])))
+            if ($config == 'captcha_type' AND (!is_int($value) OR !in_array($value, [0, 1])))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be an integer between 0, 1 for "Securimage Captcha Image"');
             }
-            if(in_array($config, ['image_bg_color', 'text_color', 'line_color', 'noise_color', 'signature_color']) AND (!is_string($value) OR !preg_match('#^\#([a-z0-9]{3,6})$#i', $value)))
+            if (in_array($config, ['image_bg_color', 'text_color', 'line_color', 'noise_color', 'signature_color']) AND (!is_string($value) OR !preg_match('#^\#([a-z0-9]{3,6})$#i', $value)))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a valid HTML color for "Securimage Captcha Image"');
             }
-            if(!is_bool($value) AND in_array($config, ['use_transparent_text', 'case_sensitive', 'use_wordlist', 'use_sqlite_db']))
+            if (!is_bool($value) AND in_array($config, ['use_transparent_text', 'case_sensitive', 'use_wordlist', 'use_sqlite_db']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a boolean for "Securimage Captcha Image"');
             }
-            if(!is_string($value) AND in_array($config, ['charset', 'session_name', 'image_signature', 'signature_font', 'namespace']))
+            if (!is_string($value) AND in_array($config, ['charset', 'session_name', 'image_signature', 'signature_font', 'namespace']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a string for "Securimage Captcha Image"');
             }
-            if(!is_double($value) AND in_array($config, ['perturbation']))
+            if (!is_double($value) AND in_array($config, ['perturbation']))
             {
                 Exception::show('The parameter "<b>'.$config.'</b>" must be a string for "Securimage Captcha Image"');
             }
-            if((!is_string($value) OR !file_exists($value)) AND in_array($config, ['ttf_file', 'wordlist_file', 'background_directory', 'sqlite_database', 'audio_path']))
+            if ((!is_string($value) OR !file_exists($value)) AND in_array($config, ['ttf_file', 'wordlist_file', 'background_directory', 'sqlite_database', 'audio_path']))
             {
-                if(in_array($config, ['ttf_file', 'wordlist_file']))
+                if (in_array($config, ['ttf_file', 'wordlist_file']))
                 {
                     Exception::show('Le parametre "<b>'.$config.'</b>" doit etre un chemin vers un fichier existant');
                 }
@@ -301,6 +304,8 @@ class dF_Captcha
 
 
     /**
+     * Cree un captcha mathematique
+     * 
      * @return string
      */
     private function captchaMath() : string
@@ -324,7 +329,7 @@ class dF_Captcha
                 $phrase = $n1.' + '.$n2;
             } break;
             case '-' : {
-                if($n1 < $n2) {
+                if ($n1 < $n2) {
                     $resultat = $n2 - $n1;
                     $phrase = $n2.' - '.$n1;
                 }
@@ -342,7 +347,7 @@ class dF_Captcha
                 $n1 = ($n1 == 0) ? rand(1, $params['max']) : $n1;
                 $n2 = ($n2 == 0) ? rand(1, $params['max']) : $n2;
 
-                if($n1 < $n2)
+                if ($n1 < $n2)
                 {
                     $resultat = $n2 / $n1;
                     $phrase = $n2.' / '.$n1;
@@ -360,6 +365,8 @@ class dF_Captcha
     }
 
     /**
+     * Cree un captcha image natif
+     * 
      * @return string
      * @throws Exception
      */
@@ -374,6 +381,8 @@ class dF_Captcha
     }
 
     /**
+     * Cree un captcha image en utilisant la librairie securimage
+     * 
      * @return string
      */
     private function captchaImageSecurimage() : string
@@ -388,6 +397,8 @@ class dF_Captcha
     }
 
     /**
+     * Cree un captcha audio grace a la librairie securimage
+     * 
      * @return string
      */
     private function captchaAudioSecurimage() : string
@@ -395,11 +406,9 @@ class dF_Captcha
         unset($_SESSION['df_security']['captcha']['config']);
         $_SESSION['df_security']['captcha']['config'] = serialize($this->params[$this->type]);
 
-
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
 
         return Helpers::instance()->site_url($dir.'/dependencies/securimage/play.php?df_captcha&amp;sid='.urlencode(microtime()));
     }
-
 }

@@ -7,15 +7,17 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
 
+
 use simplehtmldom_1_5\simple_html_dom;
+
 
 /**
  * Dom
@@ -23,7 +25,7 @@ use simplehtmldom_1_5\simple_html_dom;
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Dom.html
  * @since       3.0
  * @file        /system/librairies/Dom.php
@@ -41,17 +43,17 @@ class dF_Dom extends simple_html_dom
      */
     public function attr($attr, $value = null)
     {
-        if(is_array($attr))
+        if (is_array($attr))
         {
             foreach ($attr As $key => $val) 
             {
-                if(is_string($key))
+                if (is_string($key))
                 {
                     $this->attr($key, $val);
                 }
             }
         }
-        else if(null === $value)
+        else if (null === $value)
         {
             return $this->getAttribute($attr);
         }
@@ -78,7 +80,7 @@ class dF_Dom extends simple_html_dom
        
         foreach ($classes As $class) 
         {
-            if(is_string($class) AND !in_array($class, $actual_class))
+            if (is_string($class) AND !in_array($class, $actual_class))
             {
                 array_push($actual_class, $class);
             }
@@ -102,7 +104,7 @@ class dF_Dom extends simple_html_dom
        
         foreach ($classes As $key => $class) 
         {
-            if(is_string($class) AND in_array($class, $actual_class))
+            if (is_string($class) AND in_array($class, $actual_class))
             {
                 $tmp = $actual_class[0];
                 $actual_class[0] = $actual_class[$key];

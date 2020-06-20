@@ -7,13 +7,14 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
  * @version     3.2
  */
+
 
 /**
  * Checker
@@ -22,12 +23,11 @@
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Checker.html
  * @since       1.0
  * @file        /system/libraries/Checker.php
  */
-
 
 class dF_Checker
 {
@@ -56,6 +56,27 @@ class dF_Checker
         $this->field = $field;
     }
 
+
+    /**
+     * Verifie si un nombre est compris entre une valeur minimale et une valeur maximale
+     *
+     * @param string|int|float $value Donnée à vérifier
+     * @param int|float $min Nombre minimal récherché
+     * @param int|float $max Nombre maximal récherché
+     * @param bool $inclusive
+     * @since 3.2
+     * @return bool
+     */
+    public function between($value, $min, $max, bool $inclusive = false) : bool
+    {
+        $value = (true == is_string($value)) ? ($this->field[$value] ?? null) : $value;
+
+        if (!$inclusive)
+        {
+             return ($value < $max AND $value > $min);
+        }
+        return ($value <= $max AND $value >= $min);
+    }
 
     /**
      * Verifie si un champ existe(et n'est pas vide) parmi les champs utilisés par le validateur
@@ -261,6 +282,18 @@ class dF_Checker
     }
 
     /**
+     * Verifie si une donnee est un nombre valide
+     *
+     * @param $value Donnée à vérifier
+     * @return bool
+     */
+    public function is_number($value) : bool
+    {
+        $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null): $value;
+        return is_numeric($value);
+    }
+
+    /**
      * Verifie si une donnees correspond a un numero valide
      *
      * @param mixed $value Donnée à vérifier
@@ -357,10 +390,7 @@ class dF_Checker
         {
              return (strlen(trim($value)) < $max AND strlen(trim($value)) > $min);
         }
-        else
-        {
-            return (strlen(trim($value)) <= $max AND strlen(trim($value)) >= $min);
-        }
+        return (strlen(trim($value)) <= $max AND strlen(trim($value)) >= $min);
     }
     /**
      * @param $value Donnée à vérifier

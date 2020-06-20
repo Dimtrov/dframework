@@ -8,7 +8,7 @@
  *    Cette bibliothèque a été mise sur pied pour faciliter le développement des projets php
  *
  *    ---- @Auteur : Sitchet Tomkeu Dimitric - Elève Ingénieur des travaux informatique option Génie Loiciel
- *    ---- @Contact : (+237) 691 88 95 87 - 673 40 66 61 / dev.dimitrisitchet@gmail.com
+ *    ---- @Contact : (+237) 691 88 95 87 - 673 40 66 61 / dev.dst@gmail.com
  *    ---- @Licence : Creative Commons 4.0
  *            Vous êtes libre d'utiliser, de modifier et de partager cette bibliothèque à
  *            condition expresse de respecter toutes les conditions ci-dessous
@@ -19,32 +19,32 @@
  *                    apparaitre dans toutes les copies.
  *
  *    ---- Nouveautés V3.0 :
- *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 09/05/2019
+ *            Par Dimitric Sitchet Tomkeu <dev.dst@gmail.com> le 09/05/2019
  *            1) Ajout de la fonction scl_cypher() qui crypte et decrypte une chaine par simple substitution (ancienne fonctionnalite de scl_hash)
  *            2) Modification de la fonction scl_hash() en fonction de hashage a sens unique
  *
  *    ---- Nouveautés V3.0.1 :
- *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 10/05/2019
+ *            Par Dimitric Sitchet Tomkeu <dev.dst@gmail.com> le 10/05/2019
  *            1) Modification de la fonction scl_include() pour gerer les inclusions faibles et fortes
  *
  *    ---- Nouveautés V3.2 :
- *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 13/08/2019
+ *            Par Dimitric Sitchet Tomkeu <dev.dst@gmail.com> le 13/08/2019
  *            1) Ajout de la fonction scl_byte2size() qui renvoie le nombre de kb, mo, gb en fonction du nombre de byte passé en parametre
  *            2) Ajout de la fonction scl_int2letter() qui transforme un chiffre en lettre
  *
  *    ---- Nouveautés V3.2.1 :
- *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 15/08/2019
+ *            Par Dimitric Sitchet Tomkeu <dev.dst@gmail.com> le 15/08/2019
  *            1) Modification de la fonction scl_debug() pour adopter une mise en page plus moderne
  *
  *    ---- Nouveautés V3.3 :
- *            Par Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com> le 12/01/2020
+ *            Par Dimitric Sitchet Tomkeu <dev.dst@gmail.com> le 12/01/2020
  *            1) Ajout de la fonction scl_shortenStr() qui tronque une chaine en ajoutant les mots de fin
  ***/
 
 
 /**
  * ------- FUNCTION SCL_UPLOAD()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  *
  * @brief Cette fonction permet de récupérer un fichier envoyer par formulaire
  * @return mixed renvoie true si tous s'est bien passé et en cas d'erreur, renvoie un tableau contenant le code de l'erreur et le message par defaut
@@ -281,7 +281,7 @@ function scl_minimizeImg($src, $size = array(), $relative = false)
 
 /**
  * ------- FUNCTION SCL_GENERATEKEYS()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  *
  * @brief Cette fonction permet de une chaine aléatoirement
  * @return string
@@ -332,7 +332,7 @@ function scl_generateKeys($nbr = 8, $type = 0)
 
 /**
  * ------- FUNCTION SCL_DATE()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @brief Cette fonction permet de formater une date
  * @return string
  *
@@ -506,7 +506,7 @@ function scl_translate_date($date, $lang = 'en')
 
 /**
  * ------- FUNCTION SCL_HASH()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @brief Cette fonction permet d'hasher une chaine
  * @return string
  *
@@ -550,7 +550,7 @@ function scl_hash($str, $lenght = 128, $key = '')
 
 /**
  * ------- FUNCTION SCL_CYPHER()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @brief Cette fonction permet d'encrypter et de decrypter une chaine de caracteres
  * @return string
  *
@@ -622,7 +622,7 @@ function scl_cypher($str, $action = 'encrypt', $repeat = 0)
 
 /**
  * ------- FUNCTION SCL_CRYPT()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @param string $str la chaine caractères qu'on veut e
  * @brief Cette fonction permet d'encrypter et de decrypter une chaine de caracteres
  * @return string
@@ -673,7 +673,7 @@ function scl_crypt($str, $key, $action = 'encrypt')
 
 /**
  * ------- FUNCTION SCL_TRUNCATE()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @brief Cette fonction permet de couper une chaine de caractere
  * @return string
  *
@@ -701,7 +701,7 @@ function scl_truncate($str, $size, $suspension = false)
 
 /**
  * ------- FUNCTION SCL_SHORTENSTR()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  * @brief Cette fonction permet de couper une chaine de caractere
  * @return string
  *
@@ -736,7 +736,7 @@ function scl_shortenStr($str, $max, $sep = '.', $width = 3)
 
 /**
  * ------- FUNCTION SCL_CLEANER()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  *
  * @brief Cette fonction permet de suprimer les espace en debut et fin d'une chaine tout en echappant les entités html
  * @return string
@@ -766,7 +766,7 @@ function scl_cleaner(&$str)
 
 /**
  * ------- FUNCTION SCL_INCLUDE()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  *
  * @brief Cette fonction permet inclure un fichier de maniere securiser dans une page web
  * @return void
@@ -792,7 +792,7 @@ function scl_include($file, $data = array(), $exception = false)
 
 /**
  * ------- FUNCTION SCL_DEBUG()   --------
- * @author Dimitric Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
  *
  * @brief Cette fonction permet de debuger une ou plusieurs variable
  * @return void

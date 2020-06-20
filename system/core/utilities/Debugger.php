@@ -7,7 +7,7 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -26,7 +26,7 @@ namespace dFramework\core\utilities;
  * @package		dFramework
  * @subpackage	Core
  * @category    Utilities
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Debugger.html
  * @since       3.0
  * @file        /system/core/utilities/Debugger.php
@@ -166,7 +166,7 @@ class Debugger
      * Equivalent à un var_dump mais en version sécurisée et en couleur.
      *
      * @author  Cyril MAGUIRE<contact@ecyseo.net>
-     * @author  Dimitri Sitchet Tomkeu<dev.dimitrisitchet@gmail.com>
+     * @author  Dimitri Sitchet Tomkeu<dev.dst@gmail.com>
      * @version 1.0
      */
     private static function _trac($mixedvar, $comment='',  $sub = 0, $index = false)
@@ -244,7 +244,7 @@ class Debugger
      *
      * @author  Jacksay<studio@jacksay.com>
      * @author  Cyril MAGUIRE<contact@ecyseo.net>
-     * @author  Dimitri Sitchet Tomkeu<dev.dimitrisitchet@gmail.com>
+     * @author  Dimitri Sitchet Tomkeu<dev.dst@gmail.com>
      * @version 2.0
      */
     public static function printBar() 

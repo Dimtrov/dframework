@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
 
 
@@ -34,7 +34,7 @@ use ReflectionClass;
  *
  * @package		dFramework
  * @subpackage	Core
- * @author		Dimitri Sitchet Tomkeu <dev.dimitrisitchet@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Controller.html
  * @since       1.0
  * @file		/system/core/Controller.php
@@ -42,32 +42,45 @@ use ReflectionClass;
 
 abstract class Controller
 {
-    const REQUEST_OBJECT = 1;
+    CONST 
+        /**
+         * Utilisation de l'objet Layout
+         */
+        LAYOUT_OBJECT = 1,
+        /**
+         * Utilisation de l'objet Request
+         */
+        REQUEST_OBJECT = 2,
+        /**
+         * Utilisation des objet Response
+         */
+        RESPONSE_OBJECT = 3, 
+        /**
+         * Utilisation de l'objet Cache
+         */
+        CACHE_OBJECT = 4;
 
-    const RESPONSE_OBJECT = 2;
-
-    const CACHE_OBJECT = 3;
-
-    /**
-     * @var Layout
-     */
-    protected $layout;
-    /**
-     * @var Request
-     */
-    protected $request;
-    /**
-     * @var Response
-     */
-    protected $response;
-    /**
-     * @var Data
-     */
-    protected $data;
-    /**
-     * @var Cache
-     */
-    protected $cache;
+    protected 
+        /**
+         * @var Layout Instance de l'objet Layout
+         */
+        $layout,
+        /**
+         * @var Request Instance de l'objet Request
+         */
+        $request,
+        /**
+         * @var Response Instance de l'objet Response
+         */
+        $response,
+        /**
+         * @var Data Instance de l'objet Data
+         */
+        $data,
+        /**
+         * @var Cache Instance de l'objet Cache
+         */
+        $cache;
 
 
     /**
@@ -77,8 +90,6 @@ abstract class Controller
     {
         $this->getElements();
 
-        $this->layout = $this->layout('default');
-
         $this->data = new Data();
 
         /**
@@ -87,7 +98,22 @@ abstract class Controller
          */
         $this->useObject(self::REQUEST_OBJECT, self::RESPONSE_OBJECT);
     }
+    /**
+     * Recuperation d'une seule instance de controleur. Pattern singletton
+     *
+     * @return Controller
+     */
+    public static function instance() : self
+    {
+        if (null === self::$_instance) 
+        {
+            self::$_instance = new self;
+        }
+        return self::$_instance;
+    }
+    private static $_instance;
 
+    
     /**
      * @param int ...$object
      */
@@ -95,15 +121,19 @@ abstract class Controller
     {
         foreach ($object As $value)
         {
-            if(self::RESPONSE_OBJECT === $value)
+            if (self::LAYOUT_OBJECT === $value)
+            {
+                $this->layout = $this->layout('default');
+            }
+            if (self::RESPONSE_OBJECT === $value)
             {
                 $this->response = new Response();
             }
-            if(self::REQUEST_OBJECT === $value)
+            if (self::REQUEST_OBJECT === $value)
             {
                 $this->request = new Request();
             }
-            if(self::CACHE_OBJECT === $value)
+            if (self::CACHE_OBJECT === $value)
             {
                 $this->cache = new Cache();
             }
@@ -111,11 +141,8 @@ abstract class Controller
     }
 
     /**
-     * @return mixed
-     */
-    abstract protected function index();
-
-    /**
+     * Charge une vue
+     * 
      * @param string $view
      * @param array $vars
      * @return View
@@ -130,6 +157,8 @@ abstract class Controller
     }
 
     /**
+     * Charge un template (layout)
+     * 
      * @param string $layout
      * @param array|null $data
      * @return Layout
@@ -138,7 +167,6 @@ abstract class Controller
     {
         return new Layout($layout, $data);
     }
-
 
     /**
      * Charge un model
@@ -178,7 +206,7 @@ abstract class Controller
         /**
          * @since 2.2
          */
-        if(is_string($library) AND array_key_exists(2, func_get_args()))
+        if (is_string($library) AND array_key_exists(2, func_get_args()))
         {
             $prop = strtolower(!empty($alias) ? $alias : $library);
             $var = $this->$prop;
@@ -244,7 +272,7 @@ abstract class Controller
         $reflection = new ReflectionClass(get_called_class());
         $model = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName()).'Model';
 
-        if(file_exists(MODEL_DIR.$model.'.php'))
+        if (file_exists(MODEL_DIR.$model.'.php'))
         {
             $this->setModel($model);
         }
@@ -258,11 +286,11 @@ abstract class Controller
         $models = (array) Config::get('autoload.models');
         foreach ($models As $key => $value)
         {
-            if(is_string($key) AND is_string($value))
+            if (is_string($key) AND is_string($value))
             {
                 $this->loadModel($key, $value);
             }
-            if(is_int($key) AND is_string($value))
+            if (is_int($key) AND is_string($value))
             {
                 $this->loadModel($value);
             }
@@ -278,18 +306,14 @@ abstract class Controller
 
         foreach ($libraries As $key => $value)
         {
-            if(is_string($key) AND is_string($value))
+            if (is_string($key) AND is_string($value))
             {
                 $this->loadLibrary($key, $value);
             }
-            if(is_int($key) AND is_string($value))
+            if (is_int($key) AND is_string($value))
             {
                 $this->loadLibrary($value);
             }
         }
-
-        $this->loadLibrary('Debug');
     }
-
-
 }
