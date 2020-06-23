@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
  
@@ -305,6 +305,7 @@ class Login
         }
         $this->unlinkTentatives($datas[$login_k]);
         $this->save_session($user[$login_k], $user[$password_k]);
+
         return true;
     }
 
@@ -362,6 +363,7 @@ class Login
         
         $response = $request->fetch(\PDO::FETCH_ASSOC);
         $request->closeCursor();
+
         return $response;
     }
 
@@ -442,7 +444,7 @@ class Login
     {
         $remaining = null;
         
-        if (!Utils::passcompare($pass, $hash))
+        if (!Utils::comparePass($pass, $hash))
         {
             if(true === $this->_params['show_remaining_attempts'] AND is_int($this->_params['failed_login_attempts']) AND 1 < $this->_params['failed_login_attempts'])
             {
@@ -521,6 +523,7 @@ class Login
         {
             $existence_ft = 1;
         }
+
         return [$existence_ft, $tentatives];
     }
     private function setLoginTentatives($login, $existence_ft, $nbr_tentatives)
@@ -535,11 +538,13 @@ class Login
         $fichier_tentatives = fopen($fichier, 'w+');
         fputs($fichier_tentatives, date('d/m/Y').';'.$nb);
         fclose($fichier_tentatives);
+        
         return;
     }
     private function unlinkTentatives($login)
     {
         @unlink($this->_antibrute_dir . sha1($login) . '.df');
+
         return;
     }
 }

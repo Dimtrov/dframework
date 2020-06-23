@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.2
  */
 
 
@@ -68,7 +68,7 @@ class Utils
      * @param string $filename Chemin vers le fichier json a recuperer
      * @return array|false
      */
-    public function json2arr(string $filename)
+    public function jsonToArray(string $filename)
     {
         return Json::fileToArray($filename);
     }
@@ -81,7 +81,7 @@ class Utils
      * @param string $filename Chemin vers le fichier json de sauvegarde
      * @return bool
      */
-    public function arr2json(array $array, string $filename) : bool
+    public function arrayToJson(array $array, string $filename) : bool
     {
         return Json::arrayToFile($array, $filename);
     }
@@ -93,7 +93,7 @@ class Utils
      * @param string $password
      * @return string 
      */
-    public static function hashpass(string $password) : string 
+    public static function hashPass(string $password) : string 
     {
         $salt = (string) Config::get('data.encryption.salt');
         return hash('SHA512', 
@@ -115,9 +115,9 @@ class Utils
      * @param string $hash
      * @return bool
      */
-    public static function passcompare(string $pass, string $hash) : bool
+    public static function comparePass(string $pass, string $hash) : bool
     {
-        return ($hash === self::hashpass($pass));
+        return ($hash === self::hashPass($pass));
     }
     
     /**
@@ -134,11 +134,10 @@ class Utils
         shuffle($characters);
         $nbr_char = count($characters) - 1;
         $password = '';
-        for($i = 0; $i < $lenght; $i++) 
+        for ($i = 0; $i < $lenght; $i++) 
         {
             $password .= $characters[rand(0, $nbr_char)];
         }
         return (string) $password;
     }
-
 }

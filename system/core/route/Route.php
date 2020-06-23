@@ -99,12 +99,17 @@ class Route
                 ? CONTROLLER_DIR.$controllerClass
                 : CONTROLLER_DIR.rtrim($controllerClassFile, DS).DS.$controllerClass;
 
-            if (!empty($entries[1]) AND preg_match('#^(.+)\[(.+)\]$#isU', $entries[1], $matches))
+            if (!empty($entries[1]))
             {
-                array_shift($matches);
-                $method = array_shift($matches);
-
-                $this->matches = explode(',', $matches[0]);
+                $method = $entries[1];
+                
+                if (preg_match('#^(.+)\[(.+)\]$#isU', $entries[1], $matches))
+                {
+                    array_shift($matches);
+                    $method = array_shift($matches);
+    
+                    $this->matches = explode(',', $matches[0]);
+                }
             }
     
             Dispatcher::loadController(

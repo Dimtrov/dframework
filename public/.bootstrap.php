@@ -12,14 +12,14 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
 
 
 $config = require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.config.php';
 
-foreach($config As $key => $value)
+foreach ($config As $key => $value)
 {
     $config[$key] = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.trim($value, '/');
 }
@@ -71,15 +71,15 @@ else
 
 
 // The path to the "composer autoload" directory
-if(!empty($composer_autoload_file))
+if (!empty($composer_autoload_file))
 {
     $composer_autoload_file = rtrim($composer_autoload_file, '/\\');
 
-    if(is_file($composer_autoload_file))
+    if (is_file($composer_autoload_file))
     {
         require_once $composer_autoload_file;
     }
-    else if(is_dir($composer_autoload_file) AND is_file($composer_autoload_file.DIRECTORY_SEPARATOR.'autoload.php'))
+    else if (is_dir($composer_autoload_file) AND is_file($composer_autoload_file.DIRECTORY_SEPARATOR.'autoload.php'))
     {
         require_once $composer_autoload_file.DIRECTORY_SEPARATOR.'autoload.php';
     }
