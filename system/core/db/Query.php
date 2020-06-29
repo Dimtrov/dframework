@@ -40,6 +40,12 @@ class Query
      * @var Database
      */
     public $db;
+    /**
+     * Configuration de la base de donnees a utiliser
+     *
+     * @var string
+     */
+    private $db_setting;
 
     private $crud = 'select';
     /**
@@ -97,9 +103,9 @@ class Query
      *
      * @param string $db_setting
      */
-    public function __construct($db_setting = 'default')
+    public function __construct(string $db_setting = 'default')
     {
-        $this->use($db_setting);
+        // $this->use($db_setting);
     }
     /**
      * __toString Magic Method
@@ -116,22 +122,27 @@ class Query
      * Définit la configuration de base de données à utiliser
      * 
      * @param string $db_setting
-     * @return Database
-     * @throws \dFramework\core\exception\DatabaseException
+     * @return void
      */
-    public function use(string $db_setting) : Database
+    public function use(string $db_setting)
     {
-        return $this->db = new Database($db_setting);
+        if (!empty($db_setting) AND $db_setting !== $this->db_setting) 
+        {
+            $this->db_setting = $db_setting;
+            $this->db = new Database($this->db_setting);
+        }
     }
-
-
     /**
-     * Reinitialise les donnees du QueryBuilder
-     * 
+     * Definit la configuration de la base de donnees a utiliser et reinitialise le Query Builder
+     *
+     * @param string $db_setting
+     * @since 3.2
      * @return Query
      */
-    protected function free_db() : self
+    protected function db(string $db_setting = 'default') : self
     {
+        $this->use($db_setting);
+        
         $this->table = [];
         $this->fields = [];
         $this->conditions = [];
@@ -141,7 +152,19 @@ class Query
         $this->limit = null;
         $this->crud = 'select';
         $this->results = null;
+        
         return $this;
+    }
+    /**
+     * Reinitialise les donnees du QueryBuilder
+     * 
+     * @param string $db_setting
+     * @alias db()
+     * @return Query
+     */
+    protected function free_db(string $db_setting = 'default') : self
+    {
+        return $this->db($db_setting);
     }
 
 
@@ -253,16 +276,16 @@ class Query
      */
     protected function from($table, string $alias = null) : self
     {
-        if(is_string($table))
+        if (is_string($table))
         {
-            if(!is_null($alias)) {
+            if (!is_null($alias)) {
                 $this->table[($this->db->config['prefix'] ?? '').$table] = $alias;
             }
             else {
                 $this->table[] = ($this->db->config['prefix'] ?? '').$table;
             }
         }
-        if(is_array($table))
+        if (is_array($table))
         {
             foreach ($table As $value) {
                 $this->table[] = ($this->db->config['prefix'] ?? '').$value;
@@ -282,7 +305,6 @@ class Query
         $this->conditions = array_merge($this->conditions, $conditions);
         return $this;
     }
-
     /**
      * Définit une contion pour la sélection des données
      * 
@@ -411,7 +433,7 @@ class Query
         {
             $this->set($data);
         }
-        if(true === $execute)
+        if (true === $execute)
         {
             return $this->run();
         }
@@ -433,7 +455,7 @@ class Query
         {
             $this->from($table);
         }
-        if(true === $execute)
+        if (true === $execute)
         {
             return $this->run();
         }
@@ -591,7 +613,7 @@ class Query
             );
         }
         $pdoStatement->execute();
-        $pdoStatement->closeCursor();
+
         return $pdoStatement;
     }
 
@@ -617,9 +639,9 @@ class Query
     {
         $query = $this->run();
 
-        if($mode !== DF_FCLA)
+        if ($mode !== DF_FCLA)
         {
-            if($mode === DF_FARR)
+            if ($mode === DF_FARR)
             {
                 $query->setFetchMode(PDO::FETCH_ASSOC);
             }
@@ -633,7 +655,7 @@ class Query
             }
             return $query->fetchAll();
         }
-        if(empty($class))
+        if (empty($class))
         {
            HydratorException::show('Veuillez specifier la classe a charger');
         }
@@ -642,11 +664,12 @@ class Query
 
         foreach ($records As $key => $value)
         {
-            if(!isset($hydratedRecords[$key]))
+            if (!isset($hydratedRecords[$key]))
             {
                 $hydratedRecords[$key] = Hydrator::hydrate($value, $class, $dir);
             }
         }
+     
         return $hydratedRecords;
     }
 
@@ -660,7 +683,7 @@ class Query
         $from = [];
         foreach ($this->table As $key => $value)
         {
-            if(is_string($key))
+            if (is_string($key))
             {
                 $from[] = "$key As $value";
             }

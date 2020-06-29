@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.2
  */
 
 
@@ -334,10 +334,10 @@ class Dispatcher
     private function __construct()
     {
         $url = str_replace(Config::get('general.url_suffix'), '', ((new Request)->url ?? null));
-        $current_subsystem = Lister::getCurrentSubSystem($url);
-
         $url = (is_string($url) AND isset($url[-1]) AND $url[-1] != '/') ? $url.'/' : $url;
-        if(!empty($url) AND !empty($current_subsystem))
+        
+        $current_subsystem = Lister::getCurrentSubSystem($url);
+        if (!empty($url) AND !empty($current_subsystem))
         {
             $url = preg_replace('#^'.$current_subsystem.'/?#', '', $url);
         }
@@ -376,5 +376,4 @@ class Dispatcher
         }
         return Chaine::toCamelCase($string);
     }
-
 }

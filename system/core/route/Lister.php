@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage   https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
 
 
@@ -48,9 +48,9 @@ class Lister
         $directories = [];
 
         $elements = new DirectoryIterator($dir);
-        foreach($elements As $element)
+        foreach ($elements As $element)
         {
-            if(false === $element->isDot() AND true === $element->isDir())
+            if (false === $element->isDot() AND true === $element->isDir())
             {
                 $folder = $element->getPathname();
                 $directories[] = str_replace(CONTROLLER_DIR, '', $folder);
@@ -93,28 +93,22 @@ class Lister
      * Verifies if the url contains a subsystem folder.
      *
      * @param string $url Url to parse
-     * @return string|null The current subsystem folder
+     * @return string The current subsystem folder
      */
-    public static function getCurrentSubSystem(?string $url = '') : ?string
+    public static function getCurrentSubSystem(string $url = '') : string
     {
         $currentSubSystem = "";
         $subSystems = self::listFolders();
-
-        if (is_array($subSystems))
-        {
-            foreach ($subSystems As $value)
+       
+        if (is_array($subSystems)) {
+            foreach ($subSystems as $key => $value) 
             {
-                $value = str_replace('/', DS, $value);
-                $temp = substr($url, 0, strlen($value));
-                if ($temp === $value)
+                if (preg_match('#^'.$value.'/#i', $url)) 
                 {
-                    if (strlen($temp) > strlen($currentSubSystem)) {
-                        $currentSubSystem = $temp;
-                    }
+                    $currentSubSystem = $value;
                 }
             }
         }
         return $currentSubSystem;
     }
-
 }
