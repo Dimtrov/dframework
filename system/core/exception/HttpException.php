@@ -19,20 +19,20 @@
  namespace dFramework\core\exception;
 
 /**
- * HydratorException
+ * HttpException
  *
- * Manage exceptions of Hydratation process
+ * Manage exceptions of HTTP Message
  *
  * @package		dFramework
  * @subpackage	Core
  * @category    Exception
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       2.0
- * @file    	/system/core/exception/HydratorException.php
+ * @since       3.0
+ * @file    	/system/core/exception/HttpException.php
  */
 
-class HydratorException extends Exception
+class HttpException extends Exception
 {
     
 }

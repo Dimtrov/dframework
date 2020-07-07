@@ -12,16 +12,17 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
 
-
-namespace dFramework\core\data;
+namespace dFramework\core\http;
 
 use dFramework\core\Config;
 use dFramework\core\exception\Exception;
+use dFramework\core\loader\Service;
 use dFramework\core\utilities\Tableau;
 use dFramework\core\utilities\Utils;
+
 /**
  * Request
  *
@@ -30,14 +31,13 @@ use dFramework\core\utilities\Utils;
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Data
+ * @category    Http
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.1
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/data/Request.php
  */
-
 class Request
 {
     /**
@@ -141,6 +141,15 @@ class Request
         $this->here = $this->base . '/' . $this->url;
     }
 
+    /**
+     * Get an URI object for current request
+     *
+     * @return Uri
+     */
+    public function uri()
+    {
+        return Service::uri();
+    }
 
     /**
      * Get the IP the client is using, or says they are using.
@@ -377,6 +386,16 @@ class Request
         return false;
     }
 
+    /**
+     * Read all HTTP header from the Request information.
+     *
+     * @since 3.2
+     * @return array All header.
+     */
+    public function headers()
+    {
+        return $_SERVER;
+    }
     /**
      * Get the HTTP method used for this request.
      * There are a few ways to specify a method.
@@ -625,7 +644,7 @@ class Request
                 return true;
             }
         }
-        Exception::show('The method\'s <b>'.strtoupper(implode(', ', $methods)).'</b> is not allowed');
+        Exception::show('The method\'s <b>'.strtoupper(implode(', ', $methods)).'</b> is not allowed', 405);
     }
 
 

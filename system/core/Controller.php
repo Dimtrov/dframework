@@ -19,8 +19,8 @@
 namespace dFramework\core;
 
 use dFramework\core\data\Data;
-use dFramework\core\data\Request;
-use dFramework\core\data\Response;
+use dFramework\core\http\Request;
+use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
 use dFramework\core\output\Cache;
 use dFramework\core\output\Layout;
@@ -56,9 +56,13 @@ abstract class Controller
          */
         RESPONSE_OBJECT = 3, 
         /**
+         * Utilisation de l'objet Data
+         */
+        DATA_OBJECT = 4,
+        /**
          * Utilisation de l'objet Cache
          */
-        CACHE_OBJECT = 4;
+        CACHE_OBJECT = 5;
 
     protected 
         /**
@@ -89,8 +93,6 @@ abstract class Controller
     public function __construct()
     {
         $this->getElements();
-
-        $this->data = new Data();
 
         /**
          * Use Request and Response Object automaticaly
@@ -132,6 +134,10 @@ abstract class Controller
             if (self::REQUEST_OBJECT === $value)
             {
                 $this->request = new Request();
+            }
+            if (self::DATA_OBJECT === $value) 
+            {        
+                $this->data = new Data();
             }
             if (self::CACHE_OBJECT === $value)
             {

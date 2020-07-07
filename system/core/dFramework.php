@@ -16,12 +16,12 @@
  * 
  */
 
-
 namespace dFramework\core;
 
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
-use dFramework\core\route\Router;
+use dFramework\core\loader\Service;
+use dFramework\core\router\Router;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
 use Tracy\Debugger;
@@ -89,6 +89,11 @@ class dFramework
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
          */
         Load::init();
+        
+        /**
+         * Demarre le service provider
+         */
+        Service::init();
 
         /**
          * Initialise le routing de l'application. Point d'entrer de l'application

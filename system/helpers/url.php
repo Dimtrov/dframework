@@ -15,9 +15,9 @@
  *  @version    3.2
  */
 
-
-use dFramework\core\data\Request;
+use dFramework\core\http\Request;
 use dFramework\core\Helpers;
+use dFramework\core\router\Router;
 
 /**
  * dFramework Url Helpers
@@ -89,6 +89,22 @@ if (!function_exists('redirect')) {
     {
         header('Location: ' . site_url($uri, $protocol));
         exit(1);
+    }
+}
+
+// ------------------------------------------------------------------------
+
+if (!function_exists('link_to')) {
+    /**
+     * Redirect user
+     *
+     * @param    string $uri
+     * @param    mixed ...$params
+     * @return   string
+     */
+    function link_to(string $uri, ...$params)
+    {
+        return Router::url($uri, $params);
     }
 }
 

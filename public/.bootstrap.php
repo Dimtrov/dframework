@@ -16,7 +16,6 @@
  */
 
 
-
 $config = require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.config.php';
 
 foreach ($config As $key => $value)

@@ -346,7 +346,8 @@ class Tableau
      * @return array Combined array
      * @credit CakePHP - http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::combine
      */
-    public static function combine(array $data, $keyPath, $valuePath = null, $groupPath = null) {
+    public static function combine(array $data, $keyPath, $valuePath = null, $groupPath = null) 
+    {
         if (empty($data)) {
             return array();
         }
@@ -677,12 +678,6 @@ class Tableau
 
 
 
-
-
-
-
-
-
     /**
      * Split token conditions
      *
@@ -843,5 +838,4 @@ class Tableau
             }
         }
     }
-
 }

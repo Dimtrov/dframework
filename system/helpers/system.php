@@ -18,7 +18,7 @@
 
 use dFramework\core\Helpers;
 use dFramework\core\Config;
-use dFramework\core\data\Request;
+use dFramework\core\http\Request;
 
 
 /**
@@ -91,6 +91,7 @@ if(!function_exists('is_online'))
         return (
             !in_array($_SERVER['HTTP_HOST'], ['localhost','127.0.0.1'])
             AND !preg_match('#\.dev$#', $_SERVER['HTTP_HOST'])
+            AND !preg_match('#\.test$#', $_SERVER['HTTP_HOST'])
             AND !preg_match('#\.lab$#', $_SERVER['HTTP_HOST'])
             AND !preg_match('#\.loc(al)?$#', $_SERVER['HTTP_HOST'])
             AND !preg_match('#^192\.168#', $_SERVER['HTTP_HOST'])

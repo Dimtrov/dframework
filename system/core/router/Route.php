@@ -15,8 +15,7 @@
  *  @version    3.2
  */
 
-
-namespace dFramework\core\route;
+namespace dFramework\core\router;
 
 /**
  * Route
@@ -29,7 +28,6 @@ namespace dFramework\core\route;
  * @since       2.0
  * @file        /system/core/route/Route.php
  */
-
 class Route
 {
     /**
@@ -65,11 +63,14 @@ class Route
         $url = trim($url, '/');
         $path = $this->path;
 
-        $path = str_replace('(:num)', '([0-9]+)', $path);
-        $path = str_replace('(:alpha)', '([a-zA-Z]+)', $path);
-        $path = str_replace('(:slug)', '([a-z0-9-]+)', $path);
-        $path = str_replace('(:any)', '([^ /]+)', $path);
-
+        $placeholders = Router::getPlaceholders();
+        foreach ($placeholders As $key => $value) 
+        {
+            if (is_string($key) AND is_string($value))
+            {
+                $path = str_replace('(:'.$key.')', '('.$value.')', $path);
+            }
+        }
         if (!preg_match('#^'.$path.'$#i', $url, $matches))
         {
             return false;
@@ -79,6 +80,10 @@ class Route
         return true;
     }
 
+    public function getPath() : string 
+    {
+        return $this->path;
+    }
 
     /**
      * @throws \ReflectionException
@@ -133,9 +138,19 @@ class Route
     public function getUrl(array $params) : string
     {
         $path = $this->path;
-        foreach ($params as $k => $v)
+        $matches = $this->matches;
+
+        if (preg_match('#\(([\w]+)\)#', $path, $matches))
         {
-            $path = str_replace(":$k", $v, $path);
+            var_dump($matches);
+        }
+
+        exit;
+
+        foreach ($params As $k => $v)
+        {
+            var_dump($k);
+            $path = str_replace("(:$k)", $v, $path);
         }
         return $path;
     }

@@ -19,7 +19,7 @@
  namespace dFramework\core\exception;
 
 use dFramework\core\Config;
-use dFramework\core\data\Response;
+use dFramework\core\http\Response;
 use dFramework\core\output\View;
 
 /**

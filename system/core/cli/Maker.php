@@ -24,7 +24,7 @@ use Ahc\Cli\Output\Writer;
 use dFramework\core\dFramework;
 
 /**
- * Server
+ * Maker
  * Launch the PHP development server
  *
  * @package		dFramework
@@ -32,14 +32,14 @@ use dFramework\core\dFramework;
  * @category    Cli
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
- * @since       3.0
- * @file        /system/core/cli/Server.php
+ * @since       3.2
+ * @file        /system/core/cli/Maker.php
  */
-class Server extends Command
+class Maker extends Command
 {
     public function __construct()
     {
-        parent::__construct('server', 'Service de lancement du serveur de developpemt');
+        parent::__construct('maker', 'Constructeur d\'application CRUD');
 
         $this
             ->option('--host', 'Hote sur lequel votre application sera lancée. "localhost" par defaut', null, 'localhost')

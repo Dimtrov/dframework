@@ -263,7 +263,7 @@ class Entity extends Command
     private function generate()
     {
         try {
-            $tables = (new Query())->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM);
+            $tables = (new Query)->use('default')->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM);
             foreach ($tables As $key => $value) 
             {
                 $tables[$key] = ['tables' => $value[0]];

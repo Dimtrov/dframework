@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
  
@@ -142,9 +142,6 @@ final class Entity extends Generator
         /* Ajout des proprietes de classe */
         $this->addProperties($generator, $properties);
 
-        /* Ajout des functions globales (contructeur et hydratateur) */
-        $this->addGlobalFunctions($generator);
-
         /* Ajout des modificateurs (Getters et Setters) */
         $this->addModifiers($generator, $properties);
 
@@ -182,54 +179,7 @@ final class Entity extends Generator
         fwrite($f, "<?php \n".$render);
         fclose($f);
     }
-
     
-    
-    /**
-     * addGlobalFunctions
-     *
-     * @param  ClassType $generator
-     * @return void
-     */
-    private function addGlobalFunctions(ClassType &$generator)
-    {
-        // Creation du contructeur
-        $m = (new Method('__construct'))
-            ->setPublic()
-            ->addComment("Constructor \n")
-            ->addComment('@param array|null $data')
-            ->setParameters([
-                (new Parameter('data'))
-                ->setNullable()
-                ->setDefaultValue([])
-                ->setType('array')
-            ])
-            ->addBody("parent::__construct();")
-            ->addBody("if (!empty(\$data)) {\n\t\$this->hydrate(\$data); \n}");
-        $generator->addMember($m);
-
-        // Creation de la methode hydrate
-        $hydrate  =  "if (!empty(\$data)) { \n";
-            $hydrate .= "\tforeach (\$data as \$key => \$value) { \n";
-                $hydrate .= "\t\t\$key = self::getProperty(\$key); \n";
-                $hydrate .= "\t\t\$method = 'set'.ucfirst(\$key); \n";
-                $hydrate .= "\t\tif (method_exists(\$this, \$method)) { \n";
-                    $hydrate .= "\t\t\t\$this->{\$method}(\$value);\n";
-                $hydrate .= "\t\t} else { \n";
-                    $hydrate .= "\t\t\t\$this->{\$key} = \$value; \n";
-                $hydrate .= "\t\t}\n";
-            $hydrate .= "\t}\n";
-        $hydrate .= "}";
-        $m = (new Method('hydrate'))
-        ->setPublic()
-        ->addComment('@param array $data')
-        ->setParameters([
-            (new Parameter('data'))
-            ->setType('array')
-        ])
-        ->setBody($hydrate);
-        $generator->addMember($m);
-    }
     
     /**
      * addModifiers

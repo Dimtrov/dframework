@@ -16,7 +16,7 @@
  */
 
 
-namespace dFramework\core\data;
+namespace dFramework\core\http;
 
 use DateTime;
 use DateTimeZone;
@@ -34,16 +34,16 @@ use dFramework\core\exception\Exception;
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Data
+ * @category    Http
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       2.0
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
- * @file        /system/core/data/Response.php
+ * @file        /system/core/http/Response.php
  */
 
 class Response
 {
-
     /**
      * Holds HTTP response statuses
      *
@@ -1248,7 +1248,7 @@ class Response
         }
 
         $defaults = array(
-            'name' => 'CakeCookie[default]',
+            'name' => 'dFCookie[default]',
             'value' => '',
             'expire' => 0,
             'path' => '/',

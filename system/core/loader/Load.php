@@ -218,7 +218,7 @@ class Load
                     Le fichier &laquo; '.$model_path.' &raquo; ne contient pas de classe <b>'.$model.'</b>
                 ');
             }
-            self::loaded('models', $model, DIC::get($model));
+            self::loaded('models', $model, DIC::instance()->get($model));
         }
         return self::get_loaded('models', $model);
     }
@@ -310,7 +310,7 @@ class Load
                     Le fichier &laquo; '.$controller_path.' &raquo; ne contient pas de classe <b>'.$controller.'</b>
                 ');
             }
-            self::loaded('controllers', $controller, DIC::get($controller));
+            self::loaded('controllers', $controller, DIC::instance()->get($controller));
         }
         return self::get_loaded('controllers', $controller);
     }
@@ -390,7 +390,7 @@ class Load
                     Le fichier &laquo; '.$file.' &raquo; ne contient pas de classe <b>'.$library.'</b>
                 ');
             }
-            self::loaded('libraries', $library, DIC::get($library));
+            self::loaded('libraries', $library, DIC::instance()->get($library));
         }
         return self::get_loaded('libraries', $library);
     }

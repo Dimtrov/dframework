@@ -20,7 +20,7 @@ namespace dFramework\core\output;
 
 use dFramework\core\Config;
 use dFramework\core\exception\Exception;
-use dFramework\core\route\Dispatcher;
+use dFramework\core\router\Dispatcher;
 
 /**
  * Cache

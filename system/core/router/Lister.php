@@ -15,8 +15,7 @@
  *  @version    3.2
  */
 
-
-namespace dFramework\core\route;
+namespace dFramework\core\router;
 
 use DirectoryIterator;
 

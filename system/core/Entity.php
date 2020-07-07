@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
 
 
@@ -32,10 +32,62 @@ use dFramework\core\utilities\Chaine;
  * @since       3.1
  * @file		/system/core/Entity.php
  */
-
-class Entity extends Model
+abstract class Entity extends Model
 {
-    
+    protected $table;    
+
+	/**
+	 * Constructor
+	 *
+	 * @param array|null $data
+	 */
+	public function __construct(?array $data = [])
+	{
+		parent::__construct();
+        if (!empty($data)) 
+        {
+			$this->hydrate($data);
+		}
+	}
+	/**
+     * Hydratateur d'objet
+     * 
+	 * @param array $data
+	 */
+	public function hydrate(array $data)
+	{
+        if (!empty($data)) 
+        {
+            foreach ($data as $key => $value) 
+            {
+				$key = self::getProperty($key);
+				$method = 'set'.ucfirst($key);
+                if (method_exists($this, $method)) 
+                {
+					$this->{$method}($value);
+                } 
+                else 
+                {
+					$this->{$key} = $value;
+				}
+			}
+		}
+	}
+
+    public function save()
+    {
+
+    }
+
+    public function get()
+    {
+        $this->db()->select()->from($this->table);
+        foreach ($this->pk As $k) 
+        {
+            $this->where($k . ' = ?')->params([$this->{self::getProperty($k)}]);
+        }
+        return $this->one(DF_FCLA, static::class);
+    }
 
 
 

@@ -17,7 +17,7 @@
 
 namespace dFramework\core\db;
 
-use dFramework\core\exception\HydratorException;
+use dFramework\core\exception\DatabaseException;
 use PDO;
 
 /**
@@ -122,15 +122,17 @@ class Query
      * Définit la configuration de base de données à utiliser
      * 
      * @param string $db_setting
-     * @return void
+     * @return Query
      */
-    public function use(string $db_setting)
+    public function use(string $db_setting) : self
     {
         if (!empty($db_setting) AND $db_setting !== $this->db_setting) 
         {
             $this->db_setting = $db_setting;
             $this->db = new Database($this->db_setting);
         }
+
+        return $this;
     }
     /**
      * Definit la configuration de la base de donnees a utiliser et reinitialise le Query Builder
@@ -657,7 +659,7 @@ class Query
         }
         if (empty($class))
         {
-           HydratorException::show('Veuillez specifier la classe a charger');
+           DatabaseException::show('Veuillez specifier la classe a charger');
         }
         $records = $query->fetchAll(PDO::FETCH_ASSOC);
         $hydratedRecords = [];

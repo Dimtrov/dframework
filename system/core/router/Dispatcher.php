@@ -15,14 +15,13 @@
  *  @version    3.2
  */
 
-
-namespace dFramework\core\route;
+namespace dFramework\core\router;
 
 use dFramework\core\Config;
-use dFramework\core\exception\LoadException;
+use dFramework\core\Controller;
 use dFramework\core\exception\RouterException;
 use dFramework\core\loader\DIC;
-use dFramework\core\data\Request;
+use dFramework\core\loader\Service;
 use dFramework\core\utilities\Chaine;
 use ReflectionMethod;
 
@@ -111,7 +110,7 @@ class Dispatcher
      */
     public static function init()
     {
-        $instance = self::getInstance();
+        $instance = self::instance();
         $instance->parseUrlAndSetAttributes();
 
         $controllerClass = ucfirst($instance->controllerSEOClassName);
@@ -119,10 +118,12 @@ class Dispatcher
 
         $separatorBeforeController = !empty($instance->current_subsystem) ? DS : '';
         $controllerClassFile = str_replace('/', DS, CONTROLLER_DIR.$instance->current_subsystem);
-        if($controllerClassFile[-1] == DS AND $separatorBeforeController == DS)
+        
+        if ($controllerClassFile[-1] == DS AND $separatorBeforeController == DS)
         {
             $controllerClassFile = substr($controllerClassFile, 0, - 1);
         }
+
         $controllerClassFile .= $separatorBeforeController. ucfirst($controllerClass) . 'Controller.php';
         $controllerClass .= 'Controller';
 
@@ -136,7 +137,7 @@ class Dispatcher
      */
     public static function dispatchUrl() : array
     {
-        $instance = self::getInstance();
+        $instance = self::instance();
 
         // Defaults variable 
         $default_controller = Config::get('route.default_controller');
@@ -145,10 +146,11 @@ class Dispatcher
         $method = 'index';
         $methodParameters = [];
 
-        if($instance->current_subsystem == "/") {
+        if ($instance->current_subsystem == "/") 
+        {
             $instance->current_subsystem = "";
         }
-        if(is_string($instance->urlToDispatch) AND (isset($instance->urlToDispatch[-1]) AND  $instance->urlToDispatch[-1] == '/'))
+        if (is_string($instance->urlToDispatch) AND (isset($instance->urlToDispatch[-1]) AND  $instance->urlToDispatch[-1] == '/'))
         {
             $instance->urlToDispatch = substr($instance->urlToDispatch, 0, -1);
         }
@@ -205,9 +207,9 @@ class Dispatcher
         {
             return;
         }
-        $instance = self::getInstance();
+        $instance = self::instance();
 
-        if(!empty($parameters) AND is_array($parameters))
+        if (!empty($parameters) AND is_array($parameters))
         {
             $instance->methodParameters = $parameters;
         }
@@ -215,9 +217,9 @@ class Dispatcher
         $controllerClassFile .= (!preg_match('#\.php$#', $controllerClassFile)) ? '.php' : '';
 
 
-        if(!file_exists($controllerClassFile))
+        if (!file_exists($controllerClassFile))
         {
-            LoadException::except('
+            RouterException::except('
                 Can\'t load controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
                 <br>
                 The file &laquo; '.$controllerClassFile.' &raquo; do not exist
@@ -234,15 +236,15 @@ class Dispatcher
                 The file &laquo; '.$controllerClassFile.' &raquo; do not contain class <b>'.$controllerClass.'</b>
             ', 404);
         }
+        
         else
         {
-            $controller = DIC::get($controllerClass);
+            $controller = DIC::instance()->get($controllerClass);
             if (method_exists($controller, '_remap'))
             {
                 if (is_array($instance->methodParameters))
                 {
-                    // array_unshift($instance->methodParameters, $method);
-					$instance->methodParameters = [$method, $instance->methodParameters];
+            		$instance->methodParameters = [$method, $instance->methodParameters];
                 }
                 else
                 {
@@ -262,7 +264,7 @@ class Dispatcher
         {
             RouterException::except("Access denied to __construct", 403);
         }
-        if (!in_array($reflection->getName(), ['_remap']) AND preg_match('#^_#i', $reflection->getName()))
+        if (!in_array($reflection->getName(), ['_remap', 'before', 'after']) AND preg_match('#^_#i', $reflection->getName()))
         {
             RouterException::except("Access denied to ". $reflection->getName(), 403);
         }
@@ -271,13 +273,13 @@ class Dispatcher
             RouterException::except("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
         }
 
-        if($method !== '_remap')
+        if ($method !== '_remap')
         {
             $parameters = $reflection->getParameters();
             $required_parameters = 0;
             foreach ($parameters AS $parameter)
             {
-                if(true !== $parameter->isOptional()) {
+                if (true !== $parameter->isOptional()) {
                     $required_parameters++;
                 }
             }
@@ -292,9 +294,53 @@ class Dispatcher
             }
         }
 
-        if (count($instance->methodParameters) > 0)
+        return self::runController($controller, $method, $instance->methodParameters);
+    }
+
+    /**
+     * Recupere la classe chargee par la requete
+     *
+     * @return string
+     */
+    public static function getClass() : ?string
+    {
+        return self::instance()->controller_class;
+    }
+    /**
+     * Retourne la methode invoquee
+     *
+     * @return string
+     */
+    public static function getMethod() : ?string
+    {
+        return self::instance()->method;
+    }
+    /**
+     * Recupere le controleur courant
+     *
+     * @return string
+     */
+    public static function getController() : ?string
+    {
+        return trim(self::instance()->current_subsystem, '/');
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param Controller $controller
+     * @param string $method
+     * @param array $parameters
+     * @return void
+     */
+    private static function runController(Controller $controller, string $method, array $parameters = [])
+    {
+        $request = Service::request();
+
+
+        if (count($parameters) > 0)
         {
-            call_user_func_array([$controller, $method], $instance->methodParameters );
+            call_user_func_array([$controller, $method], $parameters);
         }
         else
         {
@@ -303,27 +349,14 @@ class Dispatcher
     }
 
 
-    public static function getClass()
-    {
-        return self::getInstance()->controller_class;
-    }
-    public static function getMethod()
-    {
-        return self::getInstance()->method;
-    }
-    public static function getController()
-    {
-        return trim(self::getInstance()->current_subsystem, '/');
-    }
-
-
     /**
      * @return Dispatcher|null
      */
-    private static function getInstance()
+    private static function instance()
     {
-        if(is_null(self::$_instance)) {
-            self::$_instance = new Dispatcher();
+        if (null === self::$_instance) 
+        {
+            self::$_instance = new self;
         }
         return self::$_instance;
     }
@@ -333,7 +366,7 @@ class Dispatcher
      */
     private function __construct()
     {
-        $url = str_replace(Config::get('general.url_suffix'), '', ((new Request)->url ?? null));
+        $url = str_replace(Config::get('general.url_suffix'), '', Service::request()->url ?? null);
         $url = (is_string($url) AND isset($url[-1]) AND $url[-1] != '/') ? $url.'/' : $url;
         
         $current_subsystem = Lister::getCurrentSubSystem($url);

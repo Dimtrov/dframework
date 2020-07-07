@@ -12,10 +12,9 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
 
- 
 namespace dFramework\core\db;
 
 /**
@@ -31,7 +30,6 @@ namespace dFramework\core\db;
  * @since       3.1
  * @file		/system/core/db/Manager.php
  */
-
 class Manager
 {    
     /**
@@ -49,7 +47,7 @@ class Manager
      */
     public function use(string $db_setting) : Query
     {
-        return $this->db = new Query($db_setting);
+        return $this->db = (new Query)->use($db_setting);
     }
 
     public static function instance(string $db_setting = 'default')

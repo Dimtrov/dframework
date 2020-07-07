@@ -12,13 +12,13 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2
  */
-
  
 namespace dFramework\core\output;
 
 use \dFramework\core\Config;
+use dFramework\core\loader\Service;
 
 /**
  * View
@@ -89,7 +89,7 @@ class View
     {
         $content = '';
 
-        if(stripos($this->view, '/') === 0)
+        if (stripos($this->view, '/') === 0)
         {
             $view = VIEW_DIR.str_replace(' ', '', trim($this->view, '/'));
         }
@@ -100,7 +100,7 @@ class View
         }
         $view = str_replace('/', DS, $view);
 
-        if(true === Config::get('general.use_template_engine'))
+        if (true === Config::get('general.use_template_engine'))
         {
             require_once SYST_DIR.'dependencies'.DS.'smarty'.DS.'Smarty.class.php';
             
@@ -119,7 +119,7 @@ class View
         else 
         {
             $view .= '.php';
-            if(!file_exists($view) OR !is_readable($view))
+            if (!file_exists($view) OR !is_readable($view))
             {
         //            Exception::viewNotFound($view, $e);
             }
@@ -128,7 +128,9 @@ class View
 
             require_once $view;
             $content = ob_get_clean();
-            $content = (Config::get('general.compress_output') === true) ? trim(preg_replace('/\s+/', ' ', $content)) : $content;
+            $content = (Config::get('general.compress_output') === true) 
+                ? trim(preg_replace('/\s+/', ' ', $content)) 
+                : $content;
         }
 
         $this->content = $content;
