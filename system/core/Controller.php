@@ -23,7 +23,6 @@ use dFramework\core\http\Request;
 use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
 use dFramework\core\output\Cache;
-use dFramework\core\output\Layout;
 use dFramework\core\output\View;
 use ReflectionClass;
 
@@ -44,31 +43,23 @@ abstract class Controller
 {
     CONST 
         /**
-         * Utilisation de l'objet Layout
-         */
-        LAYOUT_OBJECT = 1,
-        /**
          * Utilisation de l'objet Request
          */
-        REQUEST_OBJECT = 2,
+        REQUEST_OBJECT = 1,
         /**
          * Utilisation des objet Response
          */
-        RESPONSE_OBJECT = 3, 
+        RESPONSE_OBJECT = 2, 
         /**
          * Utilisation de l'objet Data
          */
-        DATA_OBJECT = 4,
+        DATA_OBJECT = 3,
         /**
          * Utilisation de l'objet Cache
          */
-        CACHE_OBJECT = 5;
+        CACHE_OBJECT = 4;
 
     protected 
-        /**
-         * @var Layout Instance de l'objet Layout
-         */
-        $layout,
         /**
          * @var Request Instance de l'objet Request
          */
@@ -123,10 +114,6 @@ abstract class Controller
     {
         foreach ($object As $value)
         {
-            if (self::LAYOUT_OBJECT === $value)
-            {
-                $this->layout = $this->layout('default');
-            }
             if (self::RESPONSE_OBJECT === $value)
             {
                 $this->response = new Response();
@@ -150,28 +137,22 @@ abstract class Controller
      * Charge une vue
      * 
      * @param string $view
-     * @param array $vars
+     * @param array|null $data
+     * @param array|null $options
      * @return View
      * @throws \ReflectionException
      */
-    final protected function view(string $view, array $vars = []) : View
+    final protected function view(string $view, ?array $data = [], ?array $options = []) : View
     {
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
-        return new View($view, $vars, $path);
-    }
-
-    /**
-     * Charge un template (layout)
-     * 
-     * @param string $layout
-     * @param array|null $data
-     * @return Layout
-     */
-    final protected function layout(string $layout, ?array $data = []): Layout
-    {
-        return new Layout($layout, $data);
+        $view = new View($view, $data, $path, $options);
+        if (!empty($this->layout) AND is_string($this->layout)) {
+            $view->layout($this->layout);
+        }
+        
+        return $view;
     }
 
     /**
@@ -251,7 +232,7 @@ abstract class Controller
      * @return Controller
      * @throws \ReflectionException
      */
-    final protected function setModel(string $model) : self
+     final protected function setModel(string $model) : self
     {
         $this->loadModel($model, 'model');
         return $this;

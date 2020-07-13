@@ -17,7 +17,8 @@
  
 namespace dFramework\core\output;
 
-use \dFramework\core\Config;
+use dFramework\core\Config;
+use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 
 /**
@@ -33,72 +34,474 @@ use dFramework\core\loader\Service;
  * @since       1.0
  * @file		/system/core/output/View.php
  */
-
 class View
 {
-    private $view;
+	/**
+	 * Data that is made available to the Views.
+	 *
+	 * @var array
+	 */
+	protected $data = [];
+	/**
+	 * Cache stats about our performance here,
+
+     * @var array
+	 */
+	protected $performanceData = [];
+	/**
+	 * Number of loaded views
+	 *
+	 * @var integer
+	 */
+	protected $viewsCount = 0;
+
+	/**
+	 * The name of the layout being used, if any.
+	 * Set by the `extend` method used within views.
+	 *
+	 * @var string
+	 */
+	protected $layout;
+
+	/**
+	 * Holds the sections and their data.
+	 *
+	 * @var array
+	 */
+	protected $sections = [];
+
+	/**
+	 * The name of the current section being rendered,
+	 * if any.
+	 *
+	 * @var string
+	 */
+	protected $currentSection;
+
+    protected $options = [];
+
+    /**
+     * Controleur relatif a charger
+     *
+     * @var string
+     */
+    protected $controller = '';
+    /**
+     * Vue a charger
+     *
+     * @var string
+     */
+    protected $view = '';
+    /**
+     * code html du rendu final
+     *
+     * @var string
+     */
+    protected $output = '';
+
     /**
      * @var array
      */
-    private $vars = [];
-
-    private $content = '';
+    protected $_styles = [];
     /**
-     * @var string
+     * @var array
      */
-    private $controller = '';
+    protected $_lib_styles = [];
+    /**
+     * @var array
+     */
+    protected $_scripts = [];
+    /**
+     * @var array
+     */
+    protected $_lib_scripts = [];
+
 
     /**
-     * View constructor.
-     * @param $view
-     * @param array $vars
-     * @param string $controller
+     * Constructeur
+     *
+     * @param string $view
+     * @param array|null $data
+     * @param string|null $controller
+     * @param array|null $options
      */
-    public function __construct($view, array $vars = [], string $controller = '')
+    public function __construct(string $view, ?array $data = [], ?string $controller= '', ?array $options = [])
     {
-        $this->view = preg_replace('#\.(php|tpl|html)$#i', '', $view);
-        $this->vars = $vars;
-        $this->controller = $controller;
-        $this->create();
+        $this->data = (array) $data;
+        $this->options = (array) $options;
+        $this->controller = strtolower(trim($controller, DS));
+        $this->view = $view;
+
+        Load::helper('assets');
     }
 
     /**
-     * show the view in browser
+     * Recupere et retourne le code html de la vue creee
+     *
+     * @param bool $compress
+     * @return string
+     */
+    public function get(bool $compress = true) : string 
+    {    
+        $this->create();
+        return $this->compressView($this->output, $compress);
+    }
+    /**
+     * Affiche la vue generee au navigateur
+     * 
+     * @return void
      */
     public function render()
     {
         echo $this->get(Config::get('general.environment') !== 'dev');
     }
+    
+	/**
+	 * Used within layout views to include additional views.
+	 *
+	 * @param string     $view
+	 * @param array|null $options
+	 * @return string
+	 */
+	public function insert(string $view, array $options = null): string
+	{
+        return $this->compressView(
+            $this->makeView($view, $options), 
+            Config::get('general.environment') !== 'dev'
+        );
+	}
+    /**
+	 * Specifies that the current view should extend an existing layout.
+	 *
+	 * @param string $layout
+	 * @return void
+	 */
+	public function layout(string $layout)
+	{
+        $this->layout = $layout;
+    }
 
     /**
-	 * Return the code of some view
+	 * Starts holds content for a section within the layout.
 	 *
-     * @param bool $compress
-     * @return string
+	 * @param string $name
+	 */
+	public function start(string $name)
+	{
+		$this->currentSection = $name;
+
+		ob_start();
+	}
+	/**
+	 *
+	 *
+	 * @throws \Laminas\Escaper\Exception\RuntimeException
+	 */
+	public function stop()
+	{
+		$contents = ob_get_clean();
+
+		if (empty($this->currentSection))
+		{
+			throw new \RuntimeException('View themes, no current section.');
+		}
+
+		// Ensure an array exists so we can store multiple entries for this.
+		if (! array_key_exists($this->currentSection, $this->sections))
+		{
+			$this->sections[$this->currentSection] = [];
+		}
+		$this->sections[$this->currentSection][] = $contents;
+
+		$this->currentSection = null;
+    }
+    
+    /**
+	 * Renders a section's contents.
+	 *
+	 * @param string $sectionName
+	 */
+	public function show(string $sectionName)
+	{
+		if (! isset($this->sections[$sectionName]))
+		{
+			echo '';
+
+			return;
+		}
+
+        $start = $end = '' ;
+        if ($sectionName === 'css')
+        {
+            $start = "<style type=\"text/css\">\n";
+            $end   = "</style>\n";
+        }
+        if ($sectionName === 'js')
+        {
+            $start = "<script type=\"text/javascript\">\n";
+            $end = "</script>\n";
+        }
+
+        echo $start;
+		foreach ($this->sections[$sectionName] As $key => $contents)
+		{
+			echo $contents;
+			unset($this->sections[$sectionName][$key]);
+        }
+        echo $end;
+
+        return;
+    }
+    /**
+     * Affichage rapide du contenu principal
+     *
+     * @return void
      */
-    public function get($compress = true)
+    public function renderView()
     {
-        return ($compress) ? trim(preg_replace('/\s+/', ' ', $this->content)) : $this->content;
+        $this->show('content');
+    }
+
+    /**
+	 * Sets several pieces of view data at once.
+	 *
+	 * @param array  $data
+	 * @return self
+	 */
+	public function addData(array $data = []): self
+	{
+		$this->data = array_merge($this->data, $data);
+
+		return $this;
+	}
+	/**
+	 * Sets a single piece of view data.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return View
+	 */
+	public function setVar(string $name, $value = null): self
+	{
+		$this->data[$name] = $value;
+
+		return $this;
+	}
+    /**
+	 * Removes all of the view data from the system.
+	 *
+	 * @return View
+	 */
+	public function resetData(): self
+	{
+		$this->data = [];
+
+		return $this;
+	}
+	/**
+	 * Returns the current data that will be displayed in the view.
+	 *
+	 * @return array
+	 */
+	public function getData(): array
+	{
+		return $this->data;
+	}
+
+	/**
+	 * Returns the performance data that might have been collected
+	 * during the execution. Used primarily in the Debug Toolbar.
+	 *
+	 * @return array
+	 */
+	public function getPerformanceData(): array
+	{
+		return $this->performanceData;
+	}
+
+    /**
+     * Ajoute un fichier css de librairie a la vue
+     * 
+     * @param string ...$src
+     * @return self
+     */
+    public function addLibCss(string ...$src) : self
+    {
+        foreach ($src As $var)
+        {
+            if (!isset($this->_lib_styles) OR (isset($this->_lib_styles) AND !in_array($var, $this->_lib_styles)))
+            {
+                $this->_lib_styles[] = $var;
+            }
+        }
+
+        return $this;
+    }
+    /**
+     * Ajoute un fichier css a la vue
+     * 
+     * @param string ...$src
+     * @return self
+     */
+    public function addCss(string ...$src) : self
+    {
+        foreach ($src As $var)
+        {
+            if (!isset($this->_styles) OR (isset($this->_styles) AND !in_array($var, $this->_styles)))
+            {
+                $this->_styles[] = $var;
+            }
+        }
+
+        return $this;
+    }
+    /**
+     * Compile les fichiers de style de l'instance et genere les link:href vers ceux-ci
+     *
+     * @param string|null $style_group
+     * @return void
+     */
+    public function stylesBundle(?string $style_group = null)
+    {
+        $style_group = empty($style_group) ? $this->layout : $style_group;
+        
+        $lib_styles = array_merge(
+            (array) Config::get('layout.'.$style_group.'.lib_styles'), 
+            $this->_lib_styles ?? []
+        );
+        if (!empty($lib_styles))
+        {
+            lib_styles($lib_styles);
+        }
+
+        $styles = array_merge(
+            (array) Config::get('layout.'.$style_group.'.styles'), 
+            $this->_styles ?? []
+        );
+        if (!empty($styles))
+        {
+            styles($styles);
+        }
+
+        $this->show('css');
+    }
+
+    /**
+     * Ajoute un fichier js de librairie a la vue
+     * 
+     * @param string ...$src
+     * @return self
+     */
+    public function addLibJs(string ...$src): self
+    {
+        foreach ($src As $var)
+        {
+            if (!isset($this->_lib_scripts) OR (isset($this->_lib_scripts) AND !in_array($var, $this->_lib_scripts)))
+            {
+                $this->_lib_scripts[] = $var;
+            }
+        }
+
+        return $this;
+    }
+    /**
+     * Ajoute un fichier js a la vue
+     * 
+     * @param string ...$src
+     * @return self
+     */
+    public function addJs(string ...$src) : self
+    {
+        foreach ($src As $var)
+        {
+            if (!isset($this->_scripts) OR (isset($this->_scripts) AND !in_array($var, $this->_scripts)))
+            {
+                $this->_scripts[] = $var;
+            }
+        }
+
+        return $this;
+    }
+    /**
+     * Compile les fichiers de script de l'instance et genere les link:href vers ceux-ci
+     *
+     * @param string|null $script_group
+     * @return void
+     */
+    public function scriptsBundle(?string $script_group = null) : void
+    {
+        $script_group = ($script_group === null) ? $this->layout : $script_group;
+        
+        $lib_scripts = array_merge(
+            (array) Config::get('layout.'.$script_group.'.lib_scripts'), 
+            $this->_lib_scripts ?? []
+        );
+        if (!empty($lib_scripts))
+        {
+            lib_scripts($lib_scripts);
+        }
+
+        $scripts = array_merge(
+            (array) Config::get('layout.'.$script_group.'.scripts'), 
+            $this->_scripts ?? []
+        );
+        if (!empty($scripts))
+        {
+            scripts($scripts);
+        }
+        
+        $this->show('js');
     }
 
 
+    //--------------------------------------------------------------------
+    
     /**
-     * Make a view
+	 * Logs performance data for rendering a view.
+	 *
+	 * @param float  $start
+	 * @param float  $end
+	 * @param string $view
+	 */
+	protected function logPerformance(float $start, float $end, string $view)
+	{
+		$this->performanceData[] = [
+			'start' => $start,
+			'end'   => $end,
+			'view'  => $view,
+		];
+	}
+    
+    /**
+     * Permet de lancer la creation de la vue 
+     *
+     * @return void
      */
     private function create()
     {
-        $content = '';
+        $this->output = $this->makeView($this->view, $this->options); 
+    }
+    /**
+     * Cree une vue demandee et retourne son code html
+     *
+     * @param string $view
+     * @param array $options
+     * @param string $viewPath
+     * @return string
+     */
+    private function makeView(string $view, array $options = null, string $viewPath = VIEW_DIR) : string
+    {
+        $view = preg_replace('#\.(php|tpl|html?)$#i', '', $view);
+        $this->renderVars['start'] = microtime(true);
+        $this->renderVars['view']    = $view;
+		$this->renderVars['options'] = $options;
 
-        if (stripos($this->view, '/') === 0)
+        $this->renderVars['file'] = $viewPath.str_replace(' ', '', trim($view, '/'));            
+        if ($viewPath === VIEW_DIR AND stripos($view, '/') !== 0)
         {
-            $view = VIEW_DIR.str_replace(' ', '', trim($this->view, '/'));
+            $this->renderVars['file'] = rtrim($viewPath.$this->controller.DS, DS).DS.str_replace(' ', '', $view);
         }
-        else
-        {
-            $this->controller = strtolower(trim($this->controller, DS));
-            $view = rtrim(VIEW_DIR.$this->controller.DS, DS).DS.str_replace(' ', '', $this->view);
-        }
-        $view = str_replace('/', DS, $view);
+        $this->renderVars['file'] = str_replace('/', DS, $this->renderVars['file']);
 
         if (true === Config::get('general.use_template_engine'))
         {
@@ -113,26 +516,79 @@ class View
             $smarty->caching = true;
             $smarty->compile_check = true;
        
-            $smarty->assign($this->vars);
-            $smarty->display(str_replace(VIEW_DIR, '', $view).'.tpl');
+            $smarty->assign($this->getData());
+            $smarty->display(str_replace($viewPath, '', $this->renderVars['file']).'.tpl');
+
+            return '';
         }
-        else 
+        $this->renderVars['file'] .= '.php';
+        
+        // Was it cached?
+		if (isset($this->renderVars['options']['cache_name']))
+		{
+			if ($output = Service::cache()->read($this->renderVars['options']['cache_name']))
+			{
+				$this->logPerformance($this->renderVars['start'], microtime(true), $this->renderVars['view']);
+				return $output;
+			}
+		}
+
+        
+        if (! is_file($this->renderVars['file']))
         {
-            $view .= '.php';
-            if (!file_exists($view) OR !is_readable($view))
-            {
-        //            Exception::viewNotFound($view, $e);
-            }
-            ob_start();
-            extract($this->vars);
+            throw new \Exception('View not found');
+        }    
+                
+        // Make our view data available to the view.
+        extract($this->data);
 
-            require_once $view;
-            $content = ob_get_clean();
-            $content = (Config::get('general.compress_output') === true) 
-                ? trim(preg_replace('/\s+/', ' ', $content)) 
-                : $content;
+        ob_start();
+        include_once($this->renderVars['file']); // PHP will be processed
+        $output = ob_get_contents();
+        @ob_end_clean();
+        
+        if (! is_null($this->layout) AND empty($this->currentSection))
+		{
+			$layoutView   = $this->layout;
+			$this->layout = null;
+			$output       = $this->makeView(
+                trim($layoutView, '/'), 
+                $options, 
+                LAYOUT_DIR
+            );
+		}
+
+		$this->logPerformance($this->renderVars['start'], microtime(true), $this->renderVars['view']);
+
+        if (isset($this->renderVars['options']['compress_output']) AND $this->renderVars['options']['compress_output'] === true)
+        {
+            $output = $this->compressView($output, true);
         }
+        else {
+            $output = $this->compressView($output, Config::get('general.compress_output'));
+        }
+        
+        // Should we cache?
+		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
+		{
+            Service::cache()->write(
+                $this->renderVars['options']['cache_name'], 
+                $output, 
+                (int) $this->renderVars['options']['cache_time']
+            );
+		}
 
-        $this->content = $content;
+        return $output;
+    }
+    /**
+     * Compresse le code html d'une vue
+     *
+     * @param string $output
+     * @param boolean $compress
+     * @return string
+     */
+    private function compressView(string $output, bool $compress = true) : string 
+    {
+        return ($compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
     }
 }

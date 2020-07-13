@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2
  */
-
  
 namespace dFramework\core\output;
 
@@ -59,12 +58,6 @@ class Cache
     private $buffer = '';
 
     /**
-     * Cache constructor.
-     */
-    public function __construct() {}
-
-
-    /**
      * @param array $options
      * @throws Exception
      */
@@ -90,9 +83,14 @@ class Cache
      * @param string $content
      * @return bool|int
      */
-    public function write(string $label, string $content)
+    public function write(string $label, string $content, ?int $cache_time = null)
     {
-        return file_put_contents($this->cache_dir . $this->safe_filename($label) . $this->cache_ext, $content);
+        $content = (empty($cache_time) ? $this->cache_time : $cache_time).';'.$content;
+        
+        return file_put_contents(
+            $this->cache_dir . $this->safe_filename($label) . $this->cache_ext, 
+            $content
+        );
     }
 
     /**
@@ -104,8 +102,14 @@ class Cache
         if($this->is_cached($label))
         {
             $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
-            return file_get_contents($filename);
+        
+            $content = file_get_contents($filename);
+            $content = explode(';', $content);
+            array_shift($content);
+
+            return join(';', $content);
         }
+
         return false;
     }
 
@@ -117,6 +121,7 @@ class Cache
     public function remove(string $label)
     {
         $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
+        
         if(file_exists($filename))
         {
             unlink($filename);
@@ -128,6 +133,7 @@ class Cache
     public function clear()
     {
         $files = glob(rtrim($this->cache_dir, DS).DS.'*');
+        
         foreach ($files As $file)
         {
             unlink($file);

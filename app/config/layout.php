@@ -4,6 +4,7 @@
 $layout['default'] = [
     // fichiers de style des plugins
     'lib_styles' => [
+        
     ],
     // fichiers de script des plugins
     'lib_scripts' => [

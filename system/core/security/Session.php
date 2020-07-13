@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2
  */
-
 
 namespace dFramework\core\security;
 
@@ -34,7 +33,6 @@ use dFramework\core\Config;
  * @file        /system/core/security/Session.php
  * @credit      PHP-Session - By Josantonius <https://github.com/Josantonius/PHP-Session>
  */
-
 class Session
 {
     /**
@@ -85,21 +83,23 @@ class Session
         {
             $config = Config::get('data.session');
             
-	        session_name('df_app_sessions');
-            session_cache_limiter($config['cache_limiter']);
+	        session_cache_limiter($config['cache_limiter']);
             session_set_cookie_params(0, '/');
-            if('nocache' != $config['cache_limiter'])
+            
+            if ('nocache' != $config['cache_limiter'])
             {
                 session_cache_expire($config['lifetime']);
             }
             session_start();
             
-            if(!isset($_SESSION[self::$prefix]))
+            if (!isset($_SESSION[self::$prefix]))
             {
                 $_SESSION[self::$prefix] = [];
             }
+
             return self::$sessionStarted = true;
         }
+
         return false;
     }
 
@@ -128,24 +128,25 @@ class Session
 
             $session_crypt = Config::get('data.session.crypt');
             
-            if($count == 1) {
+            if ($count == 1) {
                 $session[$key[0]] = $value;
             }
-            if($count == 2) {
+            if ($count == 2) {
                 $session[$key[0]][$key[1]] = $value;
             }
-            if($count == 3) {
+            if ($count == 3) {
                 $session[$key[0]][$key[1]][$key[2]] = $value;
             }
-            if($count == 4) {
+            if ($count == 4) {
                 $session[$key[0]][$key[1]][$key[2]][$key[3]] = $value;
             }
-            if($count == 5) {
+            if ($count == 5) {
                 $session[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]] = $value;
             }
 
             $_SESSION[self::$prefix] = $session;
         }
+
         return true;
     }
 
@@ -166,26 +167,27 @@ class Session
         $key = explode('.', $key);
         $count = count($key);
 
-        if($count == 1) 
+        if ($count == 1) 
         {
             return $session[$key[0]] ?? null;
         }
-        if($count == 2) 
+        if ($count == 2) 
         {
             return $session[$key[0]][$key[1]] ?? null;
         }
-        if($count == 3) 
+        if ($count == 3) 
         {
             return $session[$key[0]][$key[1]][$key[2]] ?? null;
         }
-        if($count == 4) 
+        if ($count == 4) 
         {
             return $session[$key[0]][$key[1]][$key[2]][$key[3]] ?? null;
         }
-        if($count == 5) 
+        if ($count == 5) 
         {
             return $session[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]] ?? null;
         }
+
         return null;
     }
 
@@ -205,6 +207,7 @@ class Session
 
             return $value;
         }
+
         return null;
     }
 
@@ -252,7 +255,7 @@ class Session
      */
     public static function destroy($key = '', $prefix = true) : bool
     {
-        if(empty($key) AND null === $prefix)
+        if (empty($key) AND null === $prefix)
         {
             session_unset();
             session_destroy();
@@ -263,15 +266,16 @@ class Session
         {
             if (empty($key)) 
             {
-                if(true === $prefix) 
+                if (true === $prefix) 
                 {
                     $pref = self::$prefix;
                 }
-                else if(is_string($prefix))
+                else if (is_string($prefix))
                 {
                     $pref = $prefix;
                 }
-                if(isset($pref))
+
+                if (isset($pref))
                 {
                     foreach ($_SESSION As $index => $value) 
                     {
@@ -286,9 +290,10 @@ class Session
             {
                unset($_SESSION[self::$prefix][$key]);
             }
+
             return true;
         }
+
         return false;
     }
-
 }
