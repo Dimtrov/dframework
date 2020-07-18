@@ -1,12 +1,13 @@
 <?php
+
+use Kint\Kint;
+
 class HomeController extends dFramework\core\Controller
 {
+	protected $layout = 'default';
+
 	public function index()
 	{
-		$this->view('index', null, [
-			'cache_name' => 'homepage',
-			'cache_time' => 2,
-			'compress_output' => true
-		])->render();
+		$this->view('index', ['title' => 'sss'])->render();
 	}
 }

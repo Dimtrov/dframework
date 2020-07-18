@@ -18,6 +18,7 @@
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
+use dFramework\core\exception\LoadException;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 
@@ -165,6 +166,16 @@ class View
 	 */
 	public function insert(string $view, array $options = null): string
 	{
+        $view = preg_replace('#\.php$#i', '', $view).'.php';
+        $view = str_replace(' ', '', $view);
+        if ($view[0] !== '/') 
+        {
+            if (!file_exists(rtrim(VIEW_DIR.$this->controller.DS, DS).DS.$view) AND file_exists(VIEW_DIR.'partials'.DS.$view)) 
+            {
+                $view = '/partials/'.$view;
+            }
+        }
+
         return $this->compressView(
             $this->makeView($view, $options), 
             Config::get('general.environment') !== 'dev'
@@ -536,7 +547,7 @@ class View
         
         if (! is_file($this->renderVars['file']))
         {
-            throw new \Exception('View not found');
+            throw new LoadException('Le fichier "'.$this->renderVars['file'].'" n\'exite pas', 404);
         }    
                 
         // Make our view data available to the view.

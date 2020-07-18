@@ -24,10 +24,10 @@ define('RESOURCE_DIR', APP_DIR . 'resources' . DS);
 /*
  * Database constants
 */
-define('DF_FOBJ', 1); // fetch_obj
-define('DF_FARR', 2); // fetch_array
-define('DF_FNUM', 3); // fetch_num
-define('DF_FCLA', 4); // fetch_class
+define('DF_FOBJ', PDO::FETCH_OBJ); // fetch_obj
+define('DF_FARR', PDO::FETCH_ASSOC); // fetch_array
+define('DF_FNUM', PDO::FETCH_NUM); // fetch_num
+define('DF_FCLA', PDO::FETCH_CLASS); // fetch_class
 
 /*
  * Les Modules pour les exceptions

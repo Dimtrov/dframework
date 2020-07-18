@@ -13,10 +13,9 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.1
  */
 
- 
 /*
  * --------------------------------------------------------------------
  * dFramework Command Line Interface
@@ -32,6 +31,7 @@ $app = new Ahc\Cli\Application('dFramework', dFramework\core\dFramework::VERSION
 
 $app->add(new dFramework\core\cli\Server, 'serve')
     ->add(new dFramework\core\cli\Mapper, 'map')
+    ->add(new dFramework\core\cli\Tester, 'test')
     ->add(new dFramework\core\cli\Less)
     ->add(new dFramework\core\cli\Entity)
     ->add(new dFramework\core\cli\Migrate);

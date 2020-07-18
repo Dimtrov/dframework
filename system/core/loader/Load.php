@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.1
  */
-
 
 namespace dFramework\core\loader;
 
@@ -78,7 +77,7 @@ class Load
         }
 
         $autoload = array_merge([
-            'system', 'url', 'assets'
+            'system',
         ], $autoload['helpers'] ?? []);
 
         foreach ($autoload As $load)

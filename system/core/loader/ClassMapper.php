@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2.1
  */
-
 
 namespace dFramework\core\loader;
 
@@ -191,6 +190,7 @@ class ClassMapper
 				$this->classes_map = array_merge($this->classes_map, $classes_map);
 			}
 		}
+		
 		return $this;
 	}
 

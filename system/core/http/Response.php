@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.1
  */
-
 
 namespace dFramework\core\http;
 
@@ -41,7 +40,6 @@ use dFramework\core\exception\Exception;
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/http/Response.php
  */
-
 class Response
 {
     /**
@@ -323,8 +321,8 @@ class Response
      *
      * @var string
      */
-    protected $_protocol = 'HTTP/1.1';
-
+    protected $_protocol = 'HTTP/1.1'; 
+    
     /**
      * Status code to send to the client
      *
@@ -401,20 +399,30 @@ class Response
      *    - charset: the charset for the response body
      * @throws Exception
      */
-    public function __construct(array $options = array()) {
-        if (isset($options['body'])) {
+    public function __construct(array $options = array()) 
+    {
+        if (isset($options['body'])) 
+        {
             $this->body($options['body']);
         }
-        if (isset($options['statusCodes'])) {
+        if (isset($options['statusCodes'])) 
+        {
             $this->httpCodes($options['statusCodes']);
         }
-        if (isset($options['status'])) {
+        if (isset($options['status'])) 
+        {
             $this->statusCode($options['status']);
         }
-        if (isset($options['type'])) {
+        if (isset($options['protocol'])) 
+        {
+            $this->protocol($options['protocol']);
+        }
+        if (isset($options['type'])) 
+        {
             $this->type($options['type']);
         }
-        if (!isset($options['charset'])) {
+        if (!isset($options['charset'])) 
+        {
             $options['charset'] = Config::get('general.charset');
         }
         $this->charset($options['charset']);
@@ -427,8 +435,10 @@ class Response
      * @return void
      * @throws Exception
      */
-    public function send() {
-        if (isset($this->_headers['Location']) && $this->_status === 200) {
+    public function send() 
+    {
+        if (isset($this->_headers['Location']) AND $this->_status === 200) 
+        {
             $this->statusCode(302);
         }
 
@@ -438,15 +448,16 @@ class Response
         $this->_setContent();
         $this->_setContentLength();
         $this->_setContentType();
-        foreach ($this->_headers as $header => $values) {
-            foreach ((array)$values as $value) {
-                $this->_sendHeader($header, $value);
-            }
-        }
-        if ($this->_file) {
+        
+        $this->sendHeaders();
+
+        if ($this->_file) 
+        {
             $this->_sendFile($this->_file, $this->_fileRange);
             $this->_file = $this->_fileRange = null;
-        } else {
+        } 
+        else 
+        {
             $this->_sendContent($this->_body);
         }
     }
@@ -458,8 +469,10 @@ class Response
      *
      * @return void
      */
-    protected function _setCookies() {
-        foreach ($this->_cookies as $name => $c) {
+    protected function _setCookies() 
+    {
+        foreach ($this->_cookies As $name => $c) 
+        {
             setcookie(
                 $name, $c['value'], $c['expire'], $c['path'],
                 $c['domain'], $c['secure'], $c['httpOnly']
@@ -545,6 +558,21 @@ class Response
             }
         }
     }
+    /**
+     * Compile and send all headers to the client
+     *
+     * @return void
+     */
+    public function sendHeaders()
+    {
+        foreach ($this->_headers as $header => $values) 
+        {
+            foreach ((array)$values as $value) 
+            {
+                $this->_sendHeader($header, $value);
+            }
+        }
+    }
 
     /**
      * Sends a content string to the client.
@@ -583,16 +611,21 @@ class Response
      * @param string|array $value The header value(s)
      * @return array list of headers to be sent
      */
-    public function header($header = null, $value = null) {
-        if ($header === null) {
+    public function header($header = null, $value = null) 
+    {
+        if ($header === null) 
+        {
             return $this->_headers;
         }
         $headers = is_array($header) ? $header : array($header => $value);
-        foreach ($headers as $header => $value) {
-            if (is_numeric($header)) {
+        foreach ($headers as $header => $value) 
+        {
+            if (is_numeric($header)) 
+            {
                 list($header, $value) = array($value, null);
             }
-            if ($value === null) {
+            if ($value === null) 
+            {
                 list($header, $value) = explode(':', $header, 2);
             }
             $this->_headers[$header] = is_array($value) ? array_map('trim', $value) : trim($value);
@@ -605,17 +638,96 @@ class Response
      *
      * Get/Set the Location header value.
      *
-     * @param null|string $url Either null to get the current location, or a string to set one.
+     * @param null|string $url Either null to get the current location, or a string to set one.\
+     * @param null|int $code HTTP status code
      * @return string|null When setting the location null will be returned. When reading the location
      *    a string of the current location header value (if any) will be returned.
      */
-    public function location($url = null) {
-        if ($url === null) {
+    public function location(?string $url = null, ?int $code = 302) 
+    {
+        if ($url === null) 
+        {
             $headers = $this->header();
             return isset($headers['Location']) ? $headers['Location'] : null;
         }
-        $this->header('Location', $url);
+
+        return $this->redirect($url, 'location', $code);
     }
+    
+    /**
+     * Accessor for the refresh header.
+     *
+     * Get/Set the Refresh header value.
+     *
+     * @param null|string $url Either null to get the current location, or a string to set one.\
+     * @param null|int $code HTTP status code
+     * @return string|null When setting the location null will be returned. When reading the location
+     *    a string of the current location header value (if any) will be returned.
+     */
+    public function refresh(?string $url = null, ?int $code = null) 
+    {
+        if ($url === null) 
+        {
+            $headers = $this->header();
+            return isset($headers['Refresh']) ? $headers['Refresh'] : null;
+        }
+
+        return $this->redirect($url, 'refresh', $code);
+    }
+    
+    /**
+	 * Header Redirect
+	 *
+	 * Header redirect in two flavors
+	 * For very fine grained control over headers, you could use the Output
+	 * Library's set_header() function.
+	 *
+	 * @param	string	$uri	URL
+	 * @param	string	$method	Redirect method
+	 *			'auto', 'location' or 'refresh'
+	 * @param	int	$code	HTTP Response status code
+	 * @return	void
+	 */
+	public function redirect($uri = '', $method = 'auto', $code = NULL)
+	{
+		if ( ! preg_match('#^(\w+:)?//#i', $uri))
+		{
+			$uri = site_url($uri);
+		}
+
+		// IIS environment likely? Use 'refresh' for better compatibility
+		if ($method === 'auto' && isset($_SERVER['SERVER_SOFTWARE']) && strpos($_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS') !== FALSE)
+		{
+			$method = 'refresh';
+		}
+		elseif ($method !== 'refresh' && (empty($code) OR ! is_numeric($code)))
+		{
+			if (isset($_SERVER['SERVER_PROTOCOL'], $_SERVER['REQUEST_METHOD']) && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.1')
+			{
+				$code = ($_SERVER['REQUEST_METHOD'] !== 'GET')
+					? 303	// reference: http://en.wikipedia.org/wiki/Post/Redirect/Get
+					: 307;
+			}
+			else
+			{
+				$code = 302;
+			}
+		}
+
+		switch ($method)
+		{
+			case 'refresh':
+				$this->header('Refresh', '0;url=' . $uri);
+				break;
+			default:
+				$this->header('Location', $uri);
+				break;
+		}
+
+        $this->statusCode($code);
+        $this->sendHeaders();
+        exit(1);
+	}
 
     /**
      * Buffers the response message to be sent
@@ -624,8 +736,10 @@ class Response
      * @param string $content the string message to be sent
      * @return string current message buffer if $content param is passed as null
      */
-    public function body($content = null) {
-        if ($content === null) {
+    public function body($content = null) 
+    {
+        if ($content === null) 
+        {
             return $this->_body;
         }
         return $this->_body = $content;
@@ -639,8 +753,10 @@ class Response
      * @return int current status code
      * @throws Exception
      */
-    public function statusCode($code = null) {
-        if ($code === null) {
+    public function statusCode($code = null) 
+    {
+        if ($code === null) 
+        {
             return $this->_status;
         }
         if (!isset($this->_statusCodes[$code])) {
@@ -680,20 +796,25 @@ class Response
      *    strings as values, or null of the given $code does not exist.
      * @throws Exception
      */
-    public function httpCodes($code = null) {
-        if (empty($code)) {
+    public function httpCodes($code = null) 
+    {
+        if (empty($code)) 
+        {
             return $this->_statusCodes;
         }
-        if (is_array($code)) {
+        if (is_array($code)) 
+        {
             $codes = array_keys($code);
             $min = min($codes);
-            if (!is_int($min) || $min < 100 || max($codes) > 999) {
+            if (!is_int($min) || $min < 100 || max($codes) > 999) 
+            {
                 throw new Exception('Invalid status code');
             }
             $this->_statusCodes = $code + $this->_statusCodes;
             return true;
         }
-        if (!isset($this->_statusCodes[$code])) {
+        if (!isset($this->_statusCodes[$code])) 
+        {
             return null;
         }
         return array($code => $this->_statusCodes[$code]);
@@ -1127,8 +1248,10 @@ class Response
      * @param string $protocol Protocol to be used for sending response.
      * @return string protocol currently set
      */
-    public function protocol($protocol = null) {
-        if ($protocol !== null) {
+    public function protocol($protocol = null) 
+    {
+        if ($protocol !== null) 
+        {
             $this->_protocol = $protocol;
         }
         return $this->_protocol;

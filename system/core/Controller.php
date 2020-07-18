@@ -18,7 +18,6 @@
 
 namespace dFramework\core;
 
-use dFramework\core\data\Data;
 use dFramework\core\http\Request;
 use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
@@ -51,13 +50,9 @@ abstract class Controller
          */
         RESPONSE_OBJECT = 2, 
         /**
-         * Utilisation de l'objet Data
-         */
-        DATA_OBJECT = 3,
-        /**
          * Utilisation de l'objet Cache
          */
-        CACHE_OBJECT = 4;
+        CACHE_OBJECT = 3;
 
     protected 
         /**
@@ -121,10 +116,6 @@ abstract class Controller
             if (self::REQUEST_OBJECT === $value)
             {
                 $this->request = new Request();
-            }
-            if (self::DATA_OBJECT === $value) 
-            {        
-                $this->data = new Data();
             }
             if (self::CACHE_OBJECT === $value)
             {

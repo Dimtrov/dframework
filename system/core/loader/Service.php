@@ -6,6 +6,7 @@ use dFramework\core\http\Request;
 use dFramework\core\http\Response;
 use dFramework\core\http\Uri;
 use dFramework\core\output\Cache;
+use dFramework\core\utilities\Helpers;
 
 class Service 
 {
@@ -31,6 +32,7 @@ class Service
     private function addServices()
     {
         $this->dic
+            ->addInstance(new Helpers,  'helpers')
             ->addInstance(new Request,  'request')
             ->addInstance(new Response, 'response')
             ->addInstance(new Uri,      'uri')
