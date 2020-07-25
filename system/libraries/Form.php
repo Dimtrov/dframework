@@ -15,7 +15,7 @@
  * @version     3.2
  */
 
-use dFramework\core\data\Request;
+use dFramework\core\http\Request;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Tableau;
 
@@ -401,10 +401,10 @@ HTML;
         $key = $this->makeKey($key);
         $type = strtolower(($type));
         $value = ($type == 'password') ? null : 'value="'.$this->getValue($key).'"';
-        
-        return <<<HTML
+		
+		return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label)}
+                {$this->getLabel($key, $label, isset($attributes['required']))}
                 <input type="{$type}" name="{$key}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
@@ -503,7 +503,7 @@ HTML;
 
         return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label)}
+                {$this->getLabel($key, $label, isset($attributes['required']))}
                 <textarea name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$this->getValue($key)}</textarea>
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
@@ -569,7 +569,7 @@ HTML;
         }
         return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label)}
+                {$this->getLabel($key, $label, isset($attributes['required']))}
                 <select name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$r}</select>
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
@@ -743,11 +743,16 @@ HTML;
      *
      * @param string $key Cle du champ dont on veut avoir le label
      * @param false|null|string $label Le label par default
+	 * @param bool $required 
      * @return string
      */
-    protected function getLabel(string $key, $label) : string
+    protected function getLabel(string $key, $label, bool $required = false) : string
     {
-        return (false === $label) ? '' : '<label for="field_'.$key.'" class="form-label">'.ucfirst($label ?? $key).'</label>';
+		$required = (true === $required) 
+			? '<small class="text-danger">*</small>'
+			: '';
+        return (false === $label) ? '' : 
+			'<label for="field_'.$key.'" class="form-label">'.ucfirst($label ?? $key).' '.$required.'</label>';
     }
     /**
      * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire 

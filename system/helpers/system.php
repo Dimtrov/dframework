@@ -15,6 +15,7 @@
  *  @version    3.2.1
  */
 
+use dFramework\core\http\Input;
 use dFramework\core\http\Request;
 use dFramework\core\http\Response;
 use dFramework\core\http\Uri;
@@ -68,7 +69,7 @@ if (!function_exists('esc'))
 	}
 }
 
-if (! function_exists('helper'))
+if (!function_exists('helper'))
 {
 	/**
 	 * Loads a helper file into memory. Supports namespaced helpers,
@@ -85,6 +86,103 @@ if (! function_exists('helper'))
 	{
         Load::helper($filenames);
 	}
+}
+
+
+// ================================= FONCTIONS DES MANIPULATION DE DONNEES ================================= //
+
+if (!function_exists('cookie'))
+{
+    /**
+     * Get/Set cookie
+     *
+     * @param mixed|null $index
+     * @param mixed|null $value
+     * @param array|null $filters
+     * @return mixed
+     */
+    function cookie($index = null, $value = null, ?array $filters = [])
+    {
+        return Input::instance()->cookie($index, $value, $filters);
+    }
+}
+
+if (!function_exists('get'))
+{
+    /**
+     * Get/Set a query string parameters ($_GET)
+     *
+     * @param mixed|null $index
+     * @param mixed|null $value
+     * @param array|null $filters
+     * @return mixed
+     */
+    function get($index = null, $value = null, ?array $filters = [])
+    {
+        return Input::instance()->post($index, $value, $filters);
+    }
+}
+
+if (!function_exists('input'))
+{
+    /**
+     * Get value of an request variable ($_REQUEST)
+     *
+     * @param mixed|null $index
+     * @param array|null $filters
+     * @return mixed
+     */
+    function input($index = null, ?array $filters = [])
+    {
+        return Input::instance()->var($index, $filters);
+    }
+}
+
+if (!function_exists('post'))
+{
+    /**
+     * Get/Set a form value ($_POST)
+     *
+     * @param mixed|null $index
+     * @param mixed|null $value
+     * @param array|null $filters
+     * @return mixed
+     */
+    function post($index = null, $value = null, ?array $filters = [])
+    {
+        return Input::instance()->post($index, $value, $filters);
+    }
+}
+
+if (!function_exists('server'))
+{
+    /**
+     * Get value of an server variable ($_SERVER)
+     *
+     * @param mixed|null $index
+     * @param array|null $filters
+     * @return mixed
+     */
+    function server($index = null, ?array $filters = [])
+    {
+        return Input::instance()->server($index, $filters);
+    }
+}
+
+if (!function_exists('session'))
+{
+    /**
+     * Get/Set a session value ($_SESSION)
+     *
+     * @param mixed|null $index
+     * @param mixed|null $value
+     * @param array|null $filters
+     * @return mixed
+     */
+    function session($index = null, $value = null, ?array $filters = [])
+    {
+        return Input::instance()->session($index, $value, $filters);
+    }
 }
 
 
@@ -135,14 +233,14 @@ if (!function_exists('is_https'))
 if (!function_exists('is_localfile'))
 {
     /**
-     * Verifies if the file you want to access is a local file of your application or not
+     * Verify if the file you want to access is a local file of your application or not
      *
      * @param string $name
      * @return	bool
      */
     function is_localfile(string $name)
     {
-        Service::helpers()->is_localfile($name);
+        return Service::helpers()->is_localfile($name);
     }
 }
 
@@ -273,65 +371,6 @@ if (!function_exists('clean_url'))
 // ================================= FONCTIONS DIVERSES ================================= //
 
 
-if (!function_exists('ip_address')) {
-    /**
-     * Return IP Address of current user
-     *
-     * @return    string
-     */
-    function ip_address()
-    {
-        return Service::request()->clientIp();
-    }
-}
-
-if (! function_exists('is_really_writable'))
-{
-	/**
-	 * Tests for file writability
-     *
-     * @param string $file
-	 * @return bool
-     */
-	function is_really_writable(string $file)
-	{
-		return Service::helpers()->is_really_writable($file);
-	}
-}
-
-if (!function_exists('remove_invisible_characters'))
-{
-	/**
-	 * Remove Invisible Characters
-	 *
-	 * This prevents sandwiching null characters
-	 * between ascii characters, like Java\0script.
-	 *
-	 * @param	string
-	 * @param	bool
-	 * @return	string
-	 */
-	function remove_invisible_characters(string $str, bool $url_encoded = true)
-	{
-		Service::helpers()->remove_invisible_characters($str, $url_encoded);
-	}
-}
-
-if (!function_exists('stringify_attributes'))
-{
-	/**
-	 * Stringify attributes for use in HTML tags.
-	 *
-	 * @param mixed   $attributes string, array, object
-	 * @param bool $js
-	 * @return string
-	 */
-	function stringify_attributes($attributes, bool $js = false)
-	{
-        return Service::helpers()->stringify_attributes($attributes, $js);
-	}
-}
-
 if (!function_exists('dd'))
 {
 	/**
@@ -411,5 +450,131 @@ if (! function_exists('force_https'))
 		$response->header('Strict-Transport-Security', 'max-age=' . $duration);
 		$response->redirect($uri);
 		exit(1);
+	}
+}
+
+if (!function_exists('ip_address')) 
+{
+    /**
+     * Return IP Address of current user
+     *
+     * @return    string
+     */
+    function ip_address()
+    {
+        return Service::request()->clientIp();
+    }
+}
+
+if (!function_exists('is_really_writable'))
+{
+	/**
+	 * Tests for file writability
+     *
+     * @param string $file
+	 * @return bool
+     */
+	function is_really_writable(string $file)
+	{
+		return Service::helpers()->is_really_writable($file);
+	}
+}
+
+if (!function_exists('lang'))
+{
+	/**
+	 * A convenience method to translate a string or array of them and format
+	 * the result with the intl extension's MessageFormatter.
+	 *
+	 * @param string|[] $line
+	 * @param array     $args
+	 * @param string    $locale
+	 *
+	 * @return string
+	 */
+	function lang(string $line, array $args = [], string $locale = null)
+	{
+		//return Services::language($locale)
+		//	->getLine($line, $args);
+	}
+}
+
+if (!function_exists('log'))
+{
+	/**
+	 * A convenience/compatibility method for logging events through
+	 * the Log system.
+	 *
+	 * Allowed log levels are:
+	 *  - emergency
+	 *  - alert
+	 *  - critical
+	 *  - error
+	 *  - warning
+	 *  - notice
+	 *  - info
+	 *  - debug
+	 *
+	 * @param string     $level
+	 * @param string     $message
+	 * @param array|null $context
+	 *
+	 * @return mixed
+	 */
+	function log(string $level, string $message, array $context = [])
+	{
+		// @codeCoverageIgnoreStart
+		//return Services::logger(true)
+		//	->log($level, $message, $context);
+		// @codeCoverageIgnoreEnd
+	}
+}
+
+if (!function_exists('remove_invisible_characters'))
+{
+	/**
+	 * Remove Invisible Characters
+	 *
+	 * This prevents sandwiching null characters
+	 * between ascii characters, like Java\0script.
+	 *
+	 * @param	string
+	 * @param	bool
+	 * @return	string
+	 */
+	function remove_invisible_characters(string $str, bool $url_encoded = true)
+	{
+		return Service::helpers()->remove_invisible_characters($str, $url_encoded);
+	}
+}
+
+if (!function_exists('purify'))
+{
+	/**
+     * Purify input using the HTMLPurifier standalone class.
+     * Easily use multiple purifier configurations.
+     *
+     * @param string|string[]
+     * @param string|false
+     * @return string|string[]
+     */
+    function purify($dirty_html, $config = false)
+    {
+        return Service::helpers()->purify($dirty_html, $config);
+	}
+}
+
+if (!function_exists('stringify_attributes'))
+{
+	/**
+	 * Stringify attributes for use in HTML tags.
+	 *
+	 * @param mixed   $attributes string, array, object
+	 * @param bool $js
+	 * @return string
+	 */
+	function stringify_attributes($attributes, bool $js = false)
+	{
+        return Service::helpers()->stringify_attributes($attributes, $js);
 	}
 }

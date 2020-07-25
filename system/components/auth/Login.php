@@ -22,8 +22,7 @@ use dFramework\core\db\Query;
 use dFramework\core\security\Session;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Utils;
-use dFramework\core\data\Request;
-use dFramework\core\Helpers;
+use dFramework\core\http\Request;
 use dFramework\core\loader\Load;
 
 /**
@@ -140,8 +139,7 @@ class Login
     {
         if (null === self::$_instance)
         {
-            $class = __CLASS__;
-            self::$_instance = new $class($locale);
+            self::$_instance = new self($locale);
         }
         return self::$_instance;
     }
@@ -356,10 +354,14 @@ class Login
     protected function load_user($login)
     {
         $table = explode('.', $this->_params['table']);
-        
-        $query = (new Query($table[0] ?? 'default'));
+        $fields = array_map(function($value) {
+			return explode(':', $value)[0];
+		}, $this->_params['fields']);
+		
+        $query = (new Query)->use($table[0] ?? 'default');
+		
         $request = $query
-            ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($this->_params['fields'][0] ?? 'login').' = ?', [$login]);
+            ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($fields[0] ?? 'login').' = ?', [$login]);
         
         $response = $request->fetch(\PDO::FETCH_ASSOC);
         $request->closeCursor();
@@ -407,7 +409,7 @@ class Login
             'uid'      => sha1(uniqid('', true) . '_' . mt_rand()),
             'uua'      => sha1($_SERVER['HTTP_USER_AGENT']),
             'ure'      => sha1(parse_url($_SERVER['HTTP_REFERER'] ?? null, PHP_URL_HOST)),
-            'uip'      => Helpers::instance()->ip_address(),
+            'uip'      => ip_address(),
         ];
         if (1 < $this->_params['inactivity_timeout'])
         {
@@ -472,7 +474,7 @@ class Login
         {
             $this->logout();
         }
-        else if (empty($auth_session['uip']) OR $auth_session['uip'] !== Helpers::instance()->ip_address())
+        else if (empty($auth_session['uip']) OR $auth_session['uip'] !== ip_address())
         {
             $this->logout();
         }

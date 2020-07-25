@@ -21,6 +21,7 @@ use dFramework\core\Config;
 use dFramework\core\exception\LoadException;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
+use dframework\core\router\Dispatcher;
 
 /**
  * View
@@ -117,6 +118,8 @@ class View
      */
     protected $_lib_scripts = [];
 
+	protected $_page_vars = [];
+	
 
     /**
      * Constructeur
@@ -134,6 +137,18 @@ class View
         $this->view = $view;
 
         Load::helper('assets');
+		
+        $class = Dispatcher::getClass();
+        $method = Dispatcher::getMethod();
+		
+        $class = (!empty($class)) 
+			? $class 
+			: Config::get('route.default_controller');
+        $method = (!empty($method)) 
+			? $method 
+			: 'Index';
+
+		$this->title(ucfirst($method) . ' - ' . ucfirst($class));
     }
 
     /**
@@ -273,6 +288,39 @@ class View
         $this->show('content');
     }
 
+	/**
+	 * Get or Set page title 
+	 *
+	 * @param string|null $title 
+	 * @return string|null 
+	 */
+	public function title(?string $title = null)
+	{
+		if (empty($title))
+		{
+			return $this->_page_vars['title'] ?? '';
+		}
+		
+		$this->_page_vars['title'] = esc($title);
+	}
+	
+	/**
+	 * Get or Set page meta tags 
+	 *
+	 * @param string $key 
+	 * @param string|null $value 
+	 * @return string|null 
+	 */
+	public function meta(string $key, ?string $value = null)
+	{
+		if (empty($value)) 
+		{
+			return $this->_page_vars['meta'][$key] ?? '';
+		}
+		
+		$this->_page_vars['meta'][$key] = esc($value);
+	}
+		
     /**
 	 * Sets several pieces of view data at once.
 	 *

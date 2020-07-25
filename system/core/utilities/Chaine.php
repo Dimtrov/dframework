@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.2.1
  */
-
 
 namespace dFramework\core\utilities;
 
@@ -32,10 +31,8 @@ use Jawira\CaseConverter\Convert;
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  * @file        /system/core/utilities/Chaine.php
  */
-
 class Chaine
 {
-
     public static function __callStatic($name, $arguments)
     {
         /**
@@ -56,7 +53,6 @@ class Chaine
         }   
     }
 
-
     /**
      * Tokenizes a string using $separator, ignoring any instance of $separator that appears between
      * $leftBound and $rightBound.
@@ -67,7 +63,8 @@ class Chaine
      * @param string $rightBound The right boundary to ignore separators in.
      * @return mixed Array of tokens in $data or original input if empty.
      */
-    public static function tokenize($data, $separator = ',', $leftBound = '(', $rightBound = ')') {
+    public static function tokenize($data, $separator = ',', $leftBound = '(', $rightBound = ')') 
+    {
         if (empty($data)) {
             return [];
         }
@@ -131,4 +128,84 @@ class Chaine
         }
         return [];
     }
+	/**
+	 * Clean UTF-8 strings
+	 *
+	 * Ensures strings contain only valid UTF-8 characters.
+	 *
+	 * @param	string	$str	String to clean
+	 * @return	string
+	 */
+	public static function clean_string(string $str)
+	{
+		if (self::is_ascii($str) === FALSE)
+		{
+			if (MB_ENABLED)
+			{
+				$str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
+			}
+			else if (ICONV_ENABLED)
+			{
+				$str = @iconv('UTF-8', 'UTF-8//IGNORE', $str);
+			}
+		}
+
+		return $str;
+    }
+    
+	/**
+	 * Remove ASCII control characters
+	 *
+	 * Removes all ASCII control characters except horizontal tabs,
+	 * line feeds, and carriage returns, as all others can cause
+	 * problems in XML.
+	 *
+	 * @param	string	$str	String to clean
+	 * @return	string
+	 */
+	public function safe_ascii_for_xml(string $str)
+	{
+		return remove_invisible_characters($str, FALSE);
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Convert to UTF-8
+	 *
+	 * Attempts to convert a string to UTF-8.
+	 *
+	 * @param	string	$str		Input string
+	 * @param	string	$encoding	Input encoding
+	 * @return	string	$str encoded in UTF-8 or FALSE on failure
+	 */
+	public function convert_to_utf8($str, $encoding)
+	{
+		if (MB_ENABLED)
+		{
+			return mb_convert_encoding($str, 'UTF-8', $encoding);
+		}
+		if (ICONV_ENABLED)
+		{
+			return @iconv($encoding, 'UTF-8', $str);
+		}
+
+		return FALSE;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Is ASCII?
+	 *
+	 * Tests if a string is standard 7-bit ASCII or not.
+	 *
+	 * @param	string	$str	String to check
+	 * @return	bool
+	 */
+	public static function is_ascii($str)
+	{
+		return (preg_match('/[^\x00-\x7F]/S', $str) === 0);
+	}
+
 }

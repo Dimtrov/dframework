@@ -12,13 +12,15 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.0
+ *  @version    3.2.1
  */
-
  
 namespace dFramework\core\utilities;
 
 use dFramework\core\Config;
+use dFramework\core\exception\Exception;
+use HTMLPurifier;
+use HTMLPurifier_Config;
 use Laminas\Escaper\Escaper;
 
 /**
@@ -466,6 +468,57 @@ class Helpers
 		}
 
 		return $data;
+    }
+
+    /**
+     * Purify input using the HTMLPurifier standalone class.
+     * Easily use multiple purifier configurations.
+     *
+     * @param string|string[]  $dirty_html  A string (or array of strings) to be cleaned.
+     * @param string|false        $config      The name of the configuration (switch case) to use.
+     * @return string|string[]               The cleaned string (or array of strings).
+     */
+    public function purify($dirty_html, $config = false)
+    {
+        if (is_array($dirty_html)) 
+        {
+            foreach ($dirty_html As $key => $val) 
+            {
+                $clean_html[$key] = $this->purify($val, $config);
+            }
+        } 
+        else 
+        {
+            $charset = Config::get('general.charset');
+
+            switch ($config) 
+            {
+                
+                case 'comment':
+                    $config = HTMLPurifier_Config::createDefault();
+                    $config->set('Core.Encoding', $charset);
+                    $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
+                    $config->set('HTML.Allowed', 'p,a[href|title],abbr[title],acronym[title],b,strong,blockquote[cite],code,em,i,strike');
+                    $config->set('AutoFormat.AutoParagraph', true);
+                    $config->set('AutoFormat.Linkify', true);
+                    $config->set('AutoFormat.RemoveEmpty', true);
+                    break;
+
+                case false:
+                    $config = HTMLPurifier_Config::createDefault();
+                    $config->set('Core.Encoding', $charset);
+                    $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
+                    break;
+
+                default:
+                    Exception::show('The HTMLPurifier configuration labeled "'.htmlspecialchars($config, ENT_QUOTES, $charset).'" could not be found.');
+            }
+
+            $purifier = new HTMLPurifier($config);
+            $clean_html = $purifier->purify($dirty_html);
+        }
+
+        return $clean_html;
     }
 
     /**

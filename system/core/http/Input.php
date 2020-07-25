@@ -18,8 +18,10 @@
 namespace dFramework\core\http;
 
 use dFramework\core\Config;
+use dFramework\core\loader\Service;
 use dFramework\core\security\Session;
 use dFramework\core\security\Xss;
+use dFramework\core\utilities\Chaine;
 
 /**
  * Input
@@ -56,9 +58,35 @@ class Input
     protected $_input_stream;
 
     /**
-     * @var Xss
+	 * List of all HTTP request headers
+	 *
+	 * @var array
+	 */
+	protected $headers = array();
+
+    private static $_instance;
+    
+    /**
+     * Constructor
      */
-    private $xss;
+    public function __construct()
+    {
+        $this->_sanitize_globals();
+    }
+    /**
+     * Get a single instance
+     *
+     * @return self
+     */
+    public static function instance() : self
+    {
+        if (null === self::$_instance)
+        {
+            self::$_instance = new self;
+        }
+        return self::$_instance;
+    }
+
 
 
     /**
@@ -114,9 +142,11 @@ class Input
      * @param array|null $filter
      * @return    mixed
      */
-    public function post_get($index, ?array $filter = [])
+    public function post_get(string $index, ?array $filter = [])
     {
-        return isset($_POST[$index]) ? $this->post($index, null, $filter) : $this->get($index, null, $filter);
+        return isset($_POST[$index]) 
+            ? $this->post($index, null, $filter) 
+            : $this->get($index, null, $filter);
     }
 
     /**
@@ -126,9 +156,11 @@ class Input
      * @param array|null $filter
      * @return    mixed
      */
-    public function get_post($index, ?array $filter = [])
+    public function get_post(string $index, ?array $filter = [])
     {
-        return isset($_GET[$index]) ? $this->get($index, null, $filter) : $this->post($index, null, $filter);
+        return isset($_GET[$index]) 
+            ? $this->get($index, null, $filter) 
+            : $this->post($index, null, $filter);
     }
 
     /**
@@ -178,6 +210,18 @@ class Input
     }
 
     /**
+     * Fetch an item from the REQUEST array
+     *
+     * @param    mixed $index Index for item to be fetched from $_SERVER
+     * @param array|null $filter
+     * @return    mixed
+     */
+    public function var($index, ?array $filter = [])
+    {
+        return $this->_fetch_from_array($_REQUEST, $index, $filter);
+    }
+
+    /**
      * @param null $index
      * @param null $value
      * @param array|null $filter
@@ -185,10 +229,16 @@ class Input
      */
     public function session($index = null, $value = null, ?array $filter = [])
     {
+        if (is_array($index))
+        {
+            return $this->_find_entries((array) Session::get(), $index, $filter);
+        }
+
         if(!empty($value)) 
         {
             Session::set($index, $value);
         }
+
         return Session::get($index);
     }
 
@@ -214,7 +264,7 @@ class Input
      */
     public function cookie($index = NULL, ?array $data = [], ?array $filter = [])
     {
-        if(!empty($data) AND is_array($data) AND isset($data['value']) AND !empty($index) AND is_string($index))
+        if (!empty($data) AND is_array($data) AND isset($data['value']) AND !empty($index) AND is_string($index))
         {
             $this->set_cookie(
                 $index,
@@ -227,6 +277,7 @@ class Input
                 $data['httponly'] ?? NULL
             );
         }
+
         return $this->_fetch_from_array($_COOKIE, $index, $filter);
     }
     /**
@@ -289,6 +340,80 @@ class Input
         
         setcookie($prefix.$name, $value, (int) $expire, $path, $domain, $secure, $httponly);
     }
+
+	/**
+	 * Request Headers
+	 *
+	 * @param	bool	$xss_clean	Whether to apply XSS filtering
+	 * @return	array
+	 */
+	public function request_headers($filter = [])
+	{
+		// If header is already defined, return it immediately
+		if ( ! empty($this->headers))
+		{
+			return $this->_fetch_from_array($this->headers, NULL, $filter);
+		}
+
+		// In Apache, you can simply call apache_request_headers()
+		if (function_exists('apache_request_headers'))
+		{
+			$this->headers = apache_request_headers();
+		}
+		else
+		{
+			isset($_SERVER['CONTENT_TYPE']) && $this->headers['Content-Type'] = $_SERVER['CONTENT_TYPE'];
+
+			foreach ($_SERVER as $key => $val)
+			{
+				if (sscanf($key, 'HTTP_%s', $header) === 1)
+				{
+					// take SOME_HEADER and turn it into Some-Header
+					$header = str_replace('_', ' ', strtolower($header));
+					$header = str_replace(' ', '-', ucwords($header));
+
+					$this->headers[$header] = $_SERVER[$key];
+				}
+			}
+		}
+
+		return $this->_fetch_from_array($this->headers, NULL, $filter);
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Get Request Header
+	 *
+	 * Returns the value of a single member of the headers class member
+	 *
+	 * @param	string		$index		Header name
+	 * @param	array		$filter	    XSS filters
+	 * @return	string|null	The requested header on success or NULL on failure
+	 */
+	public function get_request_header($index, array $filter = [])
+	{
+		static $headers;
+
+		if (!isset($headers))
+		{
+			empty($this->headers) AND $this->request_headers();
+			foreach ($this->headers as $key => $value)
+			{
+				$headers[strtolower($key)] = $value;
+			}
+		}
+
+		$index = strtolower($index);
+
+		if (!isset($headers[$index]))
+		{
+			return NULL;
+		}
+
+        return Xss::clean($headers[$index], $filter);
+	}
+
 
 
     private function _find_entries(array $array, array $index, array $filter = [])
@@ -356,5 +481,145 @@ class Input
         ], $filter));
     }
 
+    /**
+	 * Sanitize Globals
+	 *
+	 * Internal method serving for the following purposes:
+	 *
+	 *	- Unsets $_GET data, if query strings are not enabled
+	 *	- Cleans POST, COOKIE and SERVER data
+	 * 	- Standardizes newline characters to PHP_EOL
+	 *
+	 * @return	void
+	 */
+	private function _sanitize_globals()
+	{
+        if (is_array($_GET))
+		{
+			foreach ($_GET as $key => $val)
+			{
+				$_GET[$this->_clean_input_keys($key)] = $this->_clean_input_data($val);
+			}
+		}
 
+		// Clean $_POST Data
+		if (is_array($_POST))
+		{
+			foreach ($_POST as $key => $val)
+			{
+				$_POST[$this->_clean_input_keys($key)] = $this->_clean_input_data($val);
+			}
+		}
+
+		// Clean $_COOKIE Data
+		if (is_array($_COOKIE))
+		{
+			// Also get rid of specially treated cookies that might be set by a server
+			// or silly application, that are of no use to a CI application anyway
+			// but that when present will trip our 'Disallowed Key Characters' alarm
+			// http://www.ietf.org/rfc/rfc2109.txt
+			// note that the key names below are single quoted strings, and are not PHP variables
+			unset(
+				$_COOKIE['$Version'],
+				$_COOKIE['$Path'],
+				$_COOKIE['$Domain']
+			);
+
+			foreach ($_COOKIE as $key => $val)
+			{
+				if (($cookie_key = $this->_clean_input_keys($key)) !== FALSE)
+				{
+					$_COOKIE[$cookie_key] = $this->_clean_input_data($val);
+				}
+				else
+				{
+					unset($_COOKIE[$key]);
+				}
+			}
+		}
+
+		// Sanitize PHP_SELF
+		$_SERVER['PHP_SELF'] = strip_tags($_SERVER['PHP_SELF']);
+	}
+
+    /**
+	 * Clean Input Data
+	 *
+	 * Internal method that aids in escaping data and
+	 * standardizing newline characters to PHP_EOL.
+	 *
+	 * @param	string|string[]	$str	Input string(s)
+	 * @return	string
+	 */
+	private function _clean_input_data($str)
+	{
+		if (is_array($str))
+		{
+			$new_array = array();
+			foreach (array_keys($str) as $key)
+			{
+				$new_array[$this->_clean_input_keys($key)] = $this->_clean_input_data($str[$key]);
+			}
+			return $new_array;
+		}
+
+		/* We strip slashes if magic quotes is on to keep things consistent
+
+		   NOTE: In PHP 5.4 get_magic_quotes_gpc() will always return 0 and
+		         it will probably not exist in future versions at all.
+		*/
+		if ( function_exists('get_magic_quotes_gpc') AND get_magic_quotes_gpc())
+		{
+			$str = stripslashes($str);
+		}
+
+		// Clean UTF-8 if supported
+		if (UTF8_ENABLED === TRUE)
+		{
+			$str = Chaine::clean_string($str);
+		}
+
+		// Remove control characters
+		$str = remove_invisible_characters($str, FALSE);
+
+		return $str;
+	}
+
+	/**
+	 * Clean Keys
+	 *
+	 * Internal method that helps to prevent malicious users
+	 * from trying to exploit keys we make sure that keys are
+	 * only named with alpha-numeric text and a few other items.
+	 *
+	 * @param	string	$str	Input string
+	 * @param	bool	$fatal	Whether to terminate script exection
+	 *				or to return FALSE if an invalid
+	 *				key is encountered
+	 * @return	string|bool
+	 */
+	private function _clean_input_keys($str, $fatal = TRUE)
+	{
+		if ( ! preg_match('/^[a-z0-9:_\/|-]+$/i', $str))
+		{
+			if ($fatal === TRUE)
+			{
+				return FALSE;
+			}
+   
+            $response = Service::response();
+            $response->statusCode(503);
+            $response->body('Disallowed Key Characters.');
+            $response->send();
+            exit(7); // EXIT_USER_INPUT
+		}
+
+		// Clean UTF-8 if supported
+		if (UTF8_ENABLED === TRUE)
+		{
+			return Chaine::clean_string($str);
+		}
+
+		return $str;
+	}	
 }

@@ -12,16 +12,12 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.1
  */
-
 
 namespace dFramework\core\cli;
 
 use Ahc\Cli\Helper\Shell;
-use Ahc\Cli\Input\Command;
-use Ahc\Cli\Output\Writer;
-use dFramework\core\dFramework;
 
 /**
  * Server
@@ -31,19 +27,21 @@ use dFramework\core\dFramework;
  * @subpackage	Core
  * @category    Cli
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
  * @since       3.0
  * @file        /system/core/cli/Server.php
  */
-class Server extends Command
+class Server extends Cli
 {
+    protected $_description = 'Service de lancement du serveur de developpement';
+    protected $_name = 'Server';
+
     public function __construct()
     {
-        parent::__construct('server', 'Service de lancement du serveur de developpemt');
+        parent::__construct();
 
         $this
             ->option('--host', 'Hote sur lequel votre application sera lancée. "localhost" par defaut', null, 'localhost')
-            ->option('--port', 'Port sur lequel vous souhaitnez demarrer le serveur. "3200" par defaut', null, 3200)
+            ->option('--port', 'Port sur lequel vous souhaitez demarrer le serveur. "3200" par defaut', null, 3200)
             ->option('--php', 'Chemin vers l\'executable php à utiliser pour démarrer le serveur.', null, PHP_BINARY)
  
             // Usage examples:
@@ -57,21 +55,27 @@ class Server extends Command
     public function execute($host, $port, $php)
     {
         try {
-            $writer = new Writer;
-
-            $this->app()->io()->write("\n ---- Serveur en cours de démarrage ----", true);
-            $writer->colors("\t <blue> Le serveur a démarré avec succès. </end><eol>");
-            $writer->colors("\t <white>Veuillez ouvrir votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end><eol>");
-            $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+            $this->__startMsg();
             
+            $this->_io->write("\n Serveur de développement en cours de démarrage \n");
+            sleep(2.5);
+            $this->_io->ok("\t => Le serveur avec succès. \n");
+            sleep(2.5);
+            $this->_io->writer()->colors("\t => <white>Ouvrez votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end><eol>");
+            sleep(1.5);
+            $this->__endMsg();
+
             $shell = new Shell($php . ' -S '. $host . ':' . $port . ' -t ' . escapeshellarg(\WEBROOT));
-            $shell->setOptions(dirname(\WEBROOT), null, 10.5)->execute()->isRunning();
+            $shell->setOptions(dirname(\WEBROOT), null, 2.5)->execute()->isRunning();
             
             $shell->stop();
             $shell->kill();
         }
-        catch(\Exception $e) { }
-        
-        return true;
+        catch(\Exception $e) { 
+
+        }
+        finally {
+            return true;
+        }
     }
 }

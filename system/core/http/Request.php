@@ -188,6 +188,31 @@ class Request
     }
 
     /**
+	 * Validate IP Address
+	 *
+	 * @param	string	$ip	IP address
+	 * @param	string	$which	IP protocol: 'ipv4' or 'ipv6'
+	 * @return	bool
+	 */
+	public function validIp($ip, $which = '')
+	{
+		switch (strtolower($which))
+		{
+			case 'ipv4':
+				$which = FILTER_FLAG_IPV4;
+				break;
+			case 'ipv6':
+				$which = FILTER_FLAG_IPV6;
+				break;
+			default:
+				$which = NULL;
+				break;
+		}
+
+		return (bool) filter_var($ip, FILTER_VALIDATE_IP, $which);
+    }
+    
+    /**
      * Returns the referer that referred this request.
      *
      * @param bool $local Attempt to return a local address. Local addresses do not contain hostnames.
