@@ -18,6 +18,7 @@
 namespace dFramework\core;
 
 use dFramework\core\exception\ConfigException;
+use dFramework\core\utilities\Tableau;
 
 /**
  * Config
@@ -68,6 +69,7 @@ class Config
 
 
 
+
     /**
      * Return some configuration of application
      *
@@ -80,35 +82,16 @@ class Config
         {
             return self::$_config;
         }
+        
         $config = explode('.', $config);
-        $count = count($config);
+        $conf = array_shift($config);
 
-        if (empty(self::$_config[$config[0]]))
+        if (empty(self::$_config[$conf]))
         {
-            self::load($config[0]);
+            self::load($conf);
         }
 
-        if ($count == 1) 
-        {
-            return self::$_config[$config[0]] ?? null;
-        }
-        if ($count == 2) 
-        {
-            return self::$_config[$config[0]][$config[1]] ?? null;
-        }
-        if ($count == 3) 
-        {
-            return self::$_config[$config[0]][$config[1]][$config[2]] ?? null;
-        }
-        if ($count == 4) 
-        {
-            return self::$_config[$config[0]][$config[1]][$config[2]][$config[3]] ?? null;
-        }
-        if ($count == 5) 
-        {
-            return self::$_config[$config[0]][$config[1]][$config[2]][$config[3]][$config[4]] ?? null;
-        }
-        return null;
+        return Tableau::get_recusive(self::$_config[$conf], implode('.', $config));
     }
 
     /**
@@ -205,7 +188,7 @@ class Config
             if (! file_exists($config_file))
             {
                 ConfigException::except('
-                    Unable to loader the <b>'.$config.'</b> configuration 
+                    Unable to loader the <b>'.$config.'</br> configuration 
                     <br> 
                     The &laquo; '.$config_file.' &raquo; file does not exist
                 ', 404);

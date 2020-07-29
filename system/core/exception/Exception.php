@@ -18,7 +18,6 @@
 namespace dFramework\core\exception;
 
 use dFramework\core\Config;
-use dFramework\core\utilities\Debugger as UtilitiesDebugger;
 use Tracy\Debugger;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -70,7 +69,6 @@ class Exception extends \Exception
     public static function show(string $message, int $code = 0)
     {
         Debugger::fireLog($message);
-        UtilitiesDebugger::trac($message);
         exit;
     }
 

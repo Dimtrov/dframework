@@ -16,11 +16,8 @@
  */
 
 
-use dFramework\core\{
-    Config,
-    exception\Exception,
-    Helpers
-};
+use dFramework\core\Config;
+use dFramework\core\exception\Exception;
 
 /**
  * Captcha
@@ -32,8 +29,7 @@ use dFramework\core\{
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/systemlibrary/captcha
  * @since       2.0
  */
-
-class dF_Captcha
+class Captcha
 {
     /**
      * Captcha textuel.
@@ -393,7 +389,7 @@ class dF_Captcha
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
 
-        return Helpers::instance()->site_url($dir.'/dependencies/securimage/show.php?df_captcha&amp;sid='.urlencode(microtime()));
+        return site_url($dir.'/dependencies/securimage/show.php?df_captcha&amp;sid='.urlencode(microtime()));
     }
 
     /**
@@ -409,6 +405,6 @@ class dF_Captcha
         $dir = explode(DIRECTORY_SEPARATOR, dirname(__DIR__));
         $dir = end($dir);
 
-        return Helpers::instance()->site_url($dir.'/dependencies/securimage/play.php?df_captcha&amp;sid='.urlencode(microtime()));
+        return site_url($dir.'/dependencies/securimage/play.php?df_captcha&amp;sid='.urlencode(microtime()));
     }
 }

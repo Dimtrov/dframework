@@ -18,9 +18,7 @@
 namespace dFramework\core\loader;
 
 use dFramework\core\Config;
-use dFramework\core\Controller;
 use dFramework\core\exception\LoadException;
-use dFramework\core\Model;
 use InvalidArgumentException;
 
 /**
@@ -36,7 +34,6 @@ use InvalidArgumentException;
  * @since       1.0
  * @file        /system/core/loader/Load.php
  */
-
 class Load
 {
     /**
@@ -50,7 +47,6 @@ class Load
         'models' => []
     ];
     
-
     /**
      * @throws LoadException
      * @throws \ReflectionException
@@ -76,324 +72,157 @@ class Load
             }
         }
 
-        $autoload = array_merge([
-            'system',
-        ], $autoload['helpers'] ?? []);
-
-        foreach ($autoload As $load)
-        {
-            self::_helper($load, preg_match('#^my_#i', $load));
-        }
+        // Autoload Helpers
+        self::helper(array_merge([
+            'global',
+        ], $autoload['helpers'] ?? []));
     }
 
 
     /**
-     * @param string|array $helperss
+     * Charge un fichier d'aide
+     * 
+     * @param string|array $helpers
+     * @return void
      * @throws LoadException
+     * @throws InvalidArgumentException
      */
     public static function helper($helpers)
     {
+        if (empty($helpers))
+        {
+            throw new LoadException('Veuillez specifier le helper à charger');
+        }
+        if (!is_string($helpers) AND !is_array($helpers))
+        {
+            throw new InvalidArgumentException('Type de parametre incorrect pour la methode "helper"');
+        }
+        
         $helpers = (array) $helpers;
         foreach ($helpers As $helper)
         {
-            self::_helper($helper, preg_match('#^my_#', $helper));
-        }
-    }
-    /**
-     * @param string $func
-     * @param bool $app
-     * @throws LoadException
-     */
-    private static function  _helper(string $func, bool $app = false)
-    {
-        $func = trim($func);
-        if (!self::is_loaded('helpers', $func))
-        {
-            $file = ($app === false)
-                ? SYST_DIR.'helpers'.DS.$func.'.php'
-                : APP_DIR.'helpers'.DS.$func.'.php';
-
-            if (!file_exists($file))
-            {
-                LoadException::except('
-                    Impossible de charger les fonctions <b>'.$func.'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$file.' &raquo; n\'existe pas
-                ');
-            }
-            self::loaded('helpers', $func);
-
-            require_once $file;
+           FileLocator::helper($helper);
         }
     }
 
-
     /**
-     * Charge un model a un controleur donné
+     * Charge un modele a un controleur donné
      * 
-     * @param Controller|Model $object
      * @param string|array $model
-     * @param string|null $alias
+     * @return object|object[]
      * @throws LoadException
-     * @throws \ReflectionException
+     * @throws InvalidArgumentException
      */
-    public static function model(&$object, $model, ?string $alias = null)
+    public static function model($model)
     {
-        if (!$object instanceof Controller AND !$object instanceof Model) {
-            throw new InvalidArgumentException('Le parametre "$object" doit être une instance du Contrôleur ou du modèle');
-        }
-        if (!empty($model) AND is_array($model))
+        if (empty($model))
         {
-            foreach ($model As $key => $value)
-            {
-                if (!empty($key) AND is_string($key))
-                {
-                    if (!empty($value) AND is_string($value))
-                    {
-                        $property = strtolower($value);
-                        $object->{$property} = self::_model($key);
-                    }
-                    else
-                    {
-                        $property = explode('/', $key); 
-                        $property = strtolower(end($property));
-                        $object->{$property} = self::_model($key);
-                    }
-                }
-                else if(!empty($value) AND is_string($value))
-                {
-                    $property = strtolower($value);
-                    $object->{$property} = self::_model($value);
-                }
-            }
+            throw new LoadException('Veuillez specifier le modele à charger');
         }
-        if (!empty($model) AND is_string($model))
+        if (!is_string($model) AND !is_array($model))
         {
-            if (!empty($alias) AND is_string($alias)) 
-            {
-                $property = strtolower($alias);
-                $object->{$property} = self::_model($model);
-            }
-            else
-            {
-                $property = explode('/', $model); 
-                $property = strtolower(end($property));
-                $object->{$property} = self::_model($model);
-            }
+            throw new InvalidArgumentException('Type de parametre incorrect pour la methode "model"');
         }
-    }
-    /**
-     * @param $model
-     * @return null
-     * @throws LoadException
-     * @throws \ReflectionException
-     */
-    private static function _model($model)
-    {
-        $model = str_replace('.'.pathinfo($model, PATHINFO_EXTENSION), '', $model);
-        $model = (!preg_match('#Model$#', $model)) ? $model.'Model' : $model;
 
-        $part_model = pathinfo($model);
-        $model = ucfirst($part_model['filename']);
-        $model_path = MODEL_DIR.trim(str_replace('/', DS, $part_model['dirname']), DS).DS.$model.'.php';
+        if (is_array($model))
+        {
+            $models = [];
+
+            foreach ($model As $value)
+            {
+                $models[] = self::model($value);
+            }
+
+            return $models;
+        }
 
         if (!self::is_loaded('models', $model))
         {
-            if (!file_exists($model_path))
-            {
-                LoadException::except('
-                    Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$model_path.' &raquo; n\'existe pas
-                ');
-            }
-            require_once $model_path;
-
-            if (!class_exists($model))
-            {
-                LoadException::except('
-                    Impossible de charger le model <b>'.str_replace('Model', '', $model).'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$model_path.' &raquo; ne contient pas de classe <b>'.$model.'</b>
-                ');
-            }
-            self::loaded('models', $model, DIC::instance()->get($model));
+            self::loaded('models', $model, FileLocator::model($model));
         }
+
         return self::get_loaded('models', $model);
     }
 
     /**
-     * Charge un autre controller dans un controleur donné
+     * Charge un autre controleur dans un controleur donné
      * 
-     * @param Controller $object
      * @param string|array $controller
-     * @param string|null $alias
+     * @return object|object[]
      * @since 3.0.2
      * @throws LoadException
-     * @throws \ReflectionException
+     * @throws InvalidArgumentException
      */
-    public static function controller(Controller &$object, $controller, ?string $alias = null)
+    public static function controller($controller)
     {
-        if (!empty($controller) AND is_array($controller))
+        if (empty($controller))
         {
-            foreach ($controller As $key => $value)
-            {
-                if (!empty($key) AND is_string($key))
-                {
-                    if (!empty($value) AND is_string($value))
-                    {
-                        $property = strtolower($value);
-                        $object->{$property} = self::_controller($key);
-                    }
-                    else
-                    {
-                        $property = explode('/', $key); 
-                        $property = strtolower(end($property));
-                        $object->{$property} = self::_controller($key);
-                    }
-                }
-                else if (!empty($value) AND is_string($value))
-                {
-                    $property = strtolower($value);
-                    $object->{$property} = self::_controller($value);
-                }
-            }
+            throw new LoadException('Veuillez specifier le controleur à charger');
         }
-        if (!empty($controller) AND is_string($controller))
+        if (!is_string($controller) AND !is_array($controller))
         {
-            if (!empty($alias) AND is_string($alias)) 
-            {
-                $property = strtolower($alias);
-                $object->{$property} = self::_controller($controller);
-            }
-            else
-            {
-                $property = explode('/', $controller); 
-                $property = strtolower(end($property));
-                $object->{$property} = self::_controller($controller);
-            }
-        } 
-    }
-    /**
-     * @param $controller
-     * @return null
-     * @throws LoadException
-     * @throws \ReflectionException
-     */
-    private static function _controller($controller)
-    {
-        $controller = str_replace('.'.pathinfo($controller, PATHINFO_EXTENSION), '', $controller);
-        $controller = (!preg_match('#Controller$#', $controller)) ? $controller.'Controller' : $controller;
-
-        $part_controller = pathinfo($controller);
-        $controller = ucfirst($part_controller['filename']);
-        $controller_path = CONTROLLER_DIR.trim(str_replace('/', DS, $part_controller['dirname']), DS).DS.$controller.'.php';
-
-        if (! self::is_loaded('controllers', $controller))
-        {
-            if (! file_exists($controller_path))
-            {
-                LoadException::except('
-                    Impossible de charger le controlleur <b>'.str_replace('Controller', '', $controller).'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$controller_path.' &raquo; n\'existe pas
-                ');
-            }
-            require_once $controller_path;
-
-            if (! class_exists($controller))
-            {
-                LoadException::except('
-                    Impossible de charger le controlleur <b>'.str_replace('Controller', '', $controller).'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$controller_path.' &raquo; ne contient pas de classe <b>'.$controller.'</b>
-                ');
-            }
-            self::loaded('controllers', $controller, DIC::instance()->get($controller));
+            throw new InvalidArgumentException('Type de parametre incorrect pour la methode "controller"');
         }
+
+        if (is_array($controller))
+        {
+            $controllers = [];
+
+            foreach ($controller As $value)
+            {
+                $controllers[] = self::controller($value);
+            }
+
+            return $controllers;
+        }
+
+        if (!self::is_loaded('controllers', $controller))
+        {
+            self::loaded('controllers', $controller, FileLocator::controller($controller));
+        }
+
         return self::get_loaded('controllers', $controller);
     }
 
     /**
      * Charge une librairie dans un controlleur donné
      * 
-     * @param Controller $object
      * @param string|array $library
-     * @param null|string $alias
-     * @throws \ReflectionException
+     * @return object|object[]
+     * @throws LoadException
+     * @throws InvalidArgumentException
      */
-    public static function library(Controller &$object, $library, string $alias = null) : void
+    public static function library($library)
     {
-        if (!empty($library) AND is_array($library))
+        if (empty($library))
         {
-            foreach ($library As $key => $value)
-            {
-                if (!empty($key) AND is_string($key))
-                {
-                    $lib = explode('/', $key); $lib = end($lib);
-                    $property = strtolower(!empty($value) AND is_string($value) ? $value : $key);
-                    $object->{$property} = self::_library($key, preg_match('#^my_#i', $lib));
-                }
-                else if (!empty($value) AND is_string($value))
-                {
-                    $lib = explode('/', $value); 
-                    $lib = end($lib);
-                    $property = strtolower($value);
-                    $object->{$property} = self::_library($value, preg_match('#^my_#i', $lib));
-                }
-            }
+            throw new LoadException('Veuillez specifier la librarie à charger');
         }
-        if (!empty($library) AND is_string($library))
+        if (!is_string($library) AND !is_array($library))
         {
-            $lib = explode('/', $library); 
-            $lib = end($lib);
-            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $library);
-            $object->{$property} = self::_library($library, preg_match('#^my_#i', $lib));
+            throw new InvalidArgumentException('Type de parametre incorrect pour la methode "library"');
         }
-    }
-    /**
-     * @param $library
-     * @param bool $app
-     * @return mixed
-     * @throws \ReflectionException
-     */
-    private static function _library($library, bool $app = false)
-    {
-        $library = ucfirst($library);
 
-        $file = ($app === false)
-            ? SYST_DIR.'libraries'.DS.str_replace('/', DS, $library).'.php'
-            : APP_DIR.'libraries'.DS.str_replace('/', DS, $library).'.php'
-        ;
-        $library = explode('/', trim($library)); 
-        $library = end($library);
+        if (is_array($library))
+        {
+            $librairies = [];
+
+            foreach ($library As $value)
+            {
+                $librairies[] = self::library($value);
+            }
+
+            return $librairies;
+        }
 
         if (!self::is_loaded('libraries', $library))
         {
-            if (!file_exists($file))
-            {
-                LoadException::except('
-                    Impossible de charger la librairie <b>'.$library.'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$file.' &raquo; n\'existe pas
-                ');
-            }
-            require_once $file;
-
-            $library = ($app === false) ? "dF_$library" : $library;
-            if (!class_exists($library))
-            {
-                LoadException::except('
-                    Impossible de charger la librarie <b>'.$library.'</b>. 
-                    <br> 
-                    Le fichier &laquo; '.$file.' &raquo; ne contient pas de classe <b>'.$library.'</b>
-                ');
-            }
-            self::loaded('libraries', $library, DIC::instance()->get($library));
+            self::loaded('librairies', $library, FileLocator::library($library));
         }
-        return self::get_loaded('libraries', $library);
-    }
 
+        return self::get_loaded('librairies', $library);
+    }
+    
     /**
      * Charge un fichier de gestion de langue
      * 
@@ -433,6 +262,40 @@ class Load
         $var = json_decode($lang);
     }
 
+    /**
+     * Recupere toutes les definitions des services a injecter dans le container
+     *
+     * @return array
+     */
+    public static function providers() : array
+    {
+        $providers = [];
+
+        // System services
+        $filename = SYST_DIR . 'constants' . DS . 'provider.php';
+        if (!file_exists($filename))
+        {
+            LoadException::except('
+                Impossible de charger le fichier de definition des services du systeme. 
+                <br> 
+                Le fichier &laquo; '.$filename.' &raquo; n\'existe pas ou est innaccessible en lecture.
+            ');
+
+        }
+        else 
+        {
+            $providers = array_merge($providers, require_once $filename);
+        }
+        
+        // App services
+        $filename = APP_DIR . 'config' . DS . 'provider.php';
+        if (file_exists($filename))
+        {
+            $providers = array_merge($providers, require_once $filename);
+        }
+        
+        return $providers;
+    }
     
     
     /**

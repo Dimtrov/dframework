@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.1
  */
-
 
 namespace dFramework\core\utilities;
 
@@ -91,6 +90,40 @@ class Tableau
         return $data;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param array|null $data
+     * @param string|null $part
+     * @return void
+     */
+    public static function get_recusive(?array $data, ?string $part = null)
+    {
+        if (empty($data)) 
+        {
+            return null;
+        }
+        if (empty($part)) 
+        {
+            return $data;
+        }
+
+        $part = explode('.', $part);
+        $count = count($part);
+        
+        if ($count == 1) 
+        {
+            return $data[$part[0]] ?? null;
+        }
+        
+        $sub_part = $part[1];
+        for ($i = 2; $i < $count; $i++) 
+        {
+            $sub_part .= '.' .$part[$i];
+        }
+
+        return self::get_recusive($data[$part[0]] ?? null, $sub_part);
+    }
 
 
     /**

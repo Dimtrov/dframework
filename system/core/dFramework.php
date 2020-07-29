@@ -12,8 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
- * 
+ *  @version    3.2.1 
  */
 
 namespace dFramework\core;
@@ -37,7 +36,6 @@ use Tracy\Debugger;
  * @since       1.0
  * @file        /system/core/dFramework.php
  */
-
 class dFramework
 {
     const VERSION = '3.2';
@@ -68,6 +66,7 @@ class dFramework
          * Verifie les exigences systeme
          */
         self::checkRequirements();
+        self::configure_ext();
 
         /**
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
@@ -88,15 +87,8 @@ class dFramework
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
          */
-        Load::init();
+        Load::init();        
         
-        /**
-         * Demarre le service provider
-         */
-        Service::init();
-
-        self::configure_ext();
-
         /**
          * Initialise le routing de l'application. Point d'entrer de l'application
          */
@@ -113,7 +105,7 @@ class dFramework
     private static function checkRequirements()
     {
         $checker = (new envChecker)
-            ->requirePhpVersion('>=7.1')
+            ->requirePhpVersion('>=7.2')
             ->requirePhpExtensions(self::$required_extensions)
             ->requireDirectory(SYST_DIR, envChecker::CHECK_IS_READABLE)
             ->requireDirectory(APP_DIR, envChecker::CHECK_IS_READABLE);

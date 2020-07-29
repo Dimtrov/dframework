@@ -18,6 +18,8 @@
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
+use dFramework\core\loader\FileLocator;
+use dFramework\core\utilities\Tableau;
 
 /**
  * Language
@@ -69,10 +71,8 @@ class Language
 
 	//--------------------------------------------------------------------
 
-	public function __construct(string $locale)
+	public function __construct()
 	{
-		$this->locale = $locale;
-
 		if (class_exists('\MessageFormatter'))
 		{
 			$this->intlSupport = true;
@@ -88,10 +88,7 @@ class Language
 	 */
 	public function setLocale(string $locale = null)
 	{
-		if (! is_null($locale))
-		{
-			$this->locale = $locale;
-		}
+		$this->findLocale($locale);
 
 		return $this;
 	}
@@ -101,6 +98,10 @@ class Language
 	 */
 	public function getLocale(): string
 	{
+		if (empty($this->locale))
+		{
+			$this->findLocale();
+		}
 		return $this->locale;
 	}
 
@@ -128,8 +129,8 @@ class Language
 			$parsedLine,
 		] = $this->parseLine($line, $this->locale);
 
-		$output = $this->language[$this->locale][$file][$parsedLine] ?? null;
-
+		$output = Tableau::get_recusive($this->language[$this->locale][$file], $parsedLine);
+		
 		if ($output === null AND strpos($this->locale, '-'))
 		{
 			[$locale] = explode('-', $this->locale, 2);
@@ -139,14 +140,16 @@ class Language
 				$parsedLine,
 			] = $this->parseLine($line, $locale);
 
-			$output = $this->language[$locale][$file][$parsedLine] ?? null;
+			$output = Tableau::get_recusive($this->language[$locale][$file], $parsedLine);
 		}
 
 		// if still not found, try English
 		if (empty($output))
 		{
 			$this->parseLine($line, 'en');
-			$output = $this->language['en'][$file][$parsedLine] ?? null;
+		
+			$output = Tableau::get_recusive($this->language['$locale'][$file], $parsedLine);
+			//$output = $this->language['en'][$file][$parsedLine] ?? null;
 		}
 
 		$output = $output ?? $line;
@@ -172,14 +175,14 @@ class Language
 	 */
 	protected function parseLine(string $line, string $locale): array
 	{
-		/*
 		$file = substr($line, 0, strpos($line, '.'));
 		$line = substr($line, strlen($file) + 1);
-		*/
+		/*
 		$line = explode('.', $line);
 		$file = array_shift($line);
 		$line = implode('.', $line);
-		
+		*/
+
 		if (!isset($this->language[$locale][$file]) OR !array_key_exists($line, $this->language[$locale][$file]))
 		{
 			$this->load($file, $locale);
@@ -191,8 +194,6 @@ class Language
 		];
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Advanced message formatting.
 	 *
@@ -203,7 +204,7 @@ class Language
 	 */
 	protected function formatMessage($message, array $args = [])
 	{
-		if (! $this->intlSupport || ! $args)
+		if (!$this->intlSupport OR !$args)
 		{
 			return $message;
 		}
@@ -219,8 +220,6 @@ class Language
 
 		return \MessageFormatter::formatMessage($this->locale, $message, $args);
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Loads a language file in the current locale. If $return is true,
@@ -254,17 +253,8 @@ class Language
 			$this->language[$locale][$file] = [];
 		}
 
-		$path = "lang/{$locale}/{$file}.json";
-
-
+		$lang = FileLocator::lang($file, $locale);
 		
-
-
-
-
-
-		$lang = $this->requireFile($path);
-
 		if ($return)
 		{
 			return $lang;
@@ -276,44 +266,29 @@ class Language
 		$this->language[$locale][$file] = $lang;
 	}
 
-	//--------------------------------------------------------------------
 
-	/**
-	 * A simple method for including files that can be
-	 * overridden during testing.
-	 *
-	 * @param string $path
-	 *
-	 * @return array
-	 */
-	protected function requireFile(string $path): array
+	private function findLocale(?string $locale = null)
 	{
-		$files   = Services::locator()->search($path);
-		$strings = [];
-
-		foreach ($files as $file)
+		if (!empty($locale))
 		{
-			// On some OS's we were seeing failures
-			// on this command returning boolean instead
-			// of array during testing, so we've removed
-			// the require_once for now.
-			if (is_file($file))
-			{
-				$strings[] = require $file;
-			}
+			$this->locale = $this->normalizeLocale($locale);
+			
+			return $this->locale;			
 		}
+		
+		$locale = Config::get('general.language');
 
-		if (isset($strings[1]))
-		{
-			$strings = array_replace_recursive(...$strings);
-		}
-		elseif (isset($strings[0]))
-		{
-			$strings = $strings[0];
-		}
-
-		return $strings;
+		$this->locale = $locale;
+		return $this->locale;
 	}
-
-	//--------------------------------------------------------------------
+	/**
+	 * Valide la langue entree
+	 *
+	 * @param string $locale
+	 * @return string
+	 */
+	private function normalizeLocale(string $locale) : string
+	{
+		return $locale;
+	}
 }

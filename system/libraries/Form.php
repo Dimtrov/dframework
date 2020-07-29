@@ -32,7 +32,7 @@ use dFramework\core\utilities\Tableau;
  * @file        /system/libraries/Form.php
  */
 
-class dF_Form
+class Form
 {   
  
     protected $datas = [];

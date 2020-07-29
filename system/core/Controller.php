@@ -12,15 +12,13 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.1
  */
-
 
 namespace dFramework\core;
 
-use dFramework\core\http\Request;
-use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
+use dFramework\core\loader\Service;
 use dFramework\core\output\Cache;
 use dFramework\core\output\View;
 use ReflectionClass;
@@ -37,7 +35,6 @@ use ReflectionClass;
  * @since       1.0
  * @file		/system/core/Controller.php
  */
-
 abstract class Controller
 {
     CONST 
@@ -111,11 +108,11 @@ abstract class Controller
         {
             if (self::RESPONSE_OBJECT === $value)
             {
-                $this->response = new Response();
+                $this->response = Service::response();
             }
             if (self::REQUEST_OBJECT === $value)
             {
-                $this->request = new Request();
+                $this->request = Service::request();
             }
             if (self::CACHE_OBJECT === $value)
             {
@@ -139,7 +136,8 @@ abstract class Controller
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
         $view = new View($view, $data, $path, $options);
-        if (!empty($this->layout) AND is_string($this->layout)) {
+        if (!empty($this->layout) AND is_string($this->layout)) 
+        {
             $view->layout($this->layout);
         }
         
@@ -151,11 +149,34 @@ abstract class Controller
      * 
      * @param string|array $model
      * @param string|null $alias
-     * @throws \ReflectionException
      */
     final protected function loadModel($model, string $alias = null)
     {
-        Load::model($this, $model, $alias);
+        if (is_array($model))
+        {
+            foreach ($model As $k => $v) 
+            {
+                if (is_string($k)) 
+                {
+                    $mod = $k;
+                    $alias = $v;
+                }
+                else 
+                {
+                    $mod = $v;
+                    $alias = $v;
+                }
+                $this->loadModel($mod, $alias);
+            }
+        }
+        else 
+        {
+            $mod = explode('/', $model);
+            $mod = end($mod);
+            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $mod);
+     
+            $this->{$property} = Load::model($model);
+        }
     }
 
     /**
@@ -166,7 +187,31 @@ abstract class Controller
      */
     final protected function loadController($controller, string $alias = null)
     {
-        Load::controller($this, $controller, $alias);
+        if (is_array($controller))
+        {
+            foreach ($controller As $k => $v) 
+            {
+                if (is_string($k)) 
+                {
+                    $con = $k;
+                    $alias = $v;
+                }
+                else 
+                {
+                    $con = $v;
+                    $alias = $v;
+                }
+                $this->loadController($con, $alias);
+            }
+        }
+        else 
+        {
+            $con = explode('/', $controller);
+            $con = end($con);
+            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $con);
+     
+            $this->{$property} = Load::controller($controller);
+        }
     }
 
     /**
@@ -175,19 +220,42 @@ abstract class Controller
      * @param string|array $library
      * @param string|null $alias
      * @param mixed $var 
-     * @throws \ReflectionException
      */
     final protected function loadLibrary($library, string $alias = null, &$var = null)
     {
-        Load::library($this, $library, $alias);
-        
-        /**
-         * @since 2.2
-         */
-        if (is_string($library) AND array_key_exists(2, func_get_args()))
+        if (is_array($library))
         {
-            $prop = strtolower(!empty($alias) ? $alias : $library);
-            $var = $this->$prop;
+            foreach ($library As $k => $v) 
+            {
+                if (is_string($k)) 
+                {
+                    $lib = $k;
+                    $alias = $v;
+                }
+                else 
+                {
+                    $lib = $v;
+                    $alias = $v;
+                }
+                $this->loadLibrary($lib, $alias);
+            }
+        }
+        else 
+        {
+            $lib = explode('/', $library);
+            $lib = end($lib);
+            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $lib);
+     
+            $this->{$property} = Load::library($library);
+                
+            /**
+             * @since 2.2
+             */
+            if (array_key_exists(2, func_get_args()))
+            {
+                $var = $this->$property;
+                unset($this->$property);
+            }
         }
     }
 
@@ -202,28 +270,13 @@ abstract class Controller
     }
 
     /**
-     * Charge un fichier de langue
-     * 
-     * @param string $file
-     * @param mixed $var 
-     * @param string|null $locale
-     * @since 3.0
-     */
-    final protected function loadLang(string $file, &$var, ?string $locale = null)
-    {
-        Load::lang($file, $var, $locale, true);
-    }
-
-
-
-    /**
      * Sets the controller Model.
      *
      * @param string $model
      * @return Controller
      * @throws \ReflectionException
      */
-     final protected function setModel(string $model) : self
+    final protected function setModel(string $model) : self
     {
         $this->loadModel($model, 'model');
         return $this;
