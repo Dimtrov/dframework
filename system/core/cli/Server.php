@@ -55,15 +55,15 @@ class Server extends Cli
     public function execute($host, $port, $php)
     {
         try {
-            $this->__startMsg();
+            $this->_startMsg();
             
             $this->_io->write("\n Serveur de développement en cours de démarrage \n");
             sleep(2.5);
-            $this->_io->ok("\t => Le serveur avec succès. \n");
+            $this->_io->ok("\t => Le serveur a démarré avec succès. \n");
             sleep(2.5);
             $this->_io->writer()->colors("\t => <white>Ouvrez votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end><eol>");
             sleep(1.5);
-            $this->__endMsg();
+            $this->_endMsg();
 
             $shell = new Shell($php . ' -S '. $host . ':' . $port . ' -t ' . escapeshellarg(\WEBROOT));
             $shell->setOptions(dirname(\WEBROOT), null, 2.5)->execute()->isRunning();

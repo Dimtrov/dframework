@@ -58,7 +58,7 @@ abstract class Cli extends Command
      *
      * @return void
      */
-    protected function __startMsg()
+    protected function _startMsg()
     {
         $this->_io->write('', true);
         $eq_str = str_repeat('=', strlen($this->_description));
@@ -72,7 +72,7 @@ abstract class Cli extends Command
      *
      * @return void
      */
-    protected function __endMsg()
+    protected function _endMsg()
     {
         $info = 'dFramework v'.dFramework::VERSION.' * dbot v1.1 * '.date('Y-m-d H:i:s');
         $this->_io->write("\n".str_repeat('-', strlen($info))."\n");

@@ -48,6 +48,9 @@ class Autoloader
      */
     static function autoload($input)
     {
+        /**
+         * Chargement des fichiers systeme
+         */
         if (strpos($input, __NAMESPACE__ . '\\') !== false)
         {
             $input = str_replace(__NAMESPACE__ . '\\', '', $input);
@@ -58,6 +61,9 @@ class Autoloader
 
             require_once __DIR__. DIRECTORY_SEPARATOR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
         }
+        /**
+         * Chargement des controleurs
+         */
         else if (preg_match('#Controller$#', $input))
         {
             $input = explode('\\', $input);
@@ -66,6 +72,9 @@ class Autoloader
 
             require_once CONTROLLER_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
         }
+        /**
+         * Chargement des modeles
+         */
         else if (preg_match('#Model$#', $input))
         {
             $input = explode('\\', $input);
@@ -74,6 +83,31 @@ class Autoloader
 
             require_once MODEL_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
         }
+        /**
+         * Chargement des entites
+         */
+        else if (preg_match('#Entity$#', $input))
+        {
+            $input = explode('\\', $input);
+            $class = array_pop($input);
+            $namespace = implode(DIRECTORY_SEPARATOR, $input);
+
+            require_once ENTITY_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+        }
+        /**
+         * Chargement des filtres http
+         */
+        else if (preg_match('#Filter$#', $input))
+        {
+            $input = explode('\\', $input);
+            $class = array_pop($input);
+            $namespace = implode(DIRECTORY_SEPARATOR, $input);
+
+            require_once FILTER_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+        }
+        /**
+         * Chargement des classe mappees notament les dependances
+         */
         else 
         {
             if (file_exists(SYST_DIR.'constants'.DIRECTORY_SEPARATOR.'.classmap.php'))

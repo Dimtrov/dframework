@@ -91,40 +91,73 @@ class Tableau
     }
 
     /**
-     * Undocumented function
-     *
      * @param array|null $data
-     * @param string|null $part
-     * @return void
+     * @param string|null $key
+     * @return mixed
      */
-    public static function get_recusive(?array $data, ?string $part = null)
+    public static function get_recusive(?array $data, ?string $key = null)
     {
         if (empty($data)) 
         {
             return null;
         }
-        if (empty($part)) 
+        if (empty($key)) 
         {
             return $data;
         }
 
-        $part = explode('.', $part);
-        $count = count($part);
+        $key = explode('.', $key);
+        $count = count($key);
         
         if ($count == 1) 
         {
-            return $data[$part[0]] ?? null;
+            return $data[$key[0]] ?? null;
         }
         
-        $sub_part = $part[1];
+        $sub_key = $key[1];
         for ($i = 2; $i < $count; $i++) 
         {
-            $sub_part .= '.' .$part[$i];
+            $sub_key .= '.' .$key[$i];
         }
 
-        return self::get_recusive($data[$part[0]] ?? null, $sub_part);
+        return self::get_recusive($data[$key[0]] ?? null, $sub_key);
     }
 
+    /**
+     * @param array $data
+     * @param string|null $key
+     * @param mixed $value
+     * @return void
+     */
+    public static function set_recursive(array &$data, ?string $key = null, $value = null)
+    {
+        if (empty($data) OR empty($key)) 
+        {
+            return;
+        }
+
+        $key = explode('.', $key);
+        $count = count($key);
+
+        if ($count == 1)
+        {
+            $data[$key[0]] = $value;
+            return;
+        }
+        
+        $sub_key = $key[1];
+        for ($i = 2; $i < $count; $i++) 
+        {
+            $sub_key .= '.' .$key[$i];
+        }
+
+        if (!isset($data[$key[0]]))
+        {
+            $data[$key[0]] = [];
+        }
+        
+        self::set_recursive($data[$key[0]], $sub_key, $value);
+    }
 
     /**
      * Get a single value specified by $path out of $data.

@@ -17,7 +17,6 @@
 
 namespace dFramework\core\cli;
 
-use Ahc\Cli\Input\Command;
 use Kahlan\Box\Box;
 use Kahlan\Suite;
 use Kahlan\Cli\Kahlan;
@@ -35,11 +34,14 @@ use Kahlan\Jit\ClassLoader;
  * @since       3.2.1
  * @file        /system/core/cli/Tester.php
  */
-class Tester extends Command
+class Tester extends Cli
 {
+    protected $_description = 'Service de réalisation de tests unitaires';
+    protected $_name = 'Tester';
+
     public function __construct()
     {
-        parent::__construct('tester', 'Service de réalisation de tests unitaires');
+        parent::__construct();
 
         $this
             ->usage(
@@ -50,7 +52,23 @@ class Tester extends Command
     public function execute()
     {
         try {
-            error_reporting(E_ALL);
+           
+            $this->_startMsg();
+            
+            $this->runTest();
+            
+            $this->_endMsg();
+ 
+        }
+        catch(\Exception $e) { }
+        
+        return true;
+    }
+
+
+    private function runTest()
+    {
+        error_reporting(E_ALL);
             
             $kahlan_dir = SYST_DIR.'dependencies'.DS.'kahlan'.DS.'kahlan';
             
@@ -74,7 +92,7 @@ class Tester extends Command
                 '--reporter=verbose'
             ]);
             \initKahlanGlobalFunctions();
-
+            
             if ($autoloader instanceof ClassLoader) {
                 $commandLine = $specs->commandLine();
                 $autoloader->patch([
@@ -98,9 +116,5 @@ class Tester extends Command
        
             $specs->run();
             exit($specs->status());
-        }
-        catch(\Exception $e) { }
-        
-        return true;
     }
 }

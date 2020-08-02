@@ -19,7 +19,6 @@ namespace dFramework\core;
 
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
-use dFramework\core\loader\Service;
 use dFramework\core\router\Router;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
@@ -38,7 +37,7 @@ use Tracy\Debugger;
  */
 class dFramework
 {
-    const VERSION = '3.2';
+    const VERSION = '3.2.1';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework

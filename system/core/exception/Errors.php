@@ -20,6 +20,7 @@
 
 use dFramework\core\Config;
 use dFramework\core\http\Response;
+use dFramework\core\loader\Service;
 use dFramework\core\output\View;
 
 /**
@@ -67,7 +68,7 @@ class Errors
         $message = '<p>'.(is_array($message) ? implode('</p><p>', $message) : $message).'</p>';
 
         Config::set('general.use_template_engine', false);
-        (new Response())->statusCode($status_code);
+        Service::response()->statusCode($status_code);
         (new View('/reserved/errors/'.$status_code, array_merge(
             !is_array($params) ? [] : $params, 
             compact('message', 'heading')

@@ -17,6 +17,7 @@
 
 namespace dFramework\core;
 
+use dFramework\core\http\Filter;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dFramework\core\output\Cache;
@@ -35,7 +36,7 @@ use ReflectionClass;
  * @since       1.0
  * @file		/system/core/Controller.php
  */
-abstract class Controller
+class Controller
 {
     CONST 
         /**
@@ -69,19 +70,23 @@ abstract class Controller
          */
         $cache;
 
+    private $_filters = [];
+    
 
     /**
      * Controller constructor.
      */
     public function __construct()
     {
-        $this->getElements();
-
         /**
          * Use Request and Response Object automaticaly
          * @since 2.2
          */
         $this->useObject(self::REQUEST_OBJECT, self::RESPONSE_OBJECT);
+
+        $this->_launchFilters();
+        
+        $this->_getElements();
     }
     /**
      * Recuperation d'une seule instance de controleur. Pattern singletton
@@ -97,6 +102,26 @@ abstract class Controller
         return self::$_instance;
     }
     private static $_instance;
+
+    /**
+     * Renvoi la liste des filtres a appliquer a la requete
+     *
+     * @return array
+     */
+    protected function _filters() : array 
+    {
+        return [];
+    }
+    /**
+     * Defini une liste de filtres specifique a la methode
+     *
+     * @param string|string[] $filters
+     * @return void
+     */
+    final protected function useFilter($filters)
+    {
+        $this->_filters = (array) $filters;
+    }
 
     
     /**
@@ -221,7 +246,7 @@ abstract class Controller
      * @param string|null $alias
      * @param mixed $var 
      */
-    final protected function loadLibrary($library, string $alias = null, &$var = null)
+    final public function loadLibrary($library, string $alias = null, &$var = null)
     {
         if (is_array($library))
         {
@@ -264,7 +289,7 @@ abstract class Controller
      * 
      * @param string ...$helpers
      */
-    final protected function loadHelper(string ...$helpers)
+    final public function loadHelper(string ...$helpers)
     {
         Load::helper($helpers);
     }
@@ -286,7 +311,7 @@ abstract class Controller
     /**
      * @throws \ReflectionException
      */
-    private function getElements()
+    private function _getElements()
     {
         $this->getModel();
 
@@ -294,7 +319,6 @@ abstract class Controller
 
         $this->autoloadLibraries();
     }
-
     /**
      * @throws \ReflectionException
      */
@@ -308,7 +332,6 @@ abstract class Controller
             $this->setModel($model);
         }
     }
-
     /**
      * @throws \ReflectionException
      */
@@ -327,7 +350,6 @@ abstract class Controller
             }
         }
     }
-
     /**
      * @throws \ReflectionException
      */
@@ -346,5 +368,14 @@ abstract class Controller
                 $this->loadLibrary($value);
             }
         }
+    }
+
+    private function _launchFilters()
+    {
+        $filter = new Filter();
+
+        $filter->add(array_merge($this->_filters(), $this->_filters));
+
+        $this->response = $filter->process($this->request);
     }
 }

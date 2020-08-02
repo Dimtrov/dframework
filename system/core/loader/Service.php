@@ -19,6 +19,7 @@ namespace dFramework\core\loader;
 
 use dFramework\core\http\Request;
 use dFramework\core\http\Response;
+use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\output\Cache;
 use dFramework\core\output\Language;
@@ -156,5 +157,89 @@ class Service
         }
         
         return Injector::factory(Language::class)->setLocale($locale);
+    }
+    
+    /**
+	 * Provides the ability to perform case-insensitive calling of service
+	 * names.
+	 *
+	 * @param string $name
+	 * @param array  $arguments
+	 *
+	 * @return mixed
+	 */
+	public static function __callStatic(string $name, array $arguments)
+	{
+		$name = strtolower($name);
+
+		if (method_exists(self::class, $name))
+		{
+			return self::$name(...$arguments);
+		}
+
+		return self::discoverServices($name, $arguments);
+    }
+    
+    /**
+	 * Will scan all psr4 namespaces registered with system to look
+	 * for new Config\Services files. Caches a copy of each one, then
+	 * looks for the service method in each, returning an instance of
+	 * the service, if available.
+	 *
+	 * @param string $name
+	 * @param array  $arguments
+	 *
+	 * @return mixed
+	 */
+	protected static function discoverServices(string $name, array $arguments)
+	{
+        /*
+            if (! static::$discovered)
+            {
+                $config = config('Modules');
+
+                if ($config->shouldDiscover('services'))
+                {
+                    $locator = static::locator();
+                    $files   = $locator->search('Config/Services');
+
+                    if (empty($files))
+                    {
+                        // no files at all found - this would be really, really bad
+                        return null;
+                    }
+
+                    // Get instances of all service classes and cache them locally.
+                    foreach ($files as $file)
+                    {
+                        $classname = $locator->getClassname($file);
+
+                        if (! in_array($classname, ['CodeIgniter\\Config\\Services']))
+                        {
+                            static::$services[] = new $classname();
+                        }
+                    }
+                }
+
+                static::$discovered = true;
+            }
+
+            if (! static::$services)
+            {
+                // we found stuff, but no services - this would be really bad
+                return null;
+            }
+
+            // Try to find the desired service method
+            foreach (static::$services as $class)
+            {
+                if (method_exists(get_class($class), $name))
+                {
+                    return $class::$name(...$arguments);
+                }
+            }
+
+            return null;
+        */
 	}
 }

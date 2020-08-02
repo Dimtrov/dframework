@@ -70,7 +70,7 @@ class Maker extends Cli
     public function execute($element, $value, $db)
     {
         try {
-            $this->__startMsg();
+            $this->_startMsg();
             
             $element = strtolower($element);
             if (!in_array($element, ['model', 'view', 'controller', 'entity', 'app']))
@@ -86,7 +86,7 @@ class Maker extends Cli
                 call_user_func_array([$this, $element], [$value, $db]);
             }
             
-            $this->__endMsg();
+            $this->_endMsg();
         }
         catch(\Exception $e) { 
 

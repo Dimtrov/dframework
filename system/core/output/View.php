@@ -22,6 +22,7 @@ use dFramework\core\exception\LoadException;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dframework\core\router\Dispatcher;
+use Exception;
 
 /**
  * View
@@ -51,6 +52,12 @@ class View
 	 */
 	protected $performanceData = [];
 	/**
+	 * The render variables
+	 *
+	 * @var array
+	 */
+	protected $renderVars = [];
+    /**
 	 * Number of loaded views
 	 *
 	 * @var integer
@@ -149,6 +156,21 @@ class View
 			: 'Index';
 
 		$this->title(ucfirst($method) . ' - ' . ucfirst($class));
+    }
+
+    public function __get(string $name)
+    {
+        $name = strtolower($name);
+
+        if ($name == 'form')
+        {
+            return Load::library('Form');
+        }
+        throw new Exception($name .' is not a member property of '.__CLASS__);
+    }
+    public function __toString()
+    {
+        return $this->get();
     }
 
     /**

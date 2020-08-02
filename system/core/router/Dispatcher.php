@@ -20,7 +20,7 @@ namespace dFramework\core\router;
 use dFramework\core\Config;
 use dFramework\core\Controller;
 use dFramework\core\exception\RouterException;
-use dFramework\core\loader\DIC;
+use dFramework\core\loader\Injector;
 use dFramework\core\loader\Service;
 use dFramework\core\utilities\Chaine;
 use ReflectionMethod;
@@ -239,7 +239,8 @@ class Dispatcher
         
         else
         {
-            $controller = DIC::instance()->get($controllerClass);
+            $controller = Injector::factory($controllerClass);
+
             if (method_exists($controller, '_remap'))
             {
                 if (is_array($instance->methodParameters))

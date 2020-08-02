@@ -15,6 +15,7 @@
  *  @version    3.2.1
  */
 
+use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
 use dFramework\core\http\Request;
 use dFramework\core\http\Response;
@@ -85,6 +86,65 @@ if (!function_exists('helper'))
 	function helper($filenames)
 	{
         Load::helper($filenames);
+	}
+}
+
+if (! function_exists('service'))
+{
+	/**
+	 * Allows cleaner access to the Services Config file.
+	 * Always returns a SHARED instance of the class, so
+	 * calling the function multiple times should always
+	 * return the same instance.
+	 *
+	 * These are equal:
+	 *  - $cache = service('cache')
+	 *  - $cache = \dFramework\core\loader\Service::cache();
+	 *
+	 * @param string $name
+	 * @param array  ...$params
+	 *
+	 * @return mixed
+	 */
+	function service(string $name, ...$params)
+	{
+		return Service::$name(...$params);
+	}
+}
+
+if (! function_exists('single_service'))
+{
+	/**
+	 * Allow cleaner access to a Service.
+	 * Always returns a new instance of the class.
+	 *
+	 * @param string     $name
+	 * @param array|null $params
+	 *
+	 * @return mixed
+	 */
+	function single_service(string $name, ...$params)
+	{
+		// Ensure it's NOT a shared instance
+		array_push($params, false);
+
+		return Service::$name(...$params);
+	}
+}
+
+if (! function_exists('show404'))
+{
+    /**
+     * Show a 404 Page Not Found in browser
+     *
+     * @param string $message
+     * @param string $heading
+     * @param array $params
+     * @return void
+     */
+	function show404(string $message = 'The page you requested was not found.', string $heading = 'Page Not Found', array $params = [])
+	{
+		return Errors::show404($message, $heading, $params);
 	}
 }
 
@@ -576,4 +636,20 @@ if (!function_exists('stringify_attributes'))
 	{
         return Service::helpers()->stringify_attributes($attributes, $js);
 	}
+}
+
+if (!function_exists('view_exist'))
+{
+    /**
+     * Verifie si un fichier de vue existe. Utile pour limiter les failles include
+     *
+     * @param string $name
+     * @return boolean
+     */
+    function view_exist(string $name) : bool
+    {
+		$name = preg_match('#\.php$#', $name) ? $name : $name.'.php';
+        
+        return is_file(VIEW_DIR.$name);
+    }
 }
