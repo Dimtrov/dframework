@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.1
  */
-
 
 /**
  * Cart
@@ -24,12 +23,12 @@
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Dom.html
- * @since       3.2
+ * @since       3.2.0
  * @credit      Cart library - By Sei Kan <seikan.dev@gmail.com> - https://github.com/seikan/Cart
  * @file        /system/librairies/Cart.php
  */
 
-class dF_Cart
+class Cart
 {
     /**
 	 * An unique ID for the cart.

@@ -19,7 +19,7 @@ $config = require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.config.php';
 
 foreach ($config As $key => $value)
 {
-    $config[$key] = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.trim($value, '/');
+    $config[$key] = __DIR__.DIRECTORY_SEPARATOR.trim($value, '/');
 }
 extract($config);
 

@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
 
 namespace dFramework\core;
@@ -61,10 +61,6 @@ class Controller
          * @var Response Instance de l'objet Response
          */
         $response,
-        /**
-         * @var Data Instance de l'objet Data
-         */
-        $data,
         /**
          * @var Cache Instance de l'objet Cache
          */
@@ -164,6 +160,11 @@ class Controller
         if (!empty($this->layout) AND is_string($this->layout)) 
         {
             $view->layout($this->layout);
+        }
+
+        if (!empty($this->view_datas) AND is_array($this->view_datas))
+        {
+            $view->addData($this->view_datas);
         }
         
         return $view;
@@ -376,6 +377,6 @@ class Controller
 
         $filter->add(array_merge($this->_filters(), $this->_filters));
 
-        $this->response = $filter->process($this->request);
+        $this->response = $filter->handle($this->request);
     }
 }

@@ -12,12 +12,13 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
 namespace dFramework\core\http;
 
 use dFramework\core\exception\HttpException;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Uri
@@ -29,11 +30,11 @@ use dFramework\core\exception\HttpException;
  * @category    Http
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       3.2
+ * @since       3.2.0
  * @credit      CodeIgniter\HTTP\URI (https://codeigniter.com CodeIgniter Framework)
  * @file        /system/core/http/Uri.php
  */
-class Uri
+class Uri implements UriInterface
 {
 
 	/**
@@ -620,6 +621,13 @@ class Uri
 
 		return $this;
 	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withScheme($scheme)
+	{
+		return $this->setScheme($scheme);
+	}
 
 	//--------------------------------------------------------------------
 
@@ -638,7 +646,13 @@ class Uri
 
 		return $this;
 	}
-
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withUserInfo($user, $password = null)
+	{
+		return $this->setUserInfo($user, $password);
+	}
 	//--------------------------------------------------------------------
 
 	/**
@@ -653,6 +667,13 @@ class Uri
 		$this->host = trim($str);
 
 		return $this;
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withHost($host)
+	{
+		return $this->setHost($host);
 	}
 
 	//--------------------------------------------------------------------
@@ -680,9 +701,14 @@ class Uri
 
 		return $this;
 	}
-
-	//--------------------------------------------------------------------
-
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withPort($port)
+	{
+		return $this->setPort($port);
+	}
+	
 	/**
 	 * Sets the path portion of the URI.
 	 *
@@ -698,7 +724,13 @@ class Uri
 
 		return $this;
 	}
-
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withPath($path)
+	{
+		return $this->setPath($path);
+	}
 	/**
 	 * Sets the path portion of the URI based on segments.
 	 *
@@ -742,8 +774,13 @@ class Uri
 
 		return $this;
 	}
-
-	//--------------------------------------------------------------------
+	/**
+	 * {@inheritDoc}
+	 */
+	public function withQuery($query)
+	{
+		return $this->setQuery($query);
+	}
 
 	/**
 	 * A convenience method to pass an array of items in as the Query
@@ -841,6 +878,13 @@ class Uri
 		$this->fragment = trim($string, '# ');
 
 		return $this;
+	}
+	/**
+	 * @inheritDoc
+	 */
+	public function withFragment($fragment)
+	{
+		return $this->setFragment($fragment);
 	}
 
 	//--------------------------------------------------------------------

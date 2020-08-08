@@ -17,11 +17,8 @@
 
 namespace dFramework\core\cli;
 
-use Ahc\Cli\Input\Command;
 use Ahc\Cli\IO\Interactor;
 use Ahc\Cli\Output\Color;
-use Ahc\Cli\Output\Writer;
-use dFramework\core\dFramework;
 use dFramework\core\loader\ClassMapper;
 
 /**
@@ -35,19 +32,22 @@ use dFramework\core\loader\ClassMapper;
  * @since       3.0
  * @file        /system/core/cli/Mapper.php
  */
-class Mapper extends Command
+class Mapper extends Cli
 {
+    protected $_description = 'Service de mapping des classes pour l\'auto-chargement';
+    protected $_name = 'Mapper';
+
     public function __construct()
     {
-        parent::__construct('mapper', 'Service de mapping des classes pour l\'auto-chargement');
+        parent::__construct();
 
         $this
             ->option('-d --dept', 'Map les classes des dependances interne du framework')
             ->option('-a --app', 'Map les classes de votre application (Utile si vous n\'avez pas un mecanisme d\'autoloader)')
             // Usage examples:
             ->usage(
-                '<bold>  dbot mapper -d</end> <comment> => Map toutes les classes des dependances interne du framework pour les charger automatiquement</end><eol/>' .
-                '<bold>  dbot mapper -a</end> <comment> => Map les classes se trouvant dans un dossier specifique de votre application pour les charger automatiquement</end><eol/>' 
+                '<bold>  dbot map -d</end> <comment> => Map toutes les classes des dependances interne du framework pour les charger automatiquement</end><eol/>' .
+                '<bold>  dbot map -a</end> <comment> => Map les classes se trouvant dans un dossier specifique de votre application pour les charger automatiquement</end><eol/>' 
             );
     }
 
@@ -65,12 +65,10 @@ class Mapper extends Command
     public function execute()
     {
         try {
-            $io = $this->app()->io();
-            $color = new Color;
-            $writer = new Writer();
-
-            $io->write("\n *******  Mapping des classes en cours de traitement  ******** \n", true);
-
+            $this->_startMsg();
+            
+            $this->_io->write("\n Recherche de classes en cours de traitement \n");
+                        
             if ($this->app) 
             {
                 $mapper = new ClassMapper([\APP_DIR], [
@@ -85,13 +83,7 @@ class Mapper extends Command
             }
             else 
             {
-                $mapper = new ClassMapper([\SYST_DIR] , [
-                    'excluded_paths' => [
-                        \SYST_DIR.'components',
-                        \SYST_DIR.'core',
-                        \SYST_DIR.'constants',
-                    ]
-                ]);
+                $mapper = new ClassMapper([\SYST_DIR.'dependencies']);
                 $export_file = \SYST_DIR.'constants'.\DS.'.classmap.php';
             }
 
@@ -99,14 +91,17 @@ class Mapper extends Command
             
             if ($mapper->export_result_in_file($export_file))
             {
-                $io->write("\t --- Traitement terminé", true);
-               echo $color->ok("\t ".count($mapper->get_result_as_array())." Classes collectées avec succès \n");
+                $this->_io->writer()->colors("\t => <blue>Traitement terminé avec succès. </end><eol>");
+                sleep(1.5);
+                $this->_io->writer()->colors("\t => <boldGreen>".count($mapper->get_result_as_array())."</end> <white>classes collectées avec succès</end><eol>");
             }
             else 
             {
-               echo $color->error("\t Une erreur s'est produite lors de la collecte des classes");
+               $this->_io->error("\t Une erreur s'est produite lors de la collecte des classes \n");
             }
-            $writer->bold->colors("\n\t<bgGreen> dFramework v".dFramework::VERSION." </end></eol>");
+            
+            sleep(1.5);
+            $this->_endMsg();
         }
         catch (\Exception $e) { }
         

@@ -19,12 +19,15 @@ use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
 use dFramework\core\http\Request;
 use dFramework\core\http\Response;
+use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dFramework\core\router\Router;
 use dFramework\core\security\Session;
 use Kint\Kint;
+use Plasticbrain\FlashMessages\FlashMessages;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * dFramework System Helpers
@@ -317,7 +320,8 @@ if (!function_exists('is_online'))
     }
 }
 
-if (!function_exists('is_ajax_request')) {
+if (!function_exists('is_ajax_request')) 
+{
     /**
      * Test to see if a request contains the HTTP_X_REQUESTED_WITH header.
      *
@@ -394,9 +398,9 @@ if (!function_exists('redirect'))
      * @param    int|null $code
      * @return    void
      */
-    function redirect(string $uri = '', int $code = 302)
+    function redirect(string $uri = '', string $method = 'location', int $code = 302)
     {
-        Service::response()->location($uri, $code);
+        Service::response()->redirect($uri, $method, $code);
     }
 }
 
@@ -468,7 +472,7 @@ if (! function_exists('force_https'))
 	 * @credit CodeIgniter 4.0.0
 	 * @codeCoverageIgnore
 	 */
-	function force_https(int $duration = 31536000, Request $request = null, Response $response = null)
+	function force_https(int $duration = 31536000, ServerRequest $request = null, ResponseInterface $response = null)
 	{
 		if (is_null($request))
 		{
@@ -552,7 +556,7 @@ if (!function_exists('lang'))
 	 *
 	 * @return string
 	 */
-	function lang(string $line, array $args = [], string $locale = null)
+	function lang(string $line, ?array $args = [], string $locale = null)
 	{
 		return Service::language($locale)->getLine($line, $args);
 	}
@@ -651,5 +655,18 @@ if (!function_exists('view_exist'))
 		$name = preg_match('#\.php$#', $name) ? $name : $name.'.php';
         
         return is_file(VIEW_DIR.$name);
+    }
+}
+
+if (!function_exists('flash'))
+{
+    /**
+     * Fournisseur d'acces rapide a la classe PHP Flash
+     *
+     * @return FlashMessages
+     */
+    function flash() : FlashMessages
+    {
+		return New FlashMessages;
     }
 }

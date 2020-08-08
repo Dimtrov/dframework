@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.1
  */
-
 
 /**
  * API
@@ -27,8 +26,7 @@
  * @since       2.0.1
  * @file        /system/libraries/Api.php
  */
-
-class dF_Api
+class Api
 {
     /**
      * Donnees bruts (toutes les donnees, memes les entetes)
@@ -85,7 +83,7 @@ class dF_Api
     
     
     /**
-     * dF_Api constructor.
+     * Api constructor.
      */
     public function __construct()
     {
@@ -97,7 +95,7 @@ class dF_Api
      * Definit l'URL de base pour l'appel des services externes
      *
      * @param string $url
-     * @return dF_Api
+     * @return Api
      */
     public function baseUrl(string $url) : self
     {
@@ -108,8 +106,8 @@ class dF_Api
     /**
      * Definit le type de formatage du resultat
      *
-     * @param int $type dF_Api::BRUT|dF_Api::FORMAT|dF_APi::DATAS|dF_Api::METAS|dF_Api::HEADERS
-     * @return dF_Api
+     * @param int $type Api::BRUT|Api::FORMAT|APi::DATAS|Api::METAS|Api::HEADERS
+     * @return Api
      */
     public function returnType(int $type) : self
     {
@@ -121,7 +119,7 @@ class dF_Api
      * Definit les entetes a toujours envoyees lors d'une requete
      *
      * @param array $headers
-     * @return dF_Api
+     * @return Api
      */
     public function setHeaders(array $headers = []) : self
     {
@@ -327,6 +325,7 @@ class dF_Api
         {
             $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
         }
+        
         return $url;
     }
 

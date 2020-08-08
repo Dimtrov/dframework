@@ -1,0 +1,16 @@
+[
+    {
+        "code": 64,
+        "type": "E_COMPILE_ERROR",
+        "ertype": "error",
+        "message": "dFramework\\Autoloader::autoload(): Failed opening required 'E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\Helpers.php' (include_path='.;C:\/laragon\/etc\/php\/pear')",
+        "file": "E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\Autoloader.php",
+        "line": 62,
+        "date": "04.08.2020 @ 11:26",
+        "page": "dframework.local\/",
+        "referrer": null,
+        "ip": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/84.0.4147.105 Safari\/537.36",
+        "description": "An error of level 64(E_COMPILE_ERROR) was generated in file E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\Autoloader.php on line 62.\nThe error message was: \"dFramework\\Autoloader::autoload(): Failed opening required 'E:\\Codes-sources\\dimtrov.dev\\www\\dframework\\system\\core\\Helpers.php' (include_path='.;C:\/laragon\/etc\/php\/pear')\""
+    }
+]

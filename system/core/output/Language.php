@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
  
 namespace dFramework\core\output;
@@ -114,14 +114,18 @@ class Language
 	 *
 	 * @return string|string[] Returns line.
 	 */
-	public function getLine(string $line, array $args = [])
+	public function getLine(string $line, ?array $args = [])
 	{
 		// ignore requests with no file specified
 		if (! strpos($line, '.'))
 		{
 			return $line;
 		}
-
+		if (empty($args))
+		{
+			$args = [];
+		}
+		
 		// Parse out the file name and the actual alias.
 		// Will load the language file and strings.
         [
@@ -148,7 +152,7 @@ class Language
 		{
 			$this->parseLine($line, 'en');
 		
-			$output = Tableau::get_recusive($this->language['$locale'][$file], $parsedLine);
+			$output = Tableau::get_recusive($this->language[$this->locale][$file], $parsedLine);
 			//$output = $this->language['en'][$file][$parsedLine] ?? null;
 		}
 
@@ -266,19 +270,31 @@ class Language
 		$this->language[$locale][$file] = $lang;
 	}
 
-
-	private function findLocale(?string $locale = null)
+	/**
+	 * Cherche la locale appropriee par rapport a la requete de l'utilisateur
+	 *
+	 * @param string|null $locale
+	 * @return string
+	 */
+	public static function searchLocale(?string $locale = null) : string
 	{
 		if (!empty($locale))
 		{
-			$this->locale = $this->normalizeLocale($locale);
-			
-			return $this->locale;			
+			return self::normalizeLocale($locale);
 		}
-		
 		$locale = Config::get('general.language');
+		
+		if (empty($locale)) 
+		{
+			$locale = 'en';
+		}
 
-		$this->locale = $locale;
+		return $locale;
+	}
+
+	private function findLocale(?string $locale = null)
+	{
+		$this->locale = self::searchLocale($locale);
 		return $this->locale;
 	}
 	/**
@@ -287,7 +303,7 @@ class Language
 	 * @param string $locale
 	 * @return string
 	 */
-	private function normalizeLocale(string $locale) : string
+	private static function normalizeLocale(string $locale) : string
 	{
 		return $locale;
 	}

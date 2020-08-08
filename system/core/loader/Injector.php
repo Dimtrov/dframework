@@ -18,8 +18,11 @@
 namespace dFramework\core\loader;
 
 use dFramework\core\Config;
+use dFramework\core\http\ServerRequest;
 use DI\Container;
 use DI\ContainerBuilder;
+use GuzzleHttp\Psr7\CachingStream;
+use GuzzleHttp\Psr7\LazyOpenStream;
 
 /**
  * Injector

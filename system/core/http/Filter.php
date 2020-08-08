@@ -12,21 +12,21 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
  
 namespace dFramework\core\http;
 
-use dFramework\core\Config;
-use dFramework\core\exception\Exception;
-use dFramework\core\exception\LoadException;
-use dFramework\core\loader\Injector;
 use dFramework\core\loader\Service;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Filter
  *
- * Pre-processes global input data for security
+ * Gestionnaire de filtre http (middleware)
  *
  * @package		dFramework
  * @subpackage	Core
@@ -36,8 +36,11 @@ use dFramework\core\loader\Service;
  * @since       1.0
  * @file        /system/core/http/Filter.php
  */
-class Filter
+class Filter implements RequestHandlerInterface
 {
+    /**
+     * @var ResponseInterface
+     */
     private $response;
     /**
      * @var array
@@ -55,7 +58,7 @@ class Filter
     public function __construct()
     {
         $this->response = Service::response();
-    }
+     }
 
     /**
      * Ajoute un middleware a la chine d'execution
@@ -71,11 +74,11 @@ class Filter
         {
             if (is_string($filter))
             {
-                $this->filters[] = Injector::singleton($filter);
+                $this->filters[] = Service::container()->get($filter);
             }
             if (is_callable($filter) OR is_object($filter)) 
             {
-                $this->filters[] = $filter;
+                 $this->filters[] = $filter;
             }
         }        
     }
@@ -83,14 +86,13 @@ class Filter
     /**
      * Execution du middleware
      *
-     * @param Request $request
+     * @param ServerRequestInterface $request
      * @return Response
      */
-    public function process(Request $request) : Response 
+    public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $filter = $this->getFilter();
-        $this->index++;
-
+        
         if (empty($filter)) 
         {
             return $this->response;
@@ -110,93 +112,14 @@ class Filter
      */
     private function getFilter()
     {
+        $filter = null;
+
         if (isset($this->filters[$this->index]))
         {
-            return $this->filters[$this->index];
+            $filter = $this->filters[$this->index];
         }
+        $this->index++;
 
-        return null;
-    }
-
-    
-    public function run(array $middlewares)
-    {
-        helper('inflector');
-
-        foreach ($middlewares As $middleware)
-        {
-            $middlewareArray = explode('|', str_replace(' ', '', $middleware));
-            $middlewareName = $middlewareArray[0];
-            $runMiddleware = true;
-            
-            if (isset($middlewareArray[1]))
-            {
-                $options = explode(':', $middlewareArray[1]);
-                $type = $options[0];
-                $methods = explode(',', $options[1]);
-                
-                if ($type == 'except') 
-                {
-                    if (in_array($this->controller->request->method(), $methods)) 
-                    {
-                        $runMiddleware = false;
-                    }
-                } 
-                else if ($type == 'only') 
-                {
-                    if (!in_array($this->controller->request->method(), $methods)) 
-                    {
-                        $runMiddleware = false;
-                    }
-                }
-            }
-
-            $filename = ucfirst(camelize($middlewareName)) . 'Filter';
-            if ($runMiddleware == true) 
-            {
-                $paths = [
-                    // Filtres systeme
-                    SYST_DIR . 'filters' . DS . $filename . '.php',
-                    // Filtres propores a l'appli
-                    APP_DIR . 'filters' . DS . $filename . '.php'
-                ];
-                $filter_exist = false;
-
-                foreach ($paths As $path)
-                {
-                    if (file_exists($path))
-                    {
-                        require_once $path;
-                        $filter_exist = true;
-                        break;
-                    }
-                }
-
-
-                if (true === $filter_exist) 
-                {
-                    $object = Injector::factory($filename, [$this->controller]);
-                    $object->run();
-                    
-                    $this->controller->filters[$middlewareName] = $object;
-                } 
-                else 
-                {
-                    if (Config::get('general.environment') == 'dev') 
-                    {
-                        LoadException::except('
-                            Filters not found
-                            <br>
-                            Unable to load filter: ' . $filename . '.php
-                        ', 404);
-                    }
-                    else 
-                    {
-                        Exception::except('Sorry something went wrong.');
-                    }
-                }
-            }
-
-        }
+        return $filter;
     }
 }

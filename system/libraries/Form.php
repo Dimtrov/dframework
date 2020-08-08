@@ -12,15 +12,15 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
-use dFramework\core\http\Request;
+use dFramework\core\loader\Service;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Tableau;
 
 /**
- * dF_Form
+ * Form
  *
  * Generateur de formulaire html a la volee
  *
@@ -31,12 +31,15 @@ use dFramework\core\utilities\Tableau;
  * @since       2.1
  * @file        /system/libraries/Form.php
  */
-
 class Form
 {   
- 
+    /**
+     * @var array Donnees de formulaire
+     */ 
     protected $datas = [];
-
+    /**
+     * @var array Erreurs enregistrees dans le formulaire
+     */
     protected $errors = [];
 
     /**
@@ -762,7 +765,7 @@ HTML;
      */
     protected function getValue(string $key) : string
     {
-        $post = (new Request)->data[$key] ?? null;
+        $post = Service::request()->data[$key] ?? null;
         return (string) ( (!empty($post)) ? $post : ($this->datas[$key] ?? null) );
     }
     /**

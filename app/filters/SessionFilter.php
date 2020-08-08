@@ -1,19 +1,16 @@
 <?php
 
-use dFramework\core\http\Request;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class SessionFilter 
+class SessionFilter implements MiddlewareInterface
 {
 
-    public function process(Request $request, $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        $response = $delegate->process($request);
-
-        $body = '" toto "';
-
-        $response->body($body);
-        $response->send();
-        exit();
+        $response = $handler->handle($request);
 
         return $response;
     }

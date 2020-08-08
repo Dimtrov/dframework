@@ -39,9 +39,8 @@ $config = null;
 |--------------------------------------------------------------------------
 |
 | Specifie le repertoire où sont stockés les fichiers du framework
-|   Le dossier specifié doit relatif au dossier racine de votre projet (au meme niveau que le .htaccess)
 */
-$config['system_path'] = 'system';
+$config['system_path'] = '../system';
 
 /*
 |--------------------------------------------------------------------------
@@ -49,9 +48,8 @@ $config['system_path'] = 'system';
 |--------------------------------------------------------------------------
 |
 | Specifie le repertoire où sont stockés les fichiers de votre application
-|   Le dossier specifié doit relatif au dossier racine de votre projet (au meme niveau que le .htaccess)
 */
-$config['application_folder'] = 'app';
+$config['application_folder'] = '../app';
 
 /*
 |--------------------------------------------------------------------------
@@ -59,9 +57,8 @@ $config['application_folder'] = 'app';
 |--------------------------------------------------------------------------
 |
 | Specifie le repertoire votre dossier de dependances installées via composer "vendor"
-|   Le dossier specifié doit relatif au dossier racine de votre projet (au meme niveau que le .htaccess)
 */
-$config['composer_autoload_file'] = 'vendor';
+$config['composer_autoload_file'] = '../vendor';
 
 
 /**

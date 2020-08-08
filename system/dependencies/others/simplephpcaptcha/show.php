@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.1
  */
 
 
@@ -62,7 +62,6 @@ if( !function_exists('hex2rgb') )
 // Draw the image
 if( isset($_GET['df_captcha']) )
 {
-    session_name('df_app_sessions');
     session_start();
 
     if(empty($_SESSION['df_security']['captcha']['config']))

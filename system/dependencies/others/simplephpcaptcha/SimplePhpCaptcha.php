@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version    2.1
+ * @version    3.2.1
  */
 
 //
@@ -25,7 +25,7 @@
 
 
 use dFramework\core\exception\Exception;
-use dFramework\core\Helpers;
+use dFramework\core\utilities\Helpers;
 
 class SimplePhpCaptcha
 {

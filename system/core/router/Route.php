@@ -139,13 +139,18 @@ class Route
     {
         $path = $this->path;
         $matches = $this->matches;
+        $placeholders = Router::getPlaceholders();
+        
+        foreach ($placeholders As $key => $value) 
+        {
+            $path = str_replace('(:'.$key.')', '('.$value.')', $path);
+        }
 
         if (preg_match('#\(([\w]+)\)#', $path, $matches))
         {
             var_dump($matches);
         }
 
-        exit;
 
         foreach ($params As $k => $v)
         {

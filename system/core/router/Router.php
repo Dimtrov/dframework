@@ -111,7 +111,6 @@ class Router
     private function __construct()
     {
         $this->url = Service::request()->url ?? '/';
-     
         $this->envRoutes = [
             'dev'  => $this->routes,
             'prod' => $this->routes,
@@ -149,7 +148,7 @@ class Router
         $routes                 = $instance->config;
         $environments           = $routes['environment'] ?? [];
         $groups                 = $routes['group'] ?? [];
-        $instance->placeholders = array_merge($instance->placeholders, (array) $routes['placeholders'] ?? []);
+        $instance->placeholders = array_merge($instance->placeholders, (array) ($routes['placeholders'] ?? []));
 
         $routes = Tableau::remove($routes, 'default_controller');
         $routes = Tableau::remove($routes, 'default_method');
@@ -178,6 +177,7 @@ class Router
         {
             RouterException::except('No route matches this name', 404);
         }
+        
         return $instance->namedRoutes[$name]->getUrl($params);
     }
 

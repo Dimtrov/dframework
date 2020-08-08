@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
  
@@ -22,8 +22,8 @@ use dFramework\core\db\Query;
 use dFramework\core\security\Session;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Utils;
-use dFramework\core\http\Request;
-use dFramework\core\loader\Load;
+use dFramework\core\loader\Service;
+use dFramework\core\output\Language;
 
 /**
  * Login
@@ -38,7 +38,6 @@ use dFramework\core\loader\Load;
  * @since       3.0
  * @file        /system/components/auth/Login.php
  */
-
 class Login
 {   
     /**
@@ -110,9 +109,9 @@ class Login
     protected $_user = [];
 
     /**
-     * @var object Les langues issues du fichier json
+     * @var string La locale a utiliser
      */
-    protected $_lang;
+    protected $_locale;
 
     private $_antibrute_dir = RESOURCE_DIR . '_antibruteforce'. DS;
 
@@ -125,9 +124,8 @@ class Login
     public function __construct(string $locale = null)
     {
         $this->load_from_session();
-
-        Load::lang('component.login', $this->_lang, $locale, false);
-        $this->_lang = (array) $this->_lang;
+        
+        $this->_locale = Language::searchLocale($locale);
     }
     /**
      * Recupetation de l'instance unique (Design pattern Singleton)
@@ -211,23 +209,23 @@ class Login
     {
         if (true === $this->isConnect())
         {
-            $this->errMsg = $this->_lang['deja_connecter'];
+            $this->errMsg = lang('login.deja_connecter', null, $this->_locale);
             return false;
         }
         if (empty($datas))
         {
-            $datas = (new Request)->data;
+            $datas = Service::request()->data;
         }
         if (true === $this->_params['check_token'])
         {
             if (empty($datas['formcsrftoken']))
             {
-                $this->errMsg = $this->_lang['token_innexistant'];
+                $this->errMsg = lang('login.token_innexistant', null, $this->_locale);
                 return false;
             }
             if (true !== Csrf::instance()->verify($datas['formcsrftoken']))
             {
-                $this->errMsg = $this->_lang['token_invalide'];
+                $this->errMsg = lang('login.token_invalide', null, $this->_locale);
                 return false;
             }
         }
@@ -241,11 +239,25 @@ class Login
 
         if (empty($datas[$login_k]) OR empty($datas[$password_k]))
         {
-            $this->errMsg = $this->_lang['remplissez_tous_les_champs'];
-            $this->errors = [
-                $login_k    => str_replace('{login}', '"'.$login_v.'"', $this->_lang['entrez_le_login']),
-                $password_k => str_replace('{password}', '"'.$password_v.'"', $this->_lang['entrez_le_mdp']),
-            ];
+            $this->errMsg = lang('login.remplissez_tous_les_champs', null, $this->_locale);
+            
+            if (empty($datas[$login_k]))
+            {      
+                $this->errors = [
+                    $login_k    => lang('login.entrez_le_login_mdp', [
+                        'entry' => $login_v
+                    ], $this->_locale),
+                ];
+            }
+            if (empty($datas[$password_k]))
+            {      
+                $this->errors = [
+                    $password_k => lang('login.entrez_le_login_mdp', [
+                        'entry' => $password_v
+                    ], $this->_locale),
+                ];
+            }
+            
             $this->logout();
             return false;
         }
@@ -255,26 +267,43 @@ class Login
         {
             if (true !== $this->_params['distinct_fields'])
             {
-                $this->errMsg = str_replace(['{login}', '{password}'], [$login_v, $password_v], $this->_lang['login_mdp_incorrect']);
+                $this->errMsg = lang('login.login_mdp_incorrect', [
+                    'login'    => $login_v,
+                    'password' => $password_v
+                ], $this->_locale);
                 $this->errors = [
-                    $login_k    => str_replace('{entry}', '"'.$login_v.'"', $this->_lang['verifiez_votre_entree']),
-                    $password_k => str_replace('{entry}', '"'.$password_v.'"', $this->_lang['verifiez_votre_entree']),
+                    $login_k    => lang('login.verifiez_votre_entree', [
+                        'entry' => $login_v
+                    ], $this->_locale),
+                    $password_k => lang('login.verifiez_votre_entree', [
+                        'entry' => $password_v
+                    ], $this->_locale),
                 ];
             }
             else 
             {
-                $this->errMsg = $this->_lang['utilisateur_innexistant'];
-                $this->errors = [$login_k => str_replace('{entry}', '"'.$login_v.'"', $this->_lang['verifiez_votre_entree'])];
+                $this->errMsg = lang('login.utilisateur_innexistant', null, $this->_locale);
+                $this->errors = [
+                    $login_k    => lang('login.verifiez_votre_entree', [
+                        'entry' => $login_v
+                    ], $this->_locale)
+                ];
             }
             $this->logout();
             return false;
         }
         if (true === $this->bruteForce($datas[$login_k]))
         {
-            $this->errMsg = $this->_lang['nbr_tentatives_epuiser'];
+            $this->errMsg = lang('login.nbr_tentatives_epuiser', null, $this->_locale);
             $this->errors = [
-                $login_k => str_replace('{login}', '"'.$login_v.'"', $this->_lang['essayer_autre_compte']),
-                $password_k => str_replace(['{password}', '{nbr_fois}'], ['"'.$password_v.'"', '"'.$this->_params['failed_login_attempts'].'"'], $this->_lang['mdp_rater_plusieurs_fois']), 
+                $login_k    => lang('login.essayer_autre_compte', [
+                    'login' => $login_v
+                ], $this->_locale),
+                $password_k => lang('login.mdp_rater_plusieurs_fois', [
+                    'password' => $password_v,
+                    'nbr_fois' => $this->_params['failed_login_attempts'
+                    ]
+                ], $this->_locale), 
             ];
             $this->logout();
             return false;
@@ -283,20 +312,35 @@ class Login
         {
             if (true !== $this->_params['distinct_fields'])
             {
-                $this->errMsg = str_replace(['{login}', '{password}'], [$login_v, $password_v], $this->_lang['login_mdp_incorrect']);
+                $this->errMsg = lang('login.login_mdp_incorrect', [
+                    'login'    => $login_v,
+                    'password' => $password_v
+                ], $this->_locale);
                 $this->errors = [
-                    $login_k    => str_replace('{entry}', '"'.$login_v.'"', $this->_lang['verifiez_votre_entree']),
-                    $password_k => str_replace('{entry}', '"'.$password_v.'"', $this->_lang['verifiez_votre_entree']),
+                    $login_k    => lang('login.verifiez_votre_entree', [
+                        'entry' => $login_v
+                    ], $this->_locale),
+                    $password_k => lang('login.verifiez_votre_entree', [
+                        'entry' => $password_v
+                    ], $this->_locale),
                 ];
             }
             else 
             {
-                $this->errMsg = str_replace('{password}', '"'.$password_v.'"', $this->_lang['mdp_incorrect']);
-                $this->errors = [$password_k => str_replace('{entry}', '"'.$password_v.'"', $this->_lang['verifiez_votre_entree'])];
+                $this->errMsg = lang('login.mdp_incorrect', [
+                    'password' => $password_v
+                ], $this->_locale);
+                $this->errors = [
+                    $password_k => lang('login.verifiez_votre_entree', [
+                        'entry' => $password_v
+                    ], $this->_locale)
+                ];
             }
             if (null !== $remaining AND is_int($remaining))
             {
-                $this->errMsg .= "\n" . str_replace('{nbr_tentatives}', '<b>'.$remaining.'</b>', $this->_lang['nbr_tentatives_restant']);
+                $this->errMsg .= "\n" . lang('login.nbr_tentatives_restant', [
+                    'nbr_tentatives' => '<b>'.$remaining.'</b>'
+                ], $this->_locale);
             }
             $this->logout();
             return false;

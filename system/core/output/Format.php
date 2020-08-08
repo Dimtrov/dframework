@@ -12,15 +12,15 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2.1
  */
 
 
-namespace dFramework\components\rest;
+namespace dFramework\core\output;
 
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
-use dFramework\core\data\Data;
+use dFramework\core\http\Input;
 
 /**
  * REST Format class
@@ -358,7 +358,7 @@ class Format
             $data = $this->_data;
         }
         // Get the callback parameter (if set)
-        $callback = (new Data)->get('callback');
+        $callback = Input::instance()->get('callback');
 
         if (empty($callback) === true) 
         {

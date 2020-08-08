@@ -210,6 +210,7 @@ class Entity extends Command
         }
         catch(Exception $e) {}
     }
+    
     private function associateModel($table)
     {
         $table = explode('/', $table);

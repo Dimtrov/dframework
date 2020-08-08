@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2.1
  */
 
 
@@ -20,9 +20,9 @@ namespace dFramework\components\rest;
 
 use dFramework\core\Config;
 use dFramework\core\Controller as CoreController;
-use dFramework\core\data\Request;
 use dFramework\core\exception\Exception;
-use dFramework\core\loader\Load;
+use dFramework\core\loader\Service;
+use dFramework\core\output\Format;
 use Firebase\JWT\JWT;
 
 
@@ -96,7 +96,7 @@ class Controller extends CoreController
     /**
      * Language variables of rest controller
      */
-    private $_lang;
+    private $_locale;
 
 
     protected $payload;
@@ -109,9 +109,7 @@ class Controller extends CoreController
 
         $locale = $this->_config['language'] ?? null;
         $locale = !empty($locale) ? $locale : Config::get('general.language');
-        $locale = !empty($locale) ? $locale : 'en';
-        Load::lang('component.rest', $this->_lang, $locale, false);
-        $this->_lang = (array) $this->_lang;   
+        $this->_locale = !empty($locale) ? $locale : 'en';
     }
 
     public function _remap($method, $params = [])
@@ -121,7 +119,10 @@ class Controller extends CoreController
         // Sure it exists, but can they do anything with it?
         if (!method_exists($class, $method)) 
         {
-            return $this->send_error($this->_lang['unknown_method'], self::HTTP_METHOD_NOT_ALLOWED);
+            return $this->send_error(
+                lang('rest.unknown_method', null, $this->_locale), 
+                self::HTTP_METHOD_NOT_ALLOWED
+            );
         }
 
         // Call the controller method and passed arguments
@@ -131,8 +132,11 @@ class Controller extends CoreController
         catch (\Throwable $ex) {
             if (Config::get('general.environment') !== 'dev') 
             {
-                $url = explode('?', (new Request)->here())[0];
-                return $this->send_error('Mauvaise utilisation de < '.$url.' >. Veuillez consulter la documentation de votre fournisseur', self::HTTP_BAD_REQUEST);
+                $url = explode('?', Service::request()->here())[0];
+                return $this->send_error(
+                    'Mauvaise utilisation de < '.$url.' >. Veuillez consulter la documentation de votre fournisseur', 
+                    self::HTTP_BAD_REQUEST
+                );
             }
             if ($this->_config['handle_exceptions'] === false) 
             {
@@ -430,19 +434,28 @@ class Controller extends CoreController
         // Verifie si la requete est en ajax
         if (true !== $this->request->is('ajax') AND true === $this->_config['ajax_only'])
         {
-            return $this->send_error($this->_lang['ajax_only'], self::HTTP_NOT_ACCEPTABLE);
+            return $this->send_error(
+                lang('rest.ajax_only', null, $this->_locale), 
+                self::HTTP_NOT_ACCEPTABLE
+            );
         }
 
         // Verifie si la requete est en https
         if (true !== $this->request->is('https') AND true === $this->_config['force_https']) 
         {
-            return $this->send_error($this->_lang['unsupported'], self::HTTP_FORBIDDEN);
+            return $this->send_error(
+                lang('rest.unsupported', null, $this->_locale), 
+                self::HTTP_FORBIDDEN
+            );
         }
 
         // Verifie si la methode utilisee pour la requete est autorisee
         if (true !== in_array(strtoupper($this->request->method()), $this->_config['allowed_methods']))
         {
-            return $this->send_error($this->_lang['unknown_method'], self::HTTP_NOT_ACCEPTABLE);
+            return $this->send_error(
+                lang('rest.unknown_method', null,$this->_locale), 
+                self::HTTP_NOT_ACCEPTABLE
+            );
         }
 
         // Verifie que l'ip qui emet la requete n'est pas dans la blacklist
@@ -456,7 +469,10 @@ class Controller extends CoreController
             // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
             if (preg_match($pattern, $this->_config['ip_blacklist'])) 
             {
-                return $this->send_error($this->_lang['ip_denied'], self::HTTP_UNAUTHORIZED);
+                return $this->send_error(
+                    lang('rest.ip_denied', null, $this->_locale), 
+                    self::HTTP_UNAUTHORIZED
+                );
             }
         }
 
@@ -475,7 +491,10 @@ class Controller extends CoreController
 
             if (true !== in_array($this->request->clientIp(), $whitelist)) 
             {
-                return $this->send_error($this->_lang['ip_unauthorized'], self::HTTP_UNAUTHORIZED);
+                return $this->send_error(
+                    lang('rest.ip_unauthorized', null, $this->_locale), 
+                    self::HTTP_UNAUTHORIZED
+                );
             }
         }
 
@@ -504,7 +523,10 @@ class Controller extends CoreController
         $headers = $this->getAuthorizationHeader();
         if (empty($headers))
         {
-            return $this->send_error($this->_lang['token_not_found'], self::HTTP_UNAUTHORIZED);
+            return $this->send_error(
+                lang('rest.token_not_found', null, $this->_locale), 
+                self::HTTP_UNAUTHORIZED
+            );
         }
         if (preg_match('/Bearer\s(\S+)/', $headers, $matches))
         {

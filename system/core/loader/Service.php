@@ -12,12 +12,11 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
 
 namespace dFramework\core\loader;
 
-use dFramework\core\http\Request;
 use dFramework\core\http\Response;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
@@ -68,16 +67,16 @@ class Service
 	 * The Request class models an HTTP request.
      * 
      * @param boolean $shared
-     * @return dFramework\core\http\Request
+     * @return Psr\Http\Message\ServerRequestInterface
      */
     public static function request(bool $shared = true)
     {
         if (true === $shared) 
         {
-            return Injector::singleton(Request::class);
+            return Injector::singleton(ServerRequest::class);
         }
 
-        return Injector::factory(Request::class);
+        return Injector::factory(ServerRequest::class);
     }
     /**
 	 * The Response class models an HTTP response.

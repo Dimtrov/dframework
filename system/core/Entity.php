@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.1
  */
 
 
@@ -79,16 +79,31 @@ abstract class Entity extends Model
 
     }
 
-    public function get()
+    public function get($hydrate = true)
     {
         $this->db()->select()->from($this->table);
         foreach ($this->pk As $k) 
         {
             $this->where($k . ' = ?')->params([$this->{self::getProperty($k)}]);
         }
-        return $this->one(DF_FCLA, static::class);
+
+        if ($hydrate) 
+        {
+            return $this->one(DF_FCLA, static::class);
+        }
+        return $this->one();
     }
 
+    public function findAll($hydrate = true)
+    {
+        $this->db()->select()->from($this->table);
+
+        if ($hydrate)
+        {
+            return $this->all(DF_FCLA, static::class);
+        }
+        return $this->all();
+    }
 
 
     /**
@@ -101,6 +116,7 @@ abstract class Entity extends Model
     {
         $case = Config::get('data.hydrator.case');
         $case = \strtolower($case);
+
         if (\in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
         {
             $case = 'to'.$case;
