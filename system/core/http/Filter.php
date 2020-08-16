@@ -20,7 +20,6 @@ namespace dFramework\core\http;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -99,7 +98,8 @@ class Filter implements RequestHandlerInterface
         }
         if (is_callable($filter)) 
         {
-            return $filter($request, $this->response, [$this, 'process']);
+            dd($filter);
+            return $filter($request, $this->response, [$this, 'handle']);
         }
 
         return $filter->process($request, $this);

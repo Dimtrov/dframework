@@ -15,6 +15,11 @@
  * @version     3.2.1
  */
 
+ namespace dFramework\libraries;
+
+use Requests;
+use Requests_Response;
+
 /**
  * API
  *  Permet d'acceder a des APIs distants

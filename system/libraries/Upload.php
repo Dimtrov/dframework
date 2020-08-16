@@ -12,11 +12,15 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.2
  */
 
-use dFramework\dependencies\others\filipegomes\Upload;
-use dFramework\dependencies\verot\Upload As verotUpload;
+ namespace dFramework\libraries;
+
+use dFramework\dependencies\others\filipegomes\Upload As simpleUpload;
+use Verot\Upload As verotUpload;
+use ReflectionClass;
+use ReflectionProperty;
 
 /**
  * Upload
@@ -28,9 +32,7 @@ use dFramework\dependencies\verot\Upload As verotUpload;
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/Upload.html
  * @since       2.0
  */
-
-
-class dF_Upload
+class Upload
 {
     const NATIVE = 1;
     const VEROT = 2;
@@ -70,32 +72,37 @@ class dF_Upload
 
     /**
      * @param int $type
+     * @return self
      */
-    public function use(int $type)
+    public function use(int $type) : self
     {
         $this->type = $type;
+        
+        return $this;
     }
 
     /**
      * @param array $input
      * @param string $folder
      * @param array|null $params
+     * @return self
      */
-    public function set(array $input, string $folder, ?array $params = [])
+    public function set(array $input, string $folder, ?array $params = []) : self
     {
         $this->input = $input;
         $this->params = $params;
 
-        $folder = str_replace(WEBROOT, '', $folder);
-        $folder = WEBROOT.ltrim($folder, '/\\');
-        $this->folder = $folder;
+        $folder = str_replace([WEBROOT, '\\'], ['', DS], $folder);
+        $this->folder = WEBROOT.ltrim($folder, '/\\').DS;
+
+        return $this;
     }
 
     /**
      * @return bool
      * @throws ReflectionException
      */
-    public function upload() : bool
+    public function run() : bool
     {
         if($this->type === self::NATIVE)
         {
@@ -131,7 +138,6 @@ class dF_Upload
         return $this->log;
     }
 
-
     /**
      * @param array $input
      * @param string $folder
@@ -139,7 +145,7 @@ class dF_Upload
      */
     private function nativeUpload(array $input, string $folder) : bool
     {
-        $this->uploader = new Upload($folder, $input);
+        $this->uploader = new simpleUpload($folder, $input);
 
         $params = $this->params; $name = null;
 
@@ -157,6 +163,10 @@ class dF_Upload
                 }
             }
             $this->uploader->cl_extensions = $params['extensions'];
+        }
+        if (isset($params['overwrite']) AND is_bool($params['overwrite']))
+        {
+            $this->uploader->cl_overwrite = $params['overwrite'];
         }
         if(isset($params['new_name']))
         {
@@ -214,7 +224,7 @@ class dF_Upload
     private function verotUpload(array $input, string $folder) : bool
     {
         $this->uploader = new verotUpload($input);
-
+        
         $props = (new ReflectionClass($this->uploader))->getProperties(ReflectionProperty::IS_PUBLIC);
         foreach ($props As $prop)
         {
@@ -267,6 +277,4 @@ class dF_Upload
 
         return ($uploaded AND $processed);
     }
-
 }
-

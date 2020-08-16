@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
-
 
 namespace dFramework\core\output;
 
@@ -23,20 +22,18 @@ use dFramework\core\loader\Load;
 use dFramework\core\http\Input;
 
 /**
- * REST Format class
- * 
+ * Format class
  * Help convert between various formats such as XML, JSON, CSV, etc.
  *
  * @package		dFramework
- * @subpackage	Components
- * @category    Rest
+ * @subpackage	Core
+ * @category    Output
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.1
  * @credit      CI Rest Server - by Chris Kacerguis <chriskacerguis@gmail.com> - https://github.com/chriskacerguis/ci-restserver
- * @file        /system/components/rest/Format.php
+ * @file        /system/core/output/Format.php
  */
-
 class Format
 {
     /**

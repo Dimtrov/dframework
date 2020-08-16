@@ -67,7 +67,8 @@ class Upload
     private $cl_dossier = "./";
     private $cl_erreur = "";
     private $cl_new_name = "";
-    public $cl_taille_maxi = 0;
+    public $cl_overwrite = false;
+    public $cl_taille_maxi = -1;
     public $cl_extensions = array();
     public $cl_nb_char_aleatoire = 12;
 
@@ -135,9 +136,11 @@ class Upload
     public function __construct($repUpload="./", $clfichier)
     {
         $this->cl_file = $clfichier;
-        $this->cl_fichier = basename($this->cl_file['name']);
+        $this->cl_fichier = basename($this->cl_file['name']);        
+   
         $extFichier = strrchr($this->cl_file['name'], '.');
         $this->cl_extension_fichier = strtolower($extFichier);
+   
         // on récupère le répertoire de destination
         $this->cl_dossier = $repUpload;
     }
@@ -198,7 +201,13 @@ class Upload
             // le nom du fichier final est saisi par l'utilisateur
             else if (!empty($nouveau_nom_fichier) && $nouveau_nom_fichier!='aleatoire')
             {
-                $this->cl_new_name = $nouveau_nom_fichier.$this->cl_extension_fichier;
+                $nouveau_nom_fichier = explode('.', $nouveau_nom_fichier);
+                if (empty($nouveau_nom_fichier[1])) {
+                    $this->cl_new_name = $nouveau_nom_fichier[0].$this->cl_extension_fichier;
+                }
+                else {
+                    $this->cl_new_name = implode('.', $nouveau_nom_fichier);
+                }
             }
             // autrement on récupère le nom d'origine du fichier à uploader
             else
@@ -281,13 +290,13 @@ class Upload
             return false;
         }
         // la taille du fichier est supérieure à la taille maximum
-        else if ($this->cl_file['size'] >= $this->cl_taille_maxi)
+        else if ($this->cl_taille_maxi > 0 AND $this->cl_file['size'] >= $this->cl_taille_maxi)
         {
             $this->cl_erreur = $this->cl_message_11;
             return false;
         }
         // vérifie si le fichier existe déjà dans le répertoire
-        else if (file_exists($this->cl_dossier.$this->cl_new_name))
+        else if (!$this->cl_overwrite AND file_exists($this->cl_dossier.$this->cl_new_name))
         {
             $this->cl_erreur = $this->cl_message_12;
             return false;

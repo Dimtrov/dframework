@@ -50,19 +50,6 @@ use Psr\Http\Message\UriInterface;
 class ServerRequest implements ServerRequestInterface
 {
     /**
-     * Array of parameters parsed from the URL.
-     *
-     * @var array
-     */
-    protected $params = [
-        'plugin' => null,
-        'controller' => null,
-        'action' => null,
-        '_ext' => null,
-        'pass' => [],
-    ];
-
-    /**
      * Array of POST data. Will contain form data as well as uploaded files.
      * In PUT/PATCH/DELETE requests this property will contain the form-urlencoded
      * data.
@@ -271,10 +258,10 @@ class ServerRequest implements ServerRequestInterface
         }
         $config += [
             'params' => $this->params,
-            'query' => [],
-            'post' => [],
-            'files' => [],
-            'cookies' => [],
+            'query' => $_GET,
+            'post' => $_POST,
+            'files' => $_FILES,
+            'cookies' => $_COOKIE,
             'environment' => [],
             'url' => '',
             'uri' => null,
@@ -603,11 +590,12 @@ class ServerRequest implements ServerRequestInterface
     public function getHeader($name)
     {
         $name = $this->normalizeHeaderName($name);
+
         if (isset($this->_environment[$name])) {
             return (array)$this->_environment[$name];
         }
 
-        return [];
+        return (array) $this->getEnv($name);
     }
 
     /**
@@ -686,11 +674,10 @@ class ServerRequest implements ServerRequestInterface
      * Get the HTTP method used for this request.
      *
      * @return string The name of the HTTP method used.
-     * @deprecated 3.4.0 This method will be removed in 4.0.0. Use getMethod() instead.
      */
     public function method()
     {
-        return $this->getEnv('REQUEST_METHOD');
+        return $this->getMethod();
     }
 
     /**
@@ -1056,7 +1043,7 @@ class ServerRequest implements ServerRequestInterface
      * @param string|null $name Dot separated name of the value to read/write
      * @param mixed ...$args The data to set (deprecated)
      * @return mixed|$this Either the value being read, or this so you can chain consecutive writes.
-     * @deprecated 3.4.0 Use withData() and getData() or getParsedBody() instead.
+     * /deprecated 3.4.0 Use withData() and getData() or getParsedBody() instead.
      */
     public function data($name = null, ...$args)
     {
@@ -1114,7 +1101,7 @@ class ServerRequest implements ServerRequestInterface
      * @param mixed ...$args Value to set (deprecated).
      * @return mixed|$this The value of the provided parameter. Will
      *   return false if the parameter doesn't exist or is falsey.
-     * @deprecated 3.4.0 Use getParam() and withParam() instead.
+     * @/deprecated 3.4.0 Use getParam() and withParam() instead.
      */
     public function param($name, ...$args)
     {
@@ -1132,7 +1119,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $key The key you want to read.
      * @return string|null Either the cookie value, or null if the value doesn't exist.
-     * @deprecated 3.4.0 Use getCookie() instead.
+     * /deprecated 3.4.0 Use getCookie() instead.
      */
     public function cookie($key)
     {
@@ -1530,7 +1517,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $input A string to replace original parsed data from input()
      * @return void
-     * @deprecated 3.4.0 This method will be removed in 4.0.0. Use withBody() instead.
+     * /deprecated 3.4.0 This method will be removed in 4.0.0. Use withBody() instead.
      */
     public function setInput($input)
     {

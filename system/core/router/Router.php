@@ -51,6 +51,7 @@ class Router
         'PUT'    => [],
         'PATCH'  => [],
         'DELETE' => [],
+        'OPTIONS' => [],
     ];
     /**
      * @var array

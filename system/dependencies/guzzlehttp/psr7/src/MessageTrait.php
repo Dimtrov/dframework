@@ -10,16 +10,16 @@ use Psr\Http\Message\StreamInterface;
 trait MessageTrait
 {
     /** @var array Map of all registered headers, as original name => array of values */
-    private $headers = [];
+    public $headers = [];
 
     /** @var array Map of lowercase header name => original name at registration */
-    private $headerNames  = [];
+    public $headerNames  = [];
 
     /** @var string */
-    private $protocol = '1.1';
+    public $protocol = '1.1';
 
     /** @var StreamInterface */
-    private $stream;
+    public $stream;
 
     public function getProtocolVersion()
     {
@@ -72,6 +72,7 @@ trait MessageTrait
         $normalized = strtolower($header);
 
         $new = clone $this;
+        
         if (isset($new->headerNames[$normalized])) {
             unset($new->headers[$new->headerNames[$normalized]]);
         }

@@ -12,11 +12,14 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.2
  */
 
-use dFramework\core\data\Request;
-use Valitron\Validator;
+ namespace dFramework\libraries;
+ 
+use dFramework\core\loader\Service;
+use dFramework\core\output\Language;
+use Valitron\Validator As Valitron;
 
 /**
  * Validator
@@ -31,21 +34,29 @@ use Valitron\Validator;
  * @since       3.0
  * @file        /system/libraries/Validator.php
  */
-
-class dF_Validator
+class Validator
 {
     /**
-     * @var Validator
+     * @var Valitron
      */
     private $validator = null;
     
     /**
      * Initialize validation process. Entry point of all 
      */
-    public function init(string $lang = 'fr', ?array $data = [])
+    public function init(string $lang = null, ?array $data = [])
     {
-        $data = (!empty($data)) ? $data : (new Request)->data;
-        $this->validator = new Validator($data, null, $lang);
+        if (empty($lang) OR $lang == 'auto')
+        {
+            $lang = Language::searchLocale();
+        }
+
+        if (empty($data)) 
+        {
+            $data = Service::request()->data;
+        }
+
+        $this->validator = new Valitron($data, null, $lang);
     }
     /**
      * Reset object properties
@@ -61,7 +72,7 @@ class dF_Validator
      * This validation rule implies the field is "required"
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function accept($fields) : self 
     {
@@ -72,7 +83,7 @@ class dF_Validator
      * Validate that a field contains only alphabetic characters
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function alpha($fields) : self 
     {
@@ -82,7 +93,7 @@ class dF_Validator
      * Validate that a field contains only alpha-numeric characters
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function alphaNum($fields) : self 
     {
@@ -95,7 +106,7 @@ class dF_Validator
      * @param string|string[] $fields
      * @param string|string[] $values
      * @param bool $case_sensitive
-     * @return dF_Validator
+     * @return self
      */
     public function contains($fields, $values, $case_sensitive = false) : self 
     {
@@ -121,7 +132,7 @@ class dF_Validator
      * Validate the date is after a given date
      * 
      * @param string|array $fields
-     * @return  dF_validator
+     * @return  self
      */
     public function dateAfter($fields) : self 
     {
@@ -131,7 +142,7 @@ class dF_Validator
      * Validate the date is before a given date
      * 
      * @param string|array $fields
-     * @return  dF_validator
+     * @return  self
      */
     public function dateBefore($fields) : self 
     {
@@ -142,7 +153,7 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param string|string[] $format
-     * @return dF_Validator 
+     * @return self 
      */
     public function dateFormat($fields, $format) : self
     {
@@ -159,7 +170,7 @@ class dF_Validator
      * 
      * @param string|string[] $field1
      * @param string|string[] $field2
-     * @return dF_Validator
+     * @return self
      */
     public function different($field1, $field2) : self
     {
@@ -175,7 +186,7 @@ class dF_Validator
      * 
      * @param string|string[] $field1
      * @param string|string[] $field2
-     * @return dF_Validator
+     * @return self
      */
     public function equals($field1, $field2) : self 
     {
@@ -191,7 +202,7 @@ class dF_Validator
      * Validate that a field is a valid e-mail address
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function email($fields) : self 
     {
@@ -201,7 +212,7 @@ class dF_Validator
      * Validate that a field is a valid e-mail address and the domain name is active
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function emailDNS($fields) : self 
     {
@@ -213,15 +224,12 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param array|array[array] $values
-     * @return dF_Validator
+     * @return self
      */
     public function in($fields, array $values) : self
     {
-        $datas = array_combine((array) $fields, $values);
-        foreach($datas As $key => $value)
-        {
-            $this->validator->rule('in', $key, (array)$value);
-        }
+        $this->validator->rule('in', $fields, $values);
+        
         return $this;
     }
     /**
@@ -229,15 +237,12 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param array|array[array] $values
-     * @return dF_Validator
+     * @return self
      */
     public function notIn($fields, array $values) : self
     {
-        $datas = array_combine((array) $fields, $values);
-        foreach($datas As $key => $value)
-        {
-            $this->validator->rule('notIn', $key, (array)$value);
-        }
+        $this->validator->rule('notIn', $fields, $values);
+        
         return $this;
     }
 
@@ -245,7 +250,7 @@ class dF_Validator
      * Validate that a field is a valid IP address
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function ip($fields) : self 
     {
@@ -255,7 +260,7 @@ class dF_Validator
      * Validate that a field is a valid IP v4 address
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function ipv4($fields) : self 
     {
@@ -265,7 +270,7 @@ class dF_Validator
      * Validate that a field is a valid IP v6 address
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function ipv6($fields) : self 
     {
@@ -277,7 +282,7 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param bool|null $negative Allow for integers to be supplied as negative values
-     * @return  dF_validator
+     * @return self
      */
     public function integer($fields, $negative = null) : self 
     {
@@ -287,7 +292,7 @@ class dF_Validator
      * Validate that a field is numeric
      * 
      * @param string|string[] $fields
-     * @return  dF_validator
+     * @return self
      */
     public function numeric($fields) : self 
     {
@@ -299,10 +304,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param int|int[] $lengths
+     * @return self
      */
     public function length($fields, $lengths) : self
     {
-        $datas = array_combine((array) $fields, (array) $lengths);
+        $datas = $this->_combineArray((array) $fields, (array) $lengths);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('length', $key, $value);
@@ -314,26 +320,27 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param int|array[int[]] $lengths
+     * @return self
      */
     public function lengthBetween($fields, $lengths) : self
     {
-        $datas = array_combine((array) $fields, (array) $lengths);
-        foreach($datas As $key => $value)
+        $fields = (array) $fields;
+        foreach($fields As $field)
         {
-            $value = (array) $value;
-            $value[1] = $value[1] ?? $value[0];
-            $this->validator->rule('lengthBetween', $key, $value[0], $value[1]);
+            $this->validator->rule('lengthBetween', $field, $lengths[0], $lengths[1] ?? $lengths[0]);
         }
         return $this;
-    }/**
+    }
+    /**
      * Validate the length of a string (max)
      * 
      * @param string|string[] $fields
      * @param int|int[] $lengths
+     * @return self
      */
     public function lengthMax($fields, $lengths) : self
     {
-        $datas = array_combine((array) $fields, (array) $lengths);
+        $datas = $this->_combineArray((array) $fields, (array) $lengths);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('lengthMax', $key, $value);
@@ -345,10 +352,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param int|int[] $lengths
+     * @return self
      */
     public function lengthMin($fields, $lengths) : self
     {
-        $datas = array_combine((array) $fields, (array) $lengths);
+        $datas = $this->_combineArray((array) $fields, (array) $lengths);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('lengthMin', $key, $value);
@@ -361,10 +369,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param int|int[] $values
+     * @return self
      */
     public function max($fields, $values) : self 
     {
-        $datas = array_combine((array) $fields, (array) $values);
+        $datas = $this->_combineArray((array) $fields, (array) $values);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('max', $key, $value);
@@ -376,10 +385,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param int|int[] $values
+     * @return self
      */
     public function min($fields, $values) : self 
     {
-        $datas = array_combine((array) $fields, (array) $values);
+        $datas = $this->_combineArray((array) $fields, (array) $values);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('min', $key, $value);
@@ -392,7 +402,7 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param bool|null $exist Check if a field exist in data array
-     * @return  dF_validator
+     * @return self
      */
     public function required($fields, $exist = null) : self
     {
@@ -403,10 +413,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param string|array[string|string[]] $others
+     * @return self
      */
     public function requiredWith($fields, $others) : self 
     {
-        $datas = array_combine((array) $fields, (array) $others);
+        $datas = $this->_combineArray((array) $fields, (array) $others);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('requiredWith', $key, $value);
@@ -418,10 +429,11 @@ class dF_Validator
      * 
      * @param string|string[] $fields
      * @param string|array[string|string[]] $others
+     * @return self
      */
     public function requiredWithout($fields, $others) : self 
     {
-        $datas = array_combine((array) $fields, (array) $others);
+        $datas = $this->_combineArray((array) $fields, (array) $others);
         foreach($datas As $key => $value)
         {
             $this->validator->rule('requiredWithout', $key, $value);
@@ -432,7 +444,7 @@ class dF_Validator
      * Validate optional field
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function optional($fields) : self 
     {
@@ -443,7 +455,7 @@ class dF_Validator
      * Validate that a field contains only alpha-numeric characters, dashes, and underscores
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function slug($fields) : self 
     {
@@ -454,7 +466,7 @@ class dF_Validator
      * Validate that a field is a valid URL by syntax
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function url($fields) : self 
     {
@@ -464,7 +476,7 @@ class dF_Validator
      * Validate that a field is an active URL by verifying DNS record
      * 
      * @param string|string[] $fields
-     * @return dF_Validator
+     * @return self
      */
     public function urlActive($fields) : self 
     {
@@ -477,7 +489,7 @@ class dF_Validator
      *
      * @param string $field
      * @param array  $rules
-     * @return dF_Validator
+     * @return self
      */
     public function addFieldRules(string $field, array $rules) : self
     {
@@ -488,7 +500,7 @@ class dF_Validator
      * Add validation rule(s) for multiple fields
      *
      * @param array $rules
-     * @return dF_Validator
+     * @return self
      */
     public function addFieldsRules(array $rules) : self
     {
@@ -500,7 +512,7 @@ class dF_Validator
      * Add labels to rules
      * 
      * @param array $labels
-     * @return dF_Validator
+     * @return self
      */
     public function labels(array $labels = []) : self
     {
@@ -511,7 +523,7 @@ class dF_Validator
      * Add a specific label to current rule
      * 
      * @param string $value
-     * @return dF_Validator
+     * @return self
      */
     public function label(string $value) : self
     {
@@ -522,7 +534,7 @@ class dF_Validator
      * Specify validation message to use for error for the last validation rule
      * 
      * @param string $message
-     * @return dF_Validator
+     * @return self
      */
     public function message(string $message) : self 
     {
@@ -535,7 +547,7 @@ class dF_Validator
      * 
      * @param string|callable $rule
      * @param string|array $fields
-     * @return dF_Validator
+     * @return self
      */
     public function rule($rule, $fields) : self
     {
@@ -546,7 +558,7 @@ class dF_Validator
      * Add a multiple validation rules with an array
      * 
      * @param array $rules
-     * @return dF_Validator
+     * @return self
      */
     public function rules(array $rules) : self 
     {
@@ -572,5 +584,28 @@ class dF_Validator
     public function errors(?string $field = null)
     {
         return $this->validator->errors($field);
+    }
+
+
+    /**
+     * Petite adaptation de la fonction array_combine
+     *
+     * @param array $key
+     * @param array $value
+     * @return array
+     */
+    private function _combineArray(array $key, array $value) : array 
+    {
+        $nbr_val = count($value);
+        
+        foreach ($key As $entry) 
+        {
+            for($i = 0; $i < $nbr_val; $i++)
+            {
+                $key[$i] = $entry;
+            }
+        }
+
+        return array_combine($key, $value);
     }
 }

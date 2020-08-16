@@ -439,29 +439,35 @@ class View
     /**
      * Compile les fichiers de style de l'instance et genere les link:href vers ceux-ci
      *
-     * @param string|null $style_group
+     * @param string $groups
      * @return void
      */
-    public function stylesBundle(?string $style_group = null)
+    public function stylesBundle(string ...$groups)
     {
-        $style_group = empty($style_group) ? $this->layout : $style_group;
-        
-        $lib_styles = array_merge(
-            (array) Config::get('layout.'.$style_group.'.lib_styles'), 
-            $this->_lib_styles ?? []
-        );
-        if (!empty($lib_styles))
+        $groups = (array) (empty($groups) ? $this->layout : $groups);
+        $lib_styles = $styles = [];
+
+        foreach ($groups As $group)
         {
-            lib_styles($lib_styles);
+            $lib_styles = array_merge(
+                $lib_styles,
+                (array) Config::get('layout.'.$group.'.lib_styles'), 
+                $this->_lib_styles ?? []
+            );
+            $styles = array_merge(
+                $styles,
+                (array) Config::get('layout.'.$group.'.styles'), 
+                $this->_styles ?? []
+            );
         }
 
-        $styles = array_merge(
-            (array) Config::get('layout.'.$style_group.'.styles'), 
-            $this->_styles ?? []
-        );
+        if (!empty($lib_styles))
+        {
+            lib_styles(array_unique($lib_styles));
+        }
         if (!empty($styles))
         {
-            styles($styles);
+            styles(array_unique($styles));
         }
 
         $this->show('css');
@@ -506,31 +512,37 @@ class View
     /**
      * Compile les fichiers de script de l'instance et genere les link:href vers ceux-ci
      *
-     * @param string|null $script_group
+     * @param string ...$groups
      * @return void
      */
-    public function scriptsBundle(?string $script_group = null) : void
+    public function scriptsBundle(string ...$groups) : void
     {
-        $script_group = ($script_group === null) ? $this->layout : $script_group;
-        
-        $lib_scripts = array_merge(
-            (array) Config::get('layout.'.$script_group.'.lib_scripts'), 
-            $this->_lib_scripts ?? []
-        );
-        if (!empty($lib_scripts))
+        $groups = (array) (empty($groups) ? $this->layout : $groups);
+        $lib_scripts = $scripts = [];
+
+        foreach ($groups As $group)
         {
-            lib_scripts($lib_scripts);
+            $lib_scripts = array_merge(
+                $lib_scripts,
+                (array) Config::get('layout.'.$group.'.lib_scripts'), 
+                $this->_lib_scripts ?? []
+            );
+            $scripts = array_merge(
+                $scripts,
+                (array) Config::get('layout.'.$group.'.scripts'), 
+                $this->_scripts ?? []
+            );
         }
 
-        $scripts = array_merge(
-            (array) Config::get('layout.'.$script_group.'.scripts'), 
-            $this->_scripts ?? []
-        );
+        if (!empty($lib_scripts))
+        {
+            lib_scripts(array_unique($lib_scripts));
+        }
         if (!empty($scripts))
         {
-            scripts($scripts);
+            scripts(array_unique($scripts));
         }
-        
+
         $this->show('js');
     }
 

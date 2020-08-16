@@ -1,5 +1,5 @@
 <?php
-namespace dFramework\dependencies\verot;
+namespace Verot;
 
 // +------------------------------------------------------------------------+
 // | class.upload.php                                                       |
@@ -2429,7 +2429,7 @@ class Upload {
                             $this->log .= '&nbsp;&nbsp;&nbsp;&nbsp;Fileinfo PECL extension failed (finfo_open)<br />';
                         }
                     } elseif (@class_exists('finfo', false)) {
-                        $f = new finfo( FILEINFO_MIME );
+                        $f = new \finfo( FILEINFO_MIME );
                         if ($f) {
                             $this->file_src_mime = $f->file(realpath($this->file_src_pathname));
                             $this->log .= '- MIME type detected as ' . $this->file_src_mime . ' by Fileinfo PECL extension<br />';
@@ -2797,7 +2797,7 @@ class Upload {
      */
     function getsize($size) {
         if ($size === null) return null;
-        $last = strtolower($size{strlen($size)-1});
+        $last = strtolower($size[strlen($size)-1]);
         $size = (int) $size;
         switch($last) {
             case 'g':

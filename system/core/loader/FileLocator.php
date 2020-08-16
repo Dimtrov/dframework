@@ -124,17 +124,17 @@ class FileLocator
             // Path to app helpers
             APP_DIR . 'libraries' . DS . $file
         ]; 
-        $file_exist = false;
-        
-        foreach ($paths As $path) 
+        $file_syst = $file_exist = false;
+
+        if (file_exists($paths[0])) 
         {
-            if (file_exists($path))
-            {
-                require_once $path;
-                $file_exist = true;
-                
-                break;
-            }
+            $lib = "dFramework\\libraries\\$lib";
+            $file_syst = $file_exist = true;
+        }
+        else if (file_exists($paths[1]))
+        {
+            require_once $paths[1];
+            $file_exist = true;
         }
 
         if (true !== $file_exist)
@@ -146,7 +146,7 @@ class FileLocator
             );
         }
 
-        if (!class_exists($lib))
+        if (true !== $file_syst AND !class_exists($lib))
         {
             LoadException::except('
                 Impossible de charger la librarie <b>'.$lib.'</b>. 

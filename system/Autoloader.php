@@ -102,8 +102,9 @@ class Autoloader
             $input = explode('\\', $input);
             $class = array_pop($input);
             $namespace = implode(DIRECTORY_SEPARATOR, $input);
-
-            require_once FILTER_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+            
+            
+            require_once rtrim(FILTER_DIR . $namespace . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
         }
         /**
          * Chargement des classe mappees notament les dependances

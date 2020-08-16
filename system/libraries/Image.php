@@ -12,8 +12,10 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.2
  */
+
+namespace dFramework\libraries;
 
 use dFramework\core\exception\Exception;
 use Grafika\Color;

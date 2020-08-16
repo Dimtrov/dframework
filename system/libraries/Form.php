@@ -15,6 +15,8 @@
  * @version     3.2.2
  */
 
+namespace dFramework\libraries;
+
 use dFramework\core\loader\Service;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Tableau;
@@ -91,7 +93,7 @@ class Form
      *
      * @param string|array $key
      * @param mixed $value
-     * @return dF_Form
+     * @return Form
      */
     public function error($key, $value = null) : self
     {
@@ -108,8 +110,7 @@ class Form
         }
         return $this;
     }
-
-
+    
 
     /**
      * Definie les balises ouvrante et fermante qui entoureront le champ

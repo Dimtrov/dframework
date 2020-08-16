@@ -503,16 +503,16 @@ class Response implements ResponseInterface
      * Will echo out the content in the response body.
      *
      * @return void
-     * @deprecated 3.4.0 Will be removed in 4.0.0. Use Cake\Http\ResponseEmitter if required
+     * /deprecated 3.4.0 Will be removed in 4.0.0. Use Cake\Http\ResponseEmitter if required
      */
     public function send()
     {
         if ($this->hasHeader('Location') && $this->_status === 200) {
             $this->withStatus(302);
         }
-
-        $this->_setContent();
+        
         $this->sendHeaders();
+        $this->_setContent();
 
         if ($this->_file) {
             $this->_sendFile($this->_file, $this->_fileRange);
@@ -533,7 +533,7 @@ class Response implements ResponseInterface
      * @return void
      */
     public function sendHeaders()
-    {
+    {   
         $file = $line = null;
         if (headers_sent($file, $line)) {
             return;
@@ -703,6 +703,7 @@ class Response implements ResponseInterface
         }
 
         $headers = is_array($header) ? $header : [$header => $value];
+     
         foreach ($headers as $header => $value) {
             if (is_numeric($header)) {
                 list($header, $value) = [$value, null];
@@ -938,7 +939,7 @@ class Response implements ResponseInterface
      * @param int|null $code the HTTP status code
      * @return int Current status code
      * @throws \InvalidArgumentException When an unknown status code is reached.
-     * @deprecated 3.4.0 Use `getStatusCode()` and `withStatus()` instead.
+     * /deprecated 3.4.0 Use `getStatusCode()` and `withStatus()` instead.
      */
     public function statusCode($code = null)
     {
@@ -1138,7 +1139,7 @@ class Response implements ResponseInterface
      *
      * @param string|array|null $contentType Content type key.
      * @return mixed Current content type or false if supplied an invalid content type.
-     * @deprecated 3.5.5 Use getType() or withType() instead.
+     * /deprecated 3.5.5 Use getType() or withType() instead.
      */
     public function type($contentType = null)
     {
@@ -1279,7 +1280,7 @@ class Response implements ResponseInterface
      *
      * @param string|null $charset Character set string.
      * @return string Current charset
-     * @deprecated 3.5.0 Use getCharset()/withCharset() instead.
+     * /deprecated 3.5.0 Use getCharset()/withCharset() instead.
      */
     public function charset($charset = null)
     {
@@ -1321,7 +1322,7 @@ class Response implements ResponseInterface
      * Sets the correct headers to instruct the client to not cache the response
      *
      * @return void
-     * @deprecated 3.4.0 Use withDisabledCache() instead.
+     * /deprecated 3.4.0 Use withDisabledCache() instead.
      */
     public function disableCache()
     {
@@ -1349,7 +1350,7 @@ class Response implements ResponseInterface
      * @param string|int $time a valid time for cache expiry
      * @return void
      * @throws \InvalidArgumentException
-     * @deprecated 3.4.0 Use withCache() instead.
+     * /deprecated 3.4.0 Use withCache() instead.
      */
     public function cache($since, $time = '+1 day')
     {
@@ -1462,9 +1463,9 @@ class Response implements ResponseInterface
      * a good candidate to be fetched from a shared cache (like in a proxy server).
      * If called with no parameters, this function will return the current max-age value if any
      *
-     * @deprecated 3.6.5 Use withSharedMaxAge() instead.
      * @param int|null $seconds if null, the method will return the current s-maxage value
      * @return int|null
+     * /deprecated 3.6.5 Use withSharedMaxAge() instead.
      */
     public function sharedMaxAge($seconds = null)
     {
@@ -1503,9 +1504,9 @@ class Response implements ResponseInterface
      * a good candidate to be fetched from the local (client) cache.
      * If called with no parameters, this function will return the current max-age value if any
      *
-     * @deprecated 3.6.5 Use withMaxAge() instead.
      * @param int|null $seconds if null, the method will return the current max-age value
      * @return int|null
+     * /deprecated 3.6.5 Use withMaxAge() instead.
      */
     public function maxAge($seconds = null)
     {
@@ -1548,7 +1549,7 @@ class Response implements ResponseInterface
      * @param bool|null $enable if null, the method will return the current
      *   must-revalidate value. If boolean sets or unsets the directive.
      * @return bool
-     * @deprecated 3.4.0 Use withMustRevalidate() instead.
+     * /deprecated 3.4.0 Use withMustRevalidate() instead.
      */
     public function mustRevalidate($enable = null)
     {
@@ -1617,7 +1618,7 @@ class Response implements ResponseInterface
      *
      * @param string|int|\DateTimeInterface|null $time Valid time string or \DateTime instance.
      * @return string|null
-     * @deprecated 3.4.0 Use withExpires() instead.
+     * /deprecated 3.4.0 Use withExpires() instead.
      */
     public function expires($time = null)
     {
@@ -1668,7 +1669,7 @@ class Response implements ResponseInterface
      *
      * @param string|int|\DateTimeInterface|null $time Valid time string or \DateTime instance.
      * @return string|null
-     * @deprecated 3.4.0 Use withModified() instead.
+     * /deprecated 3.4.0 Use withModified() instead.
      */
     public function modified($time = null)
     {
@@ -1773,7 +1774,7 @@ class Response implements ResponseInterface
      * @param string|array|null $cacheVariances A single Vary string or an array
      *   containing the list for variances.
      * @return array|null
-     * @deprecated 3.4.0 Use withVary() instead.
+     * /deprecated 3.4.0 Use withVary() instead.
      */
     public function vary($cacheVariances = null)
     {
@@ -1825,7 +1826,7 @@ class Response implements ResponseInterface
      * @param bool $weak Whether the response is semantically the same as
      *   other with the same hash or not
      * @return string|null
-     * @deprecated 3.4.0 Use withEtag() instead.
+     * /deprecated 3.4.0 Use withEtag() instead.
      */
     public function etag($hash = null, $weak = false)
     {
@@ -1919,7 +1920,7 @@ class Response implements ResponseInterface
      *
      * @param string $filename The name of the file as the browser will download the response
      * @return void
-     * @deprecated 3.4.0 Use withDownload() instead.
+     * /deprecated 3.4.0 Use withDownload() instead.
      */
     public function download($filename)
     {
@@ -1943,7 +1944,7 @@ class Response implements ResponseInterface
      *
      * @param string|null $protocol Protocol to be used for sending response.
      * @return string Protocol currently set
-     * @deprecated 3.4.0 Use getProtocolVersion() instead.
+     * /deprecated 3.4.0 Use getProtocolVersion() instead.
      */
     public function protocol($protocol = null)
     {
@@ -1960,7 +1961,7 @@ class Response implements ResponseInterface
      *
      * @param int|null $bytes Number of bytes
      * @return string|null
-     * @deprecated 3.4.0 Use withLength() to set length instead.
+     * /deprecated 3.4.0 Use withLength() to set length instead.
      */
     public function length($bytes = null)
     {
@@ -2115,7 +2116,7 @@ class Response implements ResponseInterface
      * @param array|null $options Either null to get all cookies, string for a specific cookie
      *  or array to set cookie.
      * @return mixed
-     * @deprecated 3.4.0 Use getCookie(), getCookies() and withCookie() instead.
+     * /deprecated 3.4.0 Use getCookie(), getCookies() and withCookie() instead.
      */
     public function cookie($options = null)
     {
@@ -2403,6 +2404,7 @@ class Response implements ResponseInterface
         $ssl = $request->is('ssl');
         $builder = new CorsBuilder($this, $origin, $ssl);
         if (!$origin) {
+            var_dump('sd');
             return $builder;
         }
         if (empty($allowedDomains) && empty($allowedMethods) && empty($allowedHeaders)) {
@@ -2711,7 +2713,7 @@ class Response implements ResponseInterface
      * Returns true if connection is still active
      *
      * @return bool
-     * @deprecated 3.4.0 Will be removed in 4.0.0
+     * /deprecated 3.4.0 Will be removed in 4.0.0
      */
     protected function _isActive()
     {

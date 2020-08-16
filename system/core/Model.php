@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.2
  */
-
 
 namespace dFramework\core;
 
@@ -22,6 +21,7 @@ use dFramework\core\db\Migrator;
 use dFramework\core\db\Query;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
+use dFramework\libraries\Api;
 use Envms\FluentPDO\Query As FluentPDOQuery;
 
 /**
@@ -92,12 +92,11 @@ class Model extends Query
      */
     final protected function useApi(string $base_url, string $var = 'api')
     {
-        require_once SYST_DIR . 'libraries' . DS . 'Api.php';
-        if (empty($this->{$var}) OR !$this->{$var} instanceof \dF_Api)
+        if (empty($this->{$var}) OR !$this->{$var} instanceof Api)
         {
-            $this->{$var} = new \dF_Api;
-            $this->{$var}->baseUrl($base_url);
+            $this->{$var} = new Api;
         } 
+        $this->{$var}->baseUrl($base_url);
     }
     /**
      * Injecte un objet d'Api au model
@@ -240,4 +239,21 @@ class Model extends Query
         }
         throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
     }
+
+    final public function existOther(array $dif, array $eq, string $table)
+    {
+        $this->db()->from($table);
+        
+        foreach ($dif As $key => $value) 
+        {
+            $this->where($key . ' != ?')->params([$value]);
+        }
+        foreach ($eq As $key => $value) 
+        {
+            $this->where($key .' = ?')->params([$value]);
+        }
+        
+        return $this->count() > 0;
+    }
+
 }

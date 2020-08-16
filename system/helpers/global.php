@@ -15,10 +15,9 @@
  *  @version    3.2.1
  */
 
+use dFramework\core\Config;
 use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
-use dFramework\core\http\Request;
-use dFramework\core\http\Response;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
@@ -151,6 +150,27 @@ if (! function_exists('show404'))
 	}
 }
 
+if (! function_exists('config'))
+{
+    /**
+     * GET/SET App config
+     *
+     * @param string $config
+     * @param mixed $value
+     * @param bool $force_set
+     * @return void
+     */
+	function config(string $config, $value = null, $force_set = false)
+	{
+        if (!empty($value) OR (empty($value) AND true == $force_set)) 
+        {
+            Config::set($config, $value);
+        }
+        
+        return Config::get($config);
+    }
+}
+
 
 // ================================= FONCTIONS DES MANIPULATION DE DONNEES ================================= //
 
@@ -182,7 +202,7 @@ if (!function_exists('get'))
      */
     function get($index = null, $value = null, ?array $filters = [])
     {
-        return Input::instance()->post($index, $value, $filters);
+        return Input::instance()->get($index, $value, $filters);
     }
 }
 
@@ -464,8 +484,8 @@ if (! function_exists('force_https'))
 	 *
 	 * @param integer           $duration How long should the SSL header be set for? (in seconds)
 	 *                                    Defaults to 1 year.
-	 * @param Request  $request
-	 * @param Response $response
+	 * @param ServerRequest  $request
+	 * @param dFramework\core\http\Response $response
 	 *
 	 * Not testable, as it will exit!
 	 *
