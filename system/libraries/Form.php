@@ -52,6 +52,8 @@ class Form
         'end'   => '</div>'
     ];
 
+    protected $attach_errors = true; 
+
     /**
      * Initailise les donnees et les erreurs du formulaire
      *
@@ -62,9 +64,19 @@ class Form
     public function init(?array $datas = [], ?array $errors = []) : void
     {
         $this->datas = $datas;
-        $this->errors = $errors;
+        $this->errors = $errors;    
+    }
+    /**
+     * Specifie si les erreurs doivent etre join au formulaire
+     *
+     * @param boolean $value
+     * @return self
+     */
+    public function attachErrors(bool $value) : self 
+    {
+        $this->attach_errors = $value;
 
-        
+        return $this;
     }
     /**
      * Definie la valeur pour une cle donnee
@@ -110,6 +122,16 @@ class Form
         }
         return $this;
     }
+    /**
+     * Affiche les erreurs d'un champ
+     *
+     * @param string $key
+     * @return string
+     */
+    public function err(string $key) : string
+    {
+        return (!isset($this->errors[$key])) ? '' : implode('<br>', (array) $this->errors[$key]);
+    }
     
 
     /**
@@ -117,9 +139,9 @@ class Form
      *
      * @param false|null|string $start
      * @param false|null|string $end
-     * @return void
+     * @return self
      */
-    public function surround($start = null, $end = null) : void
+    public function surround($start = null, $end = null) : self
     {
         if (false === $start OR false === $end)
         {
@@ -139,6 +161,8 @@ class Form
         {
             $this->surround = compact('start', 'end');
         }
+
+        return $this;
     }
 
 
@@ -146,15 +170,18 @@ class Form
      * Ouvre un formulaire en inserant une cle de securite
      *
      * @param string $action
-     * @param string $method
+     * @param string|null $method
      * @param int|false $token_time 
      * @param string|null $key
      * @param string|null $enctype
      * @param array|null $attributes
      * @return string
      */
-    public function open(string $action, string $method = 'post', $token_time = 5, ?string $key = null, ?string $enctype = null, ?array $attributes = []) : string
+    public function open(string $action, ?string $method = 'post', $token_time = 5, ?string $key = null, ?string $enctype = null, ?array $attributes = []) : string
     {
+        $method     = empty($method) ? 'post' : strtolower($method);
+        $token_time = empty($token_time) ? 5 : (int) $token_time;
+
         $key = (!empty($key)) ? $key : 'form'.uniqid();
         $enctype = (!empty($enctype)) ? 'enctype="'.$enctype.'"' : '';
         $class = preg_replace('#form-control#i', 'form', $this->getInputClass($key, $attributes['class'] ?? null));
@@ -718,11 +745,15 @@ HTML;
      * Renvoie l'erreur relatif a un champ
      *
      * @param string $key Cle du champ dont on veut avoir l'erreur potentielle
-     * @return string
+     * @return string|null
      */
     protected function getErrorFeedback(string $key) : string
     {
-        return (!isset($this->errors[$key])) ? '' : '<div class="invalid-feedback">' . implode('<br>', (array) $this->errors[$key]) . '</div>';
+        if ($this->attach_errors) 
+        {
+            return (!isset($this->errors[$key])) ? '' : '<div class="invalid-feedback">' . implode('<br>', (array) $this->errors[$key]) . '</div>';
+        }
+        return '';
     }
     /**
      * Renvoie la/les classe(s) d'un input

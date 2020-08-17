@@ -22,6 +22,7 @@ use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\output\Cache;
 use dFramework\core\output\Language;
+use dFramework\core\router\RouteCollection;
 use dFramework\core\utilities\Helpers;
 
 /**
@@ -56,7 +57,7 @@ class Service
         return Injector::instance();
     }
     /**
-     * @return DI\Container
+     * @return \DI\Container
      */
     public static function container()
     {
@@ -67,7 +68,7 @@ class Service
 	 * The Request class models an HTTP request.
      * 
      * @param boolean $shared
-     * @return Psr\Http\Message\ServerRequestInterface
+     * @return \dFramework\core\http\ServerRequest
      */
     public static function request(bool $shared = true)
     {
@@ -78,11 +79,12 @@ class Service
 
         return Injector::factory(ServerRequest::class);
     }
+
     /**
 	 * The Response class models an HTTP response.
      * 
      * @param boolean $shared
-     * @return dFramework\core\http\Response
+     * @return \dFramework\core\http\Response
      */
     public static function response(bool $shared = true)
     {
@@ -93,12 +95,12 @@ class Service
 
         return Injector::factory(Response::class);
     }
-    
+
     /**
 	 * The URI class provides a way to model and manipulate URIs.
      * 
      * @param boolean $shared
-     * @return dFramework\core\http\Uri
+     * @return \dFramework\core\http\Uri
      */
     public static function uri(bool $shared = true)
     {
@@ -115,7 +117,7 @@ class Service
 	 * complex data for later
      * 
      * @param boolean $shared
-     * @return dFramework\core\output\Cache
+     * @return \dFramework\core\output\Cache
      */
     public static function cache(bool $shared = true)
     {
@@ -158,6 +160,24 @@ class Service
         return Injector::factory(Language::class)->setLocale($locale);
     }
     
+    /**
+	 * The Routes service is a class that allows for easily building
+	 * a collection of routes.
+	 *
+	 * @param bool $shared
+	 * @return \dFramework\core\router\RouteCollection
+	 */
+    public static function routes(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(RouteCollection::class);
+        }
+
+        return Injector::factory(RouteCollection::class);
+    }
+    
+
     /**
 	 * Provides the ability to perform case-insensitive calling of service
 	 * names.

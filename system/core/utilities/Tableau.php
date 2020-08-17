@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
 
 namespace dFramework\core\utilities;
@@ -31,7 +31,6 @@ use dFramework\core\exception\Exception;
  * @file        /system/core/utilities/Tableau.php
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
  */
-
 class Tableau
 {
     const SORT_ASC = 1;
@@ -93,6 +92,7 @@ class Tableau
     /**
      * @param array|null $data
      * @param string|null $key
+     * @since 3.2.1
      * @return mixed
      */
     public static function get_recusive(?array $data, ?string $key = null)
@@ -131,7 +131,7 @@ class Tableau
      */
     public static function set_recursive(array &$data, ?string $key = null, $value = null)
     {
-        if (empty($data) OR empty($key)) 
+        if (empty($data) AND empty($key)) 
         {
             return;
         }

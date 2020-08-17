@@ -101,12 +101,12 @@ class Model extends Query
     /**
      * Injecte un objet d'Api au model
      *
-     * @param dF_Api $api
+     * @param Api $api
      * @param string $var
      * @since 3.2
      * @return void
      */
-    final public function initApi($api, string $var = 'api')
+    final public function initApi(Api $api, string $var = 'api')
     {
         $this->{$var} = $api;
     }
@@ -255,5 +255,4 @@ class Model extends Query
         
         return $this->count() > 0;
     }
-
 }

@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
  
 namespace dFramework\core\http;
@@ -234,6 +234,10 @@ class Input
             return $this->_find_entries((array) Session::get(), $index, $filter);
         }
 
+        if ($value === false)
+        {
+            Session::set($index, null);            
+        }
         if(!empty($value)) 
         {
             Session::set($index, $value);

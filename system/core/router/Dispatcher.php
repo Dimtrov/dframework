@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
  *  dFramework
  *
@@ -12,17 +12,14 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.2
  */
 
 namespace dFramework\core\router;
 
-use dFramework\core\Config;
-use dFramework\core\Controller;
 use dFramework\core\exception\RouterException;
-use dFramework\core\loader\Injector;
+use dFramework\core\http\ServerRequest;
 use dFramework\core\loader\Service;
-use dFramework\core\utilities\Chaine;
 use ReflectionMethod;
 
 /**
@@ -33,279 +30,91 @@ use ReflectionMethod;
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Route
+ * @category    Router
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       1.0
- * @file        /system/core/route/Dispatcher.php
- * @credit      Web MVC Framework v.1.1.1 2016 - by Rosario Carvello <rosario.carvello@gmail.com>
+ * @file        /system/core/router/Dispatcher.php
  */
-
-/**
- * A url request must be in the formats:
- *  - http://site/controller.
- *  - http://site/controller/method.
- *  - http://site/controller/method/param1.
- *  - http://site/controller/method/param1/param2/../paramn.
- *
- * A url request could also contain applications subsystems, e.g.:
- *  - http://site/subsystem/controller/method/param1/param2
- *  - http://site/subsystem/childsubsystem/controller/method/param1/param2
- *
- * A url request could also contain http get parameters, e.g.:
- *  - http://site/controller?get1=value2&get2=value2
- *  - http://site/controller/method?get1=value2&get2=value2
- *  - http://site/controller/method/param1/param2?get1=value2&get2=value2
- *  - http://site/subsystem/controller/method/param1/param2?get1=value2&get2=value2
- *
- * A url request must be in lower/upper case and can contains underscore. Framework will
- * apply all format conversion to run the appropriate MVC instance.
- *
- * Conversions are like this:
- *
- *  - http://site/user/open/1              => User->open(1);
- *  - http://site/user_manager/get_user/1  => UserManager->getUser(1)
- */
-class Dispatcher
+class Dispatcher 
 {
     /**
-     * @var null
+     * @var \dFramework\core\http\ServerRequest
      */
+    private $request;
+    /**
+     * @var Routere
+     */
+    private $router;
+
+	/**
+	 * @var string
+	 */
+	private $controller;
+	/**
+	 * @var string
+	 */
+	private $method;
+	/**
+	 * @var array
+	 */
+	private $parameters;
+
     private static $_instance = null;
-
     /**
-     * @var null|string Store the current subsystem name
-     */
-    private $current_subsystem;
-    /**
-     * @var string The controller class name.
-     */
-    private $controller_class;
-
-    /** @var  string Stores the controller class name using a SEO format
+     * Renvoi une instance unique de la classe
      *
+     * @return self
      */
-    private $controllerSEOClassName;
+    private static function instance() : self
+    {
+        if (null === self::$_instance) 
+        {
+            self::$_instance = new self;
+        }
+        return self::$_instance;
+    }
+    private function __construct()
+    {
+        $this->request = Service::request();
+    }
 
-    /**
-     * @var string The method name.
-     */
-    private $method;
-
-    /**
-     * @var array The methods parameters.
-     */
-    private $methodParameters = array();
-
-    /**
-     * @var string The url to parse for generate a request to dispatch.
-     */
-    private $urlToDispatch;
-
-
-    /**
-     * Creates the appropriate MVC controller instance. Depending on url parsing,
-     * it runs controller method/with parameters and outputs the result.
-     *
-     */
     public static function init()
     {
-        $instance = self::instance();
-        $instance->parseUrlAndSetAttributes();
-
-        $controllerClass = ucfirst($instance->controllerSEOClassName);
-        $method = !empty($instance->method) ? $instance->method : 'index';
-
-        $separatorBeforeController = !empty($instance->current_subsystem) ? DS : '';
-        $controllerClassFile = str_replace('/', DS, CONTROLLER_DIR.$instance->current_subsystem);
-        
-        if ($controllerClassFile[-1] == DS AND $separatorBeforeController == DS)
-        {
-            $controllerClassFile = substr($controllerClassFile, 0, - 1);
+        require_once APP_DIR . 'config' . DS . 'routes.php';
+        if (empty($routes) OR ! $routes instanceof RouteCollection)
+		{
+            $routes = Service::routes();
         }
 
-        $controllerClassFile .= $separatorBeforeController. ucfirst($controllerClass) . 'Controller.php';
-        $controllerClass .= 'Controller';
+		$instance = self::instance();
 
-        self::loadController($controllerClassFile, $controllerClass, $method);
+        $instance->dispatchRoutes($routes, $instance->request);
+        
+        $instance->startController();
+
+        // Closure controller has run in startController().
+		if (! is_callable($instance->controller))
+		{
+			$instance->runController($instance->createController());
+		}
     }
 
-    /**
-     * Dispatch current url and return differents part
-     * 
-     * @return array Part of current url (controller, method, parameters)
-     */
-    public static function dispatchUrl() : array
-    {
-        $instance = self::instance();
+	//--------------------------------------------------------------------
 
-        // Defaults variable 
-        $default_controller = Config::get('route.default_controller');
-        $controller_class = Chaine::toPascalCase($default_controller);
-        $controllerSEOClassName = strtolower($default_controller);
-        $method = 'index';
-        $methodParameters = [];
-
-        if ($instance->current_subsystem == "/") 
-        {
-            $instance->current_subsystem = "";
-        }
-        if (is_string($instance->urlToDispatch) AND (isset($instance->urlToDispatch[-1]) AND  $instance->urlToDispatch[-1] == '/'))
-        {
-            $instance->urlToDispatch = substr($instance->urlToDispatch, 0, -1);
-        }
-        $urlSegments = explode("/", $instance->urlToDispatch);
-
-        // First segment is the controller  - store its name ad SEO name if controller is passed
-        if ($urlSegments[0] != "")
-        {
-            $controller_class = $instance->current_subsystem . Chaine::toPascalCase($urlSegments[0]);
-            $controllerSEOClassName = strtolower($urlSegments[0]);
-        }
-
-        // Second segment is a controller Method
-        if (isset($urlSegments[1]))
-        {
-            $method = $instance->underscoreMethod($urlSegments[1]);
-
-            // If a method is present, then all the other right segments are
-            // considered as method's parameters
-            if (count($urlSegments) > 2)
-            {
-                $temp = array_slice($urlSegments, 2, count($urlSegments) - 1);
-                $i = 0;
-                foreach ($temp as $key => $value) 
-                {
-                    $methodParameters[$i] = $value;
-                    $i++;
-                }
-            }
-        }
-
-        return [
-            'controller' => $controller_class, 
-            'controller_seo' => $controllerSEOClassName,
-            'method' => $method,
-            'parameters' => $methodParameters,
-        ];
-    }
-
-    /**
-     * Charge le controlleur et appelle la methode demandée
-     *
-     * @param $controllerClassFile
-     * @param $controllerClass
-     * @param $method
-     * @param array|null $parameters
-     * @throws \ReflectionException
-     */
-    public static function loadController($controllerClassFile, $controllerClass, $method, ?array $parameters = null)
-    {
-        $controllerClassFile = str_replace(DS.DS, DS, $controllerClassFile);
-        
-        if('cli' === php_sapi_name())
-        {
-            return;
-        }
-        $instance = self::instance();
-
-        if (!empty($parameters) AND is_array($parameters))
-        {
-            $instance->methodParameters = $parameters;
-        }
-
-        $controllerClassFile .= (!preg_match('#\.php$#', $controllerClassFile)) ? '.php' : '';
-
-
-        if (!file_exists($controllerClassFile))
-        {
-            RouterException::except('
-                Can\'t load controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
-                <br>
-                The file &laquo; '.$controllerClassFile.' &raquo; do not exist
-            ', 404);
-        }
-
-        require_once $controllerClassFile;
-
-        if (true !== class_exists($controllerClass))
-        {
-            RouterException::except('
-                Impossible to load the controller <b>'.preg_replace('#Controller$#', '',$controllerClass).'</b>.
-                <br>
-                The file &laquo; '.$controllerClassFile.' &raquo; do not contain class <b>'.$controllerClass.'</b>
-            ', 404);
-        }
-        
-        else
-        {
-            $controller = Injector::factory($controllerClass);
-
-            if (method_exists($controller, '_remap'))
-            {
-                if (is_array($instance->methodParameters))
-                {
-            		$instance->methodParameters = [$method, $instance->methodParameters];
-                }
-                else
-                {
-                    $instance->methodParameters = [$method];
-                }
-                $method = '_remap';
-            }
-            else if (! method_exists($controller, $method))
-            {
-                RouterException::except('&laquo;<b>'.$method.'</b> method &raquo; is not defined in '.get_class($controller), 404);
-            }
-        }
-
-        $reflection = new ReflectionMethod($controllerClass, $method);
-
-        if ($reflection->getName() == "__construct")
-        {
-            RouterException::except("Access denied to __construct", 403);
-        }
-        if (!in_array($reflection->getName(), ['_remap', 'before', 'after']) AND preg_match('#^_#i', $reflection->getName()))
-        {
-            RouterException::except("Access denied to ". $reflection->getName(), 403);
-        }
-        if ($reflection->isProtected() OR $reflection->isPrivate())
-        {
-            RouterException::except("Access to " . $reflection->getName() . " method is denied in $controllerClass", 403);
-        }
-
-        if ($method !== '_remap')
-        {
-            $parameters = $reflection->getParameters();
-            $required_parameters = 0;
-            foreach ($parameters AS $parameter)
-            {
-                if (true !== $parameter->isOptional()) {
-                    $required_parameters++;
-                }
-            }
-            if ($required_parameters > count($instance->methodParameters))
-            {
-                RouterException::except('
-                    Parameters error
-                    <br>
-                    The method <b>'.$method . '</b> of class '.$controllerClass.' require
-                    <b>'.$required_parameters.'</b> parameters, '.count($instance->methodParameters).' was send
-                ', 400);
-            }
-        }
-
-        return self::runController($controller, $method, $instance->methodParameters);
-    }
-
-    /**
+	/**
      * Recupere la classe chargee par la requete
      *
      * @return string
      */
     public static function getClass() : ?string
     {
-        return self::instance()->controller_class;
+		$controller = self::instance()->controller;
+		if (empty($controller)) 
+		{
+			$controller = Service::routes()->defaultController();
+		}
+		return str_replace('Controller', '', $controller);
     }
     /**
      * Retourne la methode invoquee
@@ -314,7 +123,12 @@ class Dispatcher
      */
     public static function getMethod() : ?string
     {
-        return self::instance()->method;
+		$method = self::instance()->method;
+		if (empty($method)) 
+		{
+			$method = Service::routes()->defaultMethod();
+		}
+		return $method;
     }
     /**
      * Recupere le controleur courant
@@ -323,91 +137,217 @@ class Dispatcher
      */
     public static function getController() : ?string
     {
-        return trim(self::instance()->current_subsystem, '/');
+		return '';
+        //return trim(self::instance()->current_subsystem, '/');
     }
+
+	//--------------------------------------------------------------------
 
     /**
-     * Undocumented function
-     *
-     * @param Controller $controller
-     * @param string $method
-     * @param array $parameters
-     * @return void
-     */
-    private static function runController(Controller $controller, string $method, array $parameters = [])
+	 * Works with the router to match a route against the current URI. If the route is a
+	 * "redirect route", will also handle the redirect.
+	 *
+	 * @param RouteCollection $routes An collection interface to use in place of the config file.
+	 */
+	private function dispatchRoutes(RouteCollection $routes, ServerRequest $request)
     {
-        $request = Service::request();
+        $this->router = new Router($routes, $request);
+    
+        $this->controller     = $this->router->handle($request->url ?? '/');
+        $this->method         = $this->router->methodName();
+        $this->parameters     = $this->router->params();
+        $this->controllerFile = $this->router->controllerFile();
 
-
-        if (count($parameters) > 0)
-        {
-            call_user_func_array([$controller, $method], $parameters);
-        }
-        else
-        {
-            call_user_func([$controller, $method]);
-        }
+		// If a {locale} segment was matched in the final route,
+		// then we need to set the correct locale on our Request.
+		if ($this->router->hasLocale())
+		{
+			// $this->request->setLocale($this->router->getLocale());
+		}        
     }
+    
+	/**
+	 * Now that everything has been setup, this method attempts to run the
+	 * controller method and make the script go. If it's not able to, will
+	 * show the appropriate Page Not Found error.
+	 */
+	protected function startController()
+	{
+		// Is it routed to a Closure?
+		if (is_object($this->controller) AND (get_class($this->controller) === 'Closure'))
+		{
+			$controller = $this->controller;
+			return $controller(...$this->parameters);
+		}
 
+		// No controller specified - we don't know what to do now.
+		if (empty($this->controller))
+		{
+			RouterException::except(
+				'empty controller',
+				'No Controller specified.'
+			);
+			throw new \Exception("PageNotFoundException::forEmptyController()");
+		}
 
-    /**
-     * @return Dispatcher|null
-     */
-    private static function instance()
-    {
-        if (null === self::$_instance) 
+		// Try to autoload the class
+		if (!class_exists($this->controller, true))
+		{
+			RouterException::except(
+				'Controller not found',
+				'Impossible to load the controller <b>'.preg_replace('#Controller$#', '',$this->controller).'</b>.
+				<br>
+				The file &laquo; '.$this->controllerFile.' &raquo; do not contain class <b>'.$this->controller.'</b>
+			', 404);
+		}
+
+		if (!method_exists($this->controller, $this->method))
+		{
+			RouterException::except(
+				'Method not found',
+				'&laquo;<b>'.$this->method.'</b> method &raquo; is not defined in '.$this->controller, 
+				404
+			);
+		}
+
+		$reflection = new ReflectionMethod($this->controller, $this->method);
+
+        if ($reflection->getName() == "__construct")
         {
-            self::$_instance = new self;
+            RouterException::except(
+				'Forbidden',
+				'Access denied to <b>__construct</b> method'
+				, 403
+			);
         }
-        return self::$_instance;
-    }
-
-    /**
-     * Dispatcher object constructor.
-     */
-    private function __construct()
-    {
-        $url = str_replace(Config::get('general.url_suffix'), '', Service::request()->url ?? null);
-        $url = (is_string($url) AND isset($url[-1]) AND $url[-1] != '/') ? $url.'/' : $url;
-        
-        $current_subsystem = Lister::getCurrentSubSystem($url);
-        if (!empty($url) AND !empty($current_subsystem))
+        if (!in_array($reflection->getName(), ['_remap', 'before', 'after']) AND preg_match('#^_#i', $reflection->getName()))
         {
-            $url = preg_replace('#^'.$current_subsystem.'/?#', '', $url);
+			RouterException::except(
+				'Forbidden',
+				'Access denied to <b>'.$reflection->getName().'</b> method', 
+				403
+			);
         }
-        $this->current_subsystem =  str_replace("\\", DS, $current_subsystem). DS;
-        $this->urlToDispatch = $url;
-    }
+        if ($reflection->isProtected() OR $reflection->isPrivate())
+        {
+            RouterException::except(
+				'Forbidden',
+				'Access to <b>'. $reflection->getName().'</b> method is denied in '.$this->controller, 
+				403
+			);
+        }
 
+        if ($this->method !== '_remap')
+        {
+            $params = $reflection->getParameters();
+			$required_parameters = 0;
+			
+            foreach ($params As $param)
+            {
+				if (true !== $param->isOptional()) 
+				{
+                    $required_parameters++;
+                }
+            }
+            if ($required_parameters > count($this->parameters))
+            {
+                RouterException::except(
+					'Parameters error',
+                    'The method <b>'.$this->method . '</b> of class '.$this->controller.' require
+						<b>'.$required_parameters.'</b> parameters, '.count($this->parameters).' was send', 
+					400
+				);
+            }
+		}
+    }
     
     /**
-     * Parses url by assuming controller/method/parameter_1/parameter_2/...etc.
-     * positioning format and sets class attributes
-     *
-     */
-    private function parseUrlAndSetAttributes()
-    {
-        $pageInfos = self::dispatchUrl();
+	 * Instantiates the controller class.
+	 *
+	 * @return mixed
+	 */
+	protected function createController()
+	{
+		$class = new $this->controller();
+		//$class->initController($this->request, $this->response);
 
-        $this->method = $pageInfos['method'];
-        $this->methodParameters = $pageInfos['parameters'];
-        $this->controller_class = $pageInfos['controller'];
-        $this->controllerSEOClassName = $pageInfos['controller_seo'];
-    }
+		return $class;
+	}
 
-    /**
-     * Converts url notation, underscored and lower case, to Camel/Pascal case notation.
-     *
-     * @param string $string The url string to convert
-     * @param bool $pascalCase . If true uses Pascal Case. Default false, uses Camel Case
-     * @return string
-     */
-    private function underscoreMethod(string $string) : string
-    {
-        if (\preg_match("#-#", $string))
-        {
-            return Chaine::toSnakeCase($string);
-        }
-        return Chaine::toCamelCase($string);
-    }
+	/**
+	 * Runs the controller, allowing for _remap methods to function.
+	 *
+	 * @param mixed $class
+	 *
+	 * @return mixed
+	 */
+	protected function runController($class)
+	{
+		// If this is a console request then use the input segments as parameters
+		$params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
+
+		if (method_exists($class, '_remap'))
+		{
+			$output = $class->_remap($this->method, ...$params);
+		}
+		else
+		{
+			$output = $class->{$this->method}(...$params);
+		}
+		
+		return $output;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Displays a 404 Page Not Found error. If set, will try to
+	 * call the 404Override controller/method that was set in routing config.
+	 *
+	 * @param \Exception $e
+	 */
+	protected function display404errors(\Exception $e)
+	{
+		// Is there a 404 Override available?
+		if ($override = $this->router->get404Override())
+		{
+			if ($override instanceof \Closure)
+			{
+				echo $override($e->getMessage());
+			}
+			else if (is_array($override))
+			{
+				$this->controller = $override[0];
+				$this->method     = $override[1];
+
+				unset($override);
+
+				$controller = $this->createController();
+				$this->runController($controller);
+			}
+
+			return;
+		}
+
+		// Display 404 Errors
+		$this->response->setStatusCode($e->getCode());
+
+		if (config('general.environment') !== 'test')
+		{
+			if (ob_get_level() > 0)
+			{
+				ob_end_flush();
+			}
+		}
+		else
+		{
+			// When testing, one is for phpunit, another is for test case.
+			if (ob_get_level() > 2)
+			{
+				ob_end_flush();
+			}
+		}
+
+		throw new \Exception("PageNotFoundException::forPageNotFound($e->getMessage())");
+	}
 }

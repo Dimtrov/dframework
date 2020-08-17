@@ -12,14 +12,14 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1 
+ *  @version    3.2.2
  */
 
 namespace dFramework\core;
 
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
-use dFramework\core\router\Router;
+use dFramework\core\router\Dispatcher;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
 use Tracy\Debugger;
@@ -37,7 +37,7 @@ use Tracy\Debugger;
  */
 class dFramework
 {
-    const VERSION = '3.2.1';
+    const VERSION = '3.2.2';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
@@ -91,7 +91,7 @@ class dFramework
         /**
          * Initialise le routing de l'application. Point d'entrer de l'application
          */
-        Router::init();
+        Dispatcher::init();
     }
 
 

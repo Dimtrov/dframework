@@ -12,9 +12,8 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
-
 
 namespace dFramework\components\rest;
 
@@ -24,7 +23,6 @@ use dFramework\core\exception\Exception;
 use dFramework\core\loader\Service;
 use dFramework\core\output\Format;
 use Firebase\JWT\JWT;
-
 
 /**
  * dFramework Rest Controller
@@ -127,7 +125,7 @@ class Controller extends CoreController
 
         // Call the controller method and passed arguments
         try {
-            call_user_func_array([new $class, $method], $params);
+            call_user_func_array([new $class, $method], (array) $params);
         } 
         catch (\Throwable $ex) {
             if (Config::get('general.environment') !== 'dev') 
@@ -146,9 +144,6 @@ class Controller extends CoreController
            Exception::Throw($ex);
         }
     }
-    public function index(){}
-
-
     
     /**
      * Verifie si les informations du processus sont valide ou pas
@@ -250,6 +245,7 @@ class Controller extends CoreController
         $this->_config['allowed_methods'] = array_map(function($str) {
             return strtoupper($str);
         }, $methods);
+
         return $this;
     }
     /**
@@ -261,6 +257,7 @@ class Controller extends CoreController
     final protected function return_format(string $format) : self
     {
         $this->_config['return_format'] = $format;
+
         return $this;
     }
     /**
@@ -271,6 +268,7 @@ class Controller extends CoreController
     final protected function force_https() : self
     {
         $this->_config['force_https'] = true;
+
         return $this;
     }    
     /**
@@ -282,6 +280,7 @@ class Controller extends CoreController
     final protected function auth($type) : self 
     {
         $this->_config['auth'] = $type;
+
         return $this;
     }    
     /**
@@ -308,6 +307,7 @@ class Controller extends CoreController
             array_unshift($params, $enable);
         }
         $this->_config['ip_blacklist'] = array_merge($this->_config['ip_blacklist'] ?? [], $params);
+
         return $this;
     }    
     /**
@@ -334,6 +334,7 @@ class Controller extends CoreController
             array_unshift($params, $enable);
         }
         $this->_config['ip_whitelist'] = array_merge($this->_config['ip_whitelist'] ?? [], $params);
+
         return $this;
     }
 
@@ -360,7 +361,6 @@ class Controller extends CoreController
             return $this->send_error('JWT Exception : ' . $e->getMessage(), self::HTTP_INTERNAL_ERROR);
         }
     }
-
 
     
     /**
@@ -558,6 +558,7 @@ class Controller extends CoreController
                 $header = trim($requestHeaders['Authorization']);
             }
         }
+        
         return $header;
     }
 }

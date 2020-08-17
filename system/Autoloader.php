@@ -70,7 +70,7 @@ class Autoloader
             $class = array_pop($input);
             $namespace = implode(DIRECTORY_SEPARATOR, $input);
 
-            require_once CONTROLLER_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+            require_once rtrim(CONTROLLER_DIR . $namespace, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
         }
         /**
          * Chargement des modeles
@@ -81,7 +81,7 @@ class Autoloader
             $class = array_pop($input);
             $namespace = implode(DIRECTORY_SEPARATOR, $input);
 
-            require_once MODEL_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+            require_once rtrim(MODEL_DIR . $namespace, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
         }
         /**
          * Chargement des entites
@@ -92,7 +92,7 @@ class Autoloader
             $class = array_pop($input);
             $namespace = implode(DIRECTORY_SEPARATOR, $input);
 
-            require_once ENTITY_DIR . $namespace . DIRECTORY_SEPARATOR . $class . '.php';
+            require_once rtrim(ENTITY_DIR . $namespace, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
         }
         /**
          * Chargement des filtres http
@@ -104,7 +104,7 @@ class Autoloader
             $namespace = implode(DIRECTORY_SEPARATOR, $input);
             
             
-            require_once rtrim(FILTER_DIR . $namespace . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
+            require_once rtrim(FILTER_DIR . $namespace, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $class . '.php';
         }
         /**
          * Chargement des classe mappees notament les dependances

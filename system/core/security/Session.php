@@ -12,12 +12,13 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
 namespace dFramework\core\security;
 
 use dFramework\core\Config;
+use dFramework\core\utilities\Tableau;
 
 /**
  * Session
@@ -122,29 +123,7 @@ class Session
         } 
         else if(is_string($key))
         {                
-            $session = $_SESSION[self::$prefix];
-            $key = explode('.', $key);
-            $count = count($key);
-
-            $session_crypt = Config::get('data.session.crypt');
-            
-            if ($count == 1) {
-                $session[$key[0]] = $value;
-            }
-            if ($count == 2) {
-                $session[$key[0]][$key[1]] = $value;
-            }
-            if ($count == 3) {
-                $session[$key[0]][$key[1]][$key[2]] = $value;
-            }
-            if ($count == 4) {
-                $session[$key[0]][$key[1]][$key[2]][$key[3]] = $value;
-            }
-            if ($count == 5) {
-                $session[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]] = $value;
-            }
-
-            $_SESSION[self::$prefix] = $session;
+            Tableau::set_recursive($_SESSION[self::$prefix], $key, $value);
         }
 
         return true;
@@ -164,31 +143,8 @@ class Session
         {
             return $session;
         }
-        $key = explode('.', $key);
-        $count = count($key);
 
-        if ($count == 1) 
-        {
-            return $session[$key[0]] ?? null;
-        }
-        if ($count == 2) 
-        {
-            return $session[$key[0]][$key[1]] ?? null;
-        }
-        if ($count == 3) 
-        {
-            return $session[$key[0]][$key[1]][$key[2]] ?? null;
-        }
-        if ($count == 4) 
-        {
-            return $session[$key[0]][$key[1]][$key[2]][$key[3]] ?? null;
-        }
-        if ($count == 5) 
-        {
-            return $session[$key[0]][$key[1]][$key[2]][$key[3]][$key[4]] ?? null;
-        }
-
-        return null;
+        return Tableau::get_recusive($session, $key);
     }
 
     /**

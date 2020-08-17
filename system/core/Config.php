@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.2
  */
 
 namespace dFramework\core;
@@ -45,8 +45,7 @@ class Config
         'database'      => APP_DIR.'config'.DS.'database.php',
         'general'       => APP_DIR.'config'.DS.'general.php',
         'layout'        => APP_DIR.'config'.DS.'layout.php',
-        'route'         => APP_DIR.'config'.DS.'route.php',
-       
+        
         'email'         => APP_DIR.'config'.DS.'email.php',
         'rest'          => APP_DIR.'config'.DS.'rest.php',
     ];
@@ -64,7 +63,6 @@ class Config
     private static $_required_config  = [
         'data'      => ['encryption', 'session'],
         'general'   => ['environment', 'charset'],
-        'route'     => ['default_controller'],
     ];
 
 
@@ -74,7 +72,7 @@ class Config
      * Return some configuration of application
      *
      * @param string $config
-     * @return array|mixed|null
+     * @return mixed
      */
     public static function get(?string $config = null)
     {
@@ -97,34 +95,15 @@ class Config
     /**
      * Set some configuration of application
      *
-     * @param $config
-     * @param $value
+     * @param string $config
+     * @param mixed $value
      */
     public static function set(string $config, $value)
     {
         $config = explode('.', $config);
-        $count = count($config);
+        $conf = array_shift($config);
 
-        if ($count == 1) 
-        {
-            self::$_config[$config[0]] = $value;
-        }
-        if ($count == 2) 
-        {
-            self::$_config[$config[0]][$config[1]] = $value;
-        }
-        if ($count == 3) 
-        {
-            self::$_config[$config[0]][$config[1]][$config[2]] = $value;
-        }
-        if ($count == 4) 
-        {
-            self::$_config[$config[0]][$config[1]][$config[2]][$config[3]] = $value;
-        }
-        if ($count == 5) 
-        {
-            self::$_config[$config[0]][$config[1]][$config[2]][$config[3]][$config[4]] = $value;
-        }
+        Tableau::set_recursive(self::$_config[$conf], implode('.', $config), $value);
     }
 
 
@@ -134,7 +113,7 @@ class Config
      */
     public static function init()
     {
-        self::load(['autoload', 'data', 'general', 'route']);
+        self::load(['autoload', 'data', 'general']);
 
         self::checkRequired();
 

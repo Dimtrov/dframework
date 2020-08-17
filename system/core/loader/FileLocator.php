@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
 
 namespace dFramework\core\loader;
@@ -20,7 +20,7 @@ namespace dFramework\core\loader;
 use dFramework\core\exception\LoadException;
 
 /**
- * Controller
+ * FileLocator
  *
  * @package		dFramework
  * @subpackage	Core
@@ -139,20 +139,22 @@ class FileLocator
 
         if (true !== $file_exist)
         {
-            LoadException::except('
-                Impossible de charger la librairie <b>'.$lib.'</b>. 
-                <br> 
+            LoadException::except(
+                'Library file not found',
+                'Impossible de charger la librairie <b>'.$lib.'</b>. 
+                <br/>
                 Aucun fichier accessible en lecture n\'a été trouvé pour cette librairie'
             );
         }
 
         if (true !== $file_syst AND !class_exists($lib))
         {
-            LoadException::except('
-                Impossible de charger la librarie <b>'.$lib.'</b>. 
+            LoadException::except(
+                'Library class do not exist',
+                'Impossible de charger la librarie <b>'.$lib.'</b>. 
                 <br> 
-                Le fichier correspondant à cette librairie ne contient pas de classe <b>'.$lib.'</b>
-            ');
+                Le fichier correspondant à cette librairie ne contient pas de classe <b>'.$lib.'</b>'
+            );
         }
 
         return Injector::factory($lib);
@@ -173,21 +175,23 @@ class FileLocator
 
         if (!file_exists($path))
         {
-            LoadException::except('
-                    Impossible de charger le modele <b>'.str_replace('Model', '', $mod).'</b> souhaité. 
-                    <br> 
-                    Le fichier &laquo; '.$path.' &raquo; n\'existe pas
-                ');
+            LoadException::except(
+                'Model file not found',
+                'Impossible de charger le modele <b>'.str_replace('Model', '', $mod).'</b> souhaité. 
+                <br/>
+                Le fichier &laquo; '.$path.' &raquo; n\'existe pas'
+            );
         }
         
         require_once $path;
 
         if (!class_exists($mod, false))
         {
-            LoadException::except('
-                Impossible de charger le model <b>'.str_replace('Model', '', $mod).'</b> souhaité. 
-                <br> 
-                Le fichier &laquo; '.$path.' &raquo; ne contient pas de classe <b>'.$mod.'</b>
+            LoadException::except(
+                'Model class do not exist',
+                'Impossible de charger le model <b>'.str_replace('Model', '', $mod).'</br> souhaité. 
+                <br/>
+                Le fichier &laquo; '.$path.' &raquo; ne contient pas de classe <b>'.$mod.'</br>
             ');
         }
 
@@ -209,22 +213,24 @@ class FileLocator
 
         if (!file_exists($path))
         {
-            LoadException::except('
-                Impossible de charger le controleur <b>'.str_replace('Controller', '', $con).'</b> souhaité. 
-                <br> 
-                Le fichier &laquo; '.$path.' &raquo; n\'existe pas
-            ');
+            LoadException::except(
+                'Controller file not found',
+                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $con).'</b> souhaité. 
+                <br/>
+                Le fichier &laquo; '.$path.' &raquo; n\'existe pas'
+            );
         }
         
         require_once $path;
 
         if (!class_exists($con, false))
         {
-            LoadException::except('
-                Impossible de charger le controleur <b>'.str_replace('Controller', '', $con).'</b> souhaité. 
+            LoadException::except(
+                'Controller class do not exist',
+                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $con).'</br> souhaité. 
                 <br> 
-                Le fichier &laquo; '.$path.' &raquo; ne contient pas de classe <b>'.$con.'</b>
-            ');
+                Le fichier &laquo; '.$path.' &raquo; ne contient pas de classe <b>'.$con.'</b>'
+            );
         }
 
         return Injector::factory($con);

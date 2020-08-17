@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
  *  dFramework
  *
@@ -12,579 +12,621 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
 
 namespace dFramework\core\router;
 
-use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
-use dFramework\core\utilities\Tableau;
-use dFramework\core\loader\Service;
+use dFramework\core\http\ServerRequest;
 
 /**
- * Router
- *
- * Make a route
+ * Parses the request URL into controller, action, and parameters. Uses the connected routes
+ * to match the incoming URL string to parameters that will allow the request to be dispatched. Also
+ * handles converting parameter lists into URL strings, using the connected routes. Routing allows you to decouple
+ * the way the world interacts with your application (URLs) and the implementation (controllers and actions).
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Route
+ * @category    Router
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       2.0
- * @file	    /system/core/route/Router.php
+ * @credit		CodeIgniter 4.0 (CodeIgniter\Router\Router)
+ * @file        /system/core/router/Router.php
  */
-class Router
-{
+class Router 
+{   
     /**
-     * @var string
-     */
-    private $url;
-    
+	 * @var RouteCollection
+	 */
+	protected $collection;
     /**
-     * @var array
+     * @var ServerRequest
      */
-    private $routes = [
-        'POST'   => [],
-        'GET'    => [],
-        'PUT'    => [],
-        'PATCH'  => [],
-        'DELETE' => [],
-        'OPTIONS' => [],
-    ];
-    /**
-     * @var array
-     */
-    private $envRoutes = [
-        'dev'  => [],
-        'prod' => [],
-        'test' => []
-    ];
-    /**
-     * @var array
-     */
-    private $namedRoutes = [];
-    /**
-     * @var array
-     */
-    private $envNamedRoutes = [
-        'dev'  => [],
-        'prod' => [],
-        'test' => []
-    ];
-    /**
-     * @var array
-     */
-    private $redirectedRoutes = [];
-    /**
-     * @var array
-     */
-    private $envRedirectedRoutes = [
-        'dev'  => [],
-        'prod' => [],
-        'test' => []
-    ];
+    protected $request;
 
-    /**
-     * @var array
-     */
-    private $config = [
-        'default_controller' => 'Home',
-        'default_method'     => 'index',
-        'auto_route'         => true,
-    ];
-    /**
-     * @var array
-     */
-    private $placeholders = [
-        'alpha'    => '[a-zA-Z]+',
-        'alphanum' => '[a-zA-Z0-9]+',
-        'any'      => '[^ /]+',
-        'num'      => '[0-9]+',
-        'slug'     => '[a-z0-9-]+',
-    ];
-    
+	/**
+	 * The route that was matched for this request.
+	 *
+	 * @var array|null
+	 */
+	protected $matchedRoute = null;
 
-    /**
-     * Router constructor.
-     */
-    private function __construct()
-    {
-        $this->url = Service::request()->url ?? '/';
-        $this->envRoutes = [
-            'dev'  => $this->routes,
-            'prod' => $this->routes,
-            'test' => $this->routes,
-        ];
+	/**
+	 * The options set for the matched route.
+	 *
+	 * @var array|null
+	 */
+	protected $matchedRouteOptions = null;
 
-        $this->config = array_merge($this->config, (array) Config::get('route'));
-    }
+	/**
+	 * The locale that was detected in a route.
+	 *
+	 * @var string
+	 */
+	protected $detectedLocale = null;
 
-    /**
-     * @var null
-     */
-    private static $_instance = null;
+	/**
+	 * The filter info from Route Collection
+	 * if the matched route should be filtered.
+	 *
+	 * @var string
+	 */
+	protected $filterInfo;
 
-    /**
-     * @return Router
-     */
-    public static function instance() : self
-    {
-        if (null === self::$_instance)
-        {
-            self::$_instance = new self;
-        }
-        return self::$_instance;
-    }
+	
+	/**
+	 * Sub-directory that contains the requested controller class.
+	 * Primarily used by 'autoRoute'.
+	 *
+	 * @var string
+	 */
+	protected $directory;
 
-    /**
-     * @throws RouterException
-     * @throws \ReflectionException
-     */
-    public static function init()
-    {
-        $instance = self::instance();
+	/**
+	 * The name of the controller class.
+	 *
+	 * @var string
+	 */
+	protected $controller;
+	/**
+	 * @var string
+	 */
+	protected $controllerFile = '';
+	/**
+	 * The name of the method to use.
+	 *
+	 * @var string
+	 */
+	protected $method;
 
-        $routes                 = $instance->config;
-        $environments           = $routes['environment'] ?? [];
-        $groups                 = $routes['group'] ?? [];
-        $instance->placeholders = array_merge($instance->placeholders, (array) ($routes['placeholders'] ?? []));
-
-        $routes = Tableau::remove($routes, 'default_controller');
-        $routes = Tableau::remove($routes, 'default_method');
-        $routes = Tableau::remove($routes, 'auto_route');
-        $routes = Tableau::remove($routes, 'environment');
-        $routes = Tableau::remove($routes, 'group');
-        $routes = Tableau::remove($routes, 'placeholders');
-      
-        $instance
-            ->mapEnvironments($environments)
-            ->mapGroups($groups)
-            ->mapRoutes($routes)
-            ->run();
-    }
-
-    /**
-     * @param string $name
-     * @param array $params
-     * @return mixed
-     * @throws RouterException
-     */
-    public static function url(string $name, array $params = [])
-    {
-        $instance = self::instance();
-        if (!isset($instance->namedRoutes[$name]))
-        {
-            RouterException::except('No route matches this name', 404);
-        }
-        
-        return $instance->namedRoutes[$name]->getUrl($params);
-    }
+	/**
+	 * An array of binds that were collected
+	 * so they can be sent to closure routes.
+	 *
+	 * @var array
+	 */
+	protected $params = [];
 
 
+	//--------------------------------------------------------------------
 
-    
+	/**
+	 * Stores a reference to the RouteCollection object.
+	 *
+	 * @param RouteCollectionInterface $routes
+	 * @param ServerRequestInterface   $request
+	 */
+	public function __construct(RouteCollection $routes, ServerRequest $request)
+	{
+        $this->collection = $routes;
+    	$this->request = $request;
+
+		$this->setController($this->collection->defaultController());
+		$this->setMethod($this->collection->defaultMethod());
+
+		$this->collection->HTTPVerb($this->request->getMethod() ?? strtolower($_SERVER['REQUEST_METHOD']));
+	}
 
 
-    /**
-     * Delivre les placeholders enregistres
-     *
-     * @return array
-     */
-    public static function getPlaceholders() : array
-    {
-        return self::instance()->placeholders ?? [];
-    }
+	/**
+	 * Returns the name of the matched controller.
+	 *
+	 * @return mixed
+	 */
+	public function controllerName()
+	{
+		return str_replace('-', '_', $this->controller);
+	}
+	/**
+	 * Set controller name
+	 *
+	 * @param string $name
+	 * @return void
+	 */
+	private function setController(string $name)
+	{
+		$this->controller = $this->makeController($name);
+	}
+	private function makeController(string $name) : string 
+	{
+		return preg_replace('#Controller$#', '', ucfirst($name)) . 'Controller';
+	}
+	/**
+	 * Returns the name of the method to run in the
+	 * chosen container.
+	 *
+	 * @return mixed
+	 */
+	public function methodName(): string
+	{
+		return str_replace('-', '_', $this->method);
+	}
+	private function setMethod(string $name)
+	{
+		$this->method = strtolower($name);
+	}
 
-    /**
-     * Recuperation des routes d'environnement
-     *
-     * @param array $environments
-     * @param array $routes
-     * @return Router
-     */
-    private function mapEnvironments(array $environments) : self
-    {
-        foreach ($environments As $key => &$value) 
-        {
-            if (!is_string($key) OR !is_array($value)) 
-            {
-                RouterException::show('Definition des routes d\'environnement mal formée');
-            }
-            
-            foreach ($value As $k => $v) 
-            {
-                if (is_string($k)) 
-                {
-                    $v = (array) $v;
+	public function controllerFile() : string 
+	{
+		return $this->controllerFile;
+	}
 
-                    $route = [];
-                    /**
-                     * Controleur ou callable a lancer
-                     */
-                    $route[0] = $v[0] ?? null;
-                    /**
-                     * Methode HTTP autorisee
-                     */
-                    $route[1] = $v[1] ?? null;
-                    /**
-                     * Route de redirection
-                     */
-                    $route[2] = $v[2] ?? null;
-                    /**
-                     * Nom de la route
-                     */
-                    $route[3] = $v[3] ?? null;
-                    /**
-                     * Filtre a utiliser
-                     */
-                    $route[4] = $v[4] ?? [];
-                    
-                    // Ajout de la nouvelle route mappee
-                    $this->mapRoutes([$k => $route], $key);
-                }
-            }
-        }
+	//--------------------------------------------------------------------
 
-        return $this;
-    }
+	/**
+	 * Returns the binds that have been matched and collected
+	 * during the parsing process as an array, ready to send to
+	 * instance->method(...$params).
+	 *
+	 * @return mixed
+	 */
+	public function params(): array
+	{
+		return $this->params;
+	}
+	/**
+	 * Returns the filter info for the matched route, if any.
+	 *
+	 * @return string
+	 */
+	public function getFilter()
+	{
+		return $this->filterInfo;
+	}
+	/**
+	 * Returns the name of the sub-directory the controller is in,
+	 * if any. Relative to APPPATH.'Controllers'.
+	 *
+	 * Only used when auto-routing is turned on.
+	 *
+	 * @return string
+	 */
+	public function directory(): string
+	{
+		return !empty($this->directory) ? $this->directory : '';
+	}
 
-    /**
-     * Parse les collections de chemins et les ajoutes aux chemins
-     *
-     * @param array $groups
-     * @param array $routes
-     * @return Router
-     */
-    private function mapGroups(array $groups) : self
-    {
-        foreach ($groups As $key => &$value) 
-        {
-            if (!is_string($key) OR !is_array($value)) 
-            {
-                RouterException::show('Definition de la collection de routes mal formée');
-            }
+	/**
+	 * Returns the routing information that was matched for this
+	 * request, if a route was defined.
+	 *
+	 * @return array|null
+	 */
+	public function getMatchedRoute()
+	{
+		return $this->matchedRoute;
+	}
+	/**
+	 * Returns all options set for the matched route
+	 *
+	 * @return array|null
+	 */
+	public function getMatchedRouteOptions()
+	{
+		return $this->matchedRouteOptions;
+	}
 
-            $prefix = $key;
-            $filters = $value[0] ?? [];
-            unset($value[0]);
+	/**
+	 * Returns true/false based on whether the current route contained
+	 * a {locale} placeholder.
+	 *
+	 * @return boolean
+	 */
+	public function hasLocale()
+	{
+		return (bool) $this->detectedLocale;
+	}
+	/**
+	 * Returns the detected locale, if any, or null.
+	 *
+	 * @return string
+	 */
+	public function getLocale()
+	{
+		return $this->detectedLocale;
+	}
 
-            foreach ($value As $k => $v) 
-            {
-                if (is_int($k) AND is_array($v))
-                {
-                    foreach ($v As $x => $y) 
-                    {
-                        foreach ($y As &$a) 
-                        {
-                            $a = (array) $a;
-                            $a[4] = array_merge($filters, $a[4] ?? []);
-                        }
-                        $v[$prefix.'/'.$x] = $y;
-                        unset($v[$x]);
-                    }
-                    $this->mapGroups($v);
-                }
-                else if (is_string($k)) 
-                {
-                    $v = (array) $v;
 
-                    $route = [];
-                    /**
-                     * Controleur ou callable a lancer
-                     */
-                    if (!empty($v[0])) 
-                    {
-                        if (is_string($v[0]))
-                        {
-                            $route[0] = trim($v[0][0] === '/' ? $v[0] : $prefix.'/'.$v[0], '/');
-                        }
-                        else 
-                        {
-                            $route[0] = $v[0];
-                        }
-                    }
-                    else 
-                    {
-                        $route[0] = null;
-                    } 
-                    /**
-                     * Methode HTTP autorisee
-                     */
-                    $route[1] = $v[1] ?? null;
-                    /**
-                     * Route de redirection
-                     */
-                    $route[2] = $v[2] ?? null;
-                    /**
-                     * Nom de la route
-                     */
-                    $route[3] = $v[3] ?? null;
-                    /**
-                     * Filtre a utiliser
-                     */
-                    $route[4] = array_merge($filters, (array)($v[4] ?? []));
-                    
-                    // Ajout de la nouvelle route mappee
-                    $this->mapRoutes([$prefix.'/'.$k => $route]);
-                }
-            }
-        }
+	//--------------------------------------------------------------------
 
-        return $this;
-    }
+	/**
+	 * @param string|null $uri
+	 *
+	 * @return mixed|string
+	 * @throws \CodeIgniter\Router\Exceptions\RedirectException
+	 * @throws \CodeIgniter\Exceptions\PageNotFoundException
+	 */
+	public function handle(string $uri = null)
+	{
+		if ($this->checkRoutes($uri))
+		{
+			if ($this->collection->isFiltered($this->matchedRoute[0]))
+			{
+				$this->filterInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
+			}
+			
+			if (is_string($this->controller))
+			{
+				$file = CONTROLLER_DIR . $this->controllerFile . DS . $this->controller . '.php';
+
+				if (!is_file($file))
+				{
+					RouterException::except(
+						'Controller not found',
+						'Can\'t load controller <b>'.preg_replace('#Controller$#', '',$this->controllerFile.'\\'.$this->controller).'</b>. 
+						The file &laquo; '.$file.' &raquo; do not exist', 
+						404
+					);
+				}
+				
+				$this->controllerFile = $file;
+				include_once $this->controllerFile;	
+			}
+			
+			return $this->controller;
+		}
+
+		// Still here? Then we can try to match the URI against
+		// Controllers/directories, but the application may not
+		// want this, like in the case of API's.
+		if (! $this->collection->autoRoute())
+		{
+			RouterException::except(
+				'Aucune route trouvée', 
+				'Nous n\'avons trouvé aucune route correspondante à l\'URI &laquo; '.$uri.' &raquo;',
+				404
+			);
+		}
+
+		$this->autoRoute($uri);
+
+		return $this->controllerName();
+	}
 
     /**
-     * Captures les chemins definis pour les ajouter aux routes
-     *
-     * @param array $routes
-     * @param string|null $environment
-     * @return Router
-     */
-    private function mapRoutes(array $routes, ?string $environment = null) : self
-    {
-        foreach ($routes As $key => $value)
-        {
-            $value = (array) $value;
-            $path = $key;
-            
-            $callable   = $value[0];
-            $methods    = empty($value[1]) ? 'get|post|put|patch|delete' : $value[1];
-            $name       = $value[2] ?? null;
-            $redirected = $value[3] ?? null;
-            $filters    = $value[4] ?? [];
+	 * Compares the uri string against the routes that the
+	 * RouteCollection class defined for us, attempting to find a match.
+	 * This method will modify $this->controller, etal as needed.
+	 *
+	 * @param string $uri The URI path to compare against the routes
+	 *
+	 * @return boolean Whether the route was matched or not.
+	 * @throws \CodeIgniter\Router\Exceptions\RedirectException
+	 */
+	protected function checkRoutes(string $uri): bool
+	{
+		$routes = $this->collection->getRoutes($this->collection->HTTPVerb());
+		$uri = $uri === '/'
+			? $uri
+			: trim($uri, '/ ');
 
-            $methods = explode('|', $methods);
-            foreach ($methods As $method) 
-            {
-                if (in_array(strtolower($method), ['get', 'post', 'put', 'patch', 'delete']))
-                {
-                    if (empty($redirected))
-                    {
-                        $this->add($path, $callable, $method, $name, $environment);
-                    }
-                    else 
-                    {
-                        $this->addRedirected($path, $redirected, $method, $name, $environment);
-                    }
-                }
-            }
-        }
+		// Don't waste any time
+		if (empty($routes))
+		{
+			return false;
+		}
 
-        return $this;
-    }
+		// Loop through the route array looking for wildcards
+		foreach ($routes as $key => $val)
+		{
+			$key = $key === '/'
+				? $key
+				: trim($key, '/ ');
 
+			// Are we dealing with a locale?
+			if (strpos($key, '{locale}') !== false)
+			{
+				$localeSegment = array_search('{locale}', preg_split('/[\/]*((^[a-zA-Z0-9])|\(([^()]*)\))*[\/]+/m', $key));
 
-    /**
-     * Ajoute un chemin aux routes de l'application
-     * 
-     * @param string $path
-     * @param string|callable $callable
-     * @param string $method
-     * @param string|null $name
-     * @param string|null $environment
-     * @return Route
-     */
-    private function add(string $path, $callable, string $method, ?string $name = null, ?string $environment)
-    {
-        $route = new Route($path, $callable);
-        $method = strtoupper($method);
-        $environment = strtolower($environment);
+				// Replace it with a regex so it
+				// will actually match.
+				$key = str_replace('{locale}', '[^/]+', $key);
+			}
 
-        if (in_array($environment, ['dev', 'prod', 'test']))
-        {
-            $this->envRoutes[$environment][$method][] = $route; 
-            
-            if (!empty($name)) 
-            {
-                $this->envNamedRoutes[$environment][$name] = $route;
-            }
-            else if (is_string($callable))
-            {
-                $this->envNamedRoutes[$environment][$callable] = $route;
-            }
-        }
-        else 
-        {
-            $this->routes[$method][] = $route;
-        
-            if (!empty($name)) 
-            {
-                $this->namedRoutes[$name] = $route;
-            }
-            else if (is_string($callable))
-            {
-                $this->namedRoutes[$callable] = $route;
-            }    
-        }
-        
-        return $route;
-    }
+			// Does the RegEx match?
+			if (preg_match('#^' . $key . '$#', $uri, $matches))
+			{
+				// Is this route supposed to redirect to another?
+				if ($this->collection->isRedirect($key))
+				{
+					throw new \Exception(key($val), $this->collection->redirectCode($key));
+				}
+				// Store our locale so CodeIgniter object can
+				// assign it to the Request.
+				if (isset($localeSegment))
+				{
+					// The following may be inefficient, but doesn't upset NetBeans :-/
+					$temp                 = (explode('/', $uri));
+					$this->detectedLocale = $temp[$localeSegment];
+					unset($localeSegment);
+				}
 
-    /**
-     * Ajoute une route de redirection aux routes de l'application
-     * 
-     * @param string $path
-     * @param string $redirected
-     * @param string $method
-     * @param string|null $name
-     * @return Route
-     */
-    private function addRedirected(string $path, string $redirected, string $method, ?string $name = null, ?string $environment = null)
-    {
-        $route = new Route($path, '');
-        $method = strtoupper($method);
-        $environment = strtolower($environment);
+				// Are we using Closures? If so, then we need
+				// to collect the params into an array
+				// so it can be passed to the controller method later.
+				if (! is_string($val) AND is_callable($val))
+				{
+					$this->controller = $val;
 
-        if (in_array($environment, ['dev', 'prod', 'test'])) 
-        {
-            $this->envRedirectedRoutes[$environment][$method][] = [$route, $redirected];
-            
-            if (!empty($name)) 
-            {
-                $this->envNamedRoutes[$environment][$name] = $route;
-            }
-        }
-        else 
-        {
-            $this->redirectedRoutes[$method][] = [$route, $redirected];
-            
-            if (!empty($name)) 
-            {
-                $this->namedRoutes[$name] = $route;
-            }
-        }
-        
-        return $route;
-    }
+					// Remove the original string from the matches array
+					array_shift($matches);
 
-    /**
-     * @return
-     * @throws RouterException
-     */
-    private function run()
-    {
-        $method = strtoupper(Service::request()->method());
-        
-        if (empty($method) OR !isset($this->routes[$method]))
-        {
-            if ('cli' !== php_sapi_name())
-            {
-                throw new RouterException('REQUEST_METHOD does not exist', 405);
-            }
-        }
-        $environment = strtolower(Config::get('general.environment'));
-        
+					$this->params = $matches;
 
-        $routes = $this->envRedirectedRoutes[$environment][$method] ?? [];
-        /**
-         * On fouille d'abord les routes de redirection de l'environnement actuel
-         */
-        if (!empty($routes))
-        {
-            foreach ($routes As $value) 
-            {
-                $redirected = explode('|', $value[1] ?? '');
-                $route = $value[0];
-                $namedRoute = $this->envNamedRoutes[$method][$redirected[0]] ?? null;
-                
-                $statusCode = $redirected[1] ?? 302;
-                if (100 < $statusCode OR $statusCode > 699) {
-                    $statusCode = 302;
-                }
+					$this->matchedRoute = [
+						$key,
+						$val,
+					];
 
-                if ($route->match($this->url))
-                {
-                    $response = Service::response();
-                    $response->statusCode($statusCode);
-                    
-                    if (!empty($namedRoute))
-                    {
-                        $response->location(ltrim(base_url(), '/').'/'.rtrim($namedRoute->getPath(), '/'));
-                        $response->send();
-                    }
-                    else if (filter_var($redirected[0], FILTER_VALIDATE_URL)) 
-                    {
-                        $response->location($redirected[0]);
-                        $response->send();
-                    }
-                    return;
-                }
-            }
-        }
-        $routes = $this->envRoutes[$environment][$method] ?? [];
-        /**
-         * On fouille ensuite les routes classiques de l'environnement actuel
-         */
-        if (!empty($routes))
-        {
-            foreach ($routes As $route) 
-            {
-                if ($route->match($this->url)) 
-                {
-                    return $route->call();
-                }
-            }
-        }
+					$this->matchedRouteOptions = $this->collection->routesOptions($key);
 
-        
-        $routes = $this->redirectedRoutes[$method] ?? [];
-        /**
-         * On fouille apres les routes de redirection standards
-         */
-        if (!empty($routes))
-        {
-            foreach ($routes As $value) 
-            {
-                $redirected = explode('|', $value[1] ?? '');
-                $route = $value[0];
-                $namedRoute = $this->namedRoutes[$redirected[0]] ?? null;
-                
-                $statusCode = $redirected[1] ?? 302;
-                if (100 < $statusCode OR $statusCode > 699) {
-                    $statusCode = 302;
-                }
+					return true;
+				}
 
-                if ($route->match($this->url))
-                {
-                    $response = Service::response();
-                    $response->statusCode($statusCode);
-                    
-                    if (!empty($namedRoute))
-                    {
-                        $response->location(ltrim(base_url(), '/').'/'.rtrim($namedRoute->getPath(), '/'));
-                        $response->send();
-                    }
-                    else if (filter_var($redirected[0], FILTER_VALIDATE_URL)) 
-                    {
-                        $response->location($redirected[0]);
-                        $response->send();
-                    }
-                    return;
-                }
-            }
-        }
-        $routes = $this->routes[$method] ?? [];
-        /**
-         * On fouille ensuite les routes classiques standards
-         */
-        if (!empty($routes))
-        {
-            foreach ($routes As $route)
-            {
-                if ($route->match($this->url))
-                {
-                    return $route->call();
-                }
-            }
-        }
+				// Are we using the default method for back-references?
 
-        
-        if (true === $this->config['auto_route'])
-        {
-            return Dispatcher::init();
-        }
+				// Support resource route when function with subdirectory
+				// ex: $routes->resource('Admin/Admins');
+				if (strpos($val, '$') !== false AND strpos($key, '(') !== false AND strpos($key, '/') !== false)
+				{
+					$replacekey = str_replace('/(.*)', '', $key);
+					$val        = preg_replace('#^' . $key . '$#', $val, $uri);
+					$val        = str_replace($replacekey, str_replace('/', '\\', $replacekey), $val);
+				}
+				elseif (strpos($val, '$') !== false AND strpos($key, '(') !== false)
+				{
+					$val = preg_replace('#^' . $key . '$#', $val, $uri);
+				}
+				elseif (strpos($val, '/') !== false)
+				{
+					[
+						$controller,
+						$method,
+					] = explode( '::', $val );
 
-    }
+					// Only replace slashes in the controller, not in the method.
+					$controller = str_replace('/', '\\', $controller);
+
+					$val = $controller . '::' . $method;
+				}
+
+				$this->setRequest(explode('/', $val));
+
+				$this->matchedRoute = [
+					$key,
+					$val,
+				];
+
+				$this->matchedRouteOptions = $this->collection->routesOptions($key);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Attempts to match a URI path against Controllers and directories
+	 * found in APPPATH/Controllers, to find a matching route.
+	 *
+	 * @param string $uri
+	 */
+	public function autoRoute(string $uri)
+	{
+		$segments = $this->validateRequest(explode('/', $uri));
+
+		// If we don't have any segments left - try the default controller;
+		// WARNING: Directories get shifted out of the segments array.
+		if (empty($segments))
+		{
+			$this->setDefaultController();
+		}
+		// If not empty, then the first segment should be the controller
+		else
+		{
+			$this->setController(array_shift($segments));
+		}
+
+		// Use the method name if it exists.
+		// If it doesn't, no biggie - the default method name
+		// has already been set.
+		if (! empty($segments))
+		{
+			$this->setMethod(array_shift($segments));
+		}
+
+		if (! empty($segments))
+		{
+			$this->params = $segments;
+		}
+
+		// Load the file so that it's available for dFramework.
+		$file = CONTROLLER_DIR . $this->directory . $this->controllerName() . '.php';
+		if (is_file($file))
+		{
+			$this->controllerFile = $file;
+
+			include_once $file;
+		}
+	}
+
+	/**
+	 * Attempts to validate the URI request and determine the controller path.
+	 *
+	 * @param array $segments URI segments
+	 *
+	 * @return array URI segments
+	 */
+	protected function validateRequest(array $segments): array
+	{
+		$segments = array_filter($segments, function ($segment) {
+			return ! empty($segment) OR ($segment !== '0' OR $segment !== 0);
+		});
+		$segments = array_values($segments);
+
+		$c                  = count($segments);
+		$directory_override = isset($this->directory);
+
+		// Loop through our segments and return as soon as a controller
+		// is found or when such a directory doesn't exist
+		while ($c-- > 0)
+		{
+			$test = $this->directory . $this->makeController($segments[0]);
+
+			if (!is_file(CONTROLLER_DIR . $test . '.php') AND $directory_override === false AND is_dir(CONTROLLER_DIR . $this->directory . strtolower($segments[0])))
+			{
+				$this->setDirectory(array_shift($segments), true);
+				continue;
+			}
+
+			return $segments;
+		}
+
+		// This means that all segments were actually directories
+		return $segments;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Sets the sub-directory that the controller is in.
+	 *
+	 * @param string|null   $dir
+	 * @param boolean|false $append
+	 */
+	public function setDirectory(string $dir = null, bool $append = false)
+	{
+		if (empty($dir))
+		{
+			$this->directory = null;
+			return;
+		}
+
+		$dir = strtolower($dir);
+
+		if ($append !== true OR empty($this->directory))
+		{
+			$this->directory = str_replace('.', '', trim($dir, '/')) . '/';
+		}
+		else
+		{
+			$this->directory .= str_replace('.', '', trim($dir, '/')) . '/';
+		}
+	}
+
+	/**
+	 * Returns the 404 Override settings from the Collection.
+	 * If the override is a string, will split to controller/index array.
+	 */
+	public function get404Override()
+	{
+		$route = $this->collection->override_404();
+
+		if (is_string($route))
+		{
+			$routeArray = explode('::', $route);
+
+			return [
+				$routeArray[0], // Controller
+				$routeArray[1] ?? 'index',   // Method
+			];
+		}
+
+		if (is_callable($route))
+		{
+			return $route;
+		}
+
+		return null;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Set request route
+	 *
+	 * Takes an array of URI segments as input and sets the class/method
+	 * to be called.
+	 *
+	 * @param array $segments URI segments
+	 */
+	protected function setRequest(array $segments = [])
+	{
+		// If we don't have any segments - try the default controller;
+		if (empty($segments))
+		{
+			$this->setDefaultController();
+
+			return;
+		}
+
+		list($controller, $method) = array_pad(explode('::', $segments[0]), 2, null);
+
+		$controller = explode('\\', $controller);
+		
+		$this->setController(array_pop($controller));
+
+		$this->controllerFile = implode(DS, $controller);
+
+		// $this->method already contains the default method name,
+		// so don't overwrite it with emptiness.
+		if (! empty($method))
+		{
+			$this->setMethod($method);
+		}
+
+		array_shift($segments);
+
+		$this->params = $segments;
+	}
+
+	/**
+	 * Sets the default controller based on the info set in the RouteCollection.
+	 */
+	protected function setDefaultController()
+	{
+		if (empty($this->controller))
+		{
+			RouterException::except(
+				'Missing default route',
+				'Unable to determine what should be displayed. A default route has not been specified in the routing file.'
+			);
+		}
+
+		// Is the method being specified?
+		if (sscanf($this->controller, '%[^/]/%s', $class, $this->method) !== 2)
+		{
+			$this->method = 'index';
+		}
+
+		if (! is_file(CONTROLLER_DIR . $this->directory . $this->makeController($class) . '.php'))
+		{
+			return;
+		}
+
+		$this->setController($class);
+	}
 }

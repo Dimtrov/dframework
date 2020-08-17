@@ -424,20 +424,27 @@ if (!function_exists('redirect'))
     }
 }
 
-if (!function_exists('link_to')) 
+if (!function_exists('link_to'))
 {
-    /**
-     * Redirect user
-     *
-     * @param    string $method
-     * @param    mixed ...$params
-     * @return   string
-     */
-    function link_to(string $method, ...$params)
-    {
-        return Router::url($method, $params);
-    }
+	/**
+	 * Given a controller/method string and any params,
+	 * will attempt to build the relative URL to the
+	 * matching route.
+	 *
+	 * NOTE: This requires the controller/method to
+	 * have a route defined in the routes Config file.
+	 *
+	 * @param string $method
+	 * @param array  ...$params
+	 *
+	 * @return false|string
+	 */
+	function link_to(string $method, ...$params)
+	{
+		return Service::routes()->reverseRoute($method, ...$params);
+	}
 }
+
 
 if (!function_exists('clean_url')) 
 {

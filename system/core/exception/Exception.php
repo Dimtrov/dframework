@@ -72,7 +72,7 @@ class Exception extends \Exception
         exit;
     }
 
-    public static function except(string $message, int $code = 0)
+    public static function except(string $title, string $message = '', int $code = 0)
     {
         $class = get_called_class();
         $class = trim(str_replace('Exception', '', $class));
@@ -81,7 +81,7 @@ class Exception extends \Exception
         $class = end($class).' Exception';
 
         $backtrace = debug_backtrace();
-        self::renderView(\compact('message', 'code'), $class);
+        self::renderView(\compact('title', 'message', 'code'), $class);
     }
 
 
@@ -116,6 +116,10 @@ class Exception extends \Exception
         <dl class="row">
             <dt class="col-2">Code</dt>
             <dd class="col-10"><?= $code; ?></dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-2">Title</dt>
+            <dd class="col-10"><?= $title; ?></dd>
         </dl>
         <dl class="row">
             <dt class="col-2">Message</dt>
