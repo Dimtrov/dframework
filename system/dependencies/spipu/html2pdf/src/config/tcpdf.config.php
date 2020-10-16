@@ -69,7 +69,7 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
      * Installation path of tcpdf with composer.
      */
     $vendorFolders = array(
-        dirname(dirname(dirname(__FILE__))) . '/dependencies/',
+        SYST_DIR . 'dependencies'.DS,
         dirname(dirname(dirname(__FILE__))) . '/vendor/',
     );
     foreach ($vendorFolders as $vendorFolder) {

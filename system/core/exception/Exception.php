@@ -45,7 +45,10 @@ class Exception extends \Exception
     {  
         if (Config::get('general.environment') === 'dev') 
         {
-            Debugger::enable();
+            if (true === Config::get('general.show_trackbar'))
+            {
+                Debugger::enable();
+            }
             $whoops  =  new Run();
             $whoops->pushHandler(new PrettyPageHandler); 
             $whoops->pushHandler([New Log, 'register']);

@@ -15,6 +15,7 @@
  * @version     3.2
  */
 
+namespace dFramework\libraries;
 
 use simplehtmldom_1_5\simple_html_dom;
 
@@ -31,7 +32,7 @@ use simplehtmldom_1_5\simple_html_dom;
  * @file        /system/librairies/Dom.php
  */
 
-class dF_Dom extends simple_html_dom
+class Dom extends simple_html_dom
 {
 
     /**
@@ -39,7 +40,7 @@ class dF_Dom extends simple_html_dom
      * 
      * @param string $attr Attribute name
      * @param mixed $value Attribute value
-     * @return mixed|dF_Dom
+     * @return mixed|self
      */
     public function attr($attr, $value = null)
     {

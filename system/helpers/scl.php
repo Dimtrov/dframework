@@ -354,7 +354,7 @@ function scl_date($date, $format = 'D, d M Y', $interval = true, $fuseau = 'Euro
     // Si on ne gere pas les intervales
     if ($interval == false) {
         //On renvoie la date formatée et dans le fuseau correspondant
-        return $date->setTimezone(new DateTimeZone($fuseau))->format($format);
+        return $date/* ->setTimezone(new DateTimeZone($fuseau)) */->format($format);
     }
 
     // Si on gere les intervales

@@ -52,19 +52,18 @@ class Controller
          */
         CACHE_OBJECT = 3;
 
-    protected 
-        /**
-         * @var Request Instance de l'objet Request
-         */
-        $request,
-        /**
-         * @var Response Instance de l'objet Response
-         */
-        $response,
-        /**
-         * @var Cache Instance de l'objet Cache
-         */
-        $cache;
+    /**
+     * @var \dFramework\core\http\ServerRequest Instance de l'objet Request
+     */
+    protected $request;
+    /**
+     * @var \dFramework\core\http\Response Instance de l'objet Response
+     */
+    protected $response;
+    /**
+     * @var \dFramework\core\output\Cache Instance de l'objet Cache
+     */
+    protected $cache;
 
     private $_filters = [];
     

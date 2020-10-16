@@ -110,7 +110,7 @@ class Controller extends CoreController
         $this->_locale = !empty($locale) ? $locale : 'en';
     }
 
-    public function _remap($method, $params = [])
+    public function _remap($method, ?array $params = [])
     {
         $class = get_called_class();
         

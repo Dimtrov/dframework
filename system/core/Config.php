@@ -286,10 +286,7 @@ class Config
                 Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
             ');
         }
-        else if (self::$_config['general']['compress_output'] === 'auto')
-        {
-            self::$_config['general']['compress_output'] = (self::$_config['general']['environment'] !== 'dev');
-        }
+        
 
         /* ----------------
             Parametres de session

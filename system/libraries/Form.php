@@ -19,6 +19,7 @@ namespace dFramework\libraries;
 
 use dFramework\core\loader\Service;
 use dFramework\core\security\Csrf;
+use dFramework\core\utilities\Chaine;
 use dFramework\core\utilities\Tableau;
 
 /**
@@ -34,10 +35,10 @@ use dFramework\core\utilities\Tableau;
  * @file        /system/libraries/Form.php
  */
 class Form
-{   
+{
     /**
      * @var array Donnees de formulaire
-     */ 
+     */
     protected $datas = [];
     /**
      * @var array Erreurs enregistrees dans le formulaire
@@ -52,7 +53,7 @@ class Form
         'end'   => '</div>'
     ];
 
-    protected $attach_errors = true; 
+    protected $attach_errors = true;
 
     /**
      * Initailise les donnees et les erreurs du formulaire
@@ -64,7 +65,7 @@ class Form
     public function init(?array $datas = [], ?array $errors = []) : void
     {
         $this->datas = $datas;
-        $this->errors = $errors;    
+        $this->errors = $errors;
     }
     /**
      * Specifie si les erreurs doivent etre join au formulaire
@@ -72,7 +73,7 @@ class Form
      * @param boolean $value
      * @return self
      */
-    public function attachErrors(bool $value) : self 
+    public function attachErrors(bool $value) : self
     {
         $this->attach_errors = $value;
 
@@ -89,7 +90,7 @@ class Form
     {
         if (is_array($key))
         {
-            foreach ($key As $k => $v) 
+            foreach ($key As $k => $v)
             {
                 $this->value($k, $v);
             }
@@ -111,7 +112,7 @@ class Form
     {
         if (is_array($key))
         {
-            foreach ($key As $k => $v) 
+            foreach ($key As $k => $v)
             {
                 $this->error($k, $v);
             }
@@ -132,7 +133,7 @@ class Form
     {
         return (!isset($this->errors[$key])) ? '' : implode('<br>', (array) $this->errors[$key]);
     }
-    
+
 
     /**
      * Definie les balises ouvrante et fermante qui entoureront le champ
@@ -171,7 +172,7 @@ class Form
      *
      * @param string $action
      * @param string|null $method
-     * @param int|false $token_time 
+     * @param int|false $token_time
      * @param string|null $key
      * @param string|null $enctype
      * @param array|null $attributes
@@ -192,7 +193,7 @@ class Form
             $token = Csrf::instance()->generateToken($token_time, 20);
             $token = '<input type="hidden" name="formcsrftoken" value="'.$token.'" />';
         }
-        
+
         return <<<HTML
             <form method="{$method}" action="{$action}" {$enctype} id="{$key}" class="{$class}" role="form" {$this->getAttributes($attributes)}>
                 {$token}
@@ -220,13 +221,13 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function text(string $key, $label = null, ?array $attributes = []) : string 
+    public function text(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('text', $key, $label, $attributes);
     }
     /**
      * Cree un input de type hidden
-     * 
+     *
      * @param string $key Nom du champ
      * @return string
      */
@@ -245,7 +246,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function password(string $key, $label = null, ?array $attributes = []) : string 
+    public function password(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('password', $key, $label, $attributes);
     }
@@ -257,7 +258,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function tel(string $key, $label = null, ?array $attributes = []) : string 
+    public function tel(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('tel', $key, $label, $attributes);
     }
@@ -269,7 +270,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function email(string $key, $label = null, ?array $attributes = []) : string 
+    public function email(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('email', $key, $label, $attributes);
     }
@@ -281,7 +282,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function url(string $key, $label = null, ?array $attributes = []) : string 
+    public function url(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('url', $key, $label, $attributes);
     }
@@ -293,7 +294,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function search(string $key, $label = null, ?array $attributes = []) : string 
+    public function search(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('search', $key, $label, $attributes);
     }
@@ -305,7 +306,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function number(string $key, $label = null, ?array $attributes = []) : string 
+    public function number(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('number', $key, $label, $attributes);
     }
@@ -317,7 +318,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function range(string $key, $label = null, ?array $attributes = []) : string 
+    public function range(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('range', $key, $label, Tableau::merge($attributes, ['class' => 'form-control-range']));
     }
@@ -329,7 +330,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function color(string $key, $label = null, ?array $attributes = []) : string 
+    public function color(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('color', $key, $label, $attributes);
     }
@@ -341,7 +342,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function date(string $key, $label = null, ?array $attributes = []) : string 
+    public function date(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('date', $key, $label, $attributes);
     }
@@ -353,7 +354,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function time(string $key, $label = null, ?array $attributes = []) : string 
+    public function time(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('time', $key, $label, $attributes);
     }
@@ -365,7 +366,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function datetime(string $key, $label = null, ?array $attributes = []) : string 
+    public function datetime(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('datetime', $key, $label, $attributes);
     }
@@ -377,7 +378,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function datetimeLocal(string $key, $label = null, ?array $attributes = []) : string 
+    public function datetimeLocal(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('datetime-local', $key, $label, $attributes);
     }
@@ -389,7 +390,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function month(string $key, $label = null, ?array $attributes = []) : string 
+    public function month(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('month', $key, $label, $attributes);
     }
@@ -401,7 +402,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function week(string $key, $label = null, ?array $attributes = []) : string 
+    public function week(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('week', $key, $label, $attributes);
     }
@@ -413,7 +414,7 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function file(string $key, $label = null, ?array $attributes = []) : string 
+    public function file(string $key, $label = null, ?array $attributes = []) : string
     {
         return $this->input('file', $key, $label, Tableau::merge($attributes, ['class' => 'custom-file-input']));
     }
@@ -427,15 +428,15 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function input(string $type, string $key, $label = null, ?array $attributes = []) : string 
+    public function input(string $type, string $key, $label = null, ?array $attributes = []) : string
     {
         $key = $this->makeKey($key);
         $type = strtolower(($type));
         $value = ($type == 'password') ? null : 'value="'.$this->getValue($key).'"';
-		
+
 		return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label, isset($attributes['required']))}
+                {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
                 <input type="{$type}" name="{$key}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
@@ -488,7 +489,7 @@ HTML;
      * @param string|null $type Type d'input a creer
      * @return string
      */
-    public function button(string $value, ?array $attributes = [], ?string $key = null, ?string $type = 'button') : string 
+    public function button(string $value, ?array $attributes = [], ?string $key = null, ?string $type = 'button') : string
     {
         $type = (empty($type)) ? 'button' : strtolower($type);
 
@@ -504,9 +505,9 @@ HTML;
                 case 'submit':
                     $class .= ' btn-primary';
                     break;
-                case 'reset': 
+                case 'reset':
                     $class .= ' btn-danger';
-                    break;  
+                    break;
                 default:
                     $class .= ' btn-default';
                     break;
@@ -519,7 +520,7 @@ HTML;
             {$this->surround['end']}
 HTML;
     }
-    
+
     /**
      * Cree une zone de texte multiligne (textarea)
      *
@@ -528,19 +529,19 @@ HTML;
      * @param array|null $attributes Attributs supplementaire
      * @return string
      */
-    public function textarea(string $key, $label = null, ?array $attributes = []) : string 
+    public function textarea(string $key, $label = null, ?array $attributes = []) : string
     {
         $key = $this->makeKey($key);
 
         return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label, isset($attributes['required']))}
+                {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
                 <textarea name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$this->getValue($key)}</textarea>
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
     }
-    
+
     /**
      * Cree un liste d'option (select)
      *
@@ -556,37 +557,37 @@ HTML;
         $r = '';
         foreach ($options As $k => $v)
         {
-            if (is_array($v)) 
+            if (is_array($v))
             {
                 $r .= '<optgroup label="'.ucfirst($k).'">';
-                foreach ($v As $cle => $valeur) 
+                foreach ($v As $cle => $valeur)
                 {
                     $valeur = (string) $valeur;
                     if (!is_string(($cle)))
                     {
                         $cle = $valeur;
                     }
-                    if ($cle[0] === '_') 
+                    if ($cle[0] === '_')
                     {
                         $tmp = substr($cle, 1);
                         if (is_numeric($tmp))
                         {
                             $cle = $tmp;
                         }
-                    } 
-                    $selected = (strtolower($cle) == strtolower($this->getValue($key))) ? 'selected="selected"' : '';
-                    $r .= '<option value="'.$cle.'" '.$selected.'>'.ucfirst($valeur).'</option>';   
+                    }
+                    $selected = in_array($cle, $this->getValues($key)) ? 'selected="selected"' : '';
+                    $r .= '<option value="'.$cle.'" '.$selected.'>'.ucfirst($valeur).'</option>';
                 }
                 $r .= '</optgroup>';
             }
-            else 
+            else
             {
                 $v = (string) $v;
                 if (!is_string(($k)))
                 {
                     $k = $v;
                 }
-                if ($k[0] === '_') 
+                if ($k[0] === '_')
                 {
                     $tmp = substr($k, 1);
                     if (is_numeric($tmp))
@@ -594,13 +595,13 @@ HTML;
                         $k = $tmp;
                     }
                 }
-                $selected = (strtolower($k) == strtolower($this->getValue($key))) ? 'selected="selected"' : '';
+                $selected = in_array($k, $this->getValues($key)) ? 'selected="selected"' : '';
                 $r .= '<option value="'.$k.'" '.$selected.'>'.ucfirst($v).'</option>';
             }
         }
         return <<<HTML
             {$this->surround['start']}
-                {$this->getLabel($key, $label, isset($attributes['required']))}
+                {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
                 <select name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$r}</select>
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
@@ -633,7 +634,7 @@ HTML;
             {
                 $k = $v;
             }
-            if ($k[0] === '_') 
+            if ($k[0] === '_')
             {
                 $tmp = substr($k, 1);
                 if (is_numeric($tmp))
@@ -641,7 +642,7 @@ HTML;
                     $k = $tmp;
                 }
             }
-            
+
             $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
 
             if (true === $only)
@@ -679,18 +680,19 @@ HTML;
      * @param array $options Options de la liste
      * @param array|null $attributes Attributs supplementaire
      * @param array|null $checked Cases qui seront automatiquement cochées
-     * @param bool|null $only Specifie si les elements a cocher doivent etre dans des blocs independants ou pas
+     * @param bool|null $inline Specifie si les elements a cocher doivent etre sur la meme ligne ou pas
      * @return string
      */
-    public function radio(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $only = false) : string
+    public function radio(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $inline = false) : string
     {
         $key = $this->makeKey($key);
-        $r = ''; 
+        $r = '';
         $i = 0;
         $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
-        
-        $surround_start = preg_replace('#form-group#i', 'form-check', $this->surround['start']);
-        
+
+        $new_class = 'form-check' . (true === $inline ? ' form-check-inline' : '');
+        $surround_start = preg_replace('#form-group#i', $new_class, $this->surround['start']);
+
         foreach ($options As $k => $v)
         {
             $i++;
@@ -699,7 +701,7 @@ HTML;
             {
                 $k = $v;
             }
-            if ($k[0] === '_') 
+            if ($k[0] === '_')
             {
                 $tmp = substr($k, 1);
                 if (is_numeric($tmp))
@@ -707,39 +709,27 @@ HTML;
                     $k = $tmp;
                 }
             }
-            
+
             $checked = (in_array($k, (array) $checked) OR $k == $this->getValue($key)) ? 'checked="checked"' : '';
 
-            if (true === $only)
-            {
-                $r .= $surround_start;
-            }
+            $r .= $surround_start;
+
             $r .= '<input type="radio" name="'.$key.'" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
             $r .= '<label class="form-check-label" for="field_'.$key.$i.'">'.ucfirst($v).'</label>';
-            if (true === $only)
-            {
-                $r .= $this->surround['end'];
-            }
+
+            $r .= $this->surround['end'];
+
             $r .= "\n";
         }
 
-        if (true === $only)
-        {
-            return <<<HTML
-                {$r}
-                {$this->getErrorFeedback($key)}
-HTML;
-        }
         return <<<HTML
-            {$surround_start}
-                {$r}
-                {$this->getErrorFeedback($key)}
-            {$this->surround['end']}
+            {$r}
+            {$this->getErrorFeedback($key)}
 HTML;
     }
 
 
-    
+
 
     /**
      * Renvoie l'erreur relatif a un champ
@@ -749,7 +739,7 @@ HTML;
      */
     protected function getErrorFeedback(string $key) : string
     {
-        if ($this->attach_errors) 
+        if ($this->attach_errors)
         {
             return (!isset($this->errors[$key])) ? '' : '<div class="invalid-feedback">' . implode('<br>', (array) $this->errors[$key]) . '</div>';
         }
@@ -763,9 +753,9 @@ HTML;
      * @return string
      */
     protected function getInputClass(string $key, ?string $class = '') : string
-    {        
+    {
         $inputClass = Tableau::merge(explode(' ', $class), ['form-control']);
-        if (isset($this->errors[$key])) 
+        if (isset($this->errors[$key]))
         {
             $inputClass[] = 'is-invalid';
         }
@@ -778,27 +768,36 @@ HTML;
      *
      * @param string $key Cle du champ dont on veut avoir le label
      * @param false|null|string $label Le label par default
-	 * @param bool $required 
+	 * @param bool $required
      * @return string
      */
     protected function getLabel(string $key, $label, bool $required = false) : string
     {
-		$required = (true === $required) 
-			? '<small class="text-danger">*</small>'
+		$required = (true === $required)
+			? '<span class="text-danger">*</span>'
 			: '';
-        return (false === $label) ? '' : 
+        return (false === $label) ? '' :
 			'<label for="field_'.$key.'" class="form-label">'.ucfirst($label ?? $key).' '.$required.'</label>';
     }
     /**
-     * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire 
+     * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire
      *
      * @param string $key La cle du champ
+     * @return array
+     */
+    protected function getValues(string $key) : array
+    {
+        $post = (array) (Service::request()->data[$key] ?? []);
+        
+        return (array) (!empty($post) ? $post : ($this->datas[$key] ?? []));
+    }
+    /**
+     * @param string $key
      * @return string
      */
-    protected function getValue(string $key) : string
+    protected function getValue(string $key) : string 
     {
-        $post = Service::request()->data[$key] ?? null;
-        return (string) ( (!empty($post)) ? $post : ($this->datas[$key] ?? null) );
+        return (string) ($this->getValues($key)[0] ?? null);
     }
     /**
      * Compile les autres attributs du champ
@@ -810,17 +809,17 @@ HTML;
     {
         if (!is_array($attributes))
         {
-            return '';    
+            return '';
         }
         $reserved_attributes = ['type', 'name', 'class', 'id', 'value'];
-        
+
         foreach ($reserved_attributes As $value)
         {
             $attributes = Tableau::remove($attributes, $value);
         }
         $return = '';
 
-        foreach ($attributes As $key => $value) 
+        foreach ($attributes As $key => $value)
         {
             if (is_string($key))
             {
@@ -845,6 +844,6 @@ HTML;
         {
             return '';
         }
-        return str_replace('\'', '', $key);
+        return str_replace('\'', '', Chaine::toSnake($key));
     }
 }

@@ -131,7 +131,7 @@ class Service
 
     /**
      * @param boolean $shared
-     * @return dFramework\core\utilities\Helpers
+     * @return \dFramework\core\utilities\Helpers
      */
     public static function helpers(bool $shared = true)
     {

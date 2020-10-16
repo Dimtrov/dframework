@@ -157,7 +157,11 @@ class View
 
         if ($name == 'form')
         {
-            return Load::library('Form');
+            if (empty($this->form)) 
+            {
+                $this->form = Load::library('Form');
+            }
+            return $this->form;
         }
         throw new Exception($name .' is not a member property of '.__CLASS__);
     }
@@ -184,7 +188,7 @@ class View
      */
     public function render()
     {
-        echo $this->get(Config::get('general.environment') !== 'dev');
+        echo $this->get(Config::get('general.compress_output'));
     }
     
 	/**
@@ -198,17 +202,20 @@ class View
 	{
         $view = preg_replace('#\.php$#i', '', $view).'.php';
         $view = str_replace(' ', '', $view);
-        if ($view[0] !== '/') 
+        if ($view[0] !== '/' AND !file_exists(rtrim(VIEW_DIR.$this->controller.DS, DS).DS.$view)) 
         {
-            if (!file_exists(rtrim(VIEW_DIR.$this->controller.DS, DS).DS.$view) AND file_exists(VIEW_DIR.'partials'.DS.$view)) 
+            if (file_exists(VIEW_DIR.'partials'.DS.$view)) 
             {
                 $view = '/partials/'.$view;
+            }
+            if (file_exists(VIEW_DIR.trim(dirname($this->view), '/\\').DS.$view)) {
+                $view = '/'.trim(dirname($this->view), '/\\').'/'.$view;
             }
         }
 
         return $this->compressView(
             $this->makeView($view, $options), 
-            Config::get('general.environment') !== 'dev'
+            Config::get('general.compress_output')
         );
 	}
     /**
@@ -217,7 +224,7 @@ class View
 	 * @param string $layout
 	 * @return void
 	 */
-	public function layout(string $layout)
+	public function layout(?string $layout)
 	{
         $this->layout = $layout;
     }
@@ -650,9 +657,6 @@ class View
         {
             $output = $this->compressView($output, true);
         }
-        else {
-            $output = $this->compressView($output, Config::get('general.compress_output'));
-        }
         
         // Should we cache?
 		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
@@ -670,11 +674,14 @@ class View
      * Compresse le code html d'une vue
      *
      * @param string $output
-     * @param boolean $compress
+     * @param bool|string $compress
      * @return string
      */
-    private function compressView(string $output, bool $compress = true) : string 
+    private function compressView(string $output, $compress = true) : string 
     {
-        return ($compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
+        if (!in_array($compress, [true, false, 'true', 'false'])) {
+            $compress = Config::get('general.environment') !== 'dev';
+        }
+        return (true === $compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
     }
 }

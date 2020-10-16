@@ -153,7 +153,8 @@ class Dispatcher
     {
         $this->router = new Router($routes, $request);
     
-        $this->controller     = $this->router->handle($request->url ?? '/');
+		$this->controller     = $this->router->handle($request->url ?? '/');
+		
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
         $this->controllerFile = $this->router->controllerFile();
@@ -187,7 +188,6 @@ class Dispatcher
 				'empty controller',
 				'No Controller specified.'
 			);
-			throw new \Exception("PageNotFoundException::forEmptyController()");
 		}
 
 		// Try to autoload the class
@@ -288,7 +288,7 @@ class Dispatcher
 
 		if (method_exists($class, '_remap'))
 		{
-			$output = $class->_remap($this->method, ...$params);
+			$output = $class->_remap($this->method, (array) $params);
 		}
 		else
 		{

@@ -12,9 +12,8 @@
  *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.2
  */
-
 
 namespace dFramework\core;
 
@@ -29,12 +28,12 @@ use dFramework\core\utilities\Chaine;
  * @subpackage	Core
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       3.1
+ * @since       3.1.0
  * @file		/system/core/Entity.php
  */
 abstract class Entity extends Model
 {
-    protected $table;    
+    protected static $table;    
 
 	/**
 	 * Constructor
@@ -81,7 +80,7 @@ abstract class Entity extends Model
 
     public function get($hydrate = true)
     {
-        $this->db()->select()->from($this->table);
+        $this->db()->select()->from(static::$table);
         foreach ($this->pk As $k) 
         {
             $this->where($k . ' = ?')->params([$this->{self::getProperty($k)}]);

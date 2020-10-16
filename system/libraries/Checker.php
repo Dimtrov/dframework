@@ -15,6 +15,10 @@
  * @version     3.2.2
  */
 
+namespace dFramework\libraries;
+
+use DateTime;
+use Exception;
 
 /**
  * Checker
@@ -28,7 +32,6 @@
  * @since       1.0
  * @file        /system/libraries/Checker.php
  */
-
 class Checker
 {
     /**

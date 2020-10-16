@@ -40,7 +40,7 @@ class Validator
      * @var Valitron
      */
     private $validator = null;
-    
+
     /**
      * Initialize validation process. Entry point of all 
      */
@@ -57,6 +57,19 @@ class Validator
         }
 
         $this->validator = new Valitron($data, null, $lang);
+
+
+        $this->validator->addInstanceRule('tel', function($field, bool $use_indicatif = false) {
+            $tel = $this->validator->data()[$field] ?? null;
+
+            if (empty($tel)) 
+            {
+                return false;
+            }
+            $use_indicatif = func_get_arg(2)[0];
+
+            return (new Checker)->is_tel($tel, null, $use_indicatif);
+        }, '{field} that you enter is invalid');
     }
     /**
      * Reset object properties
@@ -131,22 +144,40 @@ class Validator
     /**
      * Validate the date is after a given date
      * 
-     * @param string|array $fields
+     * @param string|string[] $fields
+     * @param string|string[] $date_value
      * @return  self
      */
-    public function dateAfter($fields) : self 
+    public function dateAfter($fields, $date_value = null) : self 
     {
-        return $this->rule('dateAfter', $fields);
+        if (empty($date_value)) {
+            $date_value = date('Y-m-d H:i:s');
+        }
+        $datas = array_combine((array) $fields, (array) $date_value);
+        foreach ($datas As $key => $value)
+        {
+            $this->validator->rule('dateAfter', $key, $value);
+        }
+        return $this;
     }
     /**
      * Validate the date is before a given date
      * 
      * @param string|array $fields
+     * @param string|string[] $date_value
      * @return  self
      */
-    public function dateBefore($fields) : self 
+    public function dateBefore($fields, $date_value = null) : self 
     {
-        return $this->rule('dateBefore', $fields);
+        if (empty($date_value)) {
+            $date_value = date('Y-m-d H:i:s');
+        }
+        $datas = array_combine((array) $fields, (array) $date_value);
+        foreach ($datas As $key => $value)
+        {
+            $this->validator->rule('dateBefore', $key, $value);
+        }
+        return $this;
     }
     /**
      * Validate that a field matches a date format
@@ -223,7 +254,7 @@ class Validator
      * Validate a field if it's contained within a list of values
      * 
      * @param string|string[] $fields
-     * @param array|array[array] $values
+     * @param array|array[] $values
      * @return self
      */
     public function in($fields, array $values) : self
@@ -564,6 +595,18 @@ class Validator
     {
         $this->validator->rules($rules);
         return $this;
+    }
+
+    /**
+     * Ajoute une regle de validation pour les numero de telephone
+     *
+     * @param string $field
+     * @param boolean $use_indicatif
+     * @return self
+     */
+    public function tel(string $field, bool $use_indicatif = false) : self 
+    {
+        return $this->rule('tel', $field, $use_indicatif);
     }
 
     /**

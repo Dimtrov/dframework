@@ -111,6 +111,14 @@ class Helpers
      */
     public function site_url($uri = '', $protocol = NULL)
     {
+        $uri = explode('#', $uri);
+        $hash = $uri[1] ?? '';
+        $uri = explode('?', $uri[0]);
+        $query = $uri[1] ?? '';
+
+        $uri = $uri[0];
+        $uri = preg_replace('#'.$this->item('url_suffix').'$#i', '', $uri);
+
         $base_url = $this->slash_item('base_url');
 
         if (isset($protocol))
@@ -144,6 +152,16 @@ class Helpers
                 $uri .= $suffix;
             }
         }
+
+        if (!empty($query)) 
+        {
+            $uri .= '?='.$query;
+        }
+        if (!empty($hash))
+        {
+            $uri .= '#'.$hash;
+        }
+
         return $base_url.$this->slash_item('index_page').$uri;
     }
 

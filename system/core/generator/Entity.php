@@ -133,6 +133,8 @@ final class Entity extends Generator
             ->addComment('PHP Version : '.phpversion())
             ->addComment('Entity : '.preg_replace("#Entity$#", '', $class_name));
 
+        $generator->addProperty('table', strtolower($class))->setProtected()->setStatic()->addComment('@var string');
+        
         $pks = $this->manager->getKeys($class, 'PRI');
         if (!empty($pks))
         {

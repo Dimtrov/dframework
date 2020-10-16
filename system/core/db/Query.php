@@ -105,7 +105,7 @@ class Query
      */
     public function __construct(string $db_setting = 'default')
     {
-        // $this->use($db_setting);
+        $this->use($db_setting);
     }
     /**
      * __toString Magic Method
@@ -126,7 +126,7 @@ class Query
      */
     public function use(string $db_setting) : self
     {
-        if (!empty($db_setting) AND $db_setting !== $this->db_setting) 
+        if (empty($this->db) OR ! $this->db instanceof Database OR (!empty($db_setting) AND $db_setting !== $this->db_setting)) 
         {
             $this->db_setting = $db_setting;
             $this->db = new Database($this->db_setting);
@@ -311,24 +311,52 @@ class Query
      * Définit une contion pour la sélection des données
      * 
      * @param string $conditions
-     * @param array $param
+     * @param Query|array|string $param
      * @return Query
      */
-    protected function whereIn(string $conditions, array $param) : self
+    protected function whereIn(string $conditions, $param) : self
     {
-        $this->where($conditions.' IN ('.implode(',', $param).')');
+        if (is_array($param)) 
+        {
+            $param = implode(',', $param);
+        }
+        else if ($param instanceof Query) 
+        {
+            $this->params($param->params);
+            $param = $param->getSql();
+        }
+        else if (!is_string($param)) 
+        {
+            throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::whereIn");
+        }
+        
+        $this->where($conditions.' IN ('.$param.')');
         return $this;
     }
     /**
      * Définit une condition pour lq sélection des données
      * 
      * @param string $conditions
-     * @param array $param
+     * @param Query|array|string $param
      * @return Query
      */
-    protected function whereNotIn(string $conditions, array $param) : self
+    protected function whereNotIn(string $conditions, $param) : self
     {
-        $this->where($conditions.' NOT IN ('.implode(',', $param).')');
+        if (is_array($param)) 
+        {
+            $param = implode(',', $param);
+        }
+        else if ($param instanceof Query) 
+        {
+            $this->params($param->params);
+            $param = $param->getSql();
+        }
+        else if (!is_string($param)) 
+        {
+            throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::whereNotIn");
+        }
+  
+        $this->where($conditions.' NOT IN ('.$param.')');
         return $this;
     }
 

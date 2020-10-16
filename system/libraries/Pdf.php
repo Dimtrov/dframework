@@ -12,24 +12,25 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.2
  */
+
+namespace dFramework\libraries;
 
 use Spipu\Html2Pdf\Html2Pdf;
 
 /**
- * Dom
- *  Permet de manipuler l'arbre du DOM via le PHP
+ * PDF
+ *  Permet de generer les documents PDF via le PHP
  *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Dom.html
  * @since       3.0
- * @file        /system/librairies/Dom.php
+ * @file        /system/librairies/Pdf.php
  */
-
-class dF_Pdf
+class Pdf
 {
     /**
      * @var Html2Pdf 

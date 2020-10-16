@@ -85,13 +85,10 @@ class Maker extends Cli
                 $this->_io->warn('Argument non pris en compte. Veuillez consulter la documentation pour plus de détails', true); 
                 $this->showHelp();
             }
-            else if (in_array($element, ['app']))
-            {
-                call_user_func_array([$this, '_app'], [$value, $database, !empty($empty), !empty($rest)]);
-            }
-            else {
-                call_user_func_array([$this, '_'.$element], [$value, $database, !empty($empty)]);
-            }
+            $params = [$value, $database, !empty($empty), !empty($rest)];
+            $element = '_'.$element;
+            
+            $this->{$element}(...$params);
             
             $this->_endMsg();
         }
@@ -378,7 +375,7 @@ class Maker extends Cli
                 $this->_makeViews($tables, $empty);
             }
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable | Exception $e) { die($e); }
     }
     /**
      * Creation des entites
@@ -497,7 +494,7 @@ class Maker extends Cli
      * @param string $db
      * @return array
      */
-    private function getTables(?string $value, string $db = 'default') : array
+    private function getTables(?string $value, ?string $db = 'default') : array
     {
         $make_all = empty($value);
         
@@ -559,9 +556,9 @@ class Maker extends Cli
      * @param string|null $db
      * @return array
      */
-    private function getAllTables(string $db = 'default') : array
+    private function getAllTables(?string $db = 'default') : array
     {
-        $tables = (new Query)->use($db)->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM); 
+        $tables = (new Query)->use(empty($db) ? 'default' : strtolower($db))->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM); 
         
         foreach ($tables As $key => $value) 
         {

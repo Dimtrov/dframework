@@ -86,6 +86,11 @@ class Api
      */
     private $headers = [];
     
+    /**
+     * @var array
+     */
+    private $options = [];
+    
     
     /**
      * Api constructor.
@@ -129,6 +134,18 @@ class Api
     public function setHeaders(array $headers = []) : self
     {
         $this->headers = $headers;
+        return $this;
+    }
+
+    /**
+     * Definit les options a toujours envoyes lors des requetes
+     *
+     * @param array $options
+     * @return self
+     */
+    public function setOptions(array $options = []) : self 
+    {
+        $this->options = $options;
         return $this;
     }
 
@@ -210,6 +227,8 @@ class Api
     public function get(string $url, ?array $headers = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::get($this->url($url), $headers, $options));
     }
 
@@ -224,6 +243,8 @@ class Api
     public function head(string $url, ?array $headers = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::head($this->url($url), $headers, $options));
     }
 
@@ -238,6 +259,8 @@ class Api
     public function delete(string $url, ?array $headers = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::delete($this->url($url), $headers, $options));
     }
 
@@ -252,6 +275,8 @@ class Api
     public function trace(string $url, ?array $headers = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::trace($this->url($url), $headers, $options));
     }
 
@@ -267,6 +292,8 @@ class Api
     public function post(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::post($this->url($url), $headers, $data, $options));
     }
 
@@ -282,6 +309,8 @@ class Api
     public function put(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::put($this->url($url), $headers, $data, $options));
     }
 
@@ -297,6 +326,8 @@ class Api
     public function options(string $url, ?array $headers = [], ?array $data = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+
         return $this->return(Requests::options($this->url($url), $headers, $data, $options));
     }
 
@@ -312,6 +343,8 @@ class Api
     public function patch(string $url, array $headers, ?array $data = [], ?array $options = [])
     {
         $headers = array_merge($this->headers, !is_array($headers) ? [] : $headers);
+        $options = array_merge($this->options, !is_array($options) ? [] : $options);
+        
         return $this->return(Requests::patch($this->url($url), $headers, $data, $options));
     }
 

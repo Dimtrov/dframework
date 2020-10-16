@@ -17,6 +17,7 @@
 
 namespace dFramework\core\router;
 
+use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\ServerRequest;
 
@@ -137,7 +138,7 @@ class Router
 	 */
 	public function controllerName()
 	{
-		return str_replace('-', '_', $this->controller);
+		return str_replace('-', '', $this->controller);
 	}
 	/**
 	 * Set controller name
@@ -151,7 +152,11 @@ class Router
 	}
 	private function makeController(string $name) : string 
 	{
-		return preg_replace('#Controller$#', '', ucfirst($name)) . 'Controller';
+		return preg_replace(
+			['#Controller$#', '#'.config('general.url_suffix').'$#i'], 
+			'', 
+			ucfirst($name)
+		) . 'Controller';
 	}
 	/**
 	 * Returns the name of the method to run in the
@@ -165,7 +170,7 @@ class Router
 	}
 	private function setMethod(string $name)
 	{
-		$this->method = strtolower($name);
+		$this->method = preg_replace('#'.config('general.url_suffix').'$#i', '', strtolower($name));
 	}
 
 	public function controllerFile() : string 
@@ -266,7 +271,7 @@ class Router
 			{
 				$this->filterInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
 			}
-			
+
 			if (is_string($this->controller))
 			{
 				$file = CONTROLLER_DIR . $this->controllerFile . DS . $this->controller . '.php';
@@ -313,11 +318,11 @@ class Router
 	 * @param string $uri The URI path to compare against the routes
 	 *
 	 * @return boolean Whether the route was matched or not.
-	 * @throws \CodeIgniter\Router\Exceptions\RedirectException
 	 */
 	protected function checkRoutes(string $uri): bool
 	{
 		$routes = $this->collection->getRoutes($this->collection->HTTPVerb());
+
 		$uri = $uri === '/'
 			? $uri
 			: trim($uri, '/ ');
@@ -369,7 +374,7 @@ class Router
 				if (! is_string($val) AND is_callable($val))
 				{
 					$this->controller = $val;
-
+					
 					// Remove the original string from the matches array
 					array_shift($matches);
 
@@ -392,8 +397,19 @@ class Router
 				if (strpos($val, '$') !== false AND strpos($key, '(') !== false AND strpos($key, '/') !== false)
 				{
 					$replacekey = str_replace('/(.*)', '', $key);
+					$uri = 
 					$val        = preg_replace('#^' . $key . '$#', $val, $uri);
-					$val        = str_replace($replacekey, str_replace('/', '\\', $replacekey), $val);
+					//	$val        = str_replace($replacekey, str_replace('/', '\\', $replacekey), $val);
+					
+					/**
+					 * @update
+					 * @date 06-09-2020 
+					 * @author Dimitri Sitchet Tomkeu <dst@email.com>
+					 */
+					$parts = explode('::', $val);
+					$controller = str_replace('/', '\\', array_shift($parts));
+					$method = implode('', $parts);
+					$val = $controller.'::'.$method;
 				}
 				elseif (strpos($val, '$') !== false AND strpos($key, '(') !== false)
 				{
@@ -425,7 +441,7 @@ class Router
 			}
 		}
 
-		return false;
+		return false   ;
 	}
 
 	/**
@@ -446,7 +462,7 @@ class Router
 		}
 		// If not empty, then the first segment should be the controller
 		else
-		{
+		{	
 			$this->setController(array_shift($segments));
 		}
 
@@ -464,13 +480,20 @@ class Router
 		}
 
 		// Load the file so that it's available for dFramework.
-		$file = CONTROLLER_DIR . $this->directory . $this->controllerName() . '.php';
-		if (is_file($file))
+		$file = str_replace('/', DS, CONTROLLER_DIR . $this->directory . $this->controllerName() . '.php');
+		
+		if (!is_file($file))
 		{
-			$this->controllerFile = $file;
-
-			include_once $file;
+			RouterException::except(
+				'Controller file not found',
+                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $this->controllerName()).'</b> souhaité. 
+                <br/>
+                Le fichier &laquo; '.$file.' &raquo; n\'existe pas'
+			);
 		}
+		$this->controllerFile = $file;
+
+		include_once $file;
 	}
 
 	/**
@@ -485,7 +508,9 @@ class Router
 		$segments = array_filter($segments, function ($segment) {
 			return ! empty($segment) OR ($segment !== '0' OR $segment !== 0);
 		});
+	
 		$segments = array_values($segments);
+		$segments[0] = preg_replace('#'.Config::get('general.url_suffix').'$#i', '', $segments[0]); 
 
 		$c                  = count($segments);
 		$directory_override = isset($this->directory);

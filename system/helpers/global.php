@@ -405,7 +405,7 @@ if (!function_exists('current_url'))
      */
     function current_url($url = '')
     {
-        return site_url(Service::request()->here().$url);
+		return site_url(Service::request()->getRequestTarget().$url);
     }
 }
 

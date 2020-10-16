@@ -41,6 +41,11 @@ $general['url_suffix'] = '';
 $general['environment']	= 'dev';
 
 /*
+| Specifie si on doit afficher la trackbar tracy ou pas
+*/
+$general['show_trackbar'] = true;
+
+/*
 | Specificie si on doit compresser le code de la vue avant de l'afficher ou pas
 |   - True / False
 |   - Auto : Le systeme compressera le code uniquement si vous passez dans un environement de production
