@@ -3,19 +3,19 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2020, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.2
  */
 
- namespace dFramework\libraries;
+namespace dFramework\libraries;
 
 use Requests;
 use Requests_Response;
@@ -36,34 +36,34 @@ class Api
     /**
      * Donnees bruts (toutes les donnees, memes les entetes)
      */
-    const  BRUT = 1;
+    const  RETURN_BRUT = 1;
     /**
      * Les donnees formatees (DATAS + METAS )
      */ 
-    const FORMAT = 2;
+    const RETURN_FORMAT = 2;
 
     /**
      * Donnees specifiquement renvoyes
      */
-    const   DATAS = 3;
+    const   RETURN_DATAS = 3;
     /**
      * Les meta donnees simples
      */
-    const   METAS = 4;
+    const   RETURN_METAS = 4;
     /**
      * Les headers
      */
-    const   HEADERS = 5;
+    const   RETURN_HEADERS = 5;
 
 
     /**
      * Les donnees renvoyees par le WS sont en JSON
      */
-    const   JSON = 1;
+    const   FORMAT_JSON = 1;
     /**
      * Les donnees renvoyees par le WS sont en XML
      */
-    const   XML = 2;
+    const   FORMAT_XML = 2;
 
 
     /**
@@ -74,12 +74,12 @@ class Api
     /**
      * @var int
      */
-    private $return_type = self::DATAS;
+    private $return_type = self::RETURN_DATAS;
 
     /**
      * @var int
      */
-    private $format = self::JSON;
+    private $format = self::FORMAT_JSON;
 
     /**
      * @var array
@@ -355,11 +355,11 @@ class Api
      */
     private function url(string $url) : string
     {
-        if(preg_match('#^(?:-|/)#', $url)) 
+        if (preg_match('#^(?:-|/)#', $url)) 
         {
             $url = trim(substr($url, 1));
         }
-        else if(!empty($this->base_url))
+        else if (!empty($this->base_url))
         {
             $url = rtrim($this->base_url, '/').'/'.ltrim($url, '/');
         }
@@ -373,11 +373,11 @@ class Api
      */
     private function return(Requests_Response $response)
     {
-        if (self::BRUT === $this->return_type)
+        if (self::RETURN_BRUT === $this->return_type)
         {
             return $response;
         }
-        if (self::HEADERS === $this->return_type)
+        if (self::RETURN_HEADERS === $this->return_type)
         {
             return $response->headers;
         }
@@ -389,15 +389,15 @@ class Api
             ],
             'datas' => $response->body
         ];
-        if (self::DATAS === $this->return_type)
+        if (self::RETURN_DATAS === $this->return_type)
         {
-            if (self::JSON === $this->format) 
+            if (self::FORMAT_JSON === $this->format) 
             {
                 return json_decode($return['datas']);
             }
             return $return['datas'];
         }
-        if (self::METAS === $this->return_type)
+        if (self::RETURN_METAS === $this->return_type)
         {
             return $return['metas'];
         }

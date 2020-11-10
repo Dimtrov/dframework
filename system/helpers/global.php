@@ -401,11 +401,19 @@ if (!function_exists('current_url'))
 	 * function is placed
      *
      * @param string $url
+	 * @param bool $with_base
      * @return    string
      */
-    function current_url($url = '')
+    function current_url($url = '', bool $with_base = true)
     {
-		return site_url(Service::request()->getRequestTarget().$url);
+		$current_url = Service::request()->getRequestTarget().$url;
+		
+		if (true === $with_base)
+		{
+			$current_url = site_url($current_url);
+		}
+
+		return $current_url;
     }
 }
 
@@ -441,7 +449,7 @@ if (!function_exists('link_to'))
 	 */
 	function link_to(string $method, ...$params)
 	{
-		return Service::routes()->reverseRoute($method, ...$params);
+		return site_url(Service::routes()->reverseRoute($method, ...$params));
 	}
 }
 

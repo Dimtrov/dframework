@@ -3,22 +3,22 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2020, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
+namespace dFramework\libraries;
 
  use dFramework\core\Config;
  use dFramework\core\exception\Exception;
-
 
 /**
  * Crypto
@@ -31,8 +31,7 @@
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Crypto.html
  * @since       2.0
  */
-
-class dF_Crypto
+class Crypto
 {
     /**
      * @var string
@@ -203,7 +202,7 @@ class dF_Crypto
         }
         elseif (defined('MCRYPT_DEV_URANDOM') AND function_exists('mcrypt_create_iv'))
         {
-            return mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
+            return \mcrypt_create_iv($length, \MCRYPT_DEV_URANDOM);
         }
         $is_secure = true;
         return openssl_random_pseudo_bytes($length, $is_secure);

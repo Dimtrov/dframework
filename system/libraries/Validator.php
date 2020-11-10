@@ -3,13 +3,13 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2020, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
  * @version     3.2.2
@@ -146,18 +146,42 @@ class Validator
      * 
      * @param string|string[] $fields
      * @param string|string[] $date_value
+     * @param bool $strict
      * @return  self
      */
-    public function dateAfter($fields, $date_value = null) : self 
+    public function dateAfter($fields, $date_value = null, bool $strict = true) : self 
     {
-        if (empty($date_value)) {
+        if ($strict === false)
+        {
+            $this->validator->addInstanceRule('personalDateAfter', function($field, $date) {
+                $day = $this->validator->data()[$field] ?? null;
+                $date = func_get_arg(2)[0];
+                
+                $vtime = ($day instanceof \DateTime) ? $day->getTimestamp() : strtotime($day);
+                $ptime = ($date instanceof \DateTime) ? $date->getTimestamp() : strtotime($date);
+    
+                return $vtime >= $ptime;
+            }, '{field} that you enter is invalid');
+        }
+        
+        if (empty($date_value)) 
+        {
             $date_value = date('Y-m-d H:i:s');
         }
         $datas = array_combine((array) $fields, (array) $date_value);
+        
         foreach ($datas As $key => $value)
         {
-            $this->validator->rule('dateAfter', $key, $value);
+            if (false === $strict)
+            {
+                $this->validator->rule('personalDateAfter', $key, $value);
+            }
+            else 
+            {
+                $this->validator->rule('dateAfter', $key, $value);
+            }
         }
+
         return $this;
     }
     /**
@@ -165,18 +189,42 @@ class Validator
      * 
      * @param string|array $fields
      * @param string|string[] $date_value
+     * @param bool $strict
      * @return  self
      */
-    public function dateBefore($fields, $date_value = null) : self 
+    public function dateBefore($fields, $date_value = null, bool $strict = true) : self 
     {
-        if (empty($date_value)) {
+        if ($strict === false)
+        {
+            $this->validator->addInstanceRule('personalDateBefore', function($field, $date) {
+                $day = $this->validator->data()[$field] ?? null;
+                $date = func_get_arg(2)[0];
+                
+                $vtime = ($day instanceof \DateTime) ? $day->getTimestamp() : strtotime($day);
+                $ptime = ($date instanceof \DateTime) ? $date->getTimestamp() : strtotime($date);
+    
+                return $vtime <= $ptime;
+            }, '{field} that you enter is invalid');
+        }
+        
+        if (empty($date_value)) 
+        {
             $date_value = date('Y-m-d H:i:s');
         }
         $datas = array_combine((array) $fields, (array) $date_value);
+        
         foreach ($datas As $key => $value)
         {
-            $this->validator->rule('dateBefore', $key, $value);
+            if (false === $strict)
+            {
+                $this->validator->rule('personalDateBefore', $key, $value);
+            }
+            else 
+            {
+                $this->validator->rule('dateBefore', $key, $value);
+            }
         }
+
         return $this;
     }
     /**

@@ -12,15 +12,17 @@
  * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
- 
+namespace dFramework\libraries;
+
+use Browser;
 use dFramework\core\Config;
 use dFramework\core\utilities\Chaine;
 
 /**
- * dF_Ua
+ * Ua
  *
  * Donne les informations relatives au user agent utilisé par le visiteur
  *
@@ -31,8 +33,7 @@ use dFramework\core\utilities\Chaine;
  * @since       2.0
  * @file        /system/libraries/Ua.php
  */
-
-class dF_Ua
+class Ua
 {
     /**
      * @var Browser instance de la dependance Browser
@@ -191,17 +192,19 @@ class dF_Ua
     public function __get($name)
     {
         $method = Chaine::toCamelCase($name);
-        if(method_exists($this, $method))
+        if (method_exists($this, $method))
         {
             return $this->$method();
         }
+       
         $method = Chaine::toCamelCase('is'.$name);
-        if(method_exists($this, $method))
+        if (method_exists($this, $method))
         {
             return $this->$method();
         }
+
         $method = Chaine::toCamelCase('get'.$name);
-        if(method_exists($this, $method))
+        if (method_exists($this, $method))
         {
             return $this->$method();
         }

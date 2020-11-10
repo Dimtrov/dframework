@@ -3,28 +3,27 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2020, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
-
  
 namespace dFramework\core\db;
 
 use dFramework\core\Config;
 use dFramework\core\exception\DatabaseException;
 use dFramework\core\exception\Exception;
+use dFramework\core\utilities\Tableau;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
-
 
 /**
  * Database
@@ -39,7 +38,6 @@ use PDOException;
  * @since       1.0
  * @file		/system/core/db/Database.php
  */
-
 class Database
 {
     public $config = [];
@@ -85,6 +83,35 @@ class Database
         $this->check();
     }
 
+    public function setConfig($config, $value = null)
+    {
+        if ((!is_string($config) AND !is_array($config)) OR (!empty($value) AND !is_string($config))) 
+        {
+            DatabaseException::show('Mauvaise utilisation de la methode Database::setConfig');
+        }
+        if (!empty($value) AND is_string($config)) 
+        {
+            $config = [$config => $value];
+        }
+
+        $recheck = false;
+
+        foreach ($config As $key => $value) 
+        {
+            Tableau::set_recursive($this->config, $key, $value);
+
+            if (in_array($key, ['dbms','port','host','username','password','database','charset'])) 
+            {
+                $recheck = true;
+            }
+        }
+
+        if (true === $recheck)
+        {
+            $this->check();
+        }
+    }
+
     /**
      * Check if the configuration information of the database is correct
      */
@@ -97,7 +124,7 @@ class Database
         {
             DatabaseException::except('
                 The <b>'.$dbs.'</b> database configuration is required. <br>
-                Please open the "'.Config::$_config_file['database'].'" file to correct it
+                Please open the "'.Config::$_config_file['database'].'" file or use &laquo; Database::setConfig &raquo; to correct it
             ');
         }
         $keys = ['dbms','port','host','username','password','database','charset'];
@@ -108,7 +135,7 @@ class Database
             {
                 DatabaseException::except('
                     The <b>'.$key.'</b> key of the '.$dbs.' database configuration don\'t exist. <br>
-                    Please fill it in array $config["database"]["'.$dbs.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo
+                    Please fill it in array $config["database"]["'.$dbs.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo or use &laquo; Database::setConfig &raquo; 
                 ');
             }
         }
@@ -119,7 +146,7 @@ class Database
 			{
                 DatabaseException::except('
                     The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
-                    Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo
+                    Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo or use &laquo; Database::setConfig &raquo; 
                 ');
             }
         }
@@ -129,7 +156,7 @@ class Database
         {
             DatabaseException::except('
                 The DBMS (<b>'.$dbms.'</b>) you entered for '.$dbs.' database is not supported by dFramework. <br>
-                Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo
+                Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo or use &laquo; Database::setConfig &raquo; 
             ');
         }
 
@@ -139,7 +166,7 @@ class Database
             DatabaseException::except('
                 The <b>database['.$dbs.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
                 <br>
-                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file to correct it
+                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file  or use &laquo; Database::setConfig &raquo; to correct it
             ');
         }
         else if($config['debug'] === 'auto')

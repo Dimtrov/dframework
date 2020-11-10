@@ -153,7 +153,7 @@ class Dispatcher
     {
         $this->router = new Router($routes, $request);
     
-		$this->controller     = $this->router->handle($request->url ?? '/');
+		$this->controller     = $this->router->handle($request->url ?? null);
 		
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
@@ -175,7 +175,7 @@ class Dispatcher
 	protected function startController()
 	{
 		// Is it routed to a Closure?
-		if (is_object($this->controller) AND (get_class($this->controller) === 'Closure'))
+		if (is_object($this->controller) AND get_class($this->controller) === 'Closure')
 		{
 			$controller = $this->controller;
 			return $controller(...$this->parameters);
@@ -284,7 +284,8 @@ class Dispatcher
 	protected function runController($class)
 	{
 		// If this is a console request then use the input segments as parameters
-		$params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
+		// $params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
+		$params = $this->parameters;
 
 		if (method_exists($class, '_remap'))
 		{

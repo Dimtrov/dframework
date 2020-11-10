@@ -173,10 +173,10 @@ class View
     /**
      * Recupere et retourne le code html de la vue creee
      *
-     * @param bool $compress
+     * @param bool|string $compress
      * @return string
      */
-    public function get(bool $compress = true) : string 
+    public function get($compress = 'auto') : string 
     {    
         $this->create();
         return $this->compressView($this->output, $compress);
@@ -677,9 +677,9 @@ class View
      * @param bool|string $compress
      * @return string
      */
-    private function compressView(string $output, $compress = true) : string 
+    private function compressView(string $output, $compress = 'auto') : string 
     {
-        if (!in_array($compress, [true, false, 'true', 'false'])) {
+        if (!in_array($compress, [true, false, 'true', 'false'], true)) {
             $compress = Config::get('general.environment') !== 'dev';
         }
         return (true === $compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;

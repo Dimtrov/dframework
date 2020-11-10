@@ -155,7 +155,7 @@ class Helpers
 
         if (!empty($query)) 
         {
-            $uri .= '?='.$query;
+            $uri .= '?'.$query;
         }
         if (!empty($hash))
         {

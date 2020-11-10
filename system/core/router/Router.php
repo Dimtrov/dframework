@@ -265,6 +265,12 @@ class Router
 	 */
 	public function handle(string $uri = null)
 	{
+		$uri = trim($uri, '/');
+		if (empty($uri)) 
+		{
+			$uri = '/';
+		}
+		
 		if ($this->checkRoutes($uri))
 		{
 			if ($this->collection->isFiltered($this->matchedRoute[0]))

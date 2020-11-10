@@ -3,13 +3,13 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2020, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.2.2
@@ -171,6 +171,14 @@ class FileLocator
         $mod = (!preg_match('#Model$#', $mod)) ? $mod.'Model' : $mod;
         $model[count($model) - 1] = $mod;
 
+        foreach ($model as $key => &$value) 
+        {
+            if (preg_match('#^Models?$#i', $value))
+            {
+                unset($value, $model[$key]);
+            }
+        }
+
         $path = MODEL_DIR.self::ensureExt(implode(DS, $model), 'php');
 
         if (!file_exists($path))
@@ -185,11 +193,17 @@ class FileLocator
         
         require_once $path;
 
-        if (!class_exists($mod, false))
+        $class_namespaced = implode('\\', $model);
+
+        if (class_exists($class_namespaced, false)) 
+        {
+            return Injector::factory($class_namespaced);
+        }
+        else if (!class_exists($mod, false))
         {
             LoadException::except(
                 'Model class do not exist',
-                'Impossible de charger le model <b>'.str_replace('Model', '', $mod).'</br> souhaité. 
+                'Impossible de charger le model <b>'.str_replace('Model', '', $mod).'</b> souhaité. 
                 <br/>
                 Le fichier &laquo; '.$path.' &raquo; ne contient pas de classe <b>'.$mod.'</br>
             ');
@@ -209,6 +223,14 @@ class FileLocator
         $con = (!preg_match('#Controller$#', $con)) ? $con.'Controller' : $con;
         $controller[count($controller) - 1] = $con;
 
+        foreach ($controller as $key => &$value) 
+        {
+            if (preg_match('#^Controllers?$#i', $value))
+            {
+                unset($value, $controller[$key]);
+            }
+        }
+
         $path = CONTROLLER_DIR.self::ensureExt(implode(DS, $controller), 'php');
 
         if (!file_exists($path))
@@ -223,7 +245,13 @@ class FileLocator
         
         require_once $path;
 
-        if (!class_exists($con, false))
+        $class_namespaced = implode('\\', $controller);
+
+        if (class_exists($class_namespaced, false)) 
+        {
+            return Injector::factory($class_namespaced);
+        }
+        else if (!class_exists($con, false))
         {
             LoadException::except(
                 'Controller class do not exist',

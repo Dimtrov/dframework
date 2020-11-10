@@ -84,7 +84,7 @@ class Form
      *
      * @param string|array $key
      * @param mixed|null $value
-     * @return dF_Form
+     * @return self
      */
     public function value($key, $value = null) : self
     {
@@ -100,6 +100,16 @@ class Form
             $this->datas = Tableau::merge($this->datas, [$key => $value]);
         }
         return $this;
+    }
+    /**
+     * Alias of value() method for array datas
+     *
+     * @param array $values
+     * @return self
+     */
+    public function values(array $values) : self 
+    {
+        return $this->value($values);
     }
     /**
      * Definie l'erreur pour une cle donnee
@@ -122,6 +132,16 @@ class Form
             $this->errors[$key] = $value;
         }
         return $this;
+    }
+    /**
+     * Alias of error() method for array datas
+     *
+     * @param array $errors
+     * @return self
+     */
+    public function errors(array $errors) : self 
+    {
+        return $this->error($errors);
     }
     /**
      * Affiche les erreurs d'un champ

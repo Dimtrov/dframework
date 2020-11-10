@@ -3,13 +3,13 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2020, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.2.2
@@ -23,6 +23,7 @@ use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\libraries\Api;
 use Envms\FluentPDO\Query As FluentPDOQuery;
+use Throwable;
 
 /**
  * Model
@@ -36,7 +37,6 @@ use Envms\FluentPDO\Query As FluentPDOQuery;
  * @since       1.0
  * @file		/system/core/Model.php
  */
-
 class Model extends Query
 {
     /**
@@ -79,7 +79,31 @@ class Model extends Query
      */
     final protected function loadModel($model, ?string $alias = null)
     {
-        Load::model($this, $model, $alias);
+        if (is_array($model))
+        {
+            foreach ($model As $k => $v) 
+            {
+                if (is_string($k)) 
+                {
+                    $mod = $k;
+                    $alias = $v;
+                }
+                else 
+                {
+                    $mod = $v;
+                    $alias = $v;
+                }
+                $this->loadModel($mod, $alias);
+            }
+        }
+        else 
+        {
+            $mod = explode('/', $model);
+            $mod = end($mod);
+            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $mod);
+     
+            $this->{$property} = Load::model($model);
+        }
     }
     
     /**
@@ -204,6 +228,38 @@ class Model extends Query
         return $this->db->pdo()->rollback();
     }
 
+    /**
+     * Execute un bloc de requete dans une transaction
+     *
+     * @param callable $function
+     * @return mixed Result of the callback function 
+     */
+    final public function transaction(callable $function, &$e = null) 
+    {
+        try {
+            $this->beginTransaction();
+
+            $response = call_user_func($function, $this);
+
+            $this->commit();
+
+            return $response;
+        }
+        catch (Throwable $th) {
+            $this->rollback();
+
+            if (array_key_exists(1, func_get_args())) 
+            {
+                $e = $th;
+            }
+            else 
+            {
+                throw $th;
+            }
+        }
+    }
+
+
 
     /**
      * Verifie s'il existe un champ avec une donnee specifique dans une table de la base de donnee
@@ -230,7 +286,7 @@ class Model extends Query
         }
         if (true === $process)
         {
-            $this->free_db()->from($table);
+            $this->db()->from($table);
             foreach ($data As $key => $value) 
             {
                 $this->where($key . ' = ?')->params([$value]);
@@ -240,7 +296,15 @@ class Model extends Query
         throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
     }
 
-    final public function existOther(array $dif, array $eq, string $table)
+    /**
+     * Verifie si une valeur n'existe pas deja pour une cle donnee
+     *
+     * @param array $dif
+     * @param array $eq
+     * @param string $table
+     * @return bool
+     */
+    final public function existOther(array $dif, array $eq, string $table) : bool
     {
         $this->db()->from($table);
         
