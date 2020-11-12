@@ -705,3 +705,17 @@ if (!function_exists('flash'))
 		return New FlashMessages;
     }
 }
+
+if (!function_exists('geo_ip'))
+{
+	/**
+	 * Recuperation des coordonnees (pays, ville, etc) d'un utilisateur en fonction de son ip
+	 *
+	 * @param string|null $ip
+	 * @return array|null
+	 */
+	function geo_ip(?string $ip = null) : ?array
+	{
+		return json_decode(file_get_contents('http://ip-api.com/json/'.$ip), true);
+	}
+}

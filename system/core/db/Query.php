@@ -3,27 +3,28 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2020, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.2
  */
 
 namespace dFramework\core\db;
 
 use dFramework\core\exception\DatabaseException;
 use PDO;
+use PDOException;
 
 /**
  * Query
  *
- * Query Builder system
+ * General Query class of system
  *
  * @package		dFramework
  * @subpackage	Core
@@ -33,812 +34,619 @@ use PDO;
  * @since       1.0
  * @file		/system/core/db/Query.php
  */
-
 class Query
-{
+{    
+    protected $sql;
+
+    protected $db_group;
+
     /**
      * @var Database
      */
-    public $db;
-    /**
-     * Configuration de la base de donnees a utiliser
-     *
-     * @var string
-     */
-    private $db_setting;
+    protected $db;
 
-    private $crud = 'select';
-    /**
-     * Champs a selectionnés
-     *
-     * @var array
-     */
-    private $fields = [];
-    /**
-     * Conditions de selections
-     *
-     * @var array
-     */
-    private $conditions = [];
-    /**
-     * Paramètres ratachés aux conditions
-     *
-     * @var array
-     */
-    private  $params = [];
-    /**
-     * Tables de selection
-     *
-     * @var array
-     */
-    private $table = [];
-    /**
-     * Groupements de selections
-     *
-     * @var array
-     */
-    private $group = [];
-    /**
-     * Limites de seletion
-     *
-     * @var string
-     */
-    private $limit;
-    /**
-     * Ordre de selection
-     *
-     * @var array
-     */
-    private $order = [];
-    /**
-     * Jointures de tables
-     *
-     * @var array
-     */
-    private $joins = [];
+    
+    protected $query_details = [];
+    protected $stats = [];
 
+    protected $cache;
+    protected $cache_type = 'file';
+    protected $cache_file_dir = RESOURCE_DIR.'reserved'.DS.'database'.DS.'cache'.DS;
 
-    /**
-     * Contructeur
-     *
-     * @param string $db_setting
-     */
-    public function __construct(string $db_setting = 'default')
+    protected static $db_types = [
+        'pdo', 'mysqli', 'pgsql', 'sqlite3'
+    ];
+    protected static $cache_types = [
+        'memcached', 'memcache', 'xcache', 'file'
+    ];
+
+    public $last_query;
+    public $is_cached = false;
+    public $key_prefix = '';
+
+    
+    public function __construct(string $db_group = 'default')
     {
-        $this->use($db_setting);
-    }
-    /**
-     * __toString Magic Method
-     *
-     * @since 3.2
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getSql();
+        $this->db_group = $db_group;
     }
 
-    /**
-     * Définit la configuration de base de données à utiliser
-     * 
-     * @param string $db_setting
-     * @return Query
-     */
-    public function use(string $db_setting) : self
+    private function dbConnect()
     {
-        if (empty($this->db) OR ! $this->db instanceof Database OR (!empty($db_setting) AND $db_setting !== $this->db_setting)) 
+        if (empty($this->db))
         {
-            $this->db_setting = $db_setting;
-            $this->db = new Database($this->db_setting);
+            $this->db = Database::instance()->use($this->db_group);
         }
+    }
 
-        return $this;
-    }
-    /**
-     * Definit la configuration de la base de donnees a utiliser et reinitialise le Query Builder
-     *
-     * @param string $db_setting
-     * @since 3.2
-     * @return Query
-     */
-    protected function db(string $db_setting = 'default') : self
+    public function db()
     {
-        $this->use($db_setting);
-        
-        $this->table = [];
-        $this->fields = [];
-        $this->conditions = [];
-        $this->params = [];
-        $this->order = [];
-        $this->joins = [];
-        $this->limit = null;
-        $this->crud = 'select';
-        $this->results = null;
-        
-        return $this;
+        return $this->db->connection();
     }
-    /**
-     * Reinitialise les donnees du QueryBuilder
-     * 
-     * @param string $db_setting
-     * @alias db()
-     * @return Query
-     */
-    protected function free_db(string $db_setting = 'default') : self
+
+    public function details()
     {
-        return $this->db($db_setting);
+        return $this->query_details;
+    }
+
+    public function lastId() : ?int
+    {
+        return $this->query_details['insert_id'] ?? null;
+    }
+    public function affectedRow() : int
+    {
+        return $this->query_details['affected_row'] ?? 0;
+    }
+    public function numRows() : int
+    {
+        return $this->query_details['num_rows'] ?? 0;
+    }
+    public function lastQuery()
+    {
+        return $this->last_query;
     }
 
 
+
     /**
-     * Specifie les champs a selectionner en base de donnees
-     * 
-     * @param string ...$fields
-     * @return Query
+     * Gets the query statistics.
      */
-    protected function select(string ...$fields) : self
+    public function stats() 
     {
-        $empty = true;
-        foreach ($fields As $value) 
+        $this->stats['total_time'] = 0;
+        $this->stats['num_queries'] = 0;
+        $this->stats['num_rows'] = 0;
+        $this->stats['num_changes'] = 0;
+
+        if (isset($this->stats['queries'])) 
         {
-            if (!empty($value))
+            foreach ($this->stats['queries'] as $query) 
             {
-                $empty = false;
-                break;
+                $this->stats['total_time'] += $query['time'];
+                $this->stats['num_queries'] += 1;
+                $this->stats['num_rows'] += $query['rows'];
+                $this->stats['num_changes'] += $query['changes'];
             }
         }
-        if($empty) {
-            $fields = ['*'];
-        }
-        $this->fields = array_merge($this->fields, $fields);
-        $this->crud = 'select';
+
+        $this->stats['avg_query_time'] =
+            $this->stats['total_time'] /
+            (float)(($this->stats['num_queries'] > 0) ? $this->stats['num_queries'] : 1);
+
+        return $this->stats;
+    }  
+
+    /**
+     * Gets the SQL statement.
+     *
+     * @return string SQL statement
+     */
+    public function sql() : ?string 
+    {
+        return $this->sql;
+    }
+    /**
+     * Gets the SQL statement.
+     *
+     * @param string|array SQL statement
+     * @return self
+     */
+    public function query($sql) : self
+    {
+        $this->sql = trim(
+            (is_array($sql)) ?
+                array_reduce($sql, [$this, 'build']) :
+                $sql
+        );
+
         return $this;
     }
-
     /**
-     * Compte le nombre de ligne dans une table
-     * 
-     * @param string $column
-     * @param string $alias
-     * @return int
+     * Joins string tokens into a SQL statement.
+     *
+     * @param string $sql SQL statement
+     * @param string $input Input string to append
+     * @return string New SQL statement
      */
-    protected function count(string $column = '*', string $alias = 'count'): int
+    public function build(?string $sql, ?string $input) : string
     {
-        $query = clone $this;
-        $query->fields = [];
-        $nbr = $query->select('COUNT(' . $column . ') As ' . $alias)->run()->fetchColumn();
-        $query->free_db();
-        unset($query);
-        return $nbr;
+        return (strlen($input) > 0) ? ($sql.' '.$input) : $sql;
     }
 
-    /**
-     * Definit les limites de selection des donnees
-     * 
-     * @param int $limit
-     * @param int $offset
-     * @return Query
-     */
-    protected function limit(int $limit, int $offset = 0): self
-    {
-        $this->limit = "$offset, $limit";
-        return $this;
-    }
 
     /**
-     * Definit l'ordre de sélection des données
-     * 
-     * @param string $field
-     * @param string $direction
-     * @return Query
+     * Executes a sql statement.
+     *
+     * @param string $key Cache key
+     * @param int $expire Expiration time in seconds
+     * @return object Query results object
+     * @throws Exception When database is not defined
      */
-    protected function order(string $field, string $direction = 'ASC'): self
+    public function execute($key = null, $expire = 0) 
     {
-        $field = explode(' ', $field);
-        $direction = $field[1] ?? $direction;
-        $field = $field[0];
-        $direction = (!in_array(strtoupper($direction), ['ASC', 'DESC'])) ? 'ASC' : strtoupper($direction);
-        $this->order[] = "$field $direction";
-        return $this;
-    }
+        $this->dbConnect();
 
-    /**
-     * Definit un groupement pour les données sélectionnées
-     * 
-     * @param string $field
-     * @return Query
-     */
-    protected function group(string $field) : self
-    {
-        $this->group[] = $field;
-        return $this;
-    }
-
-    /**
-     * Fait une jointure de table
-     * 
-     * @param string $table
-     * @param string $condition
-     * @param string $type
-     * @return Query
-     */
-    protected function join(string $table, string $condition, string $type = 'inner'): self
-    {
-        $type = (!in_array(strtolower($type), ['left', 'right', 'inner'])) ? 'inner' : strtolower($type);
-        $this->joins[$type][] = [$this->db->config['prefix'].$table, $condition];
-        return $this;
-    }
-
-    /**
-     * Définit la table de sélection des données
-     * 
-     * @param string|array $table
-     * @param string|null $alias
-     * @return Query
-     */
-    protected function from($table, string $alias = null) : self
-    {
-        if (is_string($table))
+        if (!$this->db) 
         {
-            if (!is_null($alias)) {
-                $this->table[($this->db->config['prefix'] ?? '').$table] = $alias;
-            }
-            else {
-                $this->table[] = ($this->db->config['prefix'] ?? '').$table;
-            }
+            throw new DatabaseException('Database is not defined.');
         }
-        if (is_array($table))
-        {
-            foreach ($table As $value) {
-                $this->table[] = ($this->db->config['prefix'] ?? '').$value;
-            }
-        }
-        return $this;
-    }
 
-    /**
-     * Définit une condition pour la sélection des données
-     * 
-     * @param string ...$conditions
-     * @return Query
-     */
-    protected function where(string ...$conditions) : self
-    {
-        $this->conditions = array_merge($this->conditions, $conditions);
-        return $this;
-    }
-    /**
-     * Définit une contion pour la sélection des données
-     * 
-     * @param string $conditions
-     * @param Query|array|string $param
-     * @return Query
-     */
-    protected function whereIn(string $conditions, $param) : self
-    {
-        if (is_array($param)) 
+        if ($key !== null) 
         {
-            $param = implode(',', $param);
-        }
-        else if ($param instanceof Query) 
-        {
-            $this->params($param->params);
-            $param = $param->getSql();
-        }
-        else if (!is_string($param)) 
-        {
-            throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::whereIn");
-        }
-        
-        $this->where($conditions.' IN ('.$param.')');
-        return $this;
-    }
-    /**
-     * Définit une condition pour lq sélection des données
-     * 
-     * @param string $conditions
-     * @param Query|array|string $param
-     * @return Query
-     */
-    protected function whereNotIn(string $conditions, $param) : self
-    {
-        if (is_array($param)) 
-        {
-            $param = implode(',', $param);
-        }
-        else if ($param instanceof Query) 
-        {
-            $this->params($param->params);
-            $param = $param->getSql();
-        }
-        else if (!is_string($param)) 
-        {
-            throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::whereNotIn");
-        }
-  
-        $this->where($conditions.' NOT IN ('.$param.')');
-        return $this;
-    }
+            $result = $this->fetch($key);
 
-    /**
-     * Attache les paramètres aux conditions définies pour la sélection des données
-     * 
-     * @param array $params
-     * @return Query
-     */
-    protected function params(array $params) : self
-    {
-        $this->params = array_merge($this->params, $params);
-        return $this;
-    }
-
-
-    /**
-     * Définit les données à insérer dans une table
-     * 
-     * @param string|array $field
-     * @param mixed|null $value
-     * @param bool|null $escape
-     * @return Query
-     */
-    protected function insert($field, $value = null, ?bool $escape = false): self
-    {
-        $this->crud = 'insert';
-        if (is_array($field))
-        {
-            foreach ($field As $key => $value)
+            if ($this->is_cached) 
             {
-                $this->fields[$key] = $value;
+                return $result;
             }
         }
-        if (is_string($field))
-        {
-            $this->fields[$field] = $value;
-        }
-        return $this;
-    }
 
-    /**
-     * Insère des données dans une table
-     * 
-     * @param string $table
-     * @param array|null $data
-     * @param bool $execute
-     * @return Query|null|\PDOStatement
-     */
-    protected function into(string $table, ?array $data = null, bool $execute = true)
-    {
-        $this->crud = 'insert';
-        $this->from($table);
-        if (is_array($data))
-        {
-            $this->insert($data);
-        }
-        if(true === $execute)
-        {
-            return $this->run();
-        }
-        return $this;
-    }
+        $result = null;
 
+        $this->is_cached = false;
+        $this->query_details['num_rows'] = 0;
+        $this->query_details['affected_rows'] = 0;
+        $this->query_details['insert_id'] = -1;
+        $this->last_query = $this->sql;
 
-    /**
-     * Définit les données à modifier dans une table
-     *  
-     * @param $field
-     * @param $value
-     * @param bool|null $escape
-     * @return Query
-     */
-    protected function set($field, $value = null, ?bool $escape = false): self
-    {
-        $this->crud = 'update';
-        if (is_array($field))
+        if ($this->db->config('options.enable_stats')) 
         {
-            foreach ($field As $key => $value)
+            if (empty($this->stats)) 
             {
-                $this->fields[$key] = $value;
+                $this->stats = [
+                    'queries' => []
+                ];
+            }
+
+            $this->query_details['time'] = microtime(true);
+        }
+
+        if (!empty($this->sql)) 
+        {
+            $error = null;
+
+            switch ($this->db->type()) 
+            {
+                case 'pdo':
+                    try {
+                        $result = $this->db()->prepare($this->sql);
+
+                        if (!$result) 
+                        {
+                            $error = $this->db()->errorInfo();
+                        }
+                        else 
+                        {
+                            $result->execute();
+
+                            $this->query_details['num_rows'] = $result->rowCount();
+                            $this->query_details['affected_rows'] = $result->rowCount();
+                            $this->query_details['insert_id'] = $this->db()->lastInsertId();
+                        }
+                    }
+                    catch (PDOException $ex) {
+                        $error = $ex->getMessage();
+                    }
+                    break;
+
+                case 'mysqli':
+                    $result = $this->db()->query($this->sql);
+
+                    if (!$result) 
+                    {
+                        $error = $this->db()->error;
+                    }
+                    else 
+                    {
+                        if (is_object($result)) 
+                        {
+                            $this->query_details['num_rows'] = $result->num_rows;
+                        }
+                        else 
+                        {
+                            $this->query_details['affected_rows'] = $this->db()->affected_rows;
+                        }
+                        $this->query_details['insert_id'] = $this->db()->insert_id;
+                    }
+                    break;
+
+                case 'pgsql':
+                    $result = pg_query($this->db(), $this->sql);
+
+                    if (!$result) 
+                    {
+                        $error = pg_last_error($this->db());
+                    }
+                    else 
+                    {
+                        $this->query_details['num_rows'] = pg_num_rows($result);
+                        $this->query_details['affected_rows'] = pg_affected_rows($result);
+                        $this->query_details['insert_id'] = pg_last_oid($result);
+                    }
+                    break;
+
+                case 'sqlite3':
+                    $result = $this->db()->query($this->sql);
+
+                    if ($result === false) 
+                    {
+                        $error = $this->db()->lastErrorMsg();
+                    }
+                    else 
+                    {
+                        $this->query_details['num_rows'] = 0;
+                        $this->query_details['affected_rows'] = ($result) ? $this->db()->changes() : 0;
+                        $this->query_details['insert_id'] = $this->db()->lastInsertRowId();
+                    }
+                    break;
+            }
+
+            if ($error !== null) 
+            {
+                $error .= "\nSQL: ".$this->sql;
+                throw new DatabaseException('Database error: '.$error);
             }
         }
-        if (is_string($field))
+
+        if ($this->db->config('options.enable_stats')) 
         {
-            $this->fields[$field] = $value;
+            $time = microtime(true) - $this->query_details['time'];
+            $this->stats['queries'][] = [
+                'query' => $this->sql,
+                'time' => $time,
+                'rows' => (int) $this->query_details['num_rows'],
+                'changes' => (int) $this->query_details['affected_rows']
+            ];
         }
-        return $this;
+
+        return $result;
     }
 
     /**
-     * Modifie les données d'une table
-     * 
-     * @param $table
-     * @param array|null $data
-     * @param bool $execute
-     * @return Query|null|\PDOStatement
+     * Fetch multiple rows from a select query.
+     *
+     * @param int|string $fetch_mode
+     * @param string $key Cache key
+     * @param int $expire Expiration time in seconds
+     * @return array Rows
      */
-    protected function update($table, ?array $data = null, bool $execute = true)
+    public function result($fetch_mode = PDO::FETCH_OBJ, $key = null, $expire = 0) : array
     {
-        $this->crud = 'update';
-        $this->from($table);
-        if (is_array($data))
+        if (empty($this->sql)) 
         {
-            $this->set($data);
+            throw new DatabaseException("Empty SQL statement");
         }
-        if (true === $execute)
+
+        $data = [];
+        $result = $this->execute($key, $expire);
+
+        if ($this->is_cached) 
         {
-            return $this->run();
-        }
-        return $this;
-    }
+            $data = $result;
 
-
-    /**
-     * Supprime les données dans une table
-     * 
-     * @param null|string $table
-     * @param bool $execute
-     * @return Query|null|\PDOStatement
-     */
-    protected function delete(?string $table = null, bool $execute = true)
-    {
-        $this->crud = 'delete';
-        if (!empty($table))
-        {
-            $this->from($table);
-        }
-        if (true === $execute)
-        {
-            return $this->run();
-        }
-        return $this;
-    }
-
-
-    /**
-     * Decrit la structure d'une table
-     * 
-     * @param string $table
-     * @since 3.1
-     * @return mixed
-     */
-    protected function describe(string $table)
-    {
-        return $this->query('DESCRIBE '.($this->db->config['prefix'] ?? '').$table)->fetchAll();
-    }
-
-    /**
-     * Vide toute la table
-     * 
-     * @param string $table
-     * @since 3.1
-     * @return mixed
-     */
-    protected function truncate(string $table)
-    {
-        return $this->query('TRUNCATE '.($this->db->config['prefix'] ?? '').$table)->fetchAll();
-    }
-
-
-    /**
-     * Renvoie le statement d'une requete
-     *
-     * @return string
-     */
-    protected function getSql() : string
-    {
-        switch ($this->crud) {
-            case 'insert' :
-                return $this->getInsert();
-            case 'update' :
-                return $this->getUpdate();
-            case 'delete' :
-                return $this->getDelete();
-            default :
-                return $this->getSelect();
-        }
-    }
-
-    /**
-     * Recupere tous les resultats d'une requete en BD
-     *
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @return array
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function result(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '') : array
-    {
-        return $this->buildResult($mode, $class, $dir);
-    }
-    /**
-     * Recupere tous les resultats d'une requete en BD
-     *
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @since 3.1
-     * @alias result()
-     * @return array
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function all(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '') : array
-    {
-        return $this->result($mode, $class, $dir);
-    }
-    /**
-     * Recupere le premier resultat d'une requete en BD
-     *
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @return object|array|null
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function first(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
-    {
-        return $this->result($mode, $class, $dir)[0] ?? null;
-    }
-    /**
-     * Recupere le premier resultat d'une requete en BD
-     *
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @since 3.1
-     * @alias first()
-     * @return object|array|null
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function one(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
-    {
-        return $this->first($mode, $class, $dir);
-    }
-    /**
-     * Recupere le dernier resultat d'une requete en BD
-     *
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @since 3.1
-     * @return array
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function last(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
-    {
-        return $this->result($mode, $class, $dir)[-1] ?? null;
-    }
-    /**
-     * Recupere un resultat precis dans les resultat d'une requete en BD
-     *
-     * @param int $index L'index de l'enregistrement a recupperer
-     * @param int $mode Le style de recuperation des donnees (objet, tableau numeroté, tableau associatif)
-     * @param null|string $class
-     * @param null|string $dir
-     * @since 3.1
-     * @return array
-     * @throws \dFramework\core\exception\Exception
-     */
-    protected function row(int $index, int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
-    {
-        return $this->result($mode, $class, $dir)[$index] ?? null;
-    }
-
-
-    /**
-     * Définit et execute une requête SQL
-     * 
-     * @param string $statement
-     * @param array $datas
-     * @return \PDOStatement|null
-     */
-    public function query(string $statement, array $datas = [])
-    {
-        $pdoStatement = $this->db->pdo()->prepare($statement);
-        foreach ($datas As $key => $value)
-        {
-            $pdoStatement->bindValue(
-                is_int($key) ? $key + 1 : $key,
-                $value,
-                (is_int($value) OR is_bool($value)) ? PDO::PARAM_INT : PDO::PARAM_STR
-            );
-        }
-        $pdoStatement->execute();
-
-        return $pdoStatement;
-    }
-
-    /**
-     * Execute la requête SQL généré par le QueryBuilder
-     * 
-     * @return \PDOStatement|null
-     */
-    protected function run()
-    {
-        $response = $this->query($this->getSql(), $this->params);
-        $this->free_db();
-        return $response;
-    }
-
-
-    /**
-     * Compile et renvoie un tableau  contenant les resultats issus de la bD
-     *
-     * @return array
-     */
-    private function buildResult(int $mode = DF_FOBJ, ?string $class = null, ?string $dir = '')
-    {
-        $query = $this->run();
-
-        if ($mode !== DF_FCLA)
-        {
-            if ($mode === DF_FARR)
+            if (true === $this->db->config('options.enable_cache')) 
             {
-                $query->setFetchMode(PDO::FETCH_ASSOC);
-            }
-            else if ($mode === DF_FNUM)
-            {
-                $query->setFetchMode(PDO::FETCH_NUM);
-            }
-            else
-            {
-                $query->setFetchMode(PDO::FETCH_OBJ);
-            }
-            return $query->fetchAll();
-        }
-        if (empty($class))
-        {
-           DatabaseException::show('Veuillez specifier la classe a charger');
-        }
-        $records = $query->fetchAll(PDO::FETCH_ASSOC);
-        $hydratedRecords = [];
-
-        foreach ($records As $key => $value)
-        {
-            if (!isset($hydratedRecords[$key]))
-            {
-                $hydratedRecords[$key] = Hydrator::hydrate($value, $class, $dir);
+                $this->stats['cached'][$this->key_prefix.$key] = $this->sql;
             }
         }
-     
-        return $hydratedRecords;
-    }
-
-    /**
-     * Compile et renvoie la liste des tables pour le statement des requetes INSERT
-     *
-     * @return string
-     */
-    private function buildTable() : string
-    {
-        $from = [];
-        foreach ($this->table As $key => $value)
+        else 
         {
-            if (is_string($key))
-            {
-                $from[] = "$key As $value";
+            switch ($this->db->type()) {
+                case 'pdo':
+                    if (is_int($fetch_mode))
+                    {
+                        $result->setFetchMode($fetch_mode);
+                        $data = $result->fetchAll();
+                    }
+                    else if (is_string($fetch_mode))
+                    {
+                        $records = $result->fetchAll(PDO::FETCH_ASSOC);
+                        $data = [];
+
+                        foreach ($records As $key => $value)
+                        {
+                            if (!isset($data[$key]))
+                            {
+                                $data[$key] = Hydrator::hydrate($value, $fetch_mode);
+                            }
+                        }
+                    }
+                    $this->query_details['num_rows'] = count($data);
+                    break;
+    
+                case 'mysqli':
+                    if (function_exists('mysqli_fetch_all')) 
+                    {
+                        $data = $result->fetch_all(MYSQLI_ASSOC);
+                    }
+                    else 
+                    {
+                        while ($row = $result->fetch_assoc()) {
+                            $data[] = $row;
+                        }
+                    }
+                    $result->close();
+                    break;
+               
+                case 'pgsql':
+                    $data = pg_fetch_all($result);
+                    pg_free_result($result);
+                    break;
+    
+                case 'sqlite3':
+                    if ($result) 
+                    {
+                        while ($row = $result->fetchArray(SQLITE3_ASSOC)) 
+                        {
+                            $data[] = $row;
+                        }
+                        $result->finalize();
+                        $this->num_rows = sizeof($data);
+                    }
+                    break;
             }
-            else
+        }
+    
+        if (!$this->is_cached AND $key !== null) 
+        {
+            $this->store($key, $data, $expire);
+        }
+    
+        return $data;
+    }
+
+    /**
+     * Wraps quotes around a string and escapes the content for a string parameter.
+     *
+     * @param mixed $value mixed value
+     * @return mixed Quoted value
+     */
+    public function quote($value) 
+    {
+        if ($value === null) 
+        {
+            return 'NULL';
+        }
+
+        if (is_string($value)) 
+        {
+            if ($this->db !== null) 
             {
-                $from[] = $value;
-            }
-        }
-        return join(', ', $from);
-    }
-
-    /**
-     * Renvoie le statement d'une requete INSERT
-     *
-     * @return string
-     */
-    private function getInsert() : string
-    {
-        $parts = ['INSERT INTO'];
-        $parts[] = end($this->table);
-
-        $columns = [];
-        $values = [];
-        foreach ($this->fields As $key => $value)
-        {
-            $columns[] = $key;
-            $values[] = "?";
-            $this->params([$value]);
-        }
-        $parts[] = '(' . join(', ', $columns) . ')';
-        $parts[] = 'VALUES (' . join(', ', $values) . ')';
-
-        return join(' ', $parts);
-    }
-    /**
-     * Renvoie le statement d'une requete UPDATE
-     *
-     * @return string
-     */
-    private function getUpdate() : string
-    {
-        $parts = ['UPDATE'];
-        $parts[] = end($this->table);
-        $parts[] = 'SET';
-
-        $columns = [];
-        $values = [];
-        foreach ($this->fields As $key => $value)
-        {
-            $columns[] = $key . " = ?";
-            $values[] = $value;
-        }
-        $this->params = array_merge($values, $this->params);
-        $parts[] = join(', ', $columns);
-
-        if (!empty($this->conditions))
-        {
-            $parts[] = 'WHERE';
-            $parts[] = '(' . join(') AND (', $this->conditions) . ')';
-        }
-        return join(' ', $parts);
-    }
-    /**
-     * Renvoie le statement d'une requete DELETE
-     *
-     * @return string
-     */
-    private function getDelete() : string
-    {
-        $parts = ['DELETE FROM'];
-        $parts[] = end($this->table);
-
-        if (!empty($this->conditions))
-        {
-            $parts[] = 'WHERE';
-            $parts[] = '(' . join(') AND (', $this->conditions) . ')';
-        }
-        return join(' ', $parts);
-    }
-    /**
-     * Renvoie le statement d'une requete SELECT
-     *
-     * @return string
-     */
-    private function getSelect() : string
-    {
-        $parts = ['SELECT'];
-        if (empty($this->fields))
-        {
-            $this->fields = ['*'];
-        }
-        $parts[] = join(', ', $this->fields);
-        
-        $parts[] = 'FROM';
-        $parts[] = $this->buildTable();
-
-        if (!empty($this->joins))
-        {
-            foreach ($this->joins As $type => $joins)
-            {
-                foreach ($joins As [$table, $condition])
+                switch ($this->db->type()) 
                 {
-                    $parts[] = strtoupper($type) . " JOIN $table ON $condition";
+                    case 'pdo':
+                        return $this->db()->quote($value);
+
+                    case 'mysqli':
+                        return "'".$this->db()->real_escape_string($value)."'";
+
+                    case 'pgsql':
+                        return "'".pg_escape_string($this->db, $value)."'";
+
+                    case 'sqlite3':
+                        return "'".$this->db()->escapeString($value)."'";
                 }
             }
+
+            $value = str_replace(
+                array('\\', "\0", "\n", "\r", "'", '"', "\x1a"),
+                array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'),
+                $value
+            );
+
+            return "'$value'";
         }
-        if (!empty($this->conditions))
+
+        return $value;
+    }
+
+
+    /*** Cache Methods ***/
+
+    /**
+     * Stores a value in the cache.
+     *
+     * @param string $key Cache key
+     * @param mixed $value Value to store
+     * @param int $expire Expiration time in seconds
+     */
+    public function store($key, $value, $expire = 0) 
+    {
+        $key = $this->key_prefix.$key;
+
+        switch ($this->cache_type) 
         {
-            $parts[] = 'WHERE';
-            $parts[] = '(' . join(') AND (', $this->conditions) . ')';
+            case 'memcached':
+                $this->cache->set($key, $value, $expire);
+                break;
+
+            case 'memcache':
+                $this->cache->set($key, $value, 0, $expire);
+                break;
+
+            case 'apc':
+                if (function_exists('apc_store')) 
+                {
+                    @apc_store($key, $value, $expire);
+                }
+                break;
+
+            case 'xcache':
+                if (function_exists('xcache_set'))
+                {
+                    @xcache_set($key, $value, $expire);
+                }
+                break;
+
+            case 'file':
+                $file = $this->cache_file_dir.md5($key);
+                $data = [
+                    'value' => $value,
+                    'expire' => ($expire > 0) ? (time() + $expire) : 0
+                ];
+                file_put_contents($file, serialize($data));
+                break;
+
+            default:
+                $this->cache[$key] = $value;
         }
-        if (!empty($this->group))
+    }
+
+    /**
+     * Fetches a value from the cache.
+     *
+     * @param string $key Cache key
+     * @return mixed Cached value
+     */
+    public function fetch($key) 
+    {
+        $key = $this->key_prefix.$key;
+
+        switch ($this->cache_type) 
         {
-            $parts[] = 'GROUP BY';
-            $parts[] = join(', ', $this->group);
+            case 'memcached':
+                $value = $this->cache->get($key);
+                $this->is_cached = ($this->cache->getResultCode() == Memcached::RES_SUCCESS);
+                return $value;
+
+            case 'memcache':
+                $value = $this->cache->get($key);
+                $this->is_cached = ($value !== false);
+                return $value;
+
+            case 'apc':
+                return apc_fetch($key, $this->is_cached);
+
+            case 'xcache':
+                $this->is_cached = xcache_isset($key);
+                return xcache_get($key);
+
+            case 'file':
+                $file = $this->cache.'/'.md5($key);
+
+                if ($this->is_cached = file_exists($file)) {
+                    $data = unserialize(file_get_contents($file));
+                    if ($data['expire'] == 0 || time() < $data['expire']) {
+                        return $data['value'];
+                    }
+                    else {
+                        $this->is_cached = false;
+                    }
+                }
+                break;
+
+            default:
+                return $this->cache[$key];
         }
-        if (!empty($this->order))
+        return null;
+    }
+
+    /**
+     * Clear a value from the cache.
+     *
+     * @param string $key Cache key
+     * @return object Self reference
+     */
+    public function clear($key) 
+    {
+        $key = $this->key_prefix.$key;
+
+        switch ($this->cache_type) 
         {
-            $parts[] = 'ORDER BY';
-            $parts[] = join(', ', $this->order);
+            case 'memcached':
+                return $this->cache->delete($key);
+
+            case 'memcache':
+                return $this->cache->delete($key);
+
+            case 'apc':
+                if (function_exists('apc_delete'))
+                {
+                    return pc_delete($key);
+                }
+
+            case 'xcache':
+                if (function_exists('xcache_unset'))
+                {
+                    return xcache_unset($key);
+                }
+
+            case 'file':
+                $file = $this->cache_file_dir.md5($key);
+                if (file_exists($file)) 
+                {
+                    return unlink($file);
+                }
+                return false;
+
+            default:
+                if (isset($this->cache[$key])) {
+                    unset($this->cache[$key]);
+                    return true;
+                }
+                return false;
         }
-        if ($this->limit)
+    }
+
+    /**
+     * Flushes out the cache.
+     */
+    public function flush() 
+    {
+        switch ($this->cache_type) 
         {
-            $parts[] = "LIMIT $this->limit";
+            case 'memcached':
+                $this->cache->flush();
+                break;
+
+            case 'memcache':
+                $this->cache->flush();
+                break;
+
+            case 'apc':
+                apc_clear_cache();
+                break;
+
+            case 'xcache':
+                xcache_clear_cache();
+                break;
+
+            case 'file':
+                if ($handle = opendir($this->cache_file_dir)) 
+                {
+                    while (false !== ($file = readdir($handle)))
+                    {
+                        if ($file != '.' AND $file != '..') 
+                        {
+                            unlink($this->cache.'/'.$file);
+                        }
+                    }
+                    closedir($handle);
+                }
+                break;
+
+            default:
+                $this->cache = [];
+                break;
         }
-        return join(' ', $parts);
     }
 }

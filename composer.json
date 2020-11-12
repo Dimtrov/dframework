@@ -1,11 +1,13 @@
 {
     "name": "dimtrov/dframework",
     "description": "The simplest PHP framework for beginners",
-    "type": "Project",
+    "type": "library",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
     "homepage": "https://dimtrov.hebfree.org/works/dframework",
-    "version": "3.2",
-    "license": "MPL-2",
+    "version": "3.2.3-beta1",
+    "license": "MPL-2.0",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
     "authors": [
         {
             "name": "Dimitric Sitchet Tomkeu",
@@ -15,17 +17,12 @@
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.2",
         "ext-pdo": "*",
         "ext-openssl": "*",
         "ext-reflection": "*",
         "ext-dom": "*",
         "ext-xml": "*",
         "ext-fileinfo": "*"
-    },
-    "autoload": {
-      "psr-4": {
-        "App\\": "app\\class"
-      }
     }
 }

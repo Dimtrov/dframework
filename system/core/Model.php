@@ -17,12 +17,10 @@
 
 namespace dFramework\core;
 
-use dFramework\core\db\Migrator;
-use dFramework\core\db\Query;
+use dFramework\core\db\Builder;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\libraries\Api;
-use Envms\FluentPDO\Query As FluentPDOQuery;
 use Throwable;
 
 /**
@@ -37,38 +35,8 @@ use Throwable;
  * @since       1.0
  * @file		/system/core/Model.php
  */
-class Model extends Query
+class Model extends Builder
 {
-    /**
-     * @var FluentQuery|null
-     */
-    private $fluent = null;
-
-    /**
-     * @var Migrator|null
-     */
-    private $migrator = null;
-
-
-    /**
-     * Renvoie une instance de l'objet FluentPDO a utiliser pour faire des query builder avances
-     *
-     * @return FluentPDOQuery|null
-     */
-    public function fluent()
-    {
-        if(null === $this->fluent)
-        {
-            try {
-                $this->fluent = new FluentPDOQuery($this->db->pdo());
-            }
-            catch (\Exception $e) {
-                Exception::show('Impossible de charger &laquo;<b> FluentPDO </b>&raquo; : ' . $e->getMessage());
-            }
-        }
-        return $this->fluent;
-    }
-
     /**
      * Charge un model
      * 
@@ -134,59 +102,7 @@ class Model extends Query
     {
         $this->{$var} = $api;
     }
-
-    /**
-     * Retourne l'objet Migrator pour faire les migrations des bases de donnees
-     *
-     * @return Migrator|null
-     */
-    protected function migrator() : ?Migrator
-    {
-        if(null === $this->migrator)
-        {
-            try 
-            {
-                $this->migrator = new Migrator($this->db);
-            }
-            catch (\Exception $e) {
-                Exception::show('Impossible de charger l\'objet Migrator : ' . $e->getMessage());
-            }
-        }
-        return $this->migrator;
-    }
-
-    /**
-     * Do backup for database
-     *
-     * @param string $version
-     */
-    public function downDbTo(string $version)
-    {
-        $this->migrator()->down($version);
-    }
-
-    /**
-     * Update database from specific backup
-     *
-     * @param string $version
-     * @throws exception\DatabaseException
-     */
-    public function upDbFrom(string $version)
-    {
-        $this->migrator()->up($version);
-    }
-
-
-    /**
-     *  Retourne le dernier ID inserer par autoincrement dans une table.
-     *
-     * @param string|null $name Nom de la table dans laquelle on veut recuperer le dernier Id
-     * @return string
-     */
-    final public function lastId($name = null)
-    {
-        return $this->db->pdo()->lastInsertId($name);
-    }
+    
     /**
      * @alias lastId
      * @deprecated
@@ -205,7 +121,7 @@ class Model extends Query
      */
     final public function beginTransaction() : bool
     {
-        return $this->db->pdo()->beginTransaction();
+        return $this->db()->beginTransaction();
     }
 
     /**
@@ -215,7 +131,7 @@ class Model extends Query
      */
     final public function commit() : bool
     {
-        return $this->db->pdo()->commit();
+        return $this->db()->commit();
     }
 
     /**
@@ -225,7 +141,7 @@ class Model extends Query
      */
     final public function rollback() : bool
     {
-        return $this->db->pdo()->rollback();
+        return $this->db()->rollback();
     }
 
     /**
@@ -284,14 +200,10 @@ class Model extends Query
             $process = true;
             $data = [$key => $value];
         }
+       
         if (true === $process)
         {
-            $this->db()->from($table);
-            foreach ($data As $key => $value) 
-            {
-                $this->where($key . ' = ?')->params([$value]);
-            }
-            return $this->count() > 0;
+            return $this->from($table)->where($data)->count() > 0;
         }
         throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
     }
@@ -306,15 +218,15 @@ class Model extends Query
      */
     final public function existOther(array $dif, array $eq, string $table) : bool
     {
-        $this->db()->from($table);
+        $this->from($table);
         
         foreach ($dif As $key => $value) 
         {
-            $this->where($key . ' != ?')->params([$value]);
+            $this->where($key . ' !=', $value);
         }
         foreach ($eq As $key => $value) 
         {
-            $this->where($key .' = ?')->params([$value]);
+            $this->where($key, $value);
         }
         
         return $this->count() > 0;

@@ -49,7 +49,7 @@
 
 
 $database['default'] = [
-    'dbms'      => 'mysql',
+    'driver'    => 'pdomysql',
     'port'      => '3306',
     'host'      => 'localhost',
     'username'  => 'root',
@@ -60,19 +60,21 @@ $database['default'] = [
     'collation' => 'utf8_general_ci',
     'prefix'    => '',
     'options'   => [
-        'column_case' => 'inherit'
+        'column_case' => 'inherit',
+        'enable_stats' => false,
+        'enable_cache' => true,
     ]
 ];
 
 /*
 $database['second_db'] = [
-    'dbms'      => 'mysql',
+    'driver'    => 'pdomysql',
     'port'      => '3306',
     'host'      => 'localhost',
     'username'  => 'user123',
     'password'  => 'pass123',
     'database'  => 'db_test',
-    'debug'     => 'auto',
+    'debug'     => 'false',
     'charset'   => 'utf8',
     'collation' => 'utf8_general_ci',
     'prefix'    => '',

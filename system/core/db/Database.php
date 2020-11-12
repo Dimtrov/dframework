@@ -19,11 +19,11 @@ namespace dFramework\core\db;
 
 use dFramework\core\Config;
 use dFramework\core\exception\DatabaseException;
-use dFramework\core\exception\Exception;
 use dFramework\core\utilities\Tableau;
 use InvalidArgumentException;
+use mysqli;
 use PDO;
-use PDOException;
+use SQLite3;
 
 /**
  * Database
@@ -43,95 +43,75 @@ class Database
     public $config = [];
 
     private $db_selected = 'default';
+    
+    private $db;
+
+    private $db_type;
 
 
-    private static $_instance = null;
-    /**
-     * @return self
-     */
-    public static function getInstance()
+    public static function instance() : self
     {
-        if(is_null(self::$_instance))
+        if (null === self::$_instance) 
         {
-            $class = ucfirst(__CLASS__);
-            self::$_instance = new $class();
+            self::$_instance = new self;
         }
         return self::$_instance;
     }
+    private static $_instance;
 
-
-    /**
-     * Database constructor.
-     * @param string $db_setting Database configuration that you want to use
-     * @throws DatabaseException
-     */
-    public function __construct(string $db_setting = 'default')
-    {
-        $this->use($db_setting);
-    }
-
-    /**
-     * @param string $db_setting Database configuration that you want to use
-     * @throws DatabaseException
-     */
-    public function use(string $db_setting)
+    public function use(string $db_selected) : self
     {
         Config::load('database');
         
-        $this->db_selected = strtolower($db_setting);
+        $this->db_selected = strtolower($db_selected);
         $this->config = (array) Config::get('database.'.$this->db_selected);
-        $this->check();
-    }
+        
+        $this->checkConfig();
 
-    public function setConfig($config, $value = null)
+        return $this;
+    }
+    
+    /**
+     * Return instance of database connexion
+     *
+     * @return object
+     */
+    public function connection() : object
     {
-        if ((!is_string($config) AND !is_array($config)) OR (!empty($value) AND !is_string($config))) 
-        {
-            DatabaseException::show('Mauvaise utilisation de la methode Database::setConfig');
-        }
-        if (!empty($value) AND is_string($config)) 
-        {
-            $config = [$config => $value];
-        }
-
-        $recheck = false;
-
-        foreach ($config As $key => $value) 
-        {
-            Tableau::set_recursive($this->config, $key, $value);
-
-            if (in_array($key, ['dbms','port','host','username','password','database','charset'])) 
-            {
-                $recheck = true;
-            }
-        }
-
-        if (true === $recheck)
-        {
-            $this->check();
-        }
+        return $this->db;
     }
+
+    public function type()
+    {
+        return $this->db_type;
+    }
+
+    public function config(string $key)
+    {
+        return Tableau::get_recusive($this->config, $key);
+    }
+
 
     /**
      * Check if the configuration information of the database is correct
      */
-    private function check()
+    private function checkConfig()
     {
         $dbs = $this->db_selected;
         $config = $this->config ?? null;
 
-        if(empty($config) OR !is_array($config))
+        if (empty($config) OR !is_array($config))
         {
             DatabaseException::except('
                 The <b>'.$dbs.'</b> database configuration is required. <br>
                 Please open the "'.Config::$_config_file['database'].'" file or use &laquo; Database::setConfig &raquo; to correct it
             ');
         }
-        $keys = ['dbms','port','host','username','password','database','charset'];
+        $keys = ['driver','port','host','username','password','database','charset'];
 
         foreach ($keys As $key)
         {
-            if(!array_key_exists($key, $config))
+            if (!array_key_exists($key, $config))
             {
                 DatabaseException::except('
                     The <b>'.$key.'</b> key of the '.$dbs.' database configuration don\'t exist. <br>
@@ -142,7 +122,7 @@ class Database
 
         foreach ($config As $key => $value)
         {
-            if(!in_array($key, ['password','options','prefix', 'debug']) AND empty($value)) 
+            if (!in_array($key, ['password', 'options','prefix', 'debug']) AND empty($value)) 
 			{
                 DatabaseException::except('
                     The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
@@ -151,30 +131,46 @@ class Database
             }
         }
 
-        $dbms = (strtolower($config['dbms']) === 'mariadb') ? 'mysql' : strtolower($config['dbms']);
-        if(!in_array($dbms, ['mysql','oracle','sqlite','sybase']))
-        {
-            DatabaseException::except('
-                The DBMS (<b>'.$dbms.'</b>) you entered for '.$dbs.' database is not supported by dFramework. <br>
-                Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo or use &laquo; Database::setConfig &raquo; 
-            ');
-        }
+        $config['debug'] = $this->autoValue('debug', '[debug]');
 
-        $config['debug'] = $config['debug'] ?? 'auto';
-        if(!in_array($config['debug'], ['auto', true, false]))
+        $config['options']['enable_stats'] = $this->autoValue('options.enable_stats', '[options][enable_stats]');
+
+        $config['options']['enable_cache'] = $this->autoValue('options.enable_cache', '[options][enable_cache]');
+
+        $this->config = $config;
+
+        $this->initialize();
+    }
+
+    /**
+     * Definit automatiquement la valeur d'une configuration en fonction de l'environnement
+     *
+     * @param string $key
+     * @param string $label
+     * @return boolean
+     */
+    private function autoValue(string $key, string $label) : bool
+    {
+        $value = $this->config($key);
+        if (empty($value))
+        {
+            $value = 'auto';
+        }
+        
+        if (!in_array($value, ['auto', true, false]))
         {
             DatabaseException::except('
-                The <b>database['.$dbs.'][debug]</b> configuration is not set correctly (Accept values: auto/true/false). 
+                The <b>database['.$this->db_selected.']'.$label.'</b> configuration is not set correctly (Accept values: auto/true/false). 
                 <br>
                 Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file  or use &laquo; Database::setConfig &raquo; to correct it
             ');
         }
-        else if($config['debug'] === 'auto')
+        else if($value === 'auto')
         {
-            $this->config['debug'] = (Config::get('general.environment') === 'dev');
+            $value = (Config::get('general.environment') === 'dev');
         }
 
-        $this->initialize();
+        return (bool) $value;
     }
 
     /**
@@ -182,132 +178,154 @@ class Database
      */
     private function initialize()
     {
-        $config = $this->parse_config();
+        $db = $this->parse_config();
 
-        $config['dbname'] = $config['database'];
-        switch (strtolower($config['dbms']))
+        $db['dbname'] = $db['database'];
+        $commands = [];
+
+        switch (strtolower($db['driver'])) 
         {
-            case 'mysql':
-            case 'mariadb':
-                $config['driver'] = 'mysql';
-                $config['commands'][] = 'SET SQL_MODE=ANSI_QUOTES';
+            case 'mysqli':
+                $this->db = new mysqli(
+                    $db['host'],
+                    $db['username'],
+                    $db['password'],
+                    $db['database'],
+                    $db['port']
+                );
+
+                if ($this->db->connect_error) 
+                {
+                    throw new DatabaseException('Connection error: '.$this->db->connect_error);
+                }
+
                 break;
+
             case 'pgsql':
-                $config['driver'] = 'pgsql';
+                $str = sprintf(
+                    'host=%s port=%s dbname=%s user=%s password=%s',
+                    $db['host'],
+                    $db['port'],
+                    $db['database'],
+                    $db['username'],
+                    $db['password']
+                );
+
+                $this->db = pg_connect($str);
+
                 break;
-            case 'sybase':
-                $config['driver'] = 'dblib';
+
+            case 'sqlite3':
+                $this->db = new SQLite3($db['database']);
+
                 break;
-            case 'oracle':
-                $config['driver'] = 'oci';
-                $config['dbname'] = '//' .$config['host']. ':' .$config['port']. '/' .$config['database'];
+
+            case 'pdomysql':
+            case 'pdo_mysql':
+                $dsn = sprintf(
+                    'mysql:host=%s;port=%d;dbname=%s',
+                    $db['host'],
+                    isset($db['port']) ? $db['port'] : 3306,
+                    $db['database']
+                );
+
+                $this->db = new PDO($dsn, $db['username'], $db['password']);
+                $commands[] = 'SET SQL_MODE=ANSI_QUOTES';
+
                 break;
-            case 'sqlite':
-                $config['driver'] = 'sqlite';
+
+            case 'pdopgsql':
+            case 'pdo_pgsql':
+                $dsn = sprintf(
+                    'pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s',
+                    $db['host'],
+                    isset($db['port']) ? $db['port'] : 5432,
+                    $db['database'],
+                    $db['username'],
+                    $db['password']
+                );
+
+                $this->db = new PDO($dsn);
                 break;
-        }
-        if (!in_array($config['driver'], PDO::getAvailableDrivers()))
-        {
-            throw new InvalidArgumentException('Unsupported PDO driver: {<b>'.$config['driver'].'</b>}');
+
+            case 'pdosqlite':
+            case 'pdo_sqlite':
+                $this->db = new PDO('sqlite:/'.$db['database']);
+                break;
+            
+            default:
+                throw new InvalidArgumentException('Unsupported PDO driver: {<b>'.$db['driver'].'</b>}');
+                
+            break;
         }
 
-        $stack = [];
-        foreach ($config As $key => $value)
-        {
-            if(!in_array($key, ['driver', 'dbms', 'username', 'password', 'database', 'debug', 'prefix', 'commands', 'options']))
-            {
-                $stack[] = is_int($key) ? $value : strtolower($key) . '=' . $value;
-            }
+        if ($this->db == null) {
+            throw new DatabaseException('Undefined database.');
         }
-        if (in_array(strtolower($config['dbms']), ['mysql', 'pgsql', 'sybase']) AND isset($config['charset']))
+        
+        $this->db_type = strpos($db['driver'], 'pdo') !== false ? 'pdo' : $db['driver'];
+
+        if (preg_match('#(mysql|pgsql)$#i', $db['driver']) AND isset($db['charset']))
         {
-            $config['commands'][] = "SET NAMES '{$config['charset']}'" . (
-                (strtolower($config['dbms']) === 'mysql' AND isset($config['collation'])) ?
-                    " COLLATE '{$config['collation']}'" : ''
+            $commands[] = "SET NAMES '{$db['charset']}'" . (
+                (preg_match('#mysql$#i', $db['driver']) AND isset($db['collation'])) ?
+                    " COLLATE '{$db['collation']}'" : ''
             );
         }
-        $config['dsn'] = $config['driver'] . ':' . implode(';', $stack);
-        $config['options'] = (isset($config['options']) AND is_array($config['options'])) ? $config['options'] : [];
-        $config['debug'] = (isset($config['debug']) AND is_bool($config['debug'])) ? $config['debug'] : false;
 
-        $this->config = $config;
+        if ($this->db_type === 'pdo')
+        {
+            foreach ($commands As $value)
+            {
+                $this->db->exec($value);
+            }
+            if (isset($db['debug']) AND $db['debug'] === true)
+            {
+                $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            }
+            if (isset($db['options']['column_case']))
+            {
+                switch (strtolower($db['options']['column_case']))
+                {
+                    case 'lower' :
+                        $casse = PDO::CASE_LOWER;
+                        break;
+                    case 'upper' :
+                        $casse = PDO::CASE_UPPER;
+                        break;
+                    default:
+                        $casse = PDO::CASE_NATURAL;
+                        break;
+                }
+                $this->db->setAttribute(PDO::ATTR_CASE, $casse);
+            }
+        }
     }
 
-	/**
-	* Parse database configuration and use the correct key if we are in dev/prod environment
+    /**
+    * Parse database configuration and use the correct key if we are in dev/prod environment
+    *
+    * @return array
 	*/
-	private function parse_config()
+	private function parse_config() : array
 	{
 		$config = $this->config;
-		foreach($config As $key => $value)
+		foreach ($config As $key => $value)
 		{
-			if(is_string($value) AND !in_array($key, ['options', 'debug'])) 
+			if (is_string($value) AND !in_array($key, ['options', 'debug'])) 
 			{
 				$tmp = explode('|', $value);
-				if(preg_match('#^prod(uction)?$#i', Config::get('general.environment'))) {
+                if (preg_match('#^prod(uction)?$#i', Config::get('general.environment'))) 
+                {
 					$config[$key] = $tmp[1] ?? $tmp[0];
 				}
-				else {
+                else 
+                {
 					$config[$key] = $tmp[0];
 				}
 			}
-		}
+        }
+        
 		return $config;
 	}
-	
-	
-    /**
-     * @var array
-     */
-    private $pdo = [null, null];
-
-    /**
-     * @param bool $select_db
-     * @return mixed
-     */
-    public function pdo(bool $select_db = true)
-    {
-        $select_db = intval($select_db);
-        if($this->pdo[$select_db] === null)
-        {
-            $config = $this->config;
-            if ($select_db === 0)
-            {
-                $config['dsn'] = preg_replace('#;?dbname=(.+);?#i', '', $config['dsn']);
-            }
-            try
-            {
-                $this->pdo[$select_db] = new PDO($config['dsn'], $config['username'], $config['password']);
-
-                foreach ($config['commands'] As $value)
-                {
-                    $this->pdo[$select_db]->exec($value);
-                }
-                if (isset($config['debug']) AND $config['debug'] === true)
-                {
-                    $this->pdo[$select_db]->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                }
-                if (isset($config['options']['column_case']))
-                {
-                    switch (strtolower($config['options']['column_case']))
-                    {
-                        case 'lower' :
-                            $casse = PDO::CASE_LOWER;
-                            break;
-                        case 'upper' :
-                            $casse = PDO::CASE_UPPER;
-                            break;
-                        default:
-                            $casse = PDO::CASE_NATURAL;
-                            break;
-                    }
-                    $this->pdo[$select_db]->setAttribute(PDO::ATTR_CASE, $casse);
-                }
-            }
-            catch (PDOException $e) {
-                Exception::Throw($e);
-            }
-        }
-        return $this->pdo[$select_db];
-    }
 }

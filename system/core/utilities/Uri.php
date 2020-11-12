@@ -106,16 +106,16 @@ class Uri
 //		log_message('info', 'URI Class Initialized');
 	}
 	
-	private static $_instance = null;
-	public static function instance()
+	public static function instance() : self
 	{
-		if(null === self::$_instance) 
+		if (null === self::$_instance) 
 		{
-			$class = __CLASS__;
-			self::$_instance = new $class();
+			self::$_instance = new self;
 		}
+		
 		return self::$_instance;
 	}
+	private static $_instance = null;
 
 	// --------------------------------------------------------------------
 

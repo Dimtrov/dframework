@@ -3,13 +3,13 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2020, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.2.2
@@ -17,6 +17,9 @@
 
 namespace dFramework\core;
 
+use dFramework\components\orm\Helper;
+use dFramework\components\orm\Model;
+use dFramework\components\orm\Relations\Relation;
 use dFramework\core\utilities\Chaine;
 
 /**
@@ -31,9 +34,12 @@ use dFramework\core\utilities\Chaine;
  * @since       3.1.0
  * @file		/system/core/Entity.php
  */
-abstract class Entity extends Model
+abstract class Entity
 {
-    protected static $table;    
+    /**
+     * @var Model
+     */
+    private $orm;
 
 	/**
 	 * Constructor
@@ -42,12 +48,225 @@ abstract class Entity extends Model
 	 */
 	public function __construct(?array $data = [])
 	{
-		parent::__construct();
-        if (!empty($data)) 
-        {
-			$this->hydrate($data);
-		}
+        $this->orm = new Model($this, $data);
+    }
+    
+
+    protected function all(array $properties = [])
+    {
+        return $this->orm->all($properties);
+    }
+
+    protected function get(array $properties = [])
+    {
+        return $this->orm->get($properties);
+    }
+
+    protected function first(array $properties = [])
+    {
+        return $this->orm->first($properties);
+    }
+
+    protected function find($id) 
+    {
+        return $this->orm->find($id);
+    }
+
+    protected function pulck(string $field)
+    {
+        return $this->orm->pulck($field);
+    }
+
+    public static function create(array $data)
+    {
+        return Model::create($data);
+    }
+
+    public function update($data)
+    {
+        return $this->orm->update($data);
+    }
+
+    public function save()
+    {
+        return $this->orm->save();
+    }
+
+    public function delete()
+    {
+        return $this->delete();
+    }
+
+    public function paging($page, $per_page = null)
+    {
+        return $this->orm->paging($page, $per_page);
+    }
+
+    public function for_page($page, $per_page = null)
+    {
+        return $this->orm->for_page($page, $per_page);
+    }
+
+    public function getPrimaryKey()
+	{
+		return $this->orm->getPrimaryKey();
 	}
+
+	public function getData($field = null)
+	{
+        return $this->orm->getData($field);
+	}
+
+    public function setData($field, $value = null)
+	{
+        return $this->orm->setData($field, $value);
+	}
+
+	public function toArray()
+	{
+        return $this->orm->toArray();
+    }
+
+	public function json()
+	{
+        return $this->orm->json();
+	}
+
+
+    // ======================================
+	// Relationship Methods
+	// ======================================
+
+	public function hasOne($related, $foreign_key = null)
+	{
+        return $this->orm->hasOne($related, $foreign_key);
+	}
+
+	public function hasMany($related, $foreign_key = null)
+	{
+        return $this->orm->hasMany($related, $foreign_key);
+    }
+
+	public function belongsTo($related, $foreign_key = null)
+	{
+        return $this->orm->belongsTo($related, $foreign_key);
+	}
+
+	public function belongsToMany($related, $pivot_table = null, $foreign_key = null, $other_key = null)
+	{
+        return $this->orm->belongsToMany($related, $pivot_table, $foreign_key, $other_key);
+	}
+
+	public function setRelation($name, Relation $relation)
+	{
+        return $this->orm->setRelation($name, $relation);
+	}
+
+	public function getRelation($name)
+	{
+		return $this->orm->getRelation($name);
+	}
+
+	public function load($related)
+	{
+        return $this->orm->load($related);
+	}
+
+
+    // ======================================
+	// Aggregate Methods
+	// ======================================
+
+	protected function aggregates($function, $field)
+	{
+        return $this->orm->aggregates($function, $field);
+	}
+
+	protected function max($field)
+	{
+		return $this->orm->max($field);
+	}
+
+	protected function min($field)
+	{
+		return $this->orm->min($field);
+	}
+
+	protected function avg($field)
+	{
+		return $this->orm->avg($field);
+	}
+
+	protected function sum($field)
+	{
+		return $this->orm->sum($field);
+	}
+
+	protected function count($field = null)
+	{
+        return $this->orm->count($field);
+	}
+
+    // ======================================
+	// Magic Methods
+	// ======================================
+
+	public function __call($name, $arguments)
+	{
+		// Check if the method is available in this model
+		if(method_exists($this, $name))
+			return call_user_func_array( array($this, $name), $arguments );
+
+		// Check if the method is a "scope" method
+        // Read documentation about scope method
+        $scope = "scope" . Helper::studlyCase($name);
+
+		if(method_exists($this, $scope))
+		{
+			array_unshift($arguments, $this);
+
+			return call_user_func_array( array($this, $scope), $arguments );
+		}
+
+        return $this->orm->__call($name, $arguments);
+	}
+
+	public static function __callStatic($name, $arguments)
+	{
+		$model = get_called_class();
+
+		return call_user_func_array( array(new $model, $name), $arguments );
+	}
+
+	function __get($field)
+    {
+    	if(!isset( $this->data[ $field ] )) $value = '';
+		else
+ 		$value = $this->data[ $field ];
+
+		$accessor = "getAttr". Helper::camelCase( $field );
+
+		return method_exists($this, $accessor) ? call_user_func(array($this, $accessor), $value, $this) : $value;
+	}
+
+    function __set($field, $value)
+    {
+		$mutator = "setAttr". Helper::camelCase( $field );
+
+		if( method_exists($this, $mutator) )
+			$value = call_user_func(array($this, $mutator), $value, $this);
+
+		$this->setData( $field, $value );
+    }
+
+	function __isset($field)
+	{
+		return !empty($this->data[ $field ]);
+	}
+
+
+
+
 	/**
      * Hydratateur d'objet
      * 
@@ -73,36 +292,6 @@ abstract class Entity extends Model
 		}
 	}
 
-    public function save()
-    {
-
-    }
-
-    public function get($hydrate = true)
-    {
-        $this->db()->select()->from(static::$table);
-        foreach ($this->pk As $k) 
-        {
-            $this->where($k . ' = ?')->params([$this->{self::getProperty($k)}]);
-        }
-
-        if ($hydrate) 
-        {
-            return $this->one(DF_FCLA, static::class);
-        }
-        return $this->one();
-    }
-
-    public function findAll($hydrate = true)
-    {
-        $this->db()->select()->from($this->table);
-
-        if ($hydrate)
-        {
-            return $this->all(DF_FCLA, static::class);
-        }
-        return $this->all();
-    }
 
 
     /**
