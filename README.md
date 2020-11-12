@@ -28,8 +28,17 @@ Télécharger la dernière version https://github.com/Dimtrov/dframework/release
 Vous pouvez également l'installer via Composer
 
 ```
-composer create-project dimtrov/dframework
+composer create-project dimtrov/dframework:dev-master project-name
 ```
+
+Si vous avez un projet existant, ajoutez dFramework à ce dernier via la commande
+
+```
+composer require dimtrov/dframework:dev-master
+```
+
+Cependant, vous devez faire quelques manipulations pour que dFramework soit integré à votre projet.
+
 
 ## Utilisation
 
