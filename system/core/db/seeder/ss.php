@@ -3,36 +3,37 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.0
+ * @version     3.2.3
  */
+
+namespace dFramework\core\db\seeder;
 
 use dFramework\core\db\Query;
 use dFramework\core\exception\Exception;
 use Faker\Factory As Faker;
 
 /**
- * dF_Populate
+ * Seeder
  *
  * Genere du faux contenu pour remplir une base de donnees
  *
  * @package		dFramework
  * @subpackage	Library
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api/Populate.html
- * @since       2.1
- * @file        /system/libraries/Populate.php
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/Seeder.html
+ * @since       3.2.3
+ * @file        /system/core/db/Seeder.php
  */
-
-class dF_Populate
+class Seeder
 {
     private $locale = 'fr_FR';
 
@@ -55,11 +56,12 @@ class dF_Populate
      * Specifie la langue a utiliser pour generer des phrases aleatoire
      *
      * @param string $locale la locale a utiliser (ex: fr_FR)
-     * @return dF_Populate
+     * @return Seeder
      */
-    public function locale(string $locale) : self
+    protected function locale(string $locale) : self
     {
         $this->locale = $locale;
+        
         return $this;
     }
 
@@ -68,12 +70,13 @@ class dF_Populate
      *
      * @param string $table la table
      * @param string $use_db la configuration de base de donnees a utiliser
-     * @return dF_Populate
+     * @return Seeder
      */
-    public function table(string $table, $use_db = 'default') : self
+    protected function table(string $table, $use_db = 'default') : self
     {
         $this->table = $table;
         $this->use_db = $use_db;
+
         return $this;
     }
 
@@ -82,18 +85,31 @@ class dF_Populate
      *
      * @param array|string $field Le champ a remplir
      * @param null|string $function La fonction designant le type de donnees a generer
-     * @return dF_Populate
+     * @return Seeder
      */
-    public function generate($field, ?string $function = null) : self
+    protected function generate($field, ?string $function = null) : self
     {
-        if(is_array($field))
+        if (is_array($field))
         {
             $this->datas = array_merge($this->datas, $field);
         }
-        if(is_string($field) AND null !== $function)
+        if (is_string($field) AND null !== $function)
         {
             $this->datas = array_merge($this->datas, [$field => $function]);
         }
+        
+        return $this;
+    }
+    /**
+     * defini les donnees a generer. C'est un alias pour customizable de la methode generate()
+     *
+     * @param array $datas
+     * @return self
+     */
+    protected function columns(array $datas) : self 
+    {
+        $this->datas = $datas;
+
         return $this;
     }
 

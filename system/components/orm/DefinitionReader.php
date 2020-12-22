@@ -55,10 +55,17 @@ class DefinitionReader
         $definition = $this->class->getConstant('properties');
         
         $object = $definition[$property->getName()] ?? null;
+
         if (!empty($object)) 
         {
+            if (is_string($object))
+            {
+                $object = json_decode($object, true);
+            }
+            
             return (object) array_merge($object, ['name' => $property->getName()]);
         }
+
         return null;
     }
 }

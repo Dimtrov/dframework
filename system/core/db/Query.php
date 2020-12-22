@@ -43,7 +43,7 @@ class Query
     /**
      * @var Database
      */
-    protected $db;
+    public $db;
 
     
     protected $query_details = [];
@@ -51,7 +51,7 @@ class Query
 
     protected $cache;
     protected $cache_type = 'file';
-    protected $cache_file_dir = RESOURCE_DIR.'reserved'.DS.'database'.DS.'cache'.DS;
+    protected $cache_file_dir = RESOURCE_DIR.'database'.DS.'cache'.DS;
 
     protected static $db_types = [
         'pdo', 'mysqli', 'pgsql', 'sqlite3'
@@ -70,17 +70,27 @@ class Query
         $this->db_group = $db_group;
     }
 
-    private function dbConnect()
+    public function __get($name)
+    {
+        if ($name === 'db_config') 
+        {
+            return Database::instance()->use($this->db_group)->config();
+        }
+    }
+
+    private function dbConnect() : self
     {
         if (empty($this->db))
         {
             $this->db = Database::instance()->use($this->db_group);
         }
+
+        return $this;
     }
 
     public function db()
     {
-        return $this->db->connection();
+        return $this->dbConnect()->db->connection();
     }
 
     public function details()
@@ -145,7 +155,7 @@ class Query
         return $this->sql;
     }
     /**
-     * Gets the SQL statement.
+     * Set the SQL statement.
      *
      * @param string|array SQL statement
      * @return self
@@ -331,6 +341,8 @@ class Query
      */
     public function result($fetch_mode = PDO::FETCH_OBJ, $key = null, $expire = 0) : array
     {
+        $fetch_mode = empty($fetch_mode) ? PDO::FETCH_OBJ : $fetch_mode;
+
         if (empty($this->sql)) 
         {
             throw new DatabaseException("Empty SQL statement");

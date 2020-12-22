@@ -17,6 +17,8 @@
 
 namespace dFramework\core\loader;
 
+use dFramework\core\http\Input;
+use dFramework\core\http\Redirection;
 use dFramework\core\http\Response;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
@@ -64,6 +66,23 @@ class Service
         return Injector::container();
     }
 
+
+    /**
+	 * The general Input class models an HTTP request.
+     * 
+     * @param boolean $shared
+     * @return \dFramework\core\http\Input
+     */
+    public static function input(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Input::class);
+        }
+
+        return Injector::factory(Input::class);
+    }
+
     /**
 	 * The Request class models an HTTP request.
      * 
@@ -94,6 +113,22 @@ class Service
         }
 
         return Injector::factory(Response::class);
+    }
+
+    /**
+	 * The HTTP Redirection class.
+     * 
+     * @param boolean $shared
+     * @return \dFramework\core\http\Redirection
+     */
+    public static function redirection(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Redirection::class);
+        }
+
+        return Injector::factory(Redirection::class);
     }
 
     /**

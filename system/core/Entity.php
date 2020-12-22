@@ -82,52 +82,52 @@ abstract class Entity
         return Model::create($data);
     }
 
-    public function update($data)
+    protected function update($data)
     {
         return $this->orm->update($data);
     }
 
-    public function save()
+    protected function save()
     {
         return $this->orm->save();
     }
 
-    public function delete()
+    protected function delete()
     {
         return $this->delete();
     }
 
-    public function paging($page, $per_page = null)
+    protected function paging($page, $per_page = null)
     {
         return $this->orm->paging($page, $per_page);
     }
 
-    public function for_page($page, $per_page = null)
+    protected function for_page($page, $per_page = null)
     {
         return $this->orm->for_page($page, $per_page);
     }
 
-    public function getPrimaryKey()
+    protected function getPrimaryKey()
 	{
 		return $this->orm->getPrimaryKey();
 	}
 
-	public function getData($field = null)
+	protected function getData($field = null)
 	{
         return $this->orm->getData($field);
 	}
 
-    public function setData($field, $value = null)
+    protected function setData($field, $value = null)
 	{
         return $this->orm->setData($field, $value);
 	}
 
-	public function toArray()
+	protected function toArray()
 	{
         return $this->orm->toArray();
     }
 
-	public function json()
+	protected function json()
 	{
         return $this->orm->json();
 	}
@@ -137,37 +137,37 @@ abstract class Entity
 	// Relationship Methods
 	// ======================================
 
-	public function hasOne($related, $foreign_key = null)
+	protected function hasOne($related, $foreign_key = null)
 	{
         return $this->orm->hasOne($related, $foreign_key);
 	}
 
-	public function hasMany($related, $foreign_key = null)
+	protected function hasMany($related, $foreign_key = null)
 	{
         return $this->orm->hasMany($related, $foreign_key);
     }
 
-	public function belongsTo($related, $foreign_key = null)
+	protected function belongsTo($related, $foreign_key = null)
 	{
         return $this->orm->belongsTo($related, $foreign_key);
 	}
 
-	public function belongsToMany($related, $pivot_table = null, $foreign_key = null, $other_key = null)
+	protected function belongsToMany($related, $pivot_table = null, $foreign_key = null, $other_key = null)
 	{
         return $this->orm->belongsToMany($related, $pivot_table, $foreign_key, $other_key);
 	}
 
-	public function setRelation($name, Relation $relation)
+	protected function setRelation($name, Relation $relation)
 	{
         return $this->orm->setRelation($name, $relation);
 	}
 
-	public function getRelation($name)
+	protected function getRelation($name)
 	{
 		return $this->orm->getRelation($name);
 	}
 
-	public function load($related)
+	protected function load($related)
 	{
         return $this->orm->load($related);
 	}
@@ -276,7 +276,7 @@ abstract class Entity
 	{
         if (!empty($data)) 
         {
-            foreach ($data as $key => $value) 
+			foreach ($data as $key => $value) 
             {
 				$key = self::getProperty($key);
 				$method = 'set'.ucfirst($key);

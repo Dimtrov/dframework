@@ -24,5 +24,8 @@
         "ext-dom": "*",
         "ext-xml": "*",
         "ext-fileinfo": "*"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "^1.9"
     }
 }

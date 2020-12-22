@@ -113,7 +113,7 @@ class Login
      */
     protected $_locale;
 
-    private $_antibrute_dir = RESOURCE_DIR . '_antibruteforce'. DS;
+    private $_antibrute_dir = RESOURCE_DIR . 'reserved'. DS .'antibruteforce'. DS;
 
     
     /**
@@ -402,10 +402,10 @@ class Login
 			return explode(':', $value)[0];
 		}, $this->_params['fields']);
 		
-        $query = (new Query)->use($table[0] ?? 'default');
+        $query = new Query($table[0] ?? 'default');
 		
         $request = $query
-            ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($fields[0] ?? 'login').' = ?', [$login]);
+            ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($fields[0] ?? 'login').' = '.$login);
         
         $response = $request->fetch(\PDO::FETCH_ASSOC);
         $request->closeCursor();

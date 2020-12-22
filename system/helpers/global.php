@@ -18,6 +18,7 @@
 use dFramework\core\Config;
 use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
+use dFramework\core\http\Redirection;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
@@ -158,7 +159,7 @@ if (! function_exists('config'))
      * @param string $config
      * @param mixed $value
      * @param bool $force_set
-     * @return void
+     * @return mixed
      */
 	function config(string $config, $value = null, $force_set = false)
 	{
@@ -180,13 +181,13 @@ if (!function_exists('cookie'))
      * Get/Set cookie
      *
      * @param mixed|null $index
-     * @param mixed|null $value
+     * @param array|null $data
      * @param array|null $filters
      * @return mixed
      */
-    function cookie($index = null, $value = null, ?array $filters = [])
+    function cookie($index = null, ?array $data = null, ?array $filters = [])
     {
-        return Input::instance()->cookie($index, $value, $filters);
+        return Input::instance()->cookie($index, $data, $filters);
     }
 }
 
@@ -396,25 +397,62 @@ if (!function_exists('base_url'))
 if (!function_exists('current_url')) 
 {
     /**
-     * Current URL
-     * Returns the full URL (including segments) of the page where this
+	 * Current URL
+	 *
+	 * Returns the full URL (including segments) of the page where this
 	 * function is placed
-     *
-     * @param string $url
-	 * @param bool $with_base
-     * @return    string
-     */
-    function current_url($url = '', bool $with_base = true)
-    {
-		$current_url = Service::request()->getRequestTarget().$url;
-		
-		if (true === $with_base)
+	 *
+	 * @param boolean $returnObject True to return an object instead of a strong
+	 *
+	 * @return string|\dFramework\core\http\Uri
+	 */
+	function current_url(bool $returnObject = false)
+	{
+		$uri = clone service('request')->uri;
+
+		// If hosted in a sub-folder, we will have additional
+		// segments that show up prior to the URI path we just
+		// grabbed from the request, so add it on if necessary.
+		$baseUri = new Uri(config('general.base_url'));
+
+		if (! empty($baseUri->getPath()))
 		{
-			$current_url = site_url($current_url);
+			$path = rtrim($baseUri->getPath(), '/ ') . '/' . $uri->getPath();
+
+			$uri->setPath($path);
 		}
 
-		return $current_url;
-    }
+		// Since we're basing off of the IncomingRequest URI,
+		// we are guaranteed to have a host based on our own configs.
+		return $returnObject
+			? $uri
+			: (string)$uri->setQuery('');
+	}
+}
+
+if (!function_exists('previous_url'))
+{
+	/**
+	 * Returns the previous URL the current visitor was on. For security reasons
+	 * we first check in a saved session variable, if it exists, and use that.
+	 * If that's not available, however, we'll use a sanitized url from $_SERVER['HTTP_REFERER']
+	 * which can be set by the user so is untrusted and not set by certain browsers/servers.
+	 *
+	 * @param boolean $returnObject
+	 *
+	 * @return \dFramework\core\http\Uri|mixed|string
+	 */
+	function previous_url(bool $returnObject = false)
+	{
+		// Grab from the session first, if we have it,
+		// since it's more reliable and safer.
+		// Otherwise, grab a sanitized version from $_SERVER.
+		$referer = $_SESSION['_df_previous_url'] ?? Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+
+		$referer = $referer ?? site_url('/');
+
+		return $returnObject ? new Uri($referer) : $referer;
+	}
 }
 
 if (!function_exists('redirect')) 
@@ -430,6 +468,34 @@ if (!function_exists('redirect'))
     {
         Service::response()->redirect($uri, $method, $code);
     }
+}
+
+if (! function_exists('redirection'))
+{
+	/**
+	 * Convenience method that works with the current global $request and
+	 * $router instances to redirect using named/reverse-routed routes
+	 * to determine the URL to go to. If nothing is found, will treat
+	 * as a traditional redirect and pass the string in, letting
+	 * $redirection->redirect() determine the correct method and code.
+	 *
+	 * If more control is needed, you must use $response->redirect explicitly.
+	 *
+	 * @param string $uri
+	 *
+	 * @return \dFramework\core\Http\Redirection
+	 */
+	function redirection(string $uri = null)
+	{
+		$redirection = Service::redirection();
+
+		if (! empty($uri))
+		{
+			return $redirection->route($uri);
+		}
+
+		return $redirection;
+	}
 }
 
 if (!function_exists('link_to'))

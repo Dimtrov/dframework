@@ -499,7 +499,7 @@ class Controller extends CoreController
         }
 
         // Verifie l'authentification du client
-        if (false !== $this->_config['auth'])
+        if (false !== $this->_config['auth'] AND true !== $this->request->is('options'))
         {
             if ('bearer' === strtolower($this->_config['auth']))
             {

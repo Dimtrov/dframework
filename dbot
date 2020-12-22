@@ -33,6 +33,7 @@ $app->add(new dFramework\core\cli\Server, 'serve')
     ->add(new dFramework\core\cli\Mapper, 'map')
     ->add(new dFramework\core\cli\Tester, 'test')
     ->add(new dFramework\core\cli\Maker, 'make')
+    ->add(new dFramework\core\cli\Seeder, 'seed')
     ->add(new dFramework\core\cli\Less)
     ->add(new dFramework\core\cli\Entity)
     ->add(new dFramework\core\cli\Migrate);

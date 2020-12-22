@@ -121,9 +121,14 @@ class Model extends Builder
      */
     final public function beginTransaction() : bool
     {
-        return $this->db()->beginTransaction();
+        if (!$this->transactionCounter++) 
+        {
+            return $this->query->db()->beginTransaction();
+        }
+        
+        $this->query->db()->exec('SAVEPOINT trans' . $this->transactionCounter);
+        return $this->transactionCounter >= 0;
     }
-
     /**
      * Valide une transaction
      *
@@ -131,7 +136,12 @@ class Model extends Builder
      */
     final public function commit() : bool
     {
-        return $this->db()->commit();
+        if (!--$this->transactionCounter)
+        {
+            return $this->query->db()->commit();
+        }
+        
+       return $this->transactionCounter >= 0;
     }
 
     /**
@@ -141,8 +151,15 @@ class Model extends Builder
      */
     final public function rollback() : bool
     {
-        return $this->db()->rollback();
+        if (--$this->transactionCounter) 
+        {
+            $this->query->db()->exec('ROLLBACK TO trans' . ($this->transactionCounter + 1));
+            return true;
+        }
+
+        return $this->query->db()->rollback();
     }
+    protected $transactionCounter = 0;
 
     /**
      * Execute un bloc de requete dans une transaction
@@ -150,7 +167,7 @@ class Model extends Builder
      * @param callable $function
      * @return mixed Result of the callback function 
      */
-    final public function transaction(callable $function, &$e = null) 
+    final public function transaction(callable $function) 
     {
         try {
             $this->beginTransaction();
@@ -164,14 +181,7 @@ class Model extends Builder
         catch (Throwable $th) {
             $this->rollback();
 
-            if (array_key_exists(1, func_get_args())) 
-            {
-                $e = $th;
-            }
-            else 
-            {
-                throw $th;
-            }
+            throw $th;
         }
     }
 

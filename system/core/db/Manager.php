@@ -42,20 +42,19 @@ class Manager
         $this->use($db_setting);
     }
     /**
-     * @param string $db_setting
+     * @param string $db_group
      * @return Database
      */
-    public function use(string $db_setting) : Query
+    public function use(string $db_group) : Query
     {
-        return $this->db = (new Query)->use($db_setting);
+        return $this->db = new Query($db_group);
     }
 
-    public static function instance(string $db_setting = 'default')
+    public static function instance(string $db_group = 'default')
     {
         if (null === self::$_instance)
         {
-            $class = __CLASS__;
-            self::$_instance = new $class($db_setting);
+            self::$_instance = new self($db_group);
         }
         return self::$_instance;
     }
@@ -64,13 +63,14 @@ class Manager
     /**
      * Renvoi la liste des tables de la base de donnees
      * 
-     * @return array
+     * @return object[]
      */
-    public function listTables()
+    public function listTables() : ?array
     {
-        $request = $this->db->query('SHOW TABLES STATUS');
+        $request = $this->db->query('SHOW TABLES STATUS')->execute();
         $response = $request->fetchAll(\PDO::FETCH_OBJ);
         $request->closeCursor();
+        
         return $response;
     }
 
@@ -79,11 +79,12 @@ class Manager
      * 
      * @return int
      */
-    public function countTables()
+    public function countTables() : int 
     {
-        $request = $this->db->query('SHOW TABLES STATUS');
+        $request = $this->db->query('SHOW TABLES STATUS')->execute();
         $response = $request->fetchColumn();
         $request->closeCursor();
+
         return $response;
     }
 
@@ -91,11 +92,11 @@ class Manager
      * Renvoi la liste de toutes les colones d'une table
      * 
      * @param string $table
-     * @return array
+     * @return object[]
      */
-    public function getColumns(string $table)
+    public function getColumns(string $table) : ?array
     {
-        $request = $this->db->query('SHOW COLUMNS FROM '.$table);
+        $request = $this->db->query('SHOW COLUMNS FROM '.$table)->execute();
         $response = $request->fetchAll(\PDO::FETCH_OBJ);
         $request->closeCursor();
 
@@ -116,6 +117,7 @@ class Manager
                 }   
             }
         }
+
         return $response;
     }
 
@@ -125,14 +127,16 @@ class Manager
      * @param string $table
      * @return array
      */
-    public function getAttrs(string $table)
+    public function getAttrs(string $table) : ?array
     {
         $response = [];
         $columns = $this->getColumns($table);
+
         foreach ($columns As $column) 
         {
             $response[] = $column->field;
         }
+
         return $response;
     }
 
@@ -143,7 +147,7 @@ class Manager
      * @param string $key_type
      * @return array
      */
-    public function getKeys(string $table, $key_type = 'PRI')
+    public function getKeys(string $table, $key_type = 'PRI') : ?array
     {
         $response = [];
         $columns = $this->getColumns($table);
@@ -172,7 +176,8 @@ class Manager
                 AND k.TABLE_SCHEMA = ? AND k.TABLE_NAME = ?
             ', 
             [$dbname, $table]
-        );
+        )->execute();
+        
         $response = $request->fetchAll(\PDO::FETCH_OBJ);
         $request->closeCursor();
 

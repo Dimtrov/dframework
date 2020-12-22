@@ -1000,7 +1000,7 @@ function scl_splitInt($nbr, $pas = 3, $separateur = ' ')
         return;
     }
     $pas = (!empty($pas) AND is_int($pas)) ? $pas : 3;
-    $separateur = (in_array($separateur, array(' ', ',', '-', '/'))) ? $separateur : ' ';
+    $separateur = (in_array($separateur, array('.', ' ', ',', '-', '/'))) ? $separateur : ' ';
 
     $return = ''; // Valeur renvoyée
 

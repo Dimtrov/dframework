@@ -83,7 +83,7 @@ class Session
         if (self::$sessionStarted === false) 
         {
             $config = Config::get('data.session');
-            
+            /*
 	        session_cache_limiter($config['cache_limiter']);
             session_set_cookie_params(0, '/');
             
@@ -91,6 +91,7 @@ class Session
             {
                 session_cache_expire($config['lifetime']);
             }
+            */
             session_start();
             
             if (!isset($_SESSION[self::$prefix]))

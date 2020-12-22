@@ -57,6 +57,8 @@ class Checker
     {
         $this->use_input_field = $using;
         $this->field = $field;
+
+        return $this;
     }
 
 
@@ -199,13 +201,13 @@ class Checker
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
 
-        if (true !== $this->is_date($value, $format))
+        if (true !== (clone $this)->useInputField(false)->is_date($value, $format))
         {
             return false;
         }
 
         $date = self::formatDate($value, $format);
-        rsort($date);
+        $date = array_reverse($date);
         $date = implode('-', $date);
 
         return ((new DateTime()) > (new DateTime($date)));
@@ -600,7 +602,7 @@ class Checker
             $month  = substr($date, 4, 2);
             $year   = substr($date, 0, 4);
         }
-        else if(in_array($format, ['YYYY/MM/DD','YYYY:MM:DD','YYYY-MM-DDDD','YYYY_MM_DD','YYYY MM DDDD','YYYY.MM.DD']))
+        else if(in_array($format, ['YYYY/MM/DD','YYYY:MM:DD','YYYY-MM-DDDD','YYYY_MM_DD','YYYY MM DDDD','YYYY.MM.DD','YYYY-MM-DD']))
         {
             $day    = substr($date, 8, 2);
             $month  = substr($date, 5, 2);
@@ -610,7 +612,6 @@ class Checker
         {
             throw new Exception('Unsupported type of format for the date. Please see the manual for more information');
         }
-
         return [$day, $month, $year];
     }
 

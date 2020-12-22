@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.3
  */
 
 namespace dFramework\core\http;
@@ -758,15 +758,18 @@ class Response implements ResponseInterface
      */
     public function location(?string $url = null, int $code = 302)
     {
-        if ($url === null) {
+        if ($url === null) 
+        {
             $result = $this->getHeaderLine('Location');
-            if (!$result) {
+            if (!$result) 
+            {
                 return null;
             }
 
             return $result;
         }
-        if ($this->_status === 200) {
+        if ($this->_status === 200) 
+        {
             $this->_status = 302;
         }
         $this->_setHeader('Location', $url);
@@ -1340,7 +1343,8 @@ class Response implements ResponseInterface
     {
         return $this->withHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT')
             ->withHeader('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
-            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0')
+            ->withHeader('Pragma', 'no-cache');
     }
 
     /**

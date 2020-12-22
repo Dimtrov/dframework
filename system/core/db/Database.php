@@ -86,8 +86,12 @@ class Database
         return $this->db_type;
     }
 
-    public function config(string $key)
+    public function config(?string $key = null)
     {
+        if (empty($key))
+        {
+            return $this->config;
+        }
         return Tableau::get_recusive($this->config, $key);
     }
 

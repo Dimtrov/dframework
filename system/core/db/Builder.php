@@ -81,6 +81,8 @@ class Builder
     private function setQuery(string $db_group)
     {
         $this->query = new Query($db_group);
+
+        $this->db_config = $this->query->db_config;
     }
     /**
      * Sets the database connection.
@@ -213,7 +215,14 @@ class Builder
                 {
                     $condition = ' IN ';
                 }
-                $value = '('.implode(',', array_map(array($this, 'quote'), $value)).')';
+                if (is_array($value)) 
+                {
+                    $value = '('.implode(',', array_map(array($this, 'quote'), $value)).')';
+                }
+                else if (is_string($value)) 
+                {
+                    $value = '('.$value.')';
+                }
             }
             else 
             {
@@ -247,7 +256,7 @@ class Builder
      */
     public function from($table) : self
     {
-        $this->table = $table;
+        $this->table = $this->db_config['prefix'].$table;
 
         return $this;
     }
@@ -275,7 +284,7 @@ class Builder
             throw new DatabaseException('Invalid join type.');
         }
 
-        $this->joins .= ' '.$type.' JOIN '.$table.
+        $this->joins .= ' '.$type.' JOIN '.$this->db_config['prefix'].$table.
         $this->parseCondition($fields, null, ' ON', false);
 
         return $this;
@@ -318,6 +327,30 @@ class Builder
         $this->where .= $this->parseCondition($field, $value, $join);
 
         return $this;
+    }
+    /**
+     * Définit une contion pour la sélection des données
+     * 
+     * @param string $conditions
+     * @param Bulder|array|string $param
+     * @return object
+     */
+    protected function whereIn(string $conditions, $param) : self
+    {
+        if (is_array($param)) 
+        {
+            $param = implode(',', $param);
+        }
+        else if ($param instanceof Builder) 
+        {
+            $param = $param->sql();
+        }
+        else if (!is_string($param)) 
+        {
+            throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::whereIn");
+        }
+        
+        return $this->where($conditions.' IN ('.$param.')');
     }
 
     /**
@@ -396,7 +429,7 @@ class Builder
     {
         $this->crud = 'select';
         
-        $join = (empty($this->order)) ? 'GROUP BY' : ',';
+        $join = (empty($this->groups)) ? 'GROUP BY' : ',';
         $fields = (is_array($field)) ? implode(',', $field) : $field;
 
         $this->groups .= $join.' '.$fields;
@@ -695,17 +728,47 @@ class Builder
      */
     private function setSql($sql)
     {
-        $this->sql = trim(
-            (is_array($sql)) ?
-                array_reduce($sql, [$this->query, 'build']) :
-                $sql
+        $this->sql = $this->makeSql($sql);
+    }
+    private function makeSql($sql) : string 
+    {
+        return trim(
+            is_array($sql) ? array_reduce($sql, [$this->query, 'build']) : $sql
         );
     }
-    
 
+    /**
+     * Truncate a table
+     *
+     * @param string $table
+     * @return void
+     */
+    public function truncate(string $table)
+    {
+        $table = $this->db_config['prefix'].$table;
+
+        return $this->query->query('TRUNCATE TABLE '.$table)->execute();
+    }
+    /**
+     * Describe a table
+     *
+     * @param string $table
+     * @return void
+     */
+    public function describe(string $table)
+    {
+        $table = $this->db_config['prefix'].$table;
+
+        return $this->query->query('DESCRIBE '.$table)->result();
+    }
+    
     /*** Database Access Methods ***/
 
     
+    public function query(string $sql) : Query
+    {
+        return $this->query->query($this->makeSql($sql));
+    }
     
     /**
      * Executes a sql statement.
