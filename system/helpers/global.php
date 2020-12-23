@@ -25,6 +25,7 @@ use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dFramework\core\router\Router;
 use dFramework\core\security\Session;
+use dFramework\core\utilities\Helpers;
 use Kint\Kint;
 use Plasticbrain\FlashMessages\FlashMessages;
 use Psr\Http\Message\ResponseInterface;
@@ -408,7 +409,8 @@ if (!function_exists('current_url'))
 	 */
 	function current_url(bool $returnObject = false)
 	{
-		$uri = clone service('request')->uri;
+		$uri = (clone service('request'))->getUri();
+	
 
 		// If hosted in a sub-folder, we will have additional
 		// segments that show up prior to the URI path we just
@@ -519,7 +521,6 @@ if (!function_exists('link_to'))
 	}
 }
 
-
 if (!function_exists('clean_url')) 
 {
     /**
@@ -533,7 +534,7 @@ if (!function_exists('clean_url'))
 }
 
 
-// ================================= FONCTIONS DIVERSES ================================= //
+// ================================= FONCTIONS DE DEBOGAGE ================================= //
 
 
 if (!function_exists('dd'))
@@ -552,6 +553,40 @@ if (!function_exists('dd'))
 		exit;
 	}
 }
+
+if (!function_exists('r')) 
+{
+	/**
+	 * Shortcut to ref, HTML mode
+	 *
+	 * @param   mixed $args
+	 * @return  void|string
+	 */
+	function r()
+	{
+		$params = func_get_args();
+		return 	Helpers::instance()->r(...$params);
+  	}
+}
+
+if (!function_exists('rt')) 
+{
+	/**
+	 * Shortcut to ref, plain text mode
+	 *
+	 * @param   mixed $args
+	 * @return  void|string
+	 */
+	function rt()
+	{
+		$params = func_get_args();
+		return 	Helpers::instance()->rt(...$params);
+  	}
+}  
+  
+
+// ================================= FONCTIONS DIVERSES ================================= //
+
 
 if (! function_exists('force_https'))
 {

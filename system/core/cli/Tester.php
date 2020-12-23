@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.3
  */
 
 namespace dFramework\core\cli;
@@ -70,51 +70,51 @@ class Tester extends Cli
     {
         error_reporting(E_ALL);
             
-            $kahlan_dir = SYST_DIR.'dependencies'.DS.'kahlan'.DS.'kahlan';
-            
-            $autoload = require  $kahlan_dir.'/autoload.php';
-            $autoloader = $autoload("{$kahlan_dir}/vendor");
-            require $kahlan_dir. '/src/functions.php';
+        $kahlan_dir = SYST_DIR.'dependencies'.DS.'kahlan'.DS.'kahlan';
+        
+        $autoload = require  $kahlan_dir.'/autoload.php';
+        $autoloader = $autoload("{$kahlan_dir}/vendor");
+        require $kahlan_dir. '/src/functions.php';
 
-            $GLOBALS['__composer_autoload_files']['337663d83d8353cc8c7847676b3b0937'] = true;
+        $GLOBALS['__composer_autoload_files']['337663d83d8353cc8c7847676b3b0937'] = true;
 
-            $box = \Kahlan\box('kahlan', new Box());
+        $box = \Kahlan\box('kahlan', new Box());
 
-            $box->service('suite.global', function() {
-                return new Suite();
-            });
+        $box->service('suite.global', function() {
+            return new Suite();
+        });
 
-            $specs = new Kahlan([
-                'autoloader' => $autoloader,
-                'suite'      => $box->get('suite.global')
+        $specs = new Kahlan([
+            'autoloader' => $autoloader,
+            'suite'      => $box->get('suite.global')
+        ]);
+        $specs->loadConfig([
+            '--reporter=verbose'
+        ]);
+        \initKahlanGlobalFunctions();
+        
+        if ($autoloader instanceof ClassLoader) {
+            $commandLine = $specs->commandLine();
+            $autoloader->patch([
+                'include'    => $commandLine->get('include'),
+                'exclude'    => array_merge($commandLine->get('exclude'), ['Kahlan\\']),
+                'persistent' => $commandLine->get('persistent'),
+                'cachePath'  => rtrim(realpath(sys_get_temp_dir()), DS) . DS . 'kahlan',
+                'clearCache' => $commandLine->get('cc')
             ]);
-            $specs->loadConfig([
-                '--reporter=verbose'
-            ]);
-            \initKahlanGlobalFunctions();
-            
-            if ($autoloader instanceof ClassLoader) {
-                $commandLine = $specs->commandLine();
-                $autoloader->patch([
-                    'include'    => $commandLine->get('include'),
-                    'exclude'    => array_merge($commandLine->get('exclude'), ['Kahlan\\']),
-                    'persistent' => $commandLine->get('persistent'),
-                    'cachePath'  => rtrim(realpath(sys_get_temp_dir()), DS) . DS . 'kahlan',
-                    'clearCache' => $commandLine->get('cc')
-                ]);
 
-                $specs->initPatchers();
+            $specs->initPatchers();
 
-                foreach ($autoloader->files() as $fileIdentifier => $file) {
-                    if (!empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
-                        continue;
-                    }
-                    $autoloader->loadFile($file);
-                    $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
+        foreach ($autoloader->files() as $fileIdentifier => $file) {
+                if (!empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
+                    continue;
                 }
+                $autoloader->loadFile($file);
+                $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
             }
-       
-            $specs->run();
-            exit($specs->status());
+        }
+    
+        $specs->run();
+        exit($specs->status());
     }
 }

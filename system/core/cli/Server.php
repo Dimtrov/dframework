@@ -65,7 +65,7 @@ class Server extends Cli
             sleep(1.5);
             $this->_endMsg();
 
-            $shell = new Shell($php . ' -S '. $host . ':' . $port . ' -t ' . escapeshellarg(dirname(\WEBROOT)));
+            $shell = new Shell($php . ' -S '. $host . ':' . $port . ' -t ' . escapeshellarg(\WEBROOT));
             $shell->setOptions(dirname(\WEBROOT), null, 2.5)->execute()->isRunning();
             
             $shell->stop();

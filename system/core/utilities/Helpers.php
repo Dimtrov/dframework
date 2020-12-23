@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.2.3
  */
  
 namespace dFramework\core\utilities;
@@ -42,14 +42,13 @@ class Helpers
     private $config;
 
     /**
-     * @return mixed
+     * @return self
      */
-    public static function instance()
+    public static function instance() : self
     {
         if(is_null(self::$_instance))
         {
-            $class = ucfirst(__CLASS__);
-            self::$_instance = new $class();
+            self::$_instance = new self;
         }
         return self::$_instance;
     }
@@ -701,5 +700,94 @@ class Helpers
                 return '.' . implode('.', $parts);
         }
         return null;
+    }
+
+
+    /**
+     * Shortcut to ref library, HTML mode
+     *
+     * @param   mixed $args
+	 * @return  void|string
+     */
+    public function r()
+    {
+        $args = func_get_args();
+  
+		$options = [];
+	
+		$expressions = \ref::getInputExpressions($options);
+		$capture = in_array('@', $options, true);
+  
+	    if (func_num_args() !== count($expressions))
+	    {
+            $expressions = null;
+        }
+	    $format = (php_sapi_name() !== 'cli') || $capture ? 'html' : 'cliText';
+  
+        if (!$capture && ($format === 'html') && !headers_sent() && (!ob_get_level() || ini_get('output_buffering')))
+        {
+            print '<!DOCTYPE HTML><html><head><title>REF</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body>';
+        }
+        $ref = new \ref($format);
+  
+	    if ($capture)
+	    {
+            ob_start();
+        }
+        foreach ($args as $index => $arg)
+        {
+            $ref->query($arg, $expressions ? $expressions[$index] : null);
+        }
+  
+        if ($capture)
+        {
+            return ob_get_clean();
+        }
+	
+        if (in_array('~', $options, true) && ($format === 'html'))
+        {
+	        print '</body></html>';
+	        exit(0);
+	    }  
+    }
+
+    /**
+     * Shortcut to ref, plain text mode
+    *
+    * @param   mixed $args
+    * @return  void|string
+    */
+    public function rt()
+    {
+        $args        = func_get_args();
+        $options     = array();  
+        $expressions = \ref::getInputExpressions($options);
+        $capture     = in_array('@', $options, true);  
+        $ref         = new \ref((php_sapi_name() !== 'cli') || $capture ? 'text' : 'cliText');  
+  
+        if (func_num_args() !== count($expressions))
+        {
+            $expressions = null;
+        }
+        if (!headers_sent())    
+        {
+            header('Content-Type: text/plain; charset=utf-8');  
+        }
+        if ($capture)
+        {
+            ob_start();  
+        }
+        foreach ($args as $index => $arg)
+        {
+            $ref->query($arg, $expressions ? $expressions[$index] : null);
+        }
+        if ($capture)
+        {
+            return ob_get_clean(); 
+        }
+        if (in_array('~', $options, true))
+        {
+            exit(0);  
+        }
     }
 }

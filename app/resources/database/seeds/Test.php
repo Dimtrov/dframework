@@ -11,7 +11,7 @@ class Test extends Seeder
             'nom' => $faker->firstName,
             'prenom' => $faker->lastName,
             'date_inscription' => $faker->date()
-        ])->rows(10);
+        ])->rows(50);
 
         return $this;
     }

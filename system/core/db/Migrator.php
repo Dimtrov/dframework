@@ -3,18 +3,17 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2.3
  */
-
 
 namespace dFramework\core\db;
 
@@ -33,7 +32,6 @@ use dFramework\core\exception\DatabaseException;
  * @since		2.1
  * @file		/system/core/db/Migrator.php
  */
-
 class Migrator
 {
     /**
@@ -42,9 +40,14 @@ class Migrator
     private $db;
 
     /**
+     * @var array
+     */
+    private $config = [];
+
+    /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR . 'reserved'.DS.'migrations' . DS;
+    private $save_folder = RESOURCE_DIR . 'database'.DS.'migrations' . DS;
 
     /**
      * @var string
@@ -58,7 +61,12 @@ class Migrator
      */
     public function __construct(Database $db)
     {
+        if ('cli' !== PHP_SAPI) 
+        {
+            exit('Fonctionnalités disponible uniquement en invite de commande');
+        }
         $this->db = $db;
+        $this->config = $this->db->config();
     }
 
     /**
@@ -69,22 +77,22 @@ class Migrator
      */
     public function down(string $version) : string
     {
-        if(false === is_dir($this->save_folder))
+        if (false === is_dir($this->save_folder))
         {
-            if( mkdir($this->save_folder, 0700) === FALSE )
+            if ( mkdir($this->save_folder, 0700) === FALSE )
             {
                 exit('<br /><br />Impossible de creer le repertoire pour la sauvegarde. Veuillez le creer manuellement');
             }
         }
-        $filename = (!empty($this->filename)) ? $this->filename : $this->db->config['database'];
+        $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
         $filename .= '_v'.$version.'.sql';
         $save_file = rtrim($this->save_folder, DS).DS.$filename;
 
         $commande  = 'mysqldump';
-        $commande .= ' --host=' . $this->db->config['host'];
-        $commande .= ' --port=' . $this->db->config['port'];
-        $commande .= ' --user=' . $this->db->config['username'];
-        $commande .= ' --password=' . $this->db->config['password'];
+        $commande .= ' --host=' . $this->config['host'];
+        $commande .= ' --port=' . $this->config['port'];
+        $commande .= ' --user=' . $this->config['username'];
+        $commande .= ' --password=' . $this->config['password'];
         $commande .= ' --skip-opt';
         $commande .= ' --compress';
         $commande .= ' --add-locks';
@@ -94,31 +102,45 @@ class Migrator
         $commande .= ' --quick';
         $commande .= ' --extended-insert';
         $commande .= ' --complete-insert';
-        $commande .= ' --default-character-set=' . $this->db->config['charset'];
-        $commande .= ' '.$this->db->config['database'] ;
+        $commande .= ' --default-character-set=' . $this->config['charset'];
+        $commande .= ' '.$this->config['database'];
         $commande .= '  > '.$save_file;
 
-        system($commande);
+        shell_exec($commande);
 
         return $save_file;
     }
 
-    public function up(string $version)
+    public function up(string $version) : string
     {
-        $filename = (!empty($this->filename)) ? $this->filename : $this->db->config['database'];
+        $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
         $filename .= '_v'.$version.'.sql';
         $file = rtrim($this->save_folder, DS).DS.$filename;
 
-        if(!file_exists($file) OR !is_readable($file))
+        if (!file_exists($file) OR !is_readable($file))
         {
-            DatabaseException::except('
+            throw new DatabaseException('
                 Impossible de charger la migration <b>'.$filename.'</b>
                 <br>
                 Le fichier de &laquo; '.$file.' &raquo; n\'existe pas ou n\'est pas accessible en lecture
             ');
         }
 
+       $this->deleteAllTables();
+
+        $command = 'mysql'
+            . ' --host=' . $this->config['host']
+            . ' --port=' . $this->config['port']
+            . ' --user=' . $this->config['username']
+            . ' --password=' . $this->config['password']
+            . ' --database=' . $this->config['database']
+            . ' < ' . $file;
+
+        shell_exec($command);
+        
+        return $file;
     }
+
 
     /**
      * suppression des anciennes sauvegardes
@@ -134,6 +156,23 @@ class Migrator
             {
                 unlink($file);
             }
+        }
+    }
+
+
+    /**
+     * Delete all tables in the database
+     *
+     */
+    private function deleteAllTables()
+    {  
+        $pdo = $this->db->connection();
+
+        $tables = $pdo->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM);
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        foreach ($tables As $value) 
+        {
+            $pdo->exec('DROP TABLE '.$value[0]);
         }
     }
 }
