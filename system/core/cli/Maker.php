@@ -3,25 +3,24 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.1
+ * @version     3.2.3
  */
 
 namespace dFramework\core\cli;
 
-use dFramework\core\db\Query;
+use dFramework\core\db\Database;
 use dFramework\core\generator\Controller;
 use dFramework\core\generator\Entity;
 use dFramework\core\generator\Model;
-use Exception;
 use Throwable;
 
 /**
@@ -92,11 +91,8 @@ class Maker extends Cli
             
             $this->_endMsg();
         }
-        catch(\Exception | Throwable $e) { 
-            throw $e;
-        }
-        finally {
-            return true;
+        catch(Throwable $e) { 
+            die($e->getMessage());
         }
     }
 
@@ -131,7 +127,7 @@ class Maker extends Cli
                 $this->_makeViews($tables, $empty);
             }
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
     /**
      * Creation des modeles, $empty
@@ -177,7 +173,7 @@ class Maker extends Cli
         try {
             (new Model)->generate($table, $dirname);
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
     
     /**
@@ -210,7 +206,7 @@ class Maker extends Cli
                 $this->_makeModels($tables, $empty);
             }
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
     /**
      * Creation des vues
@@ -256,7 +252,7 @@ class Maker extends Cli
         try {
             (new Model)->generate($table, $dirname);
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
     
     /**
@@ -289,7 +285,7 @@ class Maker extends Cli
                 $this->_makeViews($tables, $empty);
             }
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
     /**
      * Creation des controleurs
@@ -342,7 +338,7 @@ class Maker extends Cli
         try {
             (new Controller)->generate($table, $type, $dirname);
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
 
     /**
@@ -375,7 +371,7 @@ class Maker extends Cli
                 $this->_makeViews($tables, $empty);
             }
         }
-        catch(Throwable | Exception $e) { die($e); }
+        catch(Throwable $e) { throw $e; }
     }
     /**
      * Creation des entites
@@ -421,7 +417,7 @@ class Maker extends Cli
         try {
             (new Entity)->generate($table, $dirname);
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
 
 
@@ -483,7 +479,7 @@ class Maker extends Cli
             $this->_io->writer()->colors("\t => <boldGreen>".$nbr_fichiers."</end> <white> fichiers de modèles, vues, contrôleurs et entités générés avec succès</end><eol>"); 
         
         }
-        catch(Throwable | Exception $e) { throw $e; }
+        catch(Throwable $e) { throw $e; }
     }
 
 
@@ -558,7 +554,7 @@ class Maker extends Cli
      */
     private function getAllTables(?string $db = 'default') : array
     {
-        $tables = (new Query)->use(empty($db) ? 'default' : strtolower($db))->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM); 
+        $tables = Database::connect(empty($db) ? 'default' : strtolower($db))->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM); 
         
         foreach ($tables As $key => $value) 
         {

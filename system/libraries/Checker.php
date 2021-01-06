@@ -98,6 +98,9 @@ class Checker
             {
                 break;
             }
+            if (isset($this->field[$var]) AND in_array($this->field[$var], ['0', 0, false], true)) {
+                continue;
+            }
             $status = !empty($this->field[$var]);
         }
         return $status;
@@ -320,7 +323,7 @@ class Checker
 
         if ($country == 'cm')
         {
-            $indicatif = (true === $use_indicatif) ? '\+?237\s?' : '';
+            $indicatif = (true === $use_indicatif) ? '(?:\+?237\s?)?' : '';
             return (
                 preg_match('#^'.$indicatif.'6\s?[5-9]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel) OR
                 preg_match('#^'.$indicatif.'(2|3|4)\s?[2-3]{1}[0-9]{1}[-. ]?([0-9]{2}[-. ]?){3}$#', $tel)
@@ -328,16 +331,16 @@ class Checker
         }
         if ($country == 'fr')
         {
-            $indicatif = (true === $use_indicatif) ? '\+?33\s?' : '';
+            $indicatif = (true === $use_indicatif) ? '(?:\+?33\s?)' : '';
             return preg_match('#^'.$indicatif.'0[1-68]([-. ]?[0-9]{2}){4}$#', $tel);
         }
         switch ($country)
         {
-            case 'bj' : $indicatif = (true === $use_indicatif) ? '\+?229\s?' : ''; break;
-            case 'ci' : $indicatif = (true === $use_indicatif) ? '\+?225\s?' : ''; break;
-            case 'ml' : $indicatif = (true === $use_indicatif) ? '\+?223\s?' : ''; break;
-            case 'sn' : $indicatif = (true === $use_indicatif) ? '\+?221\s?' : ''; break;
-            case 'tg' : $indicatif = (true === $use_indicatif) ? '\+?\s?' : ''; break;
+            case 'bj' : $indicatif = (true === $use_indicatif) ? '(?:\+?229\s?)?' : ''; break;
+            case 'ci' : $indicatif = (true === $use_indicatif) ? '(?:\+?225\s?)?' : ''; break;
+            case 'ml' : $indicatif = (true === $use_indicatif) ? '(?:\+?223\s?)?' : ''; break;
+            case 'sn' : $indicatif = (true === $use_indicatif) ? '(?:\+?221\s?)?' : ''; break;
+            case 'tg' : $indicatif = (true === $use_indicatif) ? '(?:\+?\s?)?' : ''; break;
             default : $indicatif = ''; break;
         }
         return preg_match('#^'.$indicatif.'([-. ]?[0-9]+)+$#', $tel);

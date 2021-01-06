@@ -3,18 +3,17 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2
+ *  @version    3.2.3
  */
-
 
 namespace dFramework\core\utilities;
 
@@ -34,7 +33,6 @@ use Josantonius\Json\Json;
  * @since       2.1
  * @file        /system/core/utilities/Utils.php
  */
-
 class Utils
 {
 
@@ -68,7 +66,7 @@ class Utils
      * @param string $filename Chemin vers le fichier json a recuperer
      * @return array|false
      */
-    public function jsonToArray(string $filename)
+    public static function jsonToArray(string $filename)
     {
         return Json::fileToArray($filename);
     }
@@ -81,7 +79,7 @@ class Utils
      * @param string $filename Chemin vers le fichier json de sauvegarde
      * @return bool
      */
-    public function arrayToJson(array $array, string $filename) : bool
+    public static function arrayToJson(array $array, string $filename) : bool
     {
         return Json::arrayToFile($array, $filename);
     }

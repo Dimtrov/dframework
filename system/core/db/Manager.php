@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.2.3
  */
 
 namespace dFramework\core\db;
@@ -165,7 +165,7 @@ class Manager
 
     public function getFks(string $table, ?string $dbname = null)
     {
-        $dbname = (empty($dbname)) ? $this->db->db->config['dbname'] : $dbname;
+        $dbname = (empty($dbname)) ? $this->db->db->config('database') : $dbname;
 
         $request = $this->db->query('
             SELECT k . *
@@ -173,10 +173,8 @@ class Manager
             INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS c ON k.CONSTRAINT_SCHEMA = c.CONSTRAINT_SCHEMA
                 AND k.CONSTRAINT_NAME = c.CONSTRAINT_NAME
             WHERE c.CONSTRAINT_TYPE = \'FOREIGN KEY\'
-                AND k.TABLE_SCHEMA = ? AND k.TABLE_NAME = ?
-            ', 
-            [$dbname, $table]
-        )->execute();
+                AND k.TABLE_SCHEMA = \''.$dbname.'\' AND k.TABLE_NAME = \''.$table.'\'
+        ')->execute();
         
         $response = $request->fetchAll(\PDO::FETCH_OBJ);
         $request->closeCursor();

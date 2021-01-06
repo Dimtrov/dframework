@@ -42,11 +42,13 @@ class Database
 {
     public $config = [];
 
-    private $db_selected = 'default';
+    private $db_selected = '';
     
     private $db;
 
     private $db_type;
+
+    private $already_initialize = false;
 
 
     public static function instance() : self
@@ -59,15 +61,31 @@ class Database
     }
     private static $_instance;
 
+    /**
+     * Connecte la bd et renvoie l'instance de pdo
+     *
+     * @param string $db_group
+     * @param boolean $shared
+     * @return object
+     */
+    public static function connect(string $db_group = 'default', bool $shared = true) : object
+    {
+        $db =  true === $shared ? self::instance() : new self;
+
+        return $db->use($db_group)->connection();
+    }
+
     public function use(string $db_selected) : self
     {
-        Config::load('database');
+        if ($db_selected !== $this->db_selected)
+        {
+            Config::load('database');
+            $this->db_selected = strtolower($db_selected);
+            $this->config = (array) Config::get('database.'.$this->db_selected);
+            
+            $this->checkConfig();
+        }
         
-        $this->db_selected = strtolower($db_selected);
-        $this->config = (array) Config::get('database.'.$this->db_selected);
-        
-        $this->checkConfig();
-
         return $this;
     }
     

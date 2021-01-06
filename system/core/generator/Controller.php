@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package     dFramework
  * @author      Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright   Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright   Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright   Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright   Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license     https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link        https://dimtrov.hebfree.org/works/dframework
- * @version     3.1
+ * @version     3.2.3
  */
 
  
@@ -96,7 +96,7 @@ final class Controller extends Generator
         $pks = $this->manager->getKeys($class, 'PRI');
         $fks = $this->manager->getFks($class);
         $attrs_without_keys = \array_map(function($v) use($pks) {
-            if(!in_array($v, $pks) AND !empty($v)) {
+            if (!in_array($v, $pks) AND !empty($v)) {
                 return $v;
             }
         }, $attrs);
@@ -191,8 +191,6 @@ final class Controller extends Generator
             $body_method .= "\t// Traitements appropriés \n";
         $body_method .= "} \n";
         $body_method .= "\$this->view('index', \$datas)->render(); \n";
-        $body_method .= "// Vous pouvez plutot ajouter la view au layout \n";
-        $body_method .= "// \$this->layout->add('index', \$datas)->launch(); \n";
             
         $m = (new Method('index'))
             ->setPublic()
@@ -267,8 +265,6 @@ final class Controller extends Generator
         $body_method .= "} \n";
         $body_method .= "// Traiments quelconques \n";
         $body_method .= "\$this->view('add', \$datas)->render(); \n";
-        $body_method .= "// Vous pouvez plutot ajouter la vue au layout \n";
-        $body_method .= "// \$this->layout->add('add', \$datas)->launch(); \n";
             
         $m = (new Method('add'))
             ->setPublic()
@@ -351,8 +347,6 @@ final class Controller extends Generator
             $body_method .= "\t// Traitements appropriés \n";
         $body_method .= "} \n";
         $body_method .= "\$this->view('details', \$datas)->render(); \n";
-        $body_method .= "// Vous pouvez plutot ajouter la vue au layout \n";
-        $body_method .= "// \$this->layout->add('details', \$datas)->launch(); \n";
             
         $m = (new Method('details'))
             ->setPublic()
@@ -499,8 +493,6 @@ final class Controller extends Generator
             $body_method .= "\t} \n";
         $body_method .= "} \n";
         $body_method .= "\$this->view('update', \$datas)->render(); \n";
-        $body_method .= "// Vous pouvez plutot ajouter la view au layout \n";
-        $body_method .= "// \$this->layout->add('update', \$datas)->launch(); \n";
             
         $m = (new Method('update'))
             ->setPublic()

@@ -53,11 +53,16 @@ class Pdf
     }
 
     /**
+     * Definit le contenu a generer 
+     * 
      * @param string $content
+     * @return self
      */
-    public function write($content)
+    public function write($content) : self
     {
         $this->pdf->writeHTML($content);
+
+        return $this;
     }
 
     /**
@@ -73,6 +78,8 @@ class Pdf
      */
     public function render(?string $name = 'document.pdf')
     {
+        $name = preg_replace('\.pdf$', '', $name).'.pdf';
+
         $this->pdf->output($name);
     }
 }
