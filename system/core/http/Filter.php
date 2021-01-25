@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.2.3
  */
  
 namespace dFramework\core\http;
@@ -31,8 +31,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  * @subpackage	Core
  * @category    Http
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api
- * @since       1.0
+ * @link		https://dimtrov.hebfree.org/docs/dframework/filter
+ * @since       3.2.0
  * @file        /system/core/http/Filter.php
  */
 class Filter implements RequestHandlerInterface
@@ -98,7 +98,6 @@ class Filter implements RequestHandlerInterface
         }
         if (is_callable($filter)) 
         {
-            dd($filter);
             return $filter($request, $this->response, [$this, 'handle']);
         }
 

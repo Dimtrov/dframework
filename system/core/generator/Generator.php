@@ -34,7 +34,9 @@ use dFramework\core\db\Manager;
  */
 abstract class Generator
 {
-
+    /**
+     * @var Manager
+     */
     protected $manager;
         
     /**

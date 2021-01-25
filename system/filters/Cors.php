@@ -11,12 +11,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 class Cors implements MiddlewareInterface
 {
     protected $config = [
-        'AllowOrigin' => true,
+        'AllowOrigin'      => true,
         'AllowCredentials' => true,
-        'AllowMethods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-        'AllowHeaders' => true,
-        'ExposeHeaders' => false,
-        'MaxAge' => 86400, // 1 day
+        'AllowMethods'     => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        'AllowHeaders'     => true,
+        'ExposeHeaders'    => false,
+        'MaxAge'           => 86400,                                       // 1 day
     ];
 
 
@@ -53,15 +53,19 @@ class Cors implements MiddlewareInterface
         $allowOrigin = $this->config['AllowOrigin'];
         $origin = $request->getHeaderLine('Origin');
 
-        if ($allowOrigin === true || $allowOrigin === '*') {
+        if ($allowOrigin === true OR $allowOrigin === '*') 
+        {
             return $origin;
         }
 
-        if (is_array($allowOrigin)) {
+        if (is_array($allowOrigin)) 
+        {
             $origin = (array) $origin;
 
-            foreach ($origin as $o) {
-                if (in_array($o, $allowOrigin)) {
+            foreach ($origin as $o) 
+            {
+                if (in_array($o, $allowOrigin)) 
+                {
                     return $origin;
                 }
             }
@@ -69,7 +73,7 @@ class Cors implements MiddlewareInterface
             return '';
         }
 
-        return (string)$allowOrigin;
+        return (string) $allowOrigin;
     }
 
     /**

@@ -15,29 +15,32 @@
  * @version     3.2.1
  */
 
-$config = require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.config.php';
+
+define('DS', DIRECTORY_SEPARATOR);
+
+$config = require_once __DIR__ . DS . '.bootstrap.config.php';
 
 foreach ($config As $key => $value)
 {
-    $config[$key] = __DIR__.DIRECTORY_SEPARATOR.trim($value, '/');
+    $config[$key] = __DIR__.DS.trim($value, '/');
 }
 extract($config);
 
 
 if (($_temp = realpath($system_path)) !== FALSE)
 {
-    $system_path = $_temp.DIRECTORY_SEPARATOR;
+    $system_path = $_temp.DS;
 }
 else
 {
-    $system_path = strtr(rtrim($system_path, '/\\'), '/\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+    $system_path = strtr(rtrim($system_path, '/\\'), '/\\', DS.DS).DS;
 }
 // Is the system path correct?
 if (!is_dir($system_path))
 {
     header('HTTP/1.1 503 Service Unavailable.', TRUE, 503);
     echo 'Your system folder path does not appear to be set correctly. ';
-    echo 'Please open the following file and correct this: "'.__DIR__.DIRECTORY_SEPARATOR.'.bootstrap.config.php"';
+    echo 'Please open the following file and correct this: "'.__DIR__.DS.'.bootstrap.config.php"';
     exit(3); // EXIT_CONFIG
 }
 
@@ -51,18 +54,18 @@ if (is_dir($application_folder))
     }
     else
     {
-        $application_folder = strtr(rtrim($application_folder, '/\\'), '/\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR);
+        $application_folder = strtr(rtrim($application_folder, '/\\'), '/\\', DS.DS);
     }
 }
-elseif (is_dir($system_path.$application_folder.DIRECTORY_SEPARATOR))
+elseif (is_dir($system_path.$application_folder.DS))
 {
-    $application_folder = $system_path.strtr(trim($application_folder, '/\\'), '/\\', DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR);
+    $application_folder = $system_path.strtr(trim($application_folder, '/\\'), '/\\', DS.DS);
 }
 else
 {
     header('HTTP/1.1 503 Service Unavailable.', TRUE, 503);
     echo 'Your application folder path does not appear to be set correctly. ';
-    echo 'Please open the following file and correct this: "'.__DIR__.DIRECTORY_SEPARATOR.'.bootstrap.config.php"';
+    echo 'Please open the following file and correct this: "'.__DIR__.DS.'.bootstrap.config.php"';
     exit(3); // EXIT_CONFIG
 }
 
@@ -73,22 +76,26 @@ if (!empty($composer_autoload_file))
 {
     $composer_autoload_file = rtrim($composer_autoload_file, '/\\');
 
+    if (is_dir($composer_autoload_file))
+    {
+        $composer_autoload_file .= DS.'autoload.php';    
+    }
+    if (!is_file($composer_autoload_file))
+    {
+        $composer_autoload_file = dirname(__DIR__).DS.'vendor'.DS.'auoload.php';
+    }
     if (is_file($composer_autoload_file))
     {
         require_once $composer_autoload_file;
     }
-    else if (is_dir($composer_autoload_file) AND is_file($composer_autoload_file.DIRECTORY_SEPARATOR.'autoload.php'))
-    {
-        require_once $composer_autoload_file.DIRECTORY_SEPARATOR.'autoload.php';
-    }
 }
 
 
-define('SYST_DIR', rtrim($system_path, '/\\').DIRECTORY_SEPARATOR);
+define('SYST_DIR', rtrim($system_path, '/\\').DS);
 
-define('APP_DIR', rtrim($application_folder, '/\\').DIRECTORY_SEPARATOR);
+define('APP_DIR', rtrim($application_folder, '/\\').DS);
 
-define('WEBROOT', __DIR__.DIRECTORY_SEPARATOR);
+define('WEBROOT', __DIR__.DS);
 
 define('BASE_URL', trim(dirname($_SERVER['SCRIPT_NAME'], 2), '\\'));
 

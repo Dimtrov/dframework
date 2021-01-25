@@ -36,8 +36,8 @@ use ReflectionClass;
  */
 class Builder
 {
-    protected $table;
-    protected $fields = '*';
+    protected $table = [];
+    protected $fields = [];
     protected $where;
     protected $joins;
     protected $order;
@@ -134,7 +134,7 @@ class Builder
      */
     final public function checkTable() 
     {
-        if (!$this->table) 
+        if (empty($this->table)) 
         {
             throw new DatabaseException('Table is not defined.');
         }
@@ -157,9 +157,9 @@ class Builder
     final public function reset() 
     {
         $this->crud = 'select';
-        $this->table = '';
+        $this->table = [];
         $this->where = '';
-        $this->fields = '*';
+        $this->fields = [];
         $this->joins = '';
         $this->order = '';
         $this->groups = '';
@@ -228,7 +228,7 @@ class Builder
 
             if (empty($join)) 
             { 
-                $join = ($field[0] == '|') ? ' OR' : ' AND';
+                $join = ($field[0] == '|') ? ' OR' : ' AND ';
             }
 
             if (is_array($value)) 
@@ -276,9 +276,13 @@ class Builder
      * @param boolean $reset Reset class properties
      * @return object Self reference
      */
-    final public function from($table) : self
+    final public function from($tables) : self
     {
-        $this->table = $this->db_config['prefix'].$table;
+        $tables = (array) $tables;
+        foreach ($tables as $table) 
+        {
+            $this->table[] = $this->db_config['prefix'].$table;
+        }
 
         return $this;
     }
@@ -345,7 +349,7 @@ class Builder
      */
     final public function where($field, $value = null) : self
     {
-        $join = (empty($this->where)) ? 'WHERE' : '';
+        $join = (empty($this->where)) ? 'WHERE' : ' AND ';
         $this->where .= $this->parseCondition($field, $value, $join);
 
         return $this;
@@ -583,7 +587,7 @@ class Builder
     {
         $this->crud = 'select';
         
-        $this->fields = (is_array($fields)) ? implode(',', $fields) : $fields;
+        $this->fields[] = is_array($fields) ? implode(',', $fields) : $fields;
         $this->limit($limit, $offset);
         
         return $this;
@@ -709,7 +713,7 @@ class Builder
 
             $this->setSql([
                 'INSERT INTO',
-                $this->table,
+                $this->table[0],
                 '('.$keys.')',
                 'VALUES',
                 '('.$values.')'
@@ -720,7 +724,7 @@ class Builder
         {     
             $this->setSql([
                 'DELETE FROM',
-                $this->table,
+                $this->table[0],
                 $this->where
             ]);
         }
@@ -729,7 +733,7 @@ class Builder
         {    
             $this->setSql([
                 'UPDATE',
-                $this->table,
+                $this->table[0],
                 'SET',
                 implode(',', $this->query_values),
                 $this->where
@@ -741,9 +745,9 @@ class Builder
             $this->setSql([
                 'SELECT',
                 $this->distinct,
-                $this->fields,
+                implode(', ', $this->fields),
                 'FROM',
-                $this->table,
+                implode(',', $this->table),
                 $this->joins,
                 $this->where,
                 $this->groups,

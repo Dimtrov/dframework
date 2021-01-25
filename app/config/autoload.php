@@ -36,12 +36,12 @@
 |
 | Prototype:
 |
-|	$config['libraries'] = array('captcha', 'mail', 'crypto');
+|	$autoload['libraries'] = array('captcha', 'mail', 'crypto');
 |
 | You can also supply an alternative library name to be assigned
 | in the controller:
 |
-|	$config['libraries'] = array('api' => 'a');
+|	$autoload['libraries'] = array('api' => 'a');
 */
 $autoload['libraries'] = [];
 
@@ -51,7 +51,7 @@ $autoload['libraries'] = [];
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$config['helpers'] = array('url', 'file');
+|	$autoload['helpers'] = array('url', 'file');
 */
 $autoload['helpers'] = [];
 
@@ -61,12 +61,12 @@ $autoload['helpers'] = [];
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$config['model'] = array('FirstModel', 'Second');
+|	$autoload['model'] = array('FirstModel', 'Second');
 |
 | You can also supply an alternative model name to be assigned
 | in the controller:
 |
-|	$config['model'] = array('FirstModel' => 'first');
+|	$autoloadg['model'] = array('FirstModel' => 'first');
 */
 $autoload['models'] = [];
 

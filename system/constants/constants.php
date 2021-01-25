@@ -1,8 +1,8 @@
 <?php
 
-define('DS', DIRECTORY_SEPARATOR);
-
 define('BASEPATH', dirname(SYST_DIR).DS);
+
+define('ROOTPATH', dirname(WEBROOT).DS);
 
 /**
  * Application modules directories
