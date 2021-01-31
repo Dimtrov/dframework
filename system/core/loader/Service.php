@@ -17,15 +17,18 @@
 
 namespace dFramework\core\loader;
 
+use dFramework\core\event\EventManager;
 use dFramework\core\http\Input;
 use dFramework\core\http\Redirection;
 use dFramework\core\http\Response;
+use dFramework\core\http\ResponseEmitter;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\output\Cache;
 use dFramework\core\output\Language;
 use dFramework\core\router\RouteCollection;
 use dFramework\core\utilities\Helpers;
+use dFramework\core\utilities\Timer;
 
 /**
  * Service
@@ -66,6 +69,21 @@ class Service
         return Injector::container();
     }
 
+    /**
+     * Response Emitter to the browser
+     *
+     * @param boolean $shared
+     * @return \dFramework\core\http\ResponseEmitter
+     */
+    public static function emitter(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(ResponseEmitter::class);
+        }
+
+        return Injector::factory(ResponseEmitter::class);
+    }
 
     /**
 	 * The general Input class models an HTTP request.
@@ -212,6 +230,41 @@ class Service
         return Injector::factory(RouteCollection::class);
     }
     
+    /**
+     * Event Manager instance
+     *
+     * @param boolean $shared
+     * @return \dFramework\core\event\EventManager
+     */
+    public static function event(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(EventManager::class);
+        }
+
+        return Injector::factory(EventManager::class);
+    }
+
+    /**
+	 * The Timer class provides a simple way to Benchmark portions of your
+	 * application.
+	 *
+	 * @param boolean $shared
+	 *
+	 * @return \dFramework\core\utilities\Timer
+	 */
+    public static function timer(bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Timer::class);
+        }
+
+        return Injector::factory(Timer::class);
+    }
+
+
 
     /**
 	 * Provides the ability to perform case-insensitive calling of service
@@ -224,8 +277,6 @@ class Service
 	 */
 	public static function __callStatic(string $name, array $arguments)
 	{
-		$name = strtolower($name);
-
 		if (method_exists(self::class, $name))
 		{
 			return self::$name(...$arguments);
@@ -235,65 +286,19 @@ class Service
     }
     
     /**
-	 * Will scan all psr4 namespaces registered with system to look
-	 * for new Config\Services files. Caches a copy of each one, then
-	 * looks for the service method in each, returning an instance of
-	 * the service, if available.
-	 *
+	 * 
 	 * @param string $name
 	 * @param array  $arguments
-	 *
 	 * @return mixed
 	 */
 	protected static function discoverServices(string $name, array $arguments)
 	{
-        /*
-            if (! static::$discovered)
-            {
-                $config = config('Modules');
+        $shared = array_pop($arguments);
+        if ($shared !== true) 
+        {
+            return Injector::factory($name, $arguments);
+        }
 
-                if ($config->shouldDiscover('services'))
-                {
-                    $locator = static::locator();
-                    $files   = $locator->search('Config/Services');
-
-                    if (empty($files))
-                    {
-                        // no files at all found - this would be really, really bad
-                        return null;
-                    }
-
-                    // Get instances of all service classes and cache them locally.
-                    foreach ($files as $file)
-                    {
-                        $classname = $locator->getClassname($file);
-
-                        if (! in_array($classname, ['CodeIgniter\\Config\\Services']))
-                        {
-                            static::$services[] = new $classname();
-                        }
-                    }
-                }
-
-                static::$discovered = true;
-            }
-
-            if (! static::$services)
-            {
-                // we found stuff, but no services - this would be really bad
-                return null;
-            }
-
-            // Try to find the desired service method
-            foreach (static::$services as $class)
-            {
-                if (method_exists(get_class($class), $name))
-                {
-                    return $class::$name(...$arguments);
-                }
-            }
-
-            return null;
-        */
+        return Injector::singleton($name);
 	}
 }

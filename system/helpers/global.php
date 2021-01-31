@@ -3,39 +3,38 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.3.0
  */
 
 use dFramework\core\Config;
 use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
-use dFramework\core\http\Redirection;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
-use dFramework\core\router\Router;
 use dFramework\core\security\Session;
-use dFramework\core\utilities\Helpers;
 use Kint\Kint;
 use Plasticbrain\FlashMessages\FlashMessages;
 use Psr\Http\Message\ResponseInterface;
+
+use function GuzzleHttp\Psr7\stream_for;
 
 /**
  * dFramework System Helpers
  *
  * @package		dFramework
  * @subpackage	Helpers
- * @category	Helpers
+ * @category	Global
  * @since 		1.0
  */
 
@@ -554,7 +553,7 @@ if (!function_exists('dd'))
 	}
 }
 
-if (!function_exists('r')) 
+if (!function_exists('vd')) 
 {
 	/**
 	 * Shortcut to ref, HTML mode
@@ -562,14 +561,14 @@ if (!function_exists('r'))
 	 * @param   mixed $args
 	 * @return  void|string
 	 */
-	function r()
+	function vd()
 	{
 		$params = func_get_args();
-		return 	Helpers::instance()->r(...$params);
+		return 	Service::helpers()->r(...$params);
   	}
 }
 
-if (!function_exists('rt')) 
+if (!function_exists('vdt')) 
 {
 	/**
 	 * Shortcut to ref, plain text mode
@@ -577,10 +576,10 @@ if (!function_exists('rt'))
 	 * @param   mixed $args
 	 * @return  void|string
 	 */
-	function rt()
+	function vdt()
 	{
 		$params = func_get_args();
-		return 	Helpers::instance()->rt(...$params);
+		return 	Service::helpers()->rt(...$params);
   	}
 }  
   
@@ -818,5 +817,27 @@ if (!function_exists('geo_ip'))
 	function geo_ip(?string $ip = null) : ?array
 	{
 		return json_decode(file_get_contents('http://ip-api.com/json/'.$ip), true);
+	}
+}
+
+if (!function_exists('to_stream'))
+{
+	/**
+	 * Create a new stream based on the input type.
+	 *
+	 * Options is an associative array that can contain the following keys:
+	 * - metadata: Array of custom metadata.
+	 * - size: Size of the stream.
+	 *
+	 * @param resource|string|null|int|float|bool|StreamInterface|callable|\Iterator $resource Entity body data
+	 * @param array                                                                  $options  Additional options
+	 *
+	 * @uses GuzzleHttp\Psr7\stream_for
+	 * @return StreamInterface
+	 * @throws \InvalidArgumentException if the $resource arg is not valid.
+	 */
+	function to_stream($resource = '', array $options = [])
+	{
+		return stream_for($resource, $options);
 	}
 }

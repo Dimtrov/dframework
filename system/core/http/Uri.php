@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\core\http;
@@ -79,35 +79,35 @@ class Uri implements UriInterface
 	 *
 	 * @var string
 	 */
-	protected $user;
+	protected $user = '';
 
 	/**
 	 * URI User Password
 	 *
 	 * @var string
 	 */
-	protected $password;
+	protected $password = '';
 
 	/**
 	 * URI Host
 	 *
 	 * @var string
 	 */
-	protected $host;
+	protected $host = '';
 
 	/**
 	 * URI Port
 	 *
 	 * @var integer
 	 */
-	protected $port;
+	protected $port = 80;
 
 	/**
 	 * URI path.
 	 *
 	 * @var string
 	 */
-	protected $path;
+	protected $path = '';
 
 	/**
 	 * The name of any fragment.

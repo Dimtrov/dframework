@@ -3,26 +3,28 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.2.3
  */
  
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
 use dFramework\core\exception\LoadException;
+use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dframework\core\router\Dispatcher;
 use Exception;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * View
@@ -125,7 +127,12 @@ class View
      */
     protected $_lib_scripts = [];
 
-	protected $_page_vars = [];
+    protected $_page_vars = [];
+    
+    /**
+     * @var Response
+     */
+    private $response;
 	
 
     /**
@@ -135,13 +142,17 @@ class View
      * @param array|null $data
      * @param string|null $controller
      * @param array|null $options
+     * @param Response|null $response
      */
-    public function __construct(string $view, ?array $data = [], ?string $controller= '', ?array $options = [])
+    public function __construct(string $view, ?array $data = [], ?string $controller= '', ?array $options = [], $response = null)
     {
         $this->data = (array) $data;
         $this->options = (array) $options;
         $this->controller = strtolower(trim($controller, DS));
         $this->view = $view;
+
+
+        $this->response = ($response instanceof Response OR $response instanceof ResponseInterface) ? $response : Service::response();
 
         Load::helper('assets');
 		
@@ -222,11 +233,13 @@ class View
 	 * Specifies that the current view should extend an existing layout.
 	 *
 	 * @param string $layout
-	 * @return void
+	 * @return self
 	 */
-	public function layout(?string $layout)
+	public function layout(?string $layout) : self
 	{
         $this->layout = $layout;
+
+        return $this;
     }
 
     /**
@@ -640,6 +653,10 @@ class View
         $output = ob_get_contents();
         @ob_end_clean();
         
+        if (!empty($this->renderVars['options']['layout'])) 
+        {
+            $this->layout = $this->renderVars['options']['layout'];
+        }
         if (! is_null($this->layout) AND empty($this->currentSection))
 		{
 			$layoutView   = $this->layout;
@@ -653,9 +670,9 @@ class View
 
 		$this->logPerformance($this->renderVars['start'], microtime(true), $this->renderVars['view']);
 
-        if (isset($this->renderVars['options']['compress_output']) AND $this->renderVars['options']['compress_output'] === true)
+        if (isset($this->renderVars['options']['compress_output']) AND is_bool($this->renderVars['options']['compress_output']))
         {
-            $output = $this->compressView($output, true);
+            $output = $this->compressView($output, $this->renderVars['options']['compress_output']);
         }
         
         // Should we cache?

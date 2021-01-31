@@ -3,19 +3,17 @@
     "description": "The simplest PHP framework for beginners",
     "type": "library",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
-    "homepage": "https://dimtrov.hebfree.org/works/dframework",
-    "version": "3.2.3-beta1",
+    "homepage": "https://github.com/Dimtrov/dframework",
+    "version": "3.3.0",
     "license": "MPL-2.0",
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-    "authors": [
-        {
-            "name": "Dimitric Sitchet Tomkeu",
-            "email": "dev.dst@gmail.com",
-            "role": "Developer, CEO",
-            "homepage": "https://dimtrov.hebfree.org/about"
-        }
-    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "authors": [{
+        "name": "Dimitric Sitchet Tomkeu",
+        "email": "dev.dst@gmail.com",
+        "role": "Developer, CEO",
+        "homepage": "https://dimtrov.hebfree.org/about"
+    }],
     "require": {
         "php": ">=7.2",
         "ext-pdo": "*",

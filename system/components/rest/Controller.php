@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Sarl
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\components\rest;
@@ -20,7 +20,6 @@ namespace dFramework\components\rest;
 use dFramework\core\Config;
 use dFramework\core\Controller as CoreController;
 use dFramework\core\exception\Exception;
-use dFramework\core\loader\Service;
 use dFramework\core\output\Format;
 use Firebase\JWT\JWT;
 
@@ -99,10 +98,10 @@ class Controller extends CoreController
 
     protected $payload;
 
+
     
     public function __construct()
     {
-        parent::__construct();
         $this->_config = Config::get('rest');
 
         $locale = $this->_config['language'] ?? null;
@@ -125,12 +124,15 @@ class Controller extends CoreController
 
         // Call the controller method and passed arguments
         try {
-            call_user_func_array([new $class, $method], (array) $params);
+            $instance = new $class;
+            $instance->initialize($this->request, $this->response);
+
+            return call_user_func_array([$instance, $method], (array) $params);
         } 
         catch (\Throwable $ex) {
             if (Config::get('general.environment') !== 'dev') 
             {
-                $url = explode('?', Service::request()->here())[0];
+                $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->send_error(
                     'Mauvaise utilisation de < '.$url.' >. Veuillez consulter la documentation de votre fournisseur', 
                     self::HTTP_BAD_REQUEST
@@ -161,9 +163,9 @@ class Controller extends CoreController
      * 
      * @param $data Les donnees a renvoyer
      * @param int $status Le statut de la reponse
-     * @param bool $continue Specifie si on continue d'executer le script apres avoir envoyer les donnees ou pas
+     * @param bool $die Specifie si on bloqur l'execution de tout autre script apres avoir envoyer les donnees ou pas
      */
-    protected function response($data, int $status = self::HTTP_OK, bool $continue = false)
+    protected function response($data, int $status = self::HTTP_OK, bool $die = false)
     {
         ob_start();
         
@@ -180,32 +182,21 @@ class Controller extends CoreController
             $status = self::HTTP_NOT_FOUND;
         }
 
-        $this->response->charset(strtolower(Config::get('general.charset') ?? 'utf-8'));
-        $this->response->statusCode($status);
-        
+        $this->response = $this->response
+            ->withCharset(strtolower(Config::get('general.charset') ?? 'utf-8'))
+            ->withStatus($status);
+
         $this->_parseResponse($data);
         
-        if ($continue === false) 
+        if ($die === false) 
         {
             // Display the data and exit execution
-            $this->response->send();
-            exit;
+            return $this->response;
         } 
         else 
         {
-            if (is_callable('fastcgi_finish_request')) 
-            {
-                // Terminates connection and returns response to client on PHP-FPM.
-                $this->response->send();
-                ob_end_flush();
-                fastcgi_finish_request();
-                ignore_user_abort(true);
-            } 
-            else 
-            {
-                // Legacy compatibility.
-                ob_end_flush();
-            }
+            $this->response->send();
+            exit;
         }
         ob_end_flush();
     }
@@ -221,7 +212,7 @@ class Controller extends CoreController
         return $this->response([
             $this->_config['status_field_name']  => false,
             $this->_config['message_field_name'] => $error_msg,
-        ], $http_code, false);
+        ], $http_code, true);
     }
     
     /**
@@ -383,11 +374,11 @@ class Controller extends CoreController
             // Then, check if the client asked for a callback, and if the output contains this callback :
             if (isset($this->request->query['callback']) AND $format == 'json' AND preg_match('/^'.$this->request->query['callback'].'/', $output)) 
             {
-                $this->response->type($this->_supported_formats['jsonp']);
+                $this->response = $this->response->withType($this->_supported_formats['jsonp']);
             } 
             else 
             {
-                $this->response->type($this->_supported_formats[$format]);
+                $this->response = $this->response->withType($this->_supported_formats[$format]);
             }
 
             // An array must be parsed as a string, so as not to cause an array to string error
@@ -408,7 +399,7 @@ class Controller extends CoreController
             $output = $data;
         }
 
-        $this->response->body($output);
+        $this->response = $this->response->withStringBody($output);
     }
 
     /**
@@ -450,7 +441,7 @@ class Controller extends CoreController
         }
 
         // Verifie si la methode utilisee pour la requete est autorisee
-        if (true !== in_array(strtoupper($this->request->method()), $this->_config['allowed_methods']))
+        if (true !== in_array(strtoupper($this->request->getMethod()), $this->_config['allowed_methods']))
         {
             return $this->send_error(
                 lang('rest.unknown_method', null,$this->_locale), 

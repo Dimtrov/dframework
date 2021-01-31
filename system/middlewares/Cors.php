@@ -1,13 +1,38 @@
 <?php
+/**
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.3.0
+ */
 
-namespace dFramework\filters;
-
+namespace dFramework\middlewares;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Cors
+ *  Middleware cors pour gerer les requetes d'origine croisees
+ *
+ * @package		dFramework
+ * @subpackage	Middlewares
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Api.html
+ * @since       3.1
+ * @file        /system/middlewares/Cors.php
+ */
 class Cors implements MiddlewareInterface
 {
     protected $config = [
@@ -19,7 +44,12 @@ class Cors implements MiddlewareInterface
         'MaxAge'           => 86400,                                       // 1 day
     ];
 
-
+    /**
+     *
+     * @param ServerRequestInterface $request
+     * @param RequestHandlerInterface $handler
+     * @return ResponseInterface
+     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $response = $handler->handle($request);
@@ -46,9 +76,11 @@ class Cors implements MiddlewareInterface
     }
 
     /**
-     * PHPCS docblock fix needed!
+     *
+     * @param ServerRequestInterface $request
+     * @return string
      */
-    private function _allowOrigin($request) 
+    private function _allowOrigin(ServerRequestInterface $request) 
     {
         $allowOrigin = $this->config['AllowOrigin'];
         $origin = $request->getHeaderLine('Origin');
@@ -77,23 +109,30 @@ class Cors implements MiddlewareInterface
     }
 
     /**
-     * PHPCS docblock fix needed!
+     * 
+     * @return string
      */
-    private function _allowCredentials() {
+    private function _allowCredentials() : string
+    {
         return ($this->config['AllowCredentials']) ? 'true' : 'false';
     }
 
     /**
-     * PHPCS docblock fix needed!
+     * 
+     * @return string
      */
-    private function _allowMethods() {
+    private function _allowMethods() : string 
+    {
         return implode(', ', (array) $this->config['AllowMethods']);
     }
 
     /**
-     * PHPCS docblock fix needed!
+     *
+     *  @param ServerRequestInterface $request
+     * @return string
      */
-    private function _allowHeaders($request) {
+    private function _allowHeaders(ServerRequestInterface $request) : string 
+    {
         $allowHeaders = $this->config['AllowHeaders'];
 
         if ($allowHeaders === true) {
@@ -104,9 +143,11 @@ class Cors implements MiddlewareInterface
     }
 
     /**
-     * PHPCS docblock fix needed!
+     * 
+     * @return string
      */
-    private function _exposeHeaders() {
+    private function _exposeHeaders() : string 
+    {
         $exposeHeaders = $this->config['ExposeHeaders'];
 
         if (is_string($exposeHeaders) || is_array($exposeHeaders)) {
@@ -117,9 +158,11 @@ class Cors implements MiddlewareInterface
     }
 
     /**
-     * PHPCS docblock fix needed!
+     * 
+     * @return string
      */
-    private function _maxAge() {
+    private function _maxAge() : string 
+    {
         $maxAge = (string) $this->config['MaxAge'];
 
         return ($maxAge) ?: '0';

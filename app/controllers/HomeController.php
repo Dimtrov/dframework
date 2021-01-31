@@ -1,8 +1,12 @@
 <?php
-class HomeController extends dFramework\core\Controller
+
+use dFramework\core\http\Middleware;
+
+class HomeController extends AppController
 {
 	public function index()
 	{
-		$this->view('/welcome')->render();
+		return $this->render('/welcome');
 	}
+
 }

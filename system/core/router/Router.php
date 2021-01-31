@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core\router;
@@ -69,12 +69,12 @@ class Router
 	protected $detectedLocale = null;
 
 	/**
-	 * The filter info from Route Collection
+	 * The middleware info from Route Collection
 	 * if the matched route should be filtered.
 	 *
-	 * @var string
+	 * @var string|array
 	 */
-	protected $filterInfo;
+	protected $middlewareInfo;
 
 	
 	/**
@@ -192,13 +192,13 @@ class Router
 		return $this->params;
 	}
 	/**
-	 * Returns the filter info for the matched route, if any.
+	 * Returns the middleware info for the matched route, if any.
 	 *
-	 * @return string
+	 * @return string|array
 	 */
-	public function getFilter()
+	public function getMiddleware()
 	{
-		return $this->filterInfo;
+		return $this->middlewareInfo;
 	}
 	/**
 	 * Returns the name of the sub-directory the controller is in,
@@ -260,8 +260,6 @@ class Router
 	 * @param string|null $uri
 	 *
 	 * @return mixed|string
-	 * @throws \CodeIgniter\Router\Exceptions\RedirectException
-	 * @throws \CodeIgniter\Exceptions\PageNotFoundException
 	 */
 	public function handle(string $uri = null)
 	{
@@ -275,7 +273,7 @@ class Router
 		{
 			if ($this->collection->isFiltered($this->matchedRoute[0]))
 			{
-				$this->filterInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
+				$this->middlewareInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
 			}
 
 			if (is_string($this->controller))

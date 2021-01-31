@@ -207,7 +207,7 @@ class Config
 
     private static function setDefaultVar()
     {
-        if(true !== self::get('general.use_absolute_link'))
+        if (true !== self::get('general.use_absolute_link'))
         {
             self::set('general.base_url', str_replace('\\', '/', BASE_URL.'/'));
         }
@@ -241,7 +241,7 @@ class Config
             self::set('general.base_url', rtrim(str_replace('\\', '/', $base_url), '/'));
         }
 
-        if(null === self::get('general.use_template_engine'))
+        if (null === self::get('general.use_template_engine'))
         {
             self::set('general.use_template_engine', true);
         }

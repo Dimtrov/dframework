@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework;
@@ -217,15 +217,15 @@ class Autoloader
             }
         }
         /**
-         * Chargement des filtres http
+         * Chargement des middlewares
          */
-        if (preg_match('#Filter$#', $input))
+        if (preg_match('#Middleware$#', $input))
         {
             $input = explode('\\', $input);
             $class = array_pop($input);
             $namespace = implode(DS, $input);            
             
-            $file = rtrim(FILTER_DIR . $namespace, DS) . DS . $class . '.php';
+            $file = rtrim(MIDDLEWARE_DIR . $namespace, DS) . DS . $class . '.php';
             if (is_file($file))
             {
                 require_once $file;

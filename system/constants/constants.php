@@ -11,7 +11,7 @@ define('CONTROLLER_DIR', APP_DIR . 'controllers' . DS);
 
 define('ENTITY_DIR', APP_DIR . 'entities' . DS);
 
-define('FILTER_DIR', APP_DIR . 'filters' . DS);
+define('MIDDLEWARE_DIR', APP_DIR . 'middlewares' . DS);
 
 define('HELPER_DIR', APP_DIR . 'helpers' . DS);
 

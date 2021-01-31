@@ -17,12 +17,16 @@
 
 namespace dFramework\core;
 
-use dFramework\core\http\Filter;
-use dFramework\core\loader\Load;
-use dFramework\core\loader\Service;
-use dFramework\core\output\Cache;
-use dFramework\core\output\View;
 use ReflectionClass;
+use dFramework\core\http\Middleware;
+use dFramework\core\loader\Load;
+use dFramework\core\output\View;
+use dFramework\core\output\Cache;
+use dFramework\core\router\Dispatcher;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+use function GuzzleHttp\Psr7\stream_for;
 
 /**
  * Controller
@@ -40,17 +44,9 @@ class Controller
 {
     CONST 
         /**
-         * Utilisation de l'objet Request
-         */
-        REQUEST_OBJECT = 1,
-        /**
-         * Utilisation des objet Response
-         */
-        RESPONSE_OBJECT = 2, 
-        /**
          * Utilisation de l'objet Cache
          */
-        CACHE_OBJECT = 3;
+        CACHE_OBJECT = 1;
 
     /**
      * @var \dFramework\core\http\ServerRequest Instance de l'objet Request
@@ -65,24 +61,31 @@ class Controller
      */
     protected $cache;
 
-    private $_filters = [];
+    private $_middlewares = [];
     
 
     /**
-     * Controller constructor.
+     * Controller
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return void
      */
-    public function __construct()
+    public function initialize(ServerRequestInterface $request, ResponseInterface $response)
     {
-        /**
-         * Use Request and Response Object automaticaly
-         * @since 2.2
-         */
-        $this->useObject(self::REQUEST_OBJECT, self::RESPONSE_OBJECT);
+        $this->request  = $request;
+        $this->response = $response;
 
-        $this->_launchFilters();
-        
+        /**
+         * Lance les filtres http
+         */
+        $this->_launchMiddlewares();
+        /**
+         * Recupere les elements
+         */
         $this->_getElements();
     }
+
     /**
      * Recuperation d'une seule instance de controleur. Pattern singletton
      *
@@ -98,26 +101,33 @@ class Controller
     }
     private static $_instance;
 
-    /**
-     * Renvoi la liste des filtres a appliquer a la requete
-     *
-     * @return array
-     */
-    protected function _filters() : array 
-    {
-        return [];
-    }
+   
     /**
      * Defini une liste de filtres specifique a la methode
      *
-     * @param string|string[] $filters
+     * @param string|string[] $middlewares
+     * @return self
+     */
+    final protected function useMiddleware($middlewares) : self
+    {
+        $this->_middlewares = (array) $middlewares;
+
+        return $this;
+    }
+    /**
+     * Execute des middlewares
+     *
+     * @param mixed $middlewares
      * @return void
      */
-    final protected function useFilter($filters)
+    protected function runMiddleware($middlewares)
     {
-        $this->_filters = (array) $filters;
-    }
+        $middleware = new Middleware($this->response);
 
+        $middleware->add($this->_middlewares)->add($middlewares);
+
+        $this->response = $middleware->handle($this->request);
+    }
     
     /**
      * @param int ...$object
@@ -126,20 +136,13 @@ class Controller
     {
         foreach ($object As $value)
         {
-            if (self::RESPONSE_OBJECT === $value)
-            {
-                $this->response = Service::response();
-            }
-            if (self::REQUEST_OBJECT === $value)
-            {
-                $this->request = Service::request();
-            }
             if (self::CACHE_OBJECT === $value)
             {
                 $this->cache = new Cache();
             }
         }
     }
+    
 
     /**
      * Charge une vue
@@ -155,7 +158,7 @@ class Controller
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
-        $view = new View($view, $data, $path, $options);
+        $view = new View($view, $data, $path, $options, $this->response);
         if (!empty($this->layout) AND is_string($this->layout)) 
         {
             $view->layout($this->layout);
@@ -168,6 +171,46 @@ class Controller
         
         return $view;
     }
+    /**
+     * Charge et rend directement une vue
+     *
+     * @param string|null $view
+     * @param array|null $data
+     * @param array|null $options
+     * @return ResponseInterface
+     */
+    final protected function render(?string $view = null, ?array $data = [], ?array $options = []) : ResponseInterface
+    {
+        if (empty($view)) 
+        {
+            $view = Dispatcher::getMethod();
+        }
+        $view = $this->view($view, $data, $options)->get(Config::get('general.compress_output'));
+
+        return $this->response->withBody(stream_for($view));
+    }
+
+    /**
+     * Defini des donnees à distribuer à toutes les vues
+     *
+     * @param string|array $key
+     * @param [type] $value
+     * @return self
+     */
+    final protected function addData($key, $value = null) : self
+    {
+        if (is_string($key) OR is_array($key))
+        {
+            $data = $key;
+            if (!is_array($key))
+            {
+                $data = [$key => $value];
+            }
+            $this->view_datas = array_merge($this->view_datas, $data);
+        }
+        return $this;
+    }
+
 
     /**
      * Charge un model
@@ -370,12 +413,20 @@ class Controller
         }
     }
 
-    private function _launchFilters()
+   
+    private function _launchMiddlewares()
     {
-        $filter = new Filter();
+        $class = get_called_class();
+        if (is_string($class))
+        {
+            $class = new $class;
+         
+            if (method_exists($class, 'middleware')) 
+		    {
+			    $middleware = $class->middleware(New Middleware($this->response));
 
-        $filter->add(array_merge($this->_filters(), $this->_filters));
-
-        $this->response = $filter->handle($this->request);
+			    $this->response = $middleware->handle($this->request);
+		    }
+        }
     }
 }

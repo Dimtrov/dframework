@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core\router;
@@ -797,7 +797,7 @@ class RouteCollection
 	 */
 	public function isFiltered(string $search) : bool
 	{
-		return isset($this->routesOptions[$search]['filter']);
+		return isset($this->routesOptions[$search]['middleware']);
     }
     /**
 	 * Returns the filter that should be applied for a single route, along
@@ -810,16 +810,16 @@ class RouteCollection
 	 * has a filter of "role", with parameters of ['admin', 'manager'].
 	 *
 	 * @param string $search
-	 * @return string
+	 * @return string|string[]
 	 */
-	public function getFilterForRoute(string $search) : string
+	public function getFilterForRoute(string $search)
 	{
 		if (! $this->isFiltered($search))
 		{
 			return '';
 		}
 
-		return $this->routesOptions[$search]['filter'];
+		return $this->routesOptions[$search]['middleware'];
 	}
     
     //--------------------------------------------------------------------
@@ -835,7 +835,7 @@ class RouteCollection
 		foreach ($this->routes['*'] As $name => $route)
 		{
 			// Named route?
-			if ($name === $from || key($route['route']) === $from)
+			if ($name === $from OR key($route['route']) === $from)
 			{
 				return $route['redirect'] ?? 0;
 			}
@@ -989,9 +989,9 @@ class RouteCollection
 	 */
 	protected function create(string $verb, string $from, $to, array $options = null)
 	{
-		$prefix    = is_null($this->group) ? '' : $this->group . '/';
+		$prefix    = (is_null($this->group) ? '' : $this->group) . '/';
 
-		$from = filter_var($prefix . $from, FILTER_SANITIZE_STRING);
+		$from = filter_var($prefix . ltrim($from, '/'), FILTER_SANITIZE_STRING);
 
 		// While we want to add a route within a group of '/',
 		// it doesn't work with matching, so remove them...
@@ -1000,8 +1000,7 @@ class RouteCollection
 			$from = trim($from, '/');
 		}
 
-        $options = array_merge((array) $this->options, (array) $options);
-        
+        $options = array_merge_recursive((array) $this->options, (array) $options);
 
 		// Are we offsetting the binds?
 		// If so, take care of them here in one

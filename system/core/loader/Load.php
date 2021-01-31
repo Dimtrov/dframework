@@ -272,7 +272,7 @@ class Load
         $providers = [];
 
         // System services
-        $filename = SYST_DIR . 'constants' . DS . 'provider.php';
+        $filename = SYST_DIR . 'constants' . DS . 'providers.php';
         if (!file_exists($filename))
         {
             LoadException::except('
@@ -288,7 +288,7 @@ class Load
         }
         
         // App services
-        $filename = APP_DIR . 'config' . DS . 'provider.php';
+        $filename = APP_DIR . 'config' . DS . 'providers.php';
         if (file_exists($filename))
         {
             $providers = array_merge($providers, require_once $filename);

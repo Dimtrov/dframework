@@ -36,6 +36,39 @@ use Josantonius\Json\Json;
 
 class Log
 {
+	/**
+     * Handled log levels
+     *
+     * @var string[]
+     */
+    protected static $_levels = [
+        'emergency',
+        'alert',
+        'critical',
+        'error',
+        'warning',
+        'notice',
+        'info',
+        'debug',
+    ];
+
+    /**
+     * Log levels as detailed in RFC 5424
+     * https://tools.ietf.org/html/rfc5424
+     *
+     * @var array
+     */
+    protected static $_levelMap = [
+        'emergency' => LOG_EMERG,
+        'alert'     => LOG_ALERT,
+        'critical'  => LOG_CRIT,
+        'error'     => LOG_ERR,
+        'warning'   => LOG_WARNING,
+        'notice'    => LOG_NOTICE,
+        'info'      => LOG_INFO,
+        'debug'     => LOG_DEBUG,
+    ];
+
 
 	public  function register($exception)
 	{
@@ -45,6 +78,20 @@ class Log
 		$line     = $exception->getLine();
 		
 		$this->parseError($message, $code, $file, $line);	
+	}
+
+
+	public static function write(string $level, string $message, ?string $file = null, ?int $line = null)
+	{
+		
+	}
+
+	public static function warning(string $message, ?string $file = null, ?int $line = null)
+	{
+		$file = null === $file ? __FILE__ : $file;
+		$line = null === $line ? __LINE__ : $line;
+
+		return self::save($message, 2, $file, $line);
 	}
 	
 	/**
