@@ -50,7 +50,7 @@ $routes = dFramework\core\loader\Service::routes();
 /**
  * Enable auto route
  */
- $routes->autoRoute(false);
+ $routes->autoRoute(true);
 
 
 /**
@@ -58,7 +58,3 @@ $routes = dFramework\core\loader\Service::routes();
  * Route Definitions
  * --------------------------------------------------------------------
  */
-$routes->get('/', function() {
-    
-    return $this->response->withBody(to_stream('toto etait ici'));
-});

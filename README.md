@@ -50,4 +50,4 @@ php dbot serve
 
 ## Documentation
 
-Le projet est encore en cours de développement et la documentatio n'est pas terminée. Vous pouvez tout de même l'avoir sur http://dframework.totalh.net/Bienvenuecheznous.html
+Le projet est encore en cours de développement et la documentatio n'est pas terminée. Vous pouvez tout de même l'avoir sur http://dframework.totalh.net/dFramework.html

@@ -38,7 +38,7 @@ use Tracy\Debugger;
  */
 class dFramework
 {
-    const VERSION = '3.2.3';
+    const VERSION = '3.3.0';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
