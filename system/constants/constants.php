@@ -21,6 +21,8 @@ define('MODEL_DIR', APP_DIR . 'models' . DS);
 
 define('RESOURCE_DIR', APP_DIR . 'resources' . DS);
 
+define('MIGRATION_DIR', RESOURCE_DIR . 'database' . DS . 'migrations' . DS);
+
 define('VIEW_DIR', APP_DIR . 'views' . DS);
 
 define('LAYOUT_DIR', VIEW_DIR . 'reserved' . DS . 'layouts' . DS);

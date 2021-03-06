@@ -59,6 +59,12 @@ class RouteCollection
          */
         'auto_route'          => true,
     ];
+	/**
+	 * Global middleware
+	 *
+	 * @var array
+	 */
+	protected $middlewares = [];
     /**
 	 * Defined placeholders that can be used
 	 * within the
@@ -158,17 +164,43 @@ class RouteCollection
 	 *
 	 * @return self
 	 */
-	public function addPlaceholder($placeholder, string $pattern = null) : self
+	public function placeholder($placeholder, string $pattern = null) : self
 	{
-		if (! is_array($placeholder))
+		if (!is_array($placeholder))
 		{
 			$placeholder = [$placeholder => $pattern];
 		}
 
-		$this->placeholders = array_merge($this->placeholders, $placeholder);
+		$this->placeholders = array_merge($placeholder, $this->placeholders);
 
 		return $this;
     }
+	 /**
+	 * Registers a new global middleware
+	 *
+	 * You can pass an associative array as $middleware, and have
+	 * multiple middlewares added at once.
+	 *
+	 * @param string|array|object|calable $middleware
+	 *
+	 * @return self|array
+	 */
+	public function middlewares($middleware = null)
+	{
+		if (empty($middleware)) 
+		{
+			return $this->middlewares;
+		}
+		if (!is_array($middleware))
+		{
+			$middleware = [$middleware];
+		}
+
+		$this->middlewares = array_merge($this->middlewares, $middleware);
+
+		return $this;
+    }
+
     /**
      * Get/Set autorouting
      * 

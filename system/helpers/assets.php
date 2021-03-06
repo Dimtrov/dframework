@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.3.0
  */
 
 
@@ -21,7 +21,7 @@
  *
  * @package		dFramework
  * @subpackage	Helpers
- * @category	Helpers
+ * @category	Assets
  * @since 		1.0
  */
 
@@ -149,6 +149,7 @@ if ( ! function_exists('lib_styles'))
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
                 if(is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $style)))
                 {
+                    echo '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">';
                     echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
                 }
                 else if(is_localfile($style))
@@ -158,7 +159,8 @@ if ( ! function_exists('lib_styles'))
                 }
 				else 
 				{
-					echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
+					echo '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">';
+                    echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
 				}
             }
         }
@@ -227,6 +229,7 @@ if ( ! function_exists('styles'))
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
                 if(is_file(WEBROOT.'css'.DS.str_replace('/', DS, $style)))
                 {
+                    echo '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">';
                     echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
                 }
                 else if(is_localfile($style))
@@ -236,7 +239,8 @@ if ( ! function_exists('styles'))
                 }
 				else 
 				{
-					echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
+					echo '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">';
+                    echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
 				}
             }
         }

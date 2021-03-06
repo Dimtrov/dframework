@@ -17,13 +17,15 @@
 
 namespace dFramework\core\router;
 
-use dFramework\core\exception\RouterException;
+use ReflectionClass;
+use ReflectionMethod;
+use dFramework\core\loader\Service;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
-use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
+use dFramework\components\rest\Controller;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionMethod;
+use dFramework\core\exception\RouterException;
 
 /**
  * Dispatcher
@@ -347,8 +349,17 @@ class Dispatcher
 			', 404);
 		}
 
+		$reflectedClass = new ReflectionClass($this->controller); 
+
 		if (!method_exists($this->controller, $this->method))
 		{
+			if ($reflectedClass->isSubclassOf(Controller::class)) {
+				$this->response = $this->response->withBody(to_stream(json_encode([
+					'status' => false, 'message' => lang('rest.unknow_method')
+				])))->withStatus(Controller::HTTP_NOT_ACCEPTABLE);
+				
+				return;
+			}
 			RouterException::except(
 				'Method not found',
 				'&laquo;<b>'.$this->method.'</b> method &raquo; is not defined in '.$this->controller, 
@@ -360,6 +371,13 @@ class Dispatcher
 
         if ($reflection->getName() == "__construct")
         {
+			if ($reflectedClass->isSubclassOf(Controller::class)) {
+				$this->response = $this->response->withBody(to_stream(json_encode([
+					'status' => false, 'message' => lang('rest.unauthorized')
+				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				
+				return;
+			}
             RouterException::except(
 				'Forbidden',
 				'Access denied to <b>__construct</b> method'
@@ -368,7 +386,14 @@ class Dispatcher
         }
         if ($reflection->isProtected() OR $reflection->isPrivate())
         {
-            RouterException::except(
+            if ($reflectedClass->isSubclassOf(Controller::class)) {
+				$this->response = $this->response->withBody(to_stream(json_encode([
+					'status' => false, 'message' => lang('rest.unauthorized')
+				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				
+				return;
+			}
+			RouterException::except(
 				'Forbidden',
 				'Access to <b>'. $reflection->getName().'</b> method is denied in '.$this->controller, 
 				403
@@ -377,6 +402,13 @@ class Dispatcher
 
 		if (!in_array($reflection->getName(), $this->reservedMethods) AND preg_match('#^_#i', $reflection->getName()))
         {
+			if ($reflectedClass->isSubclassOf(Controller::class)) {
+				$this->response = $this->response->withBody(to_stream(json_encode([
+					'status' => false, 'message' => lang('rest.unauthorized')
+				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				
+				return;
+			}
 			RouterException::except(
 				'Forbidden',
 				'Access denied to <b>'.$reflection->getName().'</b> method', 
@@ -398,7 +430,10 @@ class Dispatcher
             }
             if ($required_parameters > count($this->parameters))
             {
-                RouterException::except(
+                if ($reflectedClass->isSubclassOf(Controller::class)) {
+					return;
+				}
+				RouterException::except(
 					'Parameters error',
                     'The method <b>'.$this->method . '</b> of class '.$this->controller.' require
 						<b>'.$required_parameters.'</b> parameters, '.count($this->parameters).' was send', 

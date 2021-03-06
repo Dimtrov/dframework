@@ -17,11 +17,12 @@
 
 namespace dFramework\components\rest;
 
-use dFramework\core\Config;
-use dFramework\core\Controller as CoreController;
-use dFramework\core\exception\Exception;
-use dFramework\core\output\Format;
 use Firebase\JWT\JWT;
+use ReflectionMethod;
+use dFramework\core\Config;
+use dFramework\core\output\Format;
+use dFramework\core\exception\Exception;
+use dFramework\core\Controller as CoreController;
 
 /**
  * dFramework Rest Controller
@@ -134,7 +135,7 @@ class Controller extends CoreController
             {
                 $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->send_error(
-                    'Mauvaise utilisation de < '.$url.' >. Veuillez consulter la documentation de votre fournisseur', 
+                    lang('rest.bad_used', [$url], $this->_locale), 
                     self::HTTP_BAD_REQUEST
                 );
             }

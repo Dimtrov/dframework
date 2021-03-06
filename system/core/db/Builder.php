@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework\core\db;
@@ -125,8 +125,7 @@ class Builder
         {
             return call_user_func([$this->query, $name], $arguments);
         }
-        throw new DatabaseException("Unknow method <".$name.">");
-        
+        throw new DatabaseException("Unknow method < ".$name." >"); 
     }
     
     /**
@@ -258,8 +257,10 @@ class Builder
             $str = '';
             foreach ($field as $key => $value) 
             {
-                $str .= $this->parseCondition($key, $value, $join, $escape);
-                $join = '';
+                if (!empty($value)) {
+                    $str .= $this->parseCondition($key, $value, $join, $escape);
+                    $join = '';
+                }
             }
             return $str;
         }
@@ -272,9 +273,9 @@ class Builder
     /**
      * Sets the table.
      *
-     * @param string $table Table name
+     * @param string|string[] $table Table name
      * @param boolean $reset Reset class properties
-     * @return object Self reference
+     * @return self
      */
     final public function from($tables) : self
     {
@@ -285,6 +286,28 @@ class Builder
         }
 
         return $this;
+    }
+    /**
+     * Sets the table
+     *
+     * @param string|string[] $tables
+     * @alias self::from()
+     * @return self
+     */
+    final public function table($tables) : self 
+    {
+        return $this->from($tables);
+    }
+    /**
+     * Sets the table
+     *
+     * @param string|string[] $tables
+     * @alias self::from()
+     * @return self
+     */
+    final public function into($tables) : self 
+    {
+        return $this->from($tables);
     }
 
     /**
@@ -344,7 +367,7 @@ class Builder
      * Adds where conditions.
      *
      * @param string|array $field A field name or an array of fields and values.
-     * @param string $value A field value to compare to
+     * @param mixed $value A field value to compare to
      * @return object Self reference
      */
     final public function where($field, $value = null) : self
@@ -352,6 +375,25 @@ class Builder
         $join = (empty($this->where)) ? 'WHERE' : ' AND ';
         $this->where .= $this->parseCondition($field, $value, $join);
 
+        return $this;
+    }
+    /**
+     * Adds where conditions.
+     *
+     * @param string|array $field A field name or an array of fields and values.
+     * @param mixed $value A field value to compare to
+     * @return self
+     */
+    final public function orWhere($field, $value = null) : self 
+    {
+        if (!is_array($field)) 
+        {
+            $field = [$field => $value];
+        }
+        foreach ($field As $key => $value) 
+        {
+            $this->where('|' . $key, $value);
+        }
         return $this;
     }
     /**

@@ -3,42 +3,42 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2020, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
  
-namespace dFramework\core\db;
+namespace dFramework\core\db\connection;
 
 use dFramework\core\Config;
 use dFramework\core\exception\DatabaseException;
-use dFramework\core\utilities\Arr;
+use dFramework\core\utilities\Tableau;
 use InvalidArgumentException;
 use mysqli;
 use PDO;
 use SQLite3;
 
 /**
- * Database
+ * Mysql
  *
- * Initialise a database process of application
+ * Make a mysql database connection
  *
  * @package		dFramework
  * @subpackage	Core
- * @category    Db
+ * @category    Db/Connection
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
- * @since       1.0
- * @file		/system/core/db/Database.php
+ * @since       3.3.0
+ * @file		/system/core/db/connection/Mysql.php
  */
-class Database
+class Mysql
 {
     public $config = [];
 
@@ -110,7 +110,7 @@ class Database
         {
             return $this->config;
         }
-        return Arr::getRecursive($this->config, $key);
+        return Tableau::get_recusive($this->config, $key);
     }
 
 

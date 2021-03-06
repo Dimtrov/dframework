@@ -1,0 +1,163 @@
+<?php
+/**
+ * dFramework
+ *
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @link	    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.3.0
+ */
+
+namespace dFramework\core\cli;
+
+use dFramework\core\db\Database As Db;
+use dFramework\core\db\Dumper;
+use dFramework\core\db\Seeder;
+use dFramework\core\db\seeder\Faker;
+
+/**
+ * Database
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Cli
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
+ * @since       3.3.0
+ * @file        /system/core/cli/Database.php
+ */
+class Database extends Cli
+{
+    /**
+     * Remplissage de base de donnees
+     *
+     * @return Command
+     */
+    protected function _seed() : Command
+    {
+        return (new Command('db:seed', 'Créé un nouveau fichier de migration'))
+            ->argument('<file>', 'Nom du fichier à seeder')
+            ->usage('<bold>  dbot db:seed user</end> <comment> => Execute la methode User::seed() contenue dans le fichier "/app/resources/database/seeds/User.php"</end><eol/>')
+            ->action(function($file) {
+                try {
+                    /**
+                     * @var Command
+                     */
+                    $cli = $this;
+
+                    $cli->start('Service de remplissage de base de donnees');
+                    $cli->task('Demarrage du seed');
+
+                    $seed = ucfirst(strtolower($file));
+                    $file = RESOURCE_DIR.'database'.DS.'seeds'.DS.$seed.'.php';
+
+                    if (!file_exists($file)) 
+                    {
+                        $cli->_io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true); 
+                        return $cli->showHelp();
+                    }
+                    require_once $file;
+                
+                    if (!class_exists($seed))
+                    {
+                        $cli->_io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true); 
+                        return $cli->showHelp();
+                    }
+            
+                    $class = new $seed;
+
+                    if (!($class instanceof Seeder)) 
+                    {
+                        $cli->_io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true); 
+                        return $cli->showHelp();
+                    }
+                    if (!method_exists($class, 'seed')) 
+                    {
+                        $cli->_io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true); 
+                        return $cli->showHelp();
+                    }
+
+                    $cli->_io->write("\n\t Remplissage en cours de traitement : Utilisation de la clase '".$seed."' \n");
+                    sleep(2.5);
+                    $class->seed(new Faker)->run();
+                    sleep(2);
+                    $cli->_io->ok("\t => Remplissage terminé avec succès. \n");
+                    sleep(1.5);
+            
+                    $cli->end();
+                } 
+                catch (\Throwable $th) {
+                    die($th->getMessage());
+                }
+
+                return true;
+            });
+    }
+
+    /**
+     * Import/export de base de donnees
+     *
+     * @return Command
+     */
+    protected function _dump() : Command
+    {
+        return (new Command('db:dump', 'Demarre l\'importation ou l\'exportation de votre base de données'))
+            ->option('-b --backup', 'Cree une sauvegarde de la base de donnees')
+            ->option('-u --upgrade', 'Importe un script de base de donnees')
+            ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"', 'default')
+            ->usage(
+                '<bold>  dbot db:dump --backup</end> <comment> => Cree un fichier de sauvegarde la base de donnees dans le repertoire "/app/resources/database/dump/" sous le nom "nombd_v[num_ver].sql"</end><eol/>' .
+                '<bold>  dbot db:dump -upgrade</end> <comment> => Importe le script de base de donnees du fichier "nombd_v[num_ver].sql" se trouvant dans le repertoire "/app/resources/database/dump/"</end><eol/>' 
+            )
+            ->action(function($backup, $upgrade, $database) {
+                try {
+                    /**
+                     * @var Command
+                     */
+                    $cli = $this;
+
+                    if (empty($backup) AND empty($upgrade))
+                    {
+                        $cli->_io->warn("\n Veuillez selectionner une option pour pouvoir executer cette tache.", true);
+                        return $cli->showHelp();
+                    }
+                    $cli->start('Service de d\'import/export de base de donnees');
+
+                    if (!empty($backup)) 
+                    {
+                        $cli->task('Sauvegarde de la base de données');
+                        $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
+
+                        $dump = new Dumper(Db::instance()->use($database));
+                        $filename = $dump->down($num_ver);
+                
+                        $cli->_io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
+                        $cli->_io->info("\t Fichier de sauvegarde: ".$filename);
+                    }
+                    else 
+                    {
+                        $cli->task('Importation de la base de données en cours');
+                        $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
+
+                        $dump = new Dumper(Db::instance()->use($database));
+                        $filename = $dump->up($num_ver);
+                
+                        $cli->_io->ok("\n\t Base de donnees migrée avec succès.", true);
+                        $cli->_io->info("\t Fichier utilisé: ".$filename);
+                    }
+
+                    $cli->end();
+                } 
+                catch (\Throwable $th) {
+                    die($th->getMessage());
+                }
+            });
+    }
+}

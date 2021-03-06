@@ -17,34 +17,44 @@
 
 namespace dFramework\core\cli;
 
-use dFramework\core\exception\Exception;
+use Ahc\Cli\Application;
+use Ahc\Cli\Input\Command As AhcCommand;
 
 /**
- * CLi
- * A abstract factory class for cli commands
+ * Console
+ * Abstract class for console working
  *
  * @package		dFramework
  * @subpackage	Core
  * @category    Cli
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
  * @since       3.3.0
- * @file        /system/core/cli/Cli.php
+ * @file        /system/core/cli/Console.php
  */
-abstract class Cli 
-{   
-    public static function __callStatic($name, $arguments)
-    {
-        $instance = new static;
-        
-        if (method_exists($instance, $name))
-        {
-            return call_user_func_array([$instance, $name], $arguments);
-        }
-        if (method_exists($instance, '_'.$name))
-        {
-            return call_user_func_array([$instance, '_'.$name], $arguments);
-        }
-        throw new Exception("Method < " .__CLASS__.'::'.$name. "() > not found");
+final class Console extends Application
+{
+    /**
+     * Add a command by its name desc alias etc.
+     *
+     * @param string $name
+     * @param string $desc
+     * @param string $alias
+     * @param bool   $allowUnknown
+     * @param bool   $default
+     *
+     * @return Command
+     */
+    public function command(
+        string $name,
+        string $desc = '',
+        string $alias = '',
+        bool $allowUnknown = false,
+        bool $default = false
+    ): AhcCommand {
+        $command = new Command($name, $desc, $allowUnknown, $this);
+
+        $this->add($command, $alias, $default);
+
+        return $command;
     }
 }

@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework\core\db;
@@ -20,9 +20,9 @@ namespace dFramework\core\db;
 use dFramework\core\exception\DatabaseException;
 
 /**
- * Migrator
+ * Dumper
  *
- * Database version manager
+ * Database dump manager
  *
  * @package		dFramework
  * @subpackage	Core
@@ -30,9 +30,9 @@ use dFramework\core\exception\DatabaseException;
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since		2.1
- * @file		/system/core/db/Migrator.php
+ * @file		/system/core/db/Dump.php
  */
-class Migrator
+class Dumper
 {
     /**
      * @var Database
@@ -47,7 +47,7 @@ class Migrator
     /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR . 'database'.DS.'migrations' . DS;
+    private $save_folder = RESOURCE_DIR . 'database'.DS.'dump' . DS;
 
     /**
      * @var string
@@ -85,7 +85,7 @@ class Migrator
             }
         }
         $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
-        $filename .= '_v'.$version.'.sql';
+        $filename .= '_version_'.$version.'.sql';
         $save_file = rtrim($this->save_folder, DS).DS.$filename;
 
         $commande  = 'mysqldump';
@@ -114,7 +114,7 @@ class Migrator
     public function up(string $version) : string
     {
         $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
-        $filename .= '_v'.$version.'.sql';
+        $filename .= '_version_'.$version.'.sql';
         $file = rtrim($this->save_folder, DS).DS.$filename;
 
         if (!file_exists($file) OR !is_readable($file))

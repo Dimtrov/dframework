@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2020, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\core\db;
@@ -70,6 +70,12 @@ class Query
         $this->db_group = $db_group;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param string $name
+     * @return mixed
+     */
     public function __get($name)
     {
         if ($name === 'db_config') 
@@ -78,6 +84,11 @@ class Query
         }
     }
 
+    /**
+     * Connection a la base de donnees
+     *
+     * @return self
+     */
     private function dbConnect() : self
     {
         if (empty($this->db))
@@ -88,28 +99,57 @@ class Query
         return $this;
     }
 
+    /**
+     * Retourne l'instance de connexion a la base de donnees (PDO)
+     *
+     * @return mixed
+     */
     public function db()
     {
         return $this->dbConnect()->db->connection();
     }
 
+    /**
+     * Renvoi les details de le requete courante
+     *
+     * @return array
+     */
     public function details()
     {
         return $this->query_details;
     }
-
+    /**
+     * Renvoi le dernier id generé par autoincrement
+     *
+     * @return integer|null
+     */
     public function lastId() : ?int
     {
         return $this->query_details['insert_id'] ?? null;
     }
+    /**
+     * Renvoi le nombre de ligne affecté par la requete
+     *
+     * @return integer
+     */
     public function affectedRow() : int
     {
         return $this->query_details['affected_row'] ?? 0;
     }
+    /**
+     * Renvoi le nombre de ligne retourné par la requete
+     *
+     * @return integer
+     */
     public function numRows() : int
     {
         return $this->query_details['num_rows'] ?? 0;
     }
+    /**
+     * Renvoi la dernier requete executée avant la requete courante
+     * 
+     * @return string
+     */
     public function lastQuery()
     {
         return $this->last_query;
@@ -144,6 +184,15 @@ class Query
 
         return $this->stats;
     }  
+
+    public function exec(string $statement, bool $getResult = true)
+    {
+        if ($getResult)
+        {
+            return $this->query($statement)->result();
+        }
+        return $this->query($statement)->execute();
+    }
 
     /**
      * Gets the SQL statement.

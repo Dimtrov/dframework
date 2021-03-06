@@ -8,11 +8,11 @@
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework\core\db;
@@ -28,11 +28,12 @@ use dFramework\core\db\seeder\TableDef;
  * Genere du faux contenu pour remplir une base de donnees
  *
  * @package		dFramework
- * @subpackage	Library
+ * @subpackage	Core
+ * @category    Db
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Seeder.html
  * @since       3.2.3
- * @file        /system/core/db/seeder/Seeder.php
+ * @file        /system/core/db/Seeder.php
  */
 abstract class Seeder
 {
@@ -76,7 +77,7 @@ abstract class Seeder
     /**
      * Definition des seeds
      *
-     * @param FakerConfiguration $faker
+     * @param Faker $faker
      * @return self
      */
     public abstract function seed(Faker $faker) : self;

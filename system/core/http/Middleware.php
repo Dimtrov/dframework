@@ -69,8 +69,10 @@ class Middleware implements RequestHandlerInterface
      */
     public function add($middlewares) : self
     {
-        $middlewares = (array) $middlewares;
-
+        if (!is_array($middlewares))
+        {
+            $middlewares = [$middlewares];
+        }
         foreach ($middlewares As $middleware)
         {
             $this->append($middleware);
@@ -243,7 +245,7 @@ class Middleware implements RequestHandlerInterface
     }
 
     /**
-     * Recuperation le middleware actuel
+     * Recuperation du middleware actuel
      *
      * @return object|callable
      */

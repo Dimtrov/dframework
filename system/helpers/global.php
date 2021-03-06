@@ -301,6 +301,19 @@ if (!function_exists('is_php'))
 	}
 }
 
+if (!function_exists('is_windows')) 
+{
+    /**
+     * Determine whether the current environment is Windows based.
+     *
+     * @return bool
+     */
+    function is_windows() : bool
+    {
+        return strtolower(substr(PHP_OS, 0, 3)) === 'win';
+    }
+}
+
 if (!function_exists('is_https'))
 {
     /**
@@ -829,15 +842,44 @@ if (!function_exists('to_stream'))
 	 * - metadata: Array of custom metadata.
 	 * - size: Size of the stream.
 	 *
-	 * @param resource|string|null|int|float|bool|StreamInterface|callable|\Iterator $resource Entity body data
-	 * @param array                                                                  $options  Additional options
+	 * @param resource|string|null|int|float|bool|\Psr\Http\Message\StreamInterface|callable|\Iterator $resource Entity body data
+	 * @param array $options  Additional options
 	 *
 	 * @uses GuzzleHttp\Psr7\stream_for
-	 * @return StreamInterface
+	 * @return \Psr\Http\Message\StreamInterface
 	 * @throws \InvalidArgumentException if the $resource arg is not valid.
 	 */
 	function to_stream($resource = '', array $options = [])
 	{
 		return stream_for($resource, $options);
 	}
+}
+
+if (! function_exists('value')) 
+{
+    /**
+     * Return the default value of the given value.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    function value($value)
+    {
+        return $value instanceof Closure ? $value() : $value;
+    }
+}
+
+if (! function_exists('with')) 
+{
+    /**
+     * Return the given value, optionally passed through the given callback.
+     *
+     * @param  mixed  $value
+     * @param  callable|null  $callback
+     * @return mixed
+     */
+    function with($value, callable $callback = null)
+    {
+        return is_null($callback) ? $value : $callback($value);
+    }
 }
