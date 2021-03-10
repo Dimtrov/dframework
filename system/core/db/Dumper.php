@@ -57,15 +57,15 @@ class Dumper
 
     /**
      * Migrator constructor.
-     * @param Database $db
+     * @param string $group
      */
-    public function __construct(Database $db)
+    public function __construct(?string $group = null)
     {
         if ('cli' !== PHP_SAPI) 
         {
             exit('Fonctionnalités disponible uniquement en invite de commande');
         }
-        $this->db = $db;
+        $this->db = Database::instance($group);
         $this->config = $this->db->config();
     }
 
@@ -168,11 +168,11 @@ class Dumper
     {  
         $pdo = $this->db->connection();
 
-        $tables = $pdo->query('SHOW TABLES')->fetchAll(\PDO::FETCH_NUM);
-        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
-        foreach ($tables As $value) 
+        $tables = $pdo->tables();
+        $pdo->disableFk();
+        foreach ($tables As $table) 
         {
-            $pdo->exec('DROP TABLE '.$value[0]);
+            $pdo->query('DROP TABLE '.$table);
         }
     }
 }

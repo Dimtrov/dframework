@@ -71,8 +71,7 @@ class Exception extends \Exception
      */
     public static function show(string $message, int $code = 0)
     {
-        Debugger::fireLog($message);
-        exit;
+        die($message);
     }
 
     public static function except(string $title, string $message = '', int $code = 0)

@@ -111,7 +111,7 @@ class Database extends Cli
         return (new Command('db:dump', 'Demarre l\'importation ou l\'exportation de votre base de données'))
             ->option('-b --backup', 'Cree une sauvegarde de la base de donnees')
             ->option('-u --upgrade', 'Importe un script de base de donnees')
-            ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"', 'default')
+            ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
             ->usage(
                 '<bold>  dbot db:dump --backup</end> <comment> => Cree un fichier de sauvegarde la base de donnees dans le repertoire "/app/resources/database/dump/" sous le nom "nombd_v[num_ver].sql"</end><eol/>' .
                 '<bold>  dbot db:dump -upgrade</end> <comment> => Importe le script de base de donnees du fichier "nombd_v[num_ver].sql" se trouvant dans le repertoire "/app/resources/database/dump/"</end><eol/>' 
@@ -130,12 +130,13 @@ class Database extends Cli
                     }
                     $cli->start('Service de d\'import/export de base de donnees');
 
+                    $dump = new Dumper($database);
+                        
                     if (!empty($backup)) 
                     {
                         $cli->task('Sauvegarde de la base de données');
                         $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
-                        $dump = new Dumper(Db::instance()->use($database));
                         $filename = $dump->down($num_ver);
                 
                         $cli->_io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
@@ -146,7 +147,6 @@ class Database extends Cli
                         $cli->task('Importation de la base de données en cours');
                         $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
-                        $dump = new Dumper(Db::instance()->use($database));
                         $filename = $dump->up($num_ver);
                 
                         $cli->_io->ok("\n\t Base de donnees migrée avec succès.", true);

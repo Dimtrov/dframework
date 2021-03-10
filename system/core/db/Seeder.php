@@ -17,6 +17,7 @@
 
 namespace dFramework\core\db;
 
+use dFramework\core\db\query\Builder;
 use dFramework\core\db\seeder\Faker;
 use dFramework\core\db\seeder\Generator;
 use dFramework\core\db\seeder\Table;
@@ -57,12 +58,12 @@ abstract class Seeder
     
     /**
      * @param string $locale
-     * @param string $db_group
+     * @param string $group
      */
-    public function __construct(string $locale = 'fr_FR', string $db_group = 'default')
+    public function __construct(string $locale = 'fr_FR', string $group = null)
     {
         $this->generator = new Generator($locale);
-        $this->builder = (new Builder)->setDb($db_group);
+        $this->builder = new Builder($group);
     }
 
     /**

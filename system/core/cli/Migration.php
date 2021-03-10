@@ -87,7 +87,7 @@ class Migration extends Cli
      */
     protected function _up() : Command
     {
-        return (new Command('migration:run', 'Demarre l\'execution des migrations'))
+        return (new Command('migration:run', 'Localise et exécute toutes les nouvelles migrations dans la base de données.'))
             ->usage('<bold>  dbot migration:run</end> <comment> => Exécute les méthodes up() des fichiers de migrations situés dans le repertoire "/app/resources/database/migrations/"</end><eol/>')
             ->action(function() {
                 try {
@@ -98,29 +98,24 @@ class Migration extends Cli
 
                     $cli->start('Service de gestion de migrations de bases de données');
                     $cli->task('Execution des migration');
-
-                    $cli->_io->write("\t=> Recherche de migrations en cours", true);
                     sleep(1);
-
+                    
                     $runner = Runner::instance();
-                    $migrations = $runner->up();
-                    if (empty($migrations)) 
+                    if (! $runner->latest())
                     {
-                        $cli->_io->warn("\t=> Aucune migration trouvée");
-                    }
-                    else 
-                    {
-                        foreach ($migrations As $migration) 
-                        {
-                            $runner->launch($migration, 'up');
-                            $cli->_io->ok("\t + Migration: ".$migration->name, true);
-                        }
+                        return $cli->io->error('Migration failed!');
                     }
 
+                    $messages = $runner->getMessages();
+                    foreach ($messages as $message)
+                    {
+                        $cli->colorize($message);
+                    }
+                    $cli->io->ok('Done');
                     $cli->end();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
             });
     }
@@ -132,9 +127,11 @@ class Migration extends Cli
      */
     protected function _down() : Command
     {
-        return (new Command('migration:rollback', 'Annulle les migrations'))
+        return (new Command('migration:rollback', 'Exécute la méthode « down » pour toutes les migrations du dernier lot.'))
+            ->option('-b', 'Spécifie un lot à restaurer ; par exemple, « 3 » pour retourner au lot #3 ou « -2 » pour retourner deux fois')
+            ->option('-f', 'Cette option vous permet de contourner la question de confirmation lors de l\'exécution de cette commande dans un environnement de production')
             ->usage('<bold>  dbot migration:rollback</end> <comment> => Exécute un rollback (méthodes down()) des fichiers de migrations situés dans le repertoire "/app/resources/database/migrations/"</end><eol/>')
-            ->action(function() {
+            ->action(function($b, $f) {
                 try {
                     /**
                      * @var Command
@@ -142,30 +139,34 @@ class Migration extends Cli
                     $cli = $this;
 
                     $cli->start('Service de gestion de migrations de bases de données');
+                    
+                    if (empty($f) AND  $cli->io->choice('Are you sure you want to rollback?', ['y', 'n']) === 'n')
+                    {
+                        return;
+                    }
                     $cli->task('Rollback des migrations');
-
-                    $cli->_io->write("\t=> Recherche de migrations en cours", true);
                     sleep(1);
 
                     $runner = Runner::instance();
-                    $migrations = $runner->down();
-                    if (empty($migrations)) 
+                    $batch = !empty($b) ? $b : $runner->getLastBatch() - 1;
+
+                    $cli->io->warn('Rolling back migrations to batch: ' . $batch, true);
+
+                    if (! $runner->regress($batch))
                     {
-                        $cli->_io->warn("\t=> Aucune migration trouvée");
+                        return $cli->io->error('Migration failed!');
                     }
-                    else 
+
+                    $messages = $runner->getMessages();
+                    foreach ($messages as $message)
                     {
-                        foreach ($migrations As $migration) 
-                        {
-                            $runner->launch($migration, 'down');
-                            $cli->_io->ok("\t + Migration: ".$migration->name, true);
-                        }
+                        $cli->colorize($message);
                     }
-                    
+                    $cli->io->ok('Done');
                     $cli->end();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
             });
     }

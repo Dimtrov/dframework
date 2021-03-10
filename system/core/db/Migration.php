@@ -34,7 +34,15 @@ use dFramework\core\db\migration\Schema;
  */
 abstract class Migration
 {
+	/**
+	 * @var array liste des taches 
+	 */
 	private $schemas = [];
+
+	/**
+	 * @var string Nom du group a utiliser pour lexecuter les migrations
+	 */
+	protected $group = null;
 
 	//--------------------------------------------------------------------
 
@@ -59,6 +67,15 @@ abstract class Migration
 	public function getSchemas() : array 
 	{
 		return $this->schemas;
+	}
+	/**
+	 * Renvoi le nom du groupe a utiliser pour la connexion a la base de donnees
+	 *
+	 * @return string|null
+	 */
+	public function getGroup() : ?string 
+	{
+		return $this->group;
 	}
 
 	/**
@@ -85,10 +102,10 @@ abstract class Migration
      */
     protected function modify(string $table, callable $callback)
     {
-		$schema = $this->build($table, $callback);
-		$schema->modify();
+      	$schema = $this->build($table, $callback);
+      	$schema->modify();
 
-		$this->schemas[] = $schema;
+      	$this->schemas[] = $schema;
     }
 
     /**

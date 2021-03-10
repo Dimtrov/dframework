@@ -6,14 +6,8 @@ class TestController extends AppController
 {
     public function index() 
     {
-        
-        $runner = Runner::instance();
-        $migrations = $runner->up();
+      $run = new Runner();
 
-        foreach ($migrations As $migration) 
-                        {
-                            $runner->launch($migration, 'up');
-                        }
-        vd($migrations);
+      $run->regress();
     }
 }

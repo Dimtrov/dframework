@@ -3,32 +3,31 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2020, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
- 
+
 namespace dFramework\core\db;
 
 use dFramework\core\Config;
-use dFramework\core\exception\DatabaseException;
+use dFramework\core\db\connection\BaseConnection;
+use dFramework\core\db\connection\Mysql;
+use dFramework\core\db\query\Result;
 use dFramework\core\utilities\Arr;
-use InvalidArgumentException;
-use mysqli;
-use PDO;
-use SQLite3;
+use dFramework\core\exception\DatabaseException;
 
 /**
  * Database
  *
- * Initialise a database process of application
+ * Initialize a database process of application
  *
  * @package		dFramework
  * @subpackage	Core
@@ -40,140 +39,286 @@ use SQLite3;
  */
 class Database
 {
-    public $config = [];
+    /**
+     * @const array methodes autorisees pour la facade
+     */
+    const allowedFacadeMethods = [
+        'databases', 'tables', 'tableExist', 'columns', 'columnsName',
+        'query', 'truncate', 
+        'foreignKeys', 'enableFk', 'disableFk', 'indexes',
+        'lastId', 'affectedRows',
+        'beginTransaction', 'commit', 'rollback'
+    ];
 
-    private $db_selected = '';
-    
-    private $db;
+    /**
+     * @var array
+     */
+    private $config;
 
-    private $db_type;
+    /**
+     * @var string
+     */
+    private $group = null;
 
-    private $already_initialize = false;
+    /**
+     * @var BaseConnection
+     */
+    private $connection = null;
+
+    /**
+     * @var self
+     */
+    private static $_instance = null;
 
 
-    public static function instance() : self
+    public function __construct(?string $group = null)
+    {
+        $this->group = $group;
+    }
+    public static function instance(?string $group = null) : self 
     {
         if (null === self::$_instance) 
         {
-            self::$_instance = new self;
+            self::$_instance = new self($group);
         }
         return self::$_instance;
     }
-    private static $_instance;
 
-    /**
-     * Connecte la bd et renvoie l'instance de pdo
-     *
-     * @param string $db_group
-     * @param boolean $shared
-     * @return object
-     */
-    public static function connect(string $db_group = 'default', bool $shared = true) : object
+    public static function __callStatic($name, $arguments)
     {
-        $db =  true === $shared ? self::instance() : new self;
-
-        return $db->use($db_group)->connection();
+        return self::execFacade($name, $arguments);
     }
-
-    public function use(string $db_selected) : self
+    public function __call($name, $arguments)
     {
-        if ($db_selected !== $this->db_selected)
+        return self::execFacade($name, $arguments);
+    }
+    private static function execFacade($name, $arguments)
+    {
+        $connection = self::instance()->connection();
+        if (in_array($name, self::allowedFacadeMethods) AND method_exists($connection, $name))
         {
-            Config::load('database');
-            $this->db_selected = strtolower($db_selected);
-            $this->config = (array) Config::get('database.'.$this->db_selected);
-            
-            $this->checkConfig();
+            return call_user_func_array([$connection, $name], $arguments);
         }
-        
-        return $this;
-    }
-    
+        return false;
+    }   
+
     /**
-     * Return instance of database connexion
+     * Verifie si on utilise une connexion pdo ou pas
      *
-     * @return object
+     * @param string|null $group
+     * @return boolean
      */
-    public function connection() : object
+    public function isPdo(?string $group = null) : bool
     {
-        return $this->db;
+        $config = $this->config(null, $group);
+
+        return preg_match('#pdo#', $config['driver']);
     }
 
-    public function type()
+    /**
+     * Wraps quotes around a string and escapes the content for a string parameter.
+     *
+     * @param mixed $value mixed value
+     * @return mixed Quoted value
+     */
+    public function quote($value, ?string $group = null) 
     {
-        return $this->db_type;
+        if ($value === null) 
+        {
+            return 'NULL';
+        }
+        if (is_string($value)) 
+        {
+            $connection = $this->connection($group);
+
+            if ($connection)
+            {
+                return $connection->escapeString($value);
+            }
+
+            return str_replace(
+                array('\\', "\0", "\n", "\r", "'", '"', "\x1a"),
+                array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'),
+                $value
+            );
+        }
+        return $value;
     }
 
-    public function config(?string $key = null)
+    /**
+     * Recupere la configuration de la base de donnees courante
+     *
+     * @param string|null $key
+     * @param string|null $group
+     * @return array|mixed
+     */
+    public function config(?string $key = null, ?string $group = null) : array
+    {
+        $config = [];
+
+        if (!empty($group))
+        {
+            if ($group === $this->group)
+            {
+                if (!empty($this->config)) 
+                {
+                    $config = $this->config;
+                }
+            }
+            else 
+            {
+                $config = $this->config = $this->makeConfig($group);
+            }
+        }
+        else if (!empty($this->config)) 
+        {
+            $config = $this->config;
+        }
+        else 
+        {
+            $config = $this->config = $this->makeConfig();
+        }
+
+        if (!empty($key)) 
+        {
+            return $config[$key] ?? null;
+        }
+        return $config;
+    }
+
+    /**
+     * Recupere la connection a la base de donnees
+     *
+     * @param string|null $group
+     * @return BaseConnection
+     */
+    public function connection(?string $group = null) : BaseConnection
+    {
+        if (!empty($group))
+        {
+            if ($group === $this->group)
+            {
+                if (!empty($this->connection)) 
+                {
+                    return $this->connection;
+                }
+            }
+            return $this->connection = $this->createConnection($group);
+        }
+        if (!empty($this->connection)) 
+        {
+            return $this->connection;
+        }
+        return $this->connection = $this->createConnection();
+    }
+    /**
+     * Cree une connection a la base de donnees en utilisant le driver approprier
+     *
+     * @param string|null $group
+     * @return BaseConnection
+     */
+    private function createConnection(?string $group = null) : BaseConnection
+    {
+        $this->config = $this->makeConfig($group);
+
+        if (preg_match('#mysql#', $this->config['driver']))
+        {
+            return new Mysql($this->config);
+        }
+        /**
+         * @todo gerer les autres driver
+         */
+        throw new DatabaseException("Database driver not available for the moment", 1);
+    }
+
+    /**
+     * Cherche et recupere une cle de configutaion
+     *
+     * @param array $config
+     * @param string|null $key
+     * @return mixed
+     */
+    private function getConfig(array $config, ?string $key = null)
     {
         if (empty($key))
         {
-            return $this->config;
+            return $config;
         }
-        return Arr::getRecursive($this->config, $key);
+        return Arr::getRecursive($config, $key);
     }
 
-
     /**
-     * Check if the configuration information of the database is correct
+     * Verifie et initialise les parametres de connexion a la base de donnees
+     *
+     * @param string|null $group
+     * @return array
      */
-    private function checkConfig()
+    private function makeConfig(?string $group = null) : array
     {
-        $dbs = $this->db_selected;
-        $config = $this->config ?? null;
+        $config = Config::get('database');
 
-        if (empty($config) OR !is_array($config))
+        if (empty($config['connection'])) 
         {
-            DatabaseException::except('
-                The <b>'.$dbs.'</b> database configuration is required. <br>
-                Please open the "'.Config::$_config_file['database'].'" file or use &laquo; Database::setConfig &raquo; to correct it
+            DatabaseException::except('Used connction not found', '
+                The key <b>connection</b> is required. <br>
+                Please open the "'.Config::$_config_file['database'].'" file to set it
             ');
         }
+        $group = empty($group) ? $config['connection'] : $group;
+
+        if (empty($config[$group])) 
+        {
+            DatabaseException::except('Database configuration not found', '
+                The <b>'.$group.'</b> database configuration is not define. <br>
+                Please open the "'.Config::$_config_file['database'].'" file to correct it
+            ');
+        }
+        $config = $config[$group];
+        $this->group = $group;
+
         $keys = ['driver','port','host','username','password','database','charset'];
 
         foreach ($keys As $key)
         {
             if (!array_key_exists($key, $config))
             {
-                DatabaseException::except('
-                    The <b>'.$key.'</b> key of the '.$dbs.' database configuration don\'t exist. <br>
-                    Please fill it in array $config["database"]["'.$dbs.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo or use &laquo; Database::setConfig &raquo; 
+                DatabaseException::except('Configuration key don\'t exist', '
+                    The <b>'.$key.'</b> key of the '.$group.' database configuration don\'t exist. <br>
+                    Please fill it in array $database["'.$group.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo; 
                 ');
             }
         }
-
         foreach ($config As $key => $value)
         {
             if (!in_array($key, ['password', 'options','prefix', 'debug']) AND empty($value)) 
 			{
-                DatabaseException::except('
-                    The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
-                    Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo or use &laquo; Database::setConfig &raquo; 
+                DatabaseException::except('Invalid configuration key', '
+                    The <b>' . $key . '</b> key of ' . $group . ' database configuration must have a valid value. <br>
+                    Please correct it in array $database["'.$group.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo;
                 ');
             }
         }
 
-        $config['debug'] = $this->autoValue('debug', '[debug]');
+        $config['debug'] = $this->autoValue($config, 'debug', '[debug]');
 
-        $config['options']['enable_stats'] = $this->autoValue('options.enable_stats', '[options][enable_stats]');
+        $config['options']['enable_stats'] = $this->autoValue($config, 'options.enable_stats', '[options][enable_stats]');
 
-        $config['options']['enable_cache'] = $this->autoValue('options.enable_cache', '[options][enable_cache]');
+        $config['options']['enable_cache'] = $this->autoValue($config, 'options.enable_cache', '[options][enable_cache]');
 
-        $this->config = $config;
-
-        $this->initialize();
+        return $config;
     }
 
     /**
      * Definit automatiquement la valeur d'une configuration en fonction de l'environnement
      *
+     * @param array $config
      * @param string $key
      * @param string $label
      * @return boolean
      */
-    private function autoValue(string $key, string $label) : bool
+    private function autoValue(array $config, string $key, string $label) : bool
     {
-        $value = $this->config($key);
+        $value = $this->getConfig($config, $key);
         if (empty($value))
         {
             $value = 'auto';
@@ -181,10 +326,9 @@ class Database
         
         if (!in_array($value, ['auto', true, false]))
         {
-            DatabaseException::except('
-                The <b>database['.$this->db_selected.']'.$label.'</b> configuration is not set correctly (Accept values: auto/true/false). 
-                <br>
-                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file  or use &laquo; Database::setConfig &raquo; to correct it
+            DatabaseException::except('Invalid key set', '
+                The <b>database['.$this->group.']'.$label.'</b> configuration is not set correctly (Accept values: auto/true/false). <br>
+                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file to correct it
             ');
         }
         else if($value === 'auto')
@@ -194,160 +338,4 @@ class Database
 
         return (bool) $value;
     }
-
-    /**
-     * Initializes the access parameters to the database
-     */
-    private function initialize()
-    {
-        $db = $this->parse_config();
-
-        $db['dbname'] = $db['database'];
-        $commands = [];
-
-        switch (strtolower($db['driver'])) 
-        {
-            case 'mysqli':
-                $this->db = new mysqli(
-                    $db['host'],
-                    $db['username'],
-                    $db['password'],
-                    $db['database'],
-                    $db['port']
-                );
-
-                if ($this->db->connect_error) 
-                {
-                    throw new DatabaseException('Connection error: '.$this->db->connect_error);
-                }
-
-                break;
-
-            case 'pgsql':
-                $str = sprintf(
-                    'host=%s port=%s dbname=%s user=%s password=%s',
-                    $db['host'],
-                    $db['port'],
-                    $db['database'],
-                    $db['username'],
-                    $db['password']
-                );
-
-                $this->db = pg_connect($str);
-
-                break;
-
-            case 'sqlite3':
-                $this->db = new SQLite3($db['database']);
-
-                break;
-
-            case 'pdomysql':
-            case 'pdo_mysql':
-                $dsn = sprintf(
-                    'mysql:host=%s;port=%d;dbname=%s',
-                    $db['host'],
-                    isset($db['port']) ? $db['port'] : 3306,
-                    $db['database']
-                );
-
-                $this->db = new PDO($dsn, $db['username'], $db['password']);
-                $commands[] = 'SET SQL_MODE=ANSI_QUOTES';
-
-                break;
-
-            case 'pdopgsql':
-            case 'pdo_pgsql':
-                $dsn = sprintf(
-                    'pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s',
-                    $db['host'],
-                    isset($db['port']) ? $db['port'] : 5432,
-                    $db['database'],
-                    $db['username'],
-                    $db['password']
-                );
-
-                $this->db = new PDO($dsn);
-                break;
-
-            case 'pdosqlite':
-            case 'pdo_sqlite':
-                $this->db = new PDO('sqlite:/'.$db['database']);
-                break;
-            
-            default:
-                throw new InvalidArgumentException('Unsupported PDO driver: {<b>'.$db['driver'].'</b>}');
-                
-            break;
-        }
-
-        if ($this->db == null) {
-            throw new DatabaseException('Undefined database.');
-        }
-        
-        $this->db_type = strpos($db['driver'], 'pdo') !== false ? 'pdo' : $db['driver'];
-
-        if (preg_match('#(mysql|pgsql)$#i', $db['driver']) AND isset($db['charset']))
-        {
-            $commands[] = "SET NAMES '{$db['charset']}'" . (
-                (preg_match('#mysql$#i', $db['driver']) AND isset($db['collation'])) ?
-                    " COLLATE '{$db['collation']}'" : ''
-            );
-        }
-
-        if ($this->db_type === 'pdo')
-        {
-            foreach ($commands As $value)
-            {
-                $this->db->exec($value);
-            }
-            if (isset($db['debug']) AND $db['debug'] === true)
-            {
-                $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            }
-            if (isset($db['options']['column_case']))
-            {
-                switch (strtolower($db['options']['column_case']))
-                {
-                    case 'lower' :
-                        $casse = PDO::CASE_LOWER;
-                        break;
-                    case 'upper' :
-                        $casse = PDO::CASE_UPPER;
-                        break;
-                    default:
-                        $casse = PDO::CASE_NATURAL;
-                        break;
-                }
-                $this->db->setAttribute(PDO::ATTR_CASE, $casse);
-            }
-        }
-    }
-
-    /**
-    * Parse database configuration and use the correct key if we are in dev/prod environment
-    *
-    * @return array
-	*/
-	private function parse_config() : array
-	{
-		$config = $this->config;
-		foreach ($config As $key => $value)
-		{
-			if (is_string($value) AND !in_array($key, ['options', 'debug'])) 
-			{
-				$tmp = explode('|', $value);
-                if (preg_match('#^prod(uction)?$#i', Config::get('general.environment'))) 
-                {
-					$config[$key] = $tmp[1] ?? $tmp[0];
-				}
-                else 
-                {
-					$config[$key] = $tmp[0];
-				}
-			}
-        }
-        
-		return $config;
-	}
 }

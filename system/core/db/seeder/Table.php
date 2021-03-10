@@ -17,7 +17,7 @@
 
 namespace dFramework\core\db\seeder;
 
-use dFramework\core\db\Builder;
+use dFramework\core\db\query\Builder;
 
 /**
  * Table
@@ -350,6 +350,7 @@ class Table
     {
         if (true === $this->truncateTable)
         {
+            $this->builder->disableFk();
             $this->builder->truncate($this->name);
         } 
         foreach ($this->rows As $row) 

@@ -3,36 +3,35 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019 - 2020, Dimtrov Lab's
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
-namespace dFramework\components\orm;
+namespace dFramework\core\db\orm;
 
 use Countable;
 use ArrayIterator;
 use IteratorAggregate;
-use PDO;
 
 /**
  * Result
  *
  * @package		dFramework
- * @subpackage	Components
- * @category 	Orm
+ * @subpackage	Core
+ * @category 	Db\Orm
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.2.3
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
- * @file		/system/components/orm/Result.php
+ * @file		/system/core/db/orm/Result.php
  */
 class Result implements Countable, IteratorAggregate 
 {
@@ -47,37 +46,61 @@ class Result implements Countable, IteratorAggregate
 
 	protected $rows;
 
-	public function __construct(Model $model, QueryBuilder $query = null)
+	public function __construct(Model $model, QueryBuilder $query)
 	{
 		$this->model = $model;
 		$this->query = $query;
 	}
 
+	/**
+	 * Renvoi un resultat
+	 *
+	 * @return mixed
+	 */
 	public function row()
 	{
-		$rowData = $this->query->one(PDO::FETCH_ASSOC);
-	
-		return $this->model->setData($rowData);
+		return $this->query->one($this->model->getClassName());
 	}
-
-	public function rows() : array
-	{
-		$rows = $this->query->all(PDO::FETCH_ASSOC);
-
-		$return = [];
-		foreach ($rows As $rowData)
-		{
-			$return[] = $this->model->setData($rowData);;
-		}
-
-		return $return;
-	}
-
-	// Alias for row();
+	/**
+	 * @alias self::row()
+	 */
 	public function first()
 	{
 		return $this->row();
 	}
+	/**
+	 * @alias self::row()
+	 */
+	public function one()
+	{
+		return $this->row();
+	}
+
+	/**
+	 * Recupere toute les donnees presende dans le resultat
+	 *
+	 * @return array
+	 */
+	public function rows() : array
+	{
+		return $this->query->all($this->model->getClassName());
+	}
+	/**
+	 * @alias self::rows()
+	 */
+	public function all() : array 
+	{
+		return $this->rows();
+	}
+	/**
+	 * alias self::rows()
+	 */
+	public function result() : array 
+	{
+		return $this->rows();
+	}
+	
+	
 
 	public function pluck($field)
 	{

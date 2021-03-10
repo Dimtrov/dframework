@@ -1,9 +1,37 @@
 <?php 
-namespace dFramework\core\db\migration;
+/**
+ *  dFramework
+ *
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.3.0
+ */
+
+ namespace dFramework\core\db\migration;
 
 use Closure;
 use dFramework\core\utilities\Collection;
 
+/**
+ * Schema
+ * Classe to define schema of table migration
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category 	Db/Migration
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       3.3.0
+ * @file		/system/core/db/migration/Schema.php
+ */
 class Schema 
 {
     /**
@@ -382,7 +410,7 @@ class Schema
      *
      * @param  string|array  $columns
      * @param  string|null  $name
-     * @return Column|\Illuminate\Database\Schema\ForeignKeyDefinition
+     * @return Column
      */
     public function foreign($columns, ?string $name = null)
     {
@@ -419,7 +447,7 @@ class Schema
      */
     public function tinyIncrements(string $column) : Column
     {
-        return $this->unsignedTinyInteger($column, true);
+        return $this->unsignedTinyInteger($column, true)->primary();
     }
 
     /**
@@ -430,7 +458,7 @@ class Schema
      */
     public function smallIncrements(string $column) : Column
     {
-        return $this->unsignedSmallInteger($column, true);
+        return $this->unsignedSmallInteger($column, true)->primary();
     }
 
     /**
@@ -441,7 +469,7 @@ class Schema
      */
     public function mediumIncrements(string $column) : Column
     {
-        return $this->unsignedMediumInteger($column, true);
+        return $this->unsignedMediumInteger($column, true)->primary();
     }
 
     /**
@@ -452,7 +480,7 @@ class Schema
      */
     public function bigIncrements(string $column) : Column
     {
-        return $this->unsignedBigInteger($column, true);
+        return $this->unsignedBigInteger($column, true)->primary();
     }
 
     /**
@@ -1243,7 +1271,7 @@ class Schema
     }
 
     /**
-     * Get the columns on the blueprint.
+     * Get the columns on the schema.
      *
      * @return Column[]
      */
@@ -1253,7 +1281,7 @@ class Schema
     }
 
     /**
-     * Get the commands on the blueprint.
+     * Get the commands on the schema.
      *
      * @return Column[]
      */

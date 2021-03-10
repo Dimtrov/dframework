@@ -3,24 +3,25 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019 - 2020, Dimtrov Lab's
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core;
 
-use dFramework\components\orm\Helper;
-use dFramework\components\orm\Model;
-use dFramework\components\orm\Relations\Relation;
-use dFramework\core\utilities\Chaine;
+use dFramework\core\db\Database;
+use dFramework\core\db\orm\Model;
+use dFramework\core\exception\DatabaseException;
+use dFramework\core\utilities\Str;
+use ReflectionClass;
 
 /**
  * Entity
@@ -42,274 +43,229 @@ abstract class Entity
     private $orm;
 
 	/**
+	 * @var string parametre de connexion a la bd a utiliser
+	 */
+	protected $group = null;
+
+	/**
+	 * @var string Table a utiliser
+	 */
+	protected $table = null;
+	/**
+	 * @var array colonnes de l'entite
+	 */
+	protected $columns = [];
+	/**
+	 * @var string Cle primaire de la table
+	 */
+	protected $primaryKey = null;
+
+	/**
+	 * @var integer Nombre de ligne par page pour la pagination
+	 */
+	protected $perPage = 25;
+
+	/**
+	 * @var array Attributs autorisés
+	 */
+	protected $fillables = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param array|null $data
 	 */
-	public function __construct(?array $data = [])
+	public function __construct(array $data = [], bool $strict = true)
 	{
-        $this->orm = new Model($this, $data);
-    }
-    
-
-    protected function all(array $properties = [])
-    {
-        return $this->orm->all($properties);
+		if (true === $strict AND !$this->isFillable($data))
+		{
+			throw new DatabaseException("Attribut non autorisé trouvé");
+		}
+		$this->orm = $this->_assignData($data);
     }
 
-    protected function get(array $properties = [])
-    {
-        return $this->orm->get($properties);
-    }
-
-    protected function first(array $properties = [])
-    {
-        return $this->orm->first($properties);
-    }
-
-    protected function find($id) 
-    {
-        return $this->orm->find($id);
-    }
-
-    protected function pulck(string $field)
-    {
-        return $this->orm->pulck($field);
-    }
-
-    public static function create(array $data)
-    {
-        return Model::create($data);
-    }
-
-    protected function update($data)
-    {
-        return $this->orm->update($data);
-    }
-
-    protected function save()
-    {
-        return $this->orm->save();
-    }
-
-    protected function delete()
-    {
-        return $this->delete();
-    }
-
-    protected function paging($page, $per_page = null)
-    {
-        return $this->orm->paging($page, $per_page);
-    }
-
-    protected function for_page($page, $per_page = null)
-    {
-        return $this->orm->for_page($page, $per_page);
-    }
-
-    protected function getPrimaryKey()
+	/**
+	 * Recuperes les attributs autorises
+	 *
+	 * @return array
+	 */
+	private function _fillables() : array 
 	{
-		return $this->orm->getPrimaryKey();
+		return $this->fillables;
+	}
+	/**
+	 * Verifie si un attributs est autorisé
+	 *
+	 * @param string|array $attributes
+	 * @return boolean
+	 */
+	private function _isFillable($attributes) : bool
+	{
+		$attributes = (array) $attributes;
+		$isFillable = true;
+
+		foreach ($attributes As $key => $value) 
+		{
+			if (!in_array($key, $this->fillables))
+			{
+				$isFillable = false;
+				break;
+			}
+		}
+		return $isFillable;
+	}
+	/**
+	 * Assigne les donnees a l'entite
+	 *
+	 * @param array $data
+	 * @return Model
+	 */
+	private function _assignData(array $data)
+	{
+		$columns = $this->_getColumns();
+		$attributes = [];
+		
+		foreach ($data As $key => $value) 
+		{
+			if (in_array($key, $columns)) 
+			{
+				$attributes[$key] = $value;
+			}
+			else 
+			{
+				$this->{$key} = $value;
+			}
+		}
+        return new Model($this, $attributes);
+	}
+	/**
+	 * Recupere le groupe de connexion a utiliser
+	 *
+	 * @return string|null
+	 */
+	private function _getGroup() : ?string 
+	{
+		return $this->group;
 	}
 
-	protected function getData($field = null)
+	/**
+	 * Retoure le nom de la table de l'entite courrante
+	 *
+	 * @return string
+	 */
+	private function _getTable() : string 
 	{
-        return $this->orm->getData($field);
+		if (!empty($this->table))
+		{
+			return $this->table;
+		}
+		$table = Str::toSnake(preg_replace('#Entity$#', '', get_called_class()));
+		helper('inflector');
+		
+		$table = Database::tableExist(plural($table)) ? plural($table) : $table;
+
+		return $this->table = $table;
+	}
+	/**
+	 * Renvoi le nom des colonne de la table d'entite courrante
+	 *
+	 * @return array
+	 */
+	private function _getColumns() : array 
+	{
+		if (!empty($this->columns))
+		{
+			return $this->columns;
+		}
+		return Database::columnsName($this->_getTable());
+	}
+	/**
+	 * Retourne la cle primaire de la table de l'entite courrante
+	 *
+	 * @return string
+	 */
+	private function _getPrimaryKey() : string 
+	{
+		if (!empty($this->primaryKey))
+		{
+			return $this->primaryKey;
+		}
+		$table = $this->_getTable();
+		$pk = Database::indexes($table, 'PRIMARY');
+
+		return $pk->fields[0] ?? singular('id_'.$table);
+	}
+	/**
+	 * Retourne le nombre d'element a afficher lors d'une pagination
+	 *
+	 * @return integer
+	 */
+	private function _getPerPage() : int 
+	{
+		return $this->perPage;
 	}
 
-    protected function setData($field, $value = null)
-	{
-        return $this->orm->setData($field, $value);
-	}
 
-	protected function toArray()
-	{
-        return $this->orm->toArray();
-    }
-
-	protected function json()
-	{
-        return $this->orm->json();
-	}
-
-
-    // ======================================
-	// Relationship Methods
 	// ======================================
-
-	protected function hasOne($related, $foreign_key = null)
-	{
-        return $this->orm->hasOne($related, $foreign_key);
-	}
-
-	protected function hasMany($related, $foreign_key = null)
-	{
-        return $this->orm->hasMany($related, $foreign_key);
-    }
-
-	protected function belongsTo($related, $foreign_key = null)
-	{
-        return $this->orm->belongsTo($related, $foreign_key);
-	}
-
-	protected function belongsToMany($related, $pivot_table = null, $foreign_key = null, $other_key = null)
-	{
-        return $this->orm->belongsToMany($related, $pivot_table, $foreign_key, $other_key);
-	}
-
-	protected function setRelation($name, Relation $relation)
-	{
-        return $this->orm->setRelation($name, $relation);
-	}
-
-	protected function getRelation($name)
-	{
-		return $this->orm->getRelation($name);
-	}
-
-	protected function load($related)
-	{
-        return $this->orm->load($related);
-	}
-
-
-    // ======================================
-	// Aggregate Methods
-	// ======================================
-
-	protected function aggregates($function, $field)
-	{
-        return $this->orm->aggregates($function, $field);
-	}
-
-	protected function max($field)
-	{
-		return $this->orm->max($field);
-	}
-
-	protected function min($field)
-	{
-		return $this->orm->min($field);
-	}
-
-	protected function avg($field)
-	{
-		return $this->orm->avg($field);
-	}
-
-	protected function sum($field)
-	{
-		return $this->orm->sum($field);
-	}
-
-	protected function count($field = null)
-	{
-        return $this->orm->count($field);
-	}
-
-    // ======================================
 	// Magic Methods
 	// ======================================
 
-	public function __call($name, $arguments)
+	private function execFacade(string $name, array $arguments)
 	{
 		// Check if the method is available in this model
-		if(method_exists($this, $name))
-			return call_user_func_array( array($this, $name), $arguments );
-
-		// Check if the method is a "scope" method
-        // Read documentation about scope method
-        $scope = "scope" . Helper::studlyCase($name);
-
-		if(method_exists($this, $scope))
+		if (method_exists($this, $name))
 		{
-			array_unshift($arguments, $this);
-
-			return call_user_func_array( array($this, $scope), $arguments );
+			return call_user_func_array([$this, $name], $arguments);
 		}
-
-        return $this->orm->__call($name, $arguments);
+		if (method_exists($this, '_'.$name))
+		{
+			return call_user_func_array([$this, '_'.$name], $arguments);
+		}
+		return $this->orm->__call($name, $arguments);
 	}
-
-	public static function __callStatic($name, $arguments)
+	/**
+	 * @param string $name
+	 * @param array $arguments
+	 * @return mixed
+	 */
+	public function __call(string $name, array $arguments)
 	{
-		$model = get_called_class();
-
-		return call_user_func_array( array(new $model, $name), $arguments );
+		return $this->execFacade($name, $arguments);
 	}
-
-	function __get($field)
-    {
-    	if(!isset( $this->data[ $field ] )) $value = '';
-		else
- 		$value = $this->data[ $field ];
-
-		$accessor = "getAttr". Helper::camelCase( $field );
-
-		return method_exists($this, $accessor) ? call_user_func(array($this, $accessor), $value, $this) : $value;
-	}
-
-    function __set($field, $value)
-    {
-		$mutator = "setAttr". Helper::camelCase( $field );
-
-		if( method_exists($this, $mutator) )
-			$value = call_user_func(array($this, $mutator), $value, $this);
-
-		$this->setData( $field, $value );
-    }
-
-	function __isset($field)
+	/**
+	 * @param string $name
+	 * @param array $arguments
+	 * @return mixed
+	 */
+	public static function __callStatic(string $name, array $arguments)
 	{
-		return !empty($this->data[ $field ]);
+		return (new ReflectionClass(get_called_class()))->newInstance()->execFacade($name, $arguments);
 	}
-
-
-
 
 	/**
-     * Hydratateur d'objet
-     * 
-	 * @param array $data
+	 * @param string $field
+	 * @return mixed
 	 */
-	public function hydrate(array $data)
-	{
-        if (!empty($data)) 
-        {
-			foreach ($data as $key => $value) 
-            {
-				$key = self::getProperty($key);
-				$method = 'set'.ucfirst($key);
-                if (method_exists($this, $method)) 
-                {
-					$this->{$method}($value);
-                } 
-                else 
-                {
-					$this->{$key} = $value;
-				}
-			}
-		}
-	}
-
-
-
-    /**
-     * getProperty
-     *
-     * @param string $fieldName
-     * @return string
-     */
-    public static function getProperty(string $fieldName) : string
+	public function __get(string $field)
     {
-        $case = Config::get('data.hydrator.case');
-        $case = \strtolower($case);
+		$value = $this->orm->getData($field);
+		$accessor = 'getAttr'.Str::toCamel($field);
 
-        if (\in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
-        {
-            $case = 'to'.$case;
-            return Chaine::{$case}($fieldName);
-        }        
-        return $fieldName;
+		return method_exists($this, $accessor) ? call_user_func([$this, $accessor], $value) : $value;
+	}
+	/**
+	 * @param string $field
+	 * @param mixed $value
+	 * @return void
+	 */
+	public function __set(string $field, $value)
+    {
+		$mutator = 'setAttr'.Str::toCamel($field);
+
+		if (method_exists($this, $mutator))
+		{
+			$value = call_user_func([$this, $mutator], $value);
+		}
+		$this->orm->setData($field, $value);
     }
 }

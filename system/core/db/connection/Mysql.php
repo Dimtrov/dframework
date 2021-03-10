@@ -17,13 +17,10 @@
  
 namespace dFramework\core\db\connection;
 
-use dFramework\core\Config;
-use dFramework\core\exception\DatabaseException;
-use dFramework\core\utilities\Tableau;
-use InvalidArgumentException;
-use mysqli;
 use PDO;
-use SQLite3;
+use mysqli;
+use PDOException;
+use dFramework\core\exception\DatabaseException;
 
 /**
  * Mysql
@@ -38,316 +35,576 @@ use SQLite3;
  * @since       3.3.0
  * @file		/system/core/db/connection/Mysql.php
  */
-class Mysql
+class Mysql extends BaseConnection
 {
-    public $config = [];
-
-    private $db_selected = '';
-    
-    private $db;
-
-    private $db_type;
-
-    private $already_initialize = false;
-
-
-    public static function instance() : self
-    {
-        if (null === self::$_instance) 
-        {
-            self::$_instance = new self;
-        }
-        return self::$_instance;
-    }
-    private static $_instance;
+    protected $error = [
+        'message' => '',
+        'code' => 0
+    ];
 
     /**
-     * Connecte la bd et renvoie l'instance de pdo
-     *
-     * @param string $db_group
-     * @param boolean $shared
-     * @return object
-     */
-    public static function connect(string $db_group = 'default', bool $shared = true) : object
-    {
-        $db =  true === $shared ? self::instance() : new self;
-
-        return $db->use($db_group)->connection();
-    }
-
-    public function use(string $db_selected) : self
-    {
-        if ($db_selected !== $this->db_selected)
-        {
-            Config::load('database');
-            $this->db_selected = strtolower($db_selected);
-            $this->config = (array) Config::get('database.'.$this->db_selected);
-            
-            $this->checkConfig();
-        }
+	 * Connect to the database.
+	 *
+	 * @param boolean $persistent
+	 *
+	 * @return mixed
+	 * @throws \DatabaseException
+	 */
+	public function connect(bool $persistent = false)
+	{
+        $db = null;
         
-        return $this;
-    }
-    
-    /**
-     * Return instance of database connexion
-     *
-     * @return object
-     */
-    public function connection() : object
-    {
-        return $this->db;
-    }
-
-    public function type()
-    {
-        return $this->db_type;
-    }
-
-    public function config(?string $key = null)
-    {
-        if (empty($key))
-        {
-            return $this->config;
-        }
-        return Tableau::get_recusive($this->config, $key);
-    }
-
-
-    /**
-     * Check if the configuration information of the database is correct
-     */
-    private function checkConfig()
-    {
-        $dbs = $this->db_selected;
-        $config = $this->config ?? null;
-
-        if (empty($config) OR !is_array($config))
-        {
-            DatabaseException::except('
-                The <b>'.$dbs.'</b> database configuration is required. <br>
-                Please open the "'.Config::$_config_file['database'].'" file or use &laquo; Database::setConfig &raquo; to correct it
-            ');
-        }
-        $keys = ['driver','port','host','username','password','database','charset'];
-
-        foreach ($keys As $key)
-        {
-            if (!array_key_exists($key, $config))
-            {
-                DatabaseException::except('
-                    The <b>'.$key.'</b> key of the '.$dbs.' database configuration don\'t exist. <br>
-                    Please fill it in array $config["database"]["'.$dbs.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo or use &laquo; Database::setConfig &raquo; 
-                ');
-            }
-        }
-
-        foreach ($config As $key => $value)
-        {
-            if (!in_array($key, ['password', 'options','prefix', 'debug']) AND empty($value)) 
-			{
-                DatabaseException::except('
-                    The <b>' . $key . '</b> key of ' . $dbs . ' database configuration must have a valid value. <br>
-                    Please correct it in array $config["database"]["'.$dbs.'"] of the file  &laquo; ' . Config::$_config_file['database'] . ' &raquo or use &laquo; Database::setConfig &raquo; 
-                ');
-            }
-        }
-
-        $config['debug'] = $this->autoValue('debug', '[debug]');
-
-        $config['options']['enable_stats'] = $this->autoValue('options.enable_stats', '[options][enable_stats]');
-
-        $config['options']['enable_cache'] = $this->autoValue('options.enable_cache', '[options][enable_cache]');
-
-        $this->config = $config;
-
-        $this->initialize();
-    }
-
-    /**
-     * Definit automatiquement la valeur d'une configuration en fonction de l'environnement
-     *
-     * @param string $key
-     * @param string $label
-     * @return boolean
-     */
-    private function autoValue(string $key, string $label) : bool
-    {
-        $value = $this->config($key);
-        if (empty($value))
-        {
-            $value = 'auto';
-        }
-        
-        if (!in_array($value, ['auto', true, false]))
-        {
-            DatabaseException::except('
-                The <b>database['.$this->db_selected.']'.$label.'</b> configuration is not set correctly (Accept values: auto/true/false). 
-                <br>
-                Please edit &laquo; '.Config::$_config_file['database'].' &raquo; file  or use &laquo; Database::setConfig &raquo; to correct it
-            ');
-        }
-        else if($value === 'auto')
-        {
-            $value = (Config::get('general.environment') === 'dev');
-        }
-
-        return (bool) $value;
-    }
-
-    /**
-     * Initializes the access parameters to the database
-     */
-    private function initialize()
-    {
-        $db = $this->parse_config();
-
-        $db['dbname'] = $db['database'];
-        $commands = [];
-
-        switch (strtolower($db['driver'])) 
+        switch ($this->driver) 
         {
             case 'mysqli':
-                $this->db = new mysqli(
-                    $db['host'],
-                    $db['username'],
-                    $db['password'],
-                    $db['database'],
-                    $db['port']
+                $db = new mysqli(
+                    $this->host,
+                    $this->username,
+                    $this->password,
+                    $this->database,
+                    $this->port
                 );
 
-                if ($this->db->connect_error) 
+                if ($db->connect_error) 
                 {
-                    throw new DatabaseException('Connection error: '.$this->db->connect_error);
+                    throw new DatabaseException('Connection error: '.$db->connect_error);
                 }
 
                 break;
-
-            case 'pgsql':
-                $str = sprintf(
-                    'host=%s port=%s dbname=%s user=%s password=%s',
-                    $db['host'],
-                    $db['port'],
-                    $db['database'],
-                    $db['username'],
-                    $db['password']
-                );
-
-                $this->db = pg_connect($str);
-
-                break;
-
-            case 'sqlite3':
-                $this->db = new SQLite3($db['database']);
-
-                break;
-
             case 'pdomysql':
             case 'pdo_mysql':
-                $dsn = sprintf(
+                $this->dsn = sprintf(
                     'mysql:host=%s;port=%d;dbname=%s',
-                    $db['host'],
-                    isset($db['port']) ? $db['port'] : 3306,
-                    $db['database']
-                );
-
-                $this->db = new PDO($dsn, $db['username'], $db['password']);
-                $commands[] = 'SET SQL_MODE=ANSI_QUOTES';
-
-                break;
-
-            case 'pdopgsql':
-            case 'pdo_pgsql':
-                $dsn = sprintf(
-                    'pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s',
-                    $db['host'],
-                    isset($db['port']) ? $db['port'] : 5432,
-                    $db['database'],
-                    $db['username'],
-                    $db['password']
-                );
-
-                $this->db = new PDO($dsn);
-                break;
-
-            case 'pdosqlite':
-            case 'pdo_sqlite':
-                $this->db = new PDO('sqlite:/'.$db['database']);
-                break;
-            
+                    $this->host,
+                    $this->port,
+                    $this->database
+				);
+				$db = new PDO($this->dsn, $this->username, $this->password);
+				$this->commands[] = 'SET SQL_MODE=ANSI_QUOTES';
+    
+				break;
             default:
-                throw new InvalidArgumentException('Unsupported PDO driver: {<b>'.$db['driver'].'</b>}');
-                
-            break;
+                # code...
+                break;
         }
-
-        if ($this->db == null) {
-            throw new DatabaseException('Undefined database.');
-        }
-        
-        $this->db_type = strpos($db['driver'], 'pdo') !== false ? 'pdo' : $db['driver'];
-
-        if (preg_match('#(mysql|pgsql)$#i', $db['driver']) AND isset($db['charset']))
+        if (!empty($this->charset))
         {
-            $commands[] = "SET NAMES '{$db['charset']}'" . (
-                (preg_match('#mysql$#i', $db['driver']) AND isset($db['collation'])) ?
-                    " COLLATE '{$db['collation']}'" : ''
-            );
+            $this->commands[] = "SET NAMES '{$this->charset}'" . (!empty($this->collation) ? " COLLATE '{$this->collation}'" : '');
         }
+        $this->type = strpos($this->driver, 'pdo') !== false ? 'pdo' : $this->driver;
 
-        if ($this->db_type === 'pdo')
-        {
-            foreach ($commands As $value)
-            {
-                $this->db->exec($value);
-            }
-            if (isset($db['debug']) AND $db['debug'] === true)
-            {
-                $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            }
-            if (isset($db['options']['column_case']))
-            {
-                switch (strtolower($db['options']['column_case']))
-                {
-                    case 'lower' :
-                        $casse = PDO::CASE_LOWER;
-                        break;
-                    case 'upper' :
-                        $casse = PDO::CASE_UPPER;
-                        break;
-                    default:
-                        $casse = PDO::CASE_NATURAL;
-                        break;
-                }
-                $this->db->setAttribute(PDO::ATTR_CASE, $casse);
-            }
-        }
-    }
+		
+		return $db;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Keep or establish the connection if no queries have been sent for
+	 * a length of time exceeding the server's idle timeout.
+	 *
+	 * @return void
+	 */
+	public function reconnect()
+	{
+		$this->close();
+		$this->initialize();
+	}
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Close the database connection.
+	 *
+	 * @return void
+	 */
+	protected function _close()
+	{
+		if ($this->type === 'pdo')
+		{
+			return $this->conn = null;
+		}
+		$this->conn->close();
+	}
 
     /**
-    * Parse database configuration and use the correct key if we are in dev/prod environment
-    *
-    * @return array
-	*/
-	private function parse_config() : array
+	 * Select a specific database table to use.
+	 *
+	 * @param string $databaseName
+	 *
+	 * @return boolean
+	 */
+	public function setDatabase(string $databaseName): bool
 	{
-		$config = $this->config;
-		foreach ($config As $key => $value)
+		if ($databaseName === '')
 		{
-			if (is_string($value) AND !in_array($key, ['options', 'debug'])) 
-			{
-				$tmp = explode('|', $value);
-                if (preg_match('#^prod(uction)?$#i', Config::get('general.environment'))) 
-                {
-					$config[$key] = $tmp[1] ?? $tmp[0];
-				}
-                else 
-                {
-					$config[$key] = $tmp[0];
-				}
-			}
+			$databaseName = $this->database;
+		}
+		if (empty($this->conn))
+		{
+			$this->initialize();
+        }
+        if ($this->driver === 'mysqli')
+        {
+            if ($this->connID->select_db($databaseName))
+            {
+                $this->database = $databaseName;
+
+                return true;
+            }
+            return false;
+        }
+		return true;
+	}
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Returns a string containing the version of the database being used.
+	 *
+	 * @return string
+	 */
+	public function getVersion(): string
+	{
+		if (isset($this->dataCache['version']))
+		{
+			return $this->dataCache['version'];
+		}
+
+		if (empty($this->conn))
+		{
+			$this->initialize();
         }
         
-		return $config;
+		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_info : $this->conn->getAttribute(PDO::ATTR_CLIENT_VERSION);
+	}
+
+    /**
+	 * Executes the query against the database.
+	 *
+	 * @param string $sql
+	 * @param array $params
+	 * @return mixed
+	 */
+	public function execute(string $sql, array $params = [])
+	{
+        $error = null;
+        $result = false;
+		$time = microtime(true);
+
+        if ($this->driver === 'mysqli')
+        {
+            $result = $this->conn->query($sql);
+            if (!$result) 
+            {
+                $this->error['code'] = $this->conn->errno;
+                $this->error['message'] = $error = $this->conn->error;
+            }
+        }
+        else 
+        {
+            try {
+                $result = $this->conn->prepare($sql);
+
+                if (!$result) 
+                {
+                    $error = $this->conn->errorInfo();
+                }
+                else 
+                {
+                    foreach ($params As $key => $value)
+                    {
+                        $result->bindValue(
+                            is_int($key) ? $key + 1 : $key,
+                            $value,
+                            is_int($value) || is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+                        );
+                    }
+                    $result->execute(); 
+                }
+            }
+            catch (PDOException $ex) {
+                $this->error['code'] = $ex->getCode();
+                $this->error['message'] = $error = $ex->getMessage();
+            }
+        }
+        if ($error !== null) 
+        {
+            $error .= "\nSQL: ".$sql;
+            throw new DatabaseException('Database error: '.$error);
+        }
+
+        $this->last_query = [
+			'query' => $sql,
+            'time' => microtime(true) - $time,
+        ];
+        $this->stats['queries'][] = &$this->last_query;
+        
+        return $result;
+	}
+    
+    /**
+	 * Platform-dependant string escape
+	 *
+	 * @param  string $str
+	 * @return string
+	 */
+	protected function _escapeString(string $str): string
+	{
+		if (is_bool($str))
+		{
+			return $str;
+		}
+		if (! $this->conn)
+		{
+			$this->initialize();
+		}
+        if ($this->driver === 'mysqli')
+        {
+            return "'".$this->conn->real_escape_string($str)."'";
+        }
+        return $this->conn->quote($str);
+    }
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Escape Like String Direct
+	 * There are a few instances where MySQLi queries cannot take the
+	 * additional "ESCAPE x" parameter for specifying the escape character
+	 * in "LIKE" strings, and this handles those directly with a backslash.
+	 *
+	 * @param  string|string[] $str Input string
+	 * @return string|string[]
+	 */
+	public function escapeLikeStringDirect($str)
+	{
+		if (is_array($str))
+		{
+			foreach ($str as $key => $val)
+			{
+				$str[$key] = $this->escapeLikeStringDirect($val);
+			}
+
+			return $str;
+		}
+
+		$str = $this->_escapeString($str);
+
+		// Escape LIKE condition wildcards
+		return str_replace([
+			$this->likeEscapeChar,
+			'%',
+			'_',
+		], [
+			'\\' . $this->likeEscapeChar,
+			'\\' . '%',
+			'\\' . '_',
+		], $str
+		);
+
+		return $str;
+	}
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Generates the SQL for listing tables in a platform-dependent manner.
+	 * Uses escapeLikeStringDirect().
+	 *
+	 * @param boolean $prefixLimit
+	 *
+	 * @return string
+	 */
+	protected function _listTables(bool $prefixLimit = false): string
+	{
+		$sql = 'SHOW TABLES FROM ' . $this->escapeIdentifiers($this->database);
+
+		if ($prefixLimit !== false AND $this->prefix !== '')
+		{
+			return $sql . " LIKE '" . $this->escapeLikeStringDirect($this->prefix) . "%'";
+		}
+
+		return $sql;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Generates a platform-specific query string so that the column names can be fetched.
+	 *
+	 * @param string $table
+	 *
+	 * @return string
+	 */
+	protected function _listColumns(string $table = ''): string
+	{
+		return 'SHOW COLUMNS FROM ' . $this->protectIdentifiers($this->prefixTable($table), true, null, false);
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Returns an array of objects with field data
+	 *
+	 * @param  string $table
+	 * @return \stdClass[]
+	 * @throws DatabaseException
+	 */
+	public function _fieldData(string $table): array
+	{
+		$table = $this->protectIdentifiers($this->prefixTable($table), true, null, false);
+
+		if (($query = $this->query('SHOW COLUMNS FROM ' . $table)) === false)
+		{
+			throw new DatabaseException('No data fied found');
+		}
+		$query = $query->getAsObject();
+
+		$retVal = [];
+		for ($i = 0, $c = count($query); $i < $c; $i++)
+		{
+			$retVal[$i]       = new \stdClass();
+			$retVal[$i]->name = $query[$i]->field ?? $query[$i]->Field;
+
+			sscanf(($query[$i]->type ?? $query[$i]->Type), '%[a-z](%d)', $retVal[$i]->type, $retVal[$i]->max_length);
+
+			$retVal[$i]->nullable    = ($query[$i]->null ?? $query[$i]->Null) === 'YES';
+			$retVal[$i]->default     = $query[$i]->default ?? $query[$i]->Default;
+			$retVal[$i]->primary_key = (int)(($query[$i]->key ?? $query[$i]->Key) === 'PRI');
+		}
+
+		return $retVal;
+	}
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Returns an array of objects with index data
+	 *
+	 * @param  string $table
+	 * @return \stdClass[]
+	 * @throws DatabaseException
+	 * @throws \LogicException
+	 */
+	public function _indexData(string $table): array
+	{
+		$table = $this->protectIdentifiers($this->prefixTable($table), true, null, false);
+
+		if (($query = $this->query('SHOW INDEX FROM ' . $table)) === false)
+		{
+			throw new DatabaseException('No index data found');
+		}
+
+		if (! $indexes = $query->getAsArray())
+		{
+			return [];
+		}
+
+		$keys = [];
+
+		foreach ($indexes as $index)
+		{
+			if (empty($keys[$index['Key_name']]))
+			{
+				$keys[$index['Key_name']]       = new \stdClass();
+				$keys[$index['Key_name']]->name = $index['Key_name'];
+
+				if ($index['Key_name'] === 'PRIMARY')
+				{
+					$type = 'PRIMARY';
+				}
+				elseif ($index['Index_type'] === 'FULLTEXT')
+				{
+					$type = 'FULLTEXT';
+				}
+				elseif ($index['Non_unique'])
+				{
+					if ($index['Index_type'] === 'SPATIAL')
+					{
+						$type = 'SPATIAL';
+					}
+					else
+					{
+						$type = 'INDEX';
+					}
+				}
+				else
+				{
+					$type = 'UNIQUE';
+				}
+
+				$keys[$index['Key_name']]->type = $type;
+			}
+
+			$keys[$index['Key_name']]->fields[] = $index['Column_name'];
+		}
+
+		return $keys;
+	}
+
+	/**
+	 * Returns an array of objects with Foreign key data
+	 *
+	 * @param  string $table
+	 * @return \stdClass[]
+	 * @throws DatabaseException
+	 */
+	public function _foreignKeyData(string $table): array
+	{
+		$sql = '
+                    SELECT
+                        tc.CONSTRAINT_NAME,
+                        tc.TABLE_NAME,
+                        kcu.COLUMN_NAME,
+                        rc.REFERENCED_TABLE_NAME,
+                        kcu.REFERENCED_COLUMN_NAME
+                    FROM information_schema.TABLE_CONSTRAINTS AS tc
+                    INNER JOIN information_schema.REFERENTIAL_CONSTRAINTS AS rc
+                        ON tc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
+                    INNER JOIN information_schema.KEY_COLUMN_USAGE AS kcu
+                        ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+                    WHERE
+                        tc.CONSTRAINT_TYPE = ' . $this->escape('FOREIGN KEY') . ' AND
+                        tc.TABLE_SCHEMA = ' . $this->escape($this->database) . ' AND
+                        tc.TABLE_NAME = ' . $this->escape($this->prefixTable($table));
+
+		if (($query = $this->query($sql)) === false)
+		{
+			throw new DatabaseException('No foreign keys found for table '.$table);
+		}
+		$query = $query->getAsObject();
+
+		$retVal = [];
+		foreach ($query as $row)
+		{
+			$obj                      = new \stdClass();
+			$obj->constraint_name     = $row->CONSTRAINT_NAME;
+			$obj->table_name          = $row->TABLE_NAME;
+			$obj->column_name         = $row->COLUMN_NAME;
+			$obj->foreign_table_name  = $row->REFERENCED_TABLE_NAME;
+			$obj->foreign_column_name = $row->REFERENCED_COLUMN_NAME;
+
+			$retVal[] = $obj;
+		}
+
+		return $retVal;
+	}
+
+	/**
+	 * Returns platform-specific SQL to disable foreign key checks.
+	 *
+	 * @return string
+	 */
+	protected function _disableForeignKeyChecks()
+	{
+		return 'SET FOREIGN_KEY_CHECKS=0';
+	}
+
+	/**
+	 * Returns platform-specific SQL to enable foreign key checks.
+	 *
+	 * @return string
+	 */
+	protected function _enableForeignKeyChecks()
+	{
+		return 'SET FOREIGN_KEY_CHECKS=1';
+    }
+
+	/**
+	 * Insert ID
+	 *
+	 * @return integer
+	 */
+	public function insertID(): int
+	{
+		if ($this->driver === 'mysqli')
+		{
+			return $this->conn->insert_id;
+		}
+		return $this->conn->lastInsertId();
+	}
+
+	/**
+	 * Returns the total number of rows affected by this query.
+	 *
+	 * @return integer
+	 */
+	public function affectedRows(): int
+	{
+		if ($this->driver === 'mysqli')
+		{
+			return $this->conn->affected_rows ?? 0;
+		}
+		return $this->queryResult->rowCount();
+	}
+
+	/**
+     * Renvoi le nombre de ligne retourné par la requete
+     *
+     * @return integer
+	 */ 
+	public function numRows(): int
+	{
+		if ($this->driver === 'mysqli')
+		{
+			return $this->queryResult->num_rows ?? 0;
+		}
+		return $this->queryResult->rowCount();
+	}
+
+	/**
+	 * Begin Transaction
+	 *
+	 * @return boolean
+	 */
+	protected function _transBegin(): bool
+	{
+        if ($this->driver === 'mysqli')
+        {
+            $this->conn->autocommit(false);
+            return $this->conn->begin_transaction();
+        }
+        return $this->conn->beginTransaction();
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Commit Transaction
+	 *
+	 * @return boolean
+	 */
+	protected function _transCommit(): bool
+	{
+        if ($this->conn->commit())
+        {
+            if ($this->driver === 'mysqli')
+            {
+                $this->conn->autocommit(true);
+            }
+            return true;
+        }
+		return false;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Rollback Transaction
+	 *
+	 * @return boolean
+	 */
+	protected function _transRollback(): bool
+	{
+		if ($this->conn->rollback())
+		{
+            if ($this->driver === 'mysqli')
+            {
+                $this->conn->autocommit(true);
+            }
+			return true;
+		}
+		return false;
 	}
 }

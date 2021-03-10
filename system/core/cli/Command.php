@@ -43,6 +43,7 @@ class Command extends AhcCommand
      * @var Interactor
      */
     public $_io;
+    public $io;
 
     public function __construct(string $name = '', string $desc = '', bool $allowUnknow = false, ?Application $app = null)
     {
@@ -50,7 +51,7 @@ class Command extends AhcCommand
         $desc = empty($desc) ? (empty($this->_role) ? $this->_desc : $this->_role) : $desc;
 
         parent::__construct($name, $desc, $allowUnknow, $app);
-        $this->_io = new Interactor();
+        $this->_io = $this->io = new Interactor();
     }
 
 
@@ -69,7 +70,7 @@ class Command extends AhcCommand
 
     public function task(string $msg)
     {
-        $this->_io->write(' ******************* '.$msg.' *******************', true);
+        $this->io->write(' ******************* '.$msg.' *******************', true);
     }
 
     /**
@@ -83,10 +84,10 @@ class Command extends AhcCommand
 
         $eq_str = str_repeat('=', strlen($desc));
 
-        $this->_io->write("====================================".$eq_str, true);
-        $this->_io->write("dFramework Console Line Interface | ".$desc, true);
-        $this->_io->write("====================================".$eq_str, true);
-        $this->_io->write('', true);
+        $this->io->write("====================================".$eq_str, true);
+        $this->io->write("dFramework Console Line Interface | ".$desc, true);
+        $this->io->write("====================================".$eq_str, true);
+        $this->io->write('', true);
     }
     /**
      * Message de pied commun a tous les services de la console
@@ -96,7 +97,25 @@ class Command extends AhcCommand
     public function end()
     {
         $info = 'dFramework v'.dFramework::VERSION.' * dbot v1.2 * '.date('Y-m-d H:i:s');
-        $this->_io->write("\n\n".str_repeat('-', strlen($info))."\n");
-        $this->_io->writer()->bold->info($info, true);
+        $this->io->write("\n\n".str_repeat('-', strlen($info))."\n");
+        $this->io->writer()->bold->info($info, true);
+    }
+
+
+    /**
+	 * A simple method to display an error with line/file,
+	 * in child commands.
+	 *
+	 * @param \Throwable $e
+	 */
+	public function showError(\Throwable $e)
+	{
+        $this->io->error("\n".$e->getMessage(), true);
+		$this->io->write($e->getFile() . ' - ' . $e->getLine(), true);
+	}
+
+    public function colorize(array $message)
+    {
+        $this->io->colors("<".$message['color'].">".$message['message']."</end><eol>");
     }
 }
