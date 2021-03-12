@@ -58,3 +58,9 @@ $routes = dFramework\core\loader\Service::routes();
  * Route Definitions
  * --------------------------------------------------------------------
  */
+$routes->presenter('Posts');
+$routes->resource('users');
+
+$routes->get('test', function(){
+    echo 'sss';
+}, ['as' => 'signin']);

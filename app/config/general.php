@@ -55,12 +55,7 @@ $general['compress_output'] = 'auto';
 /*
 | Specifie si les liens doivent etre en absolue (avec le nom de domaine) ou en relatif
 */
-$general['use_absolute_link'] = false;
-
-/*
-| Specifie si on utilise le moteur de template ou non
-*/
-$general['use_template_engine'] = false;
+$general['use_absolute_link'] = true;
 
 /*
 |--------------------------------------------------------------------------

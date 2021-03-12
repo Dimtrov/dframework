@@ -38,7 +38,7 @@ use Nette\PhpGenerator\PhpFile;
  * @since       3.3.0
  * @file		/system/core/generator/Migration.php
  */
-final class Migration extends Generator
+final class Migration
 {
     /**
      * @var string

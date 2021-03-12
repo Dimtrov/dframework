@@ -12,23 +12,29 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.3
+ *  @version    3.3.0
  */
 
 namespace dFramework\core\loader;
 
-use dFramework\core\event\EventManager;
-use dFramework\core\http\Input;
-use dFramework\core\http\Redirection;
-use dFramework\core\http\Response;
-use dFramework\core\http\ResponseEmitter;
-use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
+use dFramework\core\http\Input;
+use dFramework\core\db\Database;
 use dFramework\core\output\Cache;
+use dFramework\core\http\Response;
+use dFramework\core\router\Router;
 use dFramework\core\output\Language;
-use dFramework\core\router\RouteCollection;
-use dFramework\core\utilities\Helpers;
 use dFramework\core\utilities\Timer;
+use dFramework\core\db\query\Builder;
+use dFramework\core\debug\Toolbar;
+use dFramework\core\http\Redirection;
+use dFramework\core\utilities\Helpers;
+use dFramework\core\event\EventManager;
+use dFramework\core\http\Negotiator;
+use dFramework\core\http\ServerRequest;
+use dFramework\core\http\ResponseEmitter;
+use dFramework\core\output\View;
+use dFramework\core\router\RouteCollection;
 
 /**
  * Service
@@ -69,6 +75,40 @@ class Service
         return Injector::container();
     }
 
+
+    /**
+     * Query Builder
+     *
+     * @param boolean $shared
+     * @param string|null $group
+     * @return \dFramework\core\db\query\Builder
+     */
+    public static function builder(bool $shared = true, ?string $group = null)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Builder::class);
+        }
+
+        return Injector::factory(Builder::class, [$group]);
+    }
+    /**
+     * Database manager
+     *
+     * @param boolean $shared
+     * @param string|null $group
+     * @return \dFramework\core\db\Database
+     */
+    public static function database(bool $shared = true, ?string $group = null)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Database::class)->setGroup($group);
+        }
+
+        return Injector::factory(Database::class, [$group]);
+    }
+    
     /**
      * Response Emitter to the browser
      *
@@ -99,6 +139,23 @@ class Service
         }
 
         return Injector::factory(Input::class);
+    }
+
+    /**
+	 * The general Input class models an HTTP request.
+     * 
+     * @param ServerRequest $request
+     * @param boolean $shared
+     * @return \dFramework\core\http\Negotiator
+     */
+    public static function negotiator(ServerRequest $request = null, bool $shared = true)
+    {
+        if (true === $shared) 
+        {
+            return Injector::singleton(Negotiator::class)->setRequest($request);
+        }
+
+        return Injector::factory(Negotiator::class, [$request]);
     }
 
     /**
@@ -183,6 +240,20 @@ class Service
     }
 
     /**
+	 * The Renderer class is the class that actually displays a file to the user.
+	 * The default View class within CodeIgniter is intentionally simple, but this
+	 * service could easily be replaced by a template engine if the user needed to.
+	 *
+	 * @param string  $view
+	 *
+	 * @return \dFramework\core\output\View
+	 */
+	public static function viewer(string $view)
+	{
+		return Injector::factory(View::class, [$view]);
+	}
+
+    /**
      * @param boolean $shared
      * @return \dFramework\core\utilities\Helpers
      */
@@ -229,6 +300,31 @@ class Service
 
         return Injector::factory(RouteCollection::class);
     }
+    /**
+	 * The Router class uses a RouteCollection's array of routes, and determines
+	 * the correct Controller and Method to execute.
+	 *
+	 * @param \dFramework\core\router\RouteCollection $routes
+	 * @param \dFramework\core\http\ServerRequest                    $request
+	 * @param boolean                                      $getShared
+	 *
+	 * @return \dFramework\core\router\Router
+	 */
+	public static function router(RouteCollection $routes = null, ServerRequest $request = null, bool $shared = true)
+	{
+		if (true === $shared)
+		{
+            return Injector::singleton(Router::class);
+			// return static::getSharedInstance('router', $routes, $request);
+		}
+
+		if (empty($routes))
+		{
+			$routes = static::routes(true);
+		}
+        return Injector::factory(Router::class, [$routes, $request]);
+	}
+
     
     /**
      * Event Manager instance
@@ -264,6 +360,23 @@ class Service
         return Injector::factory(Timer::class);
     }
 
+    /**
+	 * Return the debug toolbar.
+	 *
+	 * @param \Config\Toolbar $config
+	 * @param boolean         $getShared
+	 *
+	 * @return \dFramework\core\debug\Toolbar
+	 */
+	public static function toolbar(bool $shared = true)
+	{
+		if ($shared)
+		{
+            return Injector::singleton(Toolbar::class);
+		}
+
+		return Injector::factory(Toolbar::class);
+	}
 
 
     /**

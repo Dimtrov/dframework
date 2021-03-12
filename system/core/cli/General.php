@@ -17,12 +17,14 @@
 
 namespace dFramework\core\cli;
 
-use Ahc\Cli\Helper\Shell;
-use dFramework\core\loader\ClassMapper;
 use Kahlan\Suite;
 use Kahlan\Box\Box;
 use Kahlan\Cli\Kahlan;
+use Ahc\Cli\Helper\Shell;
 use Kahlan\Jit\ClassLoader;
+use dFramework\core\loader\Service;
+use dFramework\core\loader\ClassMapper;
+use dFramework\core\router\RouteCollection;
 
 /**
  * General
@@ -47,19 +49,15 @@ class General extends Cli
         return (new Command('map', 'Collectionne et enregistre toutes les classes de ddependances pour l\'autochargement independamment de Composer'))
             ->option('--dept', 'Map les classes des dependances interne du framework')
             ->option('--app', 'Map les classes de votre application (Utile si vous n\'avez pas un mecanisme d\'autoloader)')
-            ->usage(
-                '<bold>  dbot map --dept</end> <comment> => Map toutes les classes des dependances interne du framework pour les charger automatiquement</end><eol/>' .
-                '<bold>  dbot map --app</end> <comment> => Map les classes se trouvant dans un dossier specifique de votre application pour les charger automatiquement</end><eol/>' 
-            )->action(function($dept, $app) {
+            ->action(function($dept, $app) {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
                 try {
-                    /**
-                     * @var Command
-                     */
-                    $cli = $this;
-
                     if (empty($dept) AND empty($app))
                     {
-                        $cli->_io->warn('Veuillez selectionner une option pour pouvoir lancer le mapping des classes.', true);
+                        $cli->io->warn('Veuillez selectionner une option pour pouvoir lancer le mapping des classes.', true);
                         return $cli->showHelp();
                     }
                     $cli->start('Service de mapping des classes pour l\'auto-chargement');
@@ -87,20 +85,20 @@ class General extends Cli
             
                     if ($mapper->export_result_in_file($export_file))
                     {
-                        $cli->_io->info("\t => Traitement terminé avec succès.", true);
+                        $cli->io->info("\t => Traitement terminé avec succès.", true);
                         sleep(1.5);
-                        $cli->_io->writer()->colors("\t => <boldGreen>".count($mapper->get_result_as_array())."</end> <white>classes collectées avec succès</end>");
+                        $cli->io->writer()->colors("\t => <boldGreen>".count($mapper->get_result_as_array())."</end> <white>classes collectées avec succès</end>");
                     }
                     else 
                     {
-                        $cli->_io->error("\t Une erreur s'est produite lors de la collecte des classes \n");
+                        $cli->io->error("\t Une erreur s'est produite lors de la collecte des classes \n");
                     }
             
                     sleep(1.5);
                     $cli->end();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
 
                 return true;
@@ -118,25 +116,20 @@ class General extends Cli
             ->option('--host', 'Hote sur lequel votre application sera lancée. "localhost" par defaut', null, 'localhost')
             ->option('--port', 'Port sur lequel vous souhaitez demarrer le serveur. "3200" par defaut', null, 3200)
             ->option('--php', 'Chemin vers l\'executable php à utiliser pour démarrer le serveur.', null, PHP_BINARY)
-            ->usage(
-                '<bold>  dbot serve</end> <comment> ==> Lance le serveur sur l\'hote "http://localhost:3200" et y heberge votre application</end><eol/>' .
-                '<bold>  dbot serve --port=8080</end> <comment> ==> Utilise le port "8080" pour lancer le serveur et heberger votre application</end><eol/>' . 
-                '<bold>  dbot serve --host=local.dev --port=3000</end> <comment> ==> Heberge votre application sur l\'hote virtuel "local.dev" et utilise le port 3000 pour lancer le serveur</end><eol/>'
-            )->action(function($host, $port, $php) {
+            ->action(function($host, $port, $php) { 
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
                 try {
-                    /**
-                     * @var Command
-                     */
-                    $cli = $this;
-
                     $cli->start('Service de lancement du serveur de developpement');
                     $cli->task('Demarrage du serveur de developpement');
 
                     sleep(2);
-                    $cli->_io->ok("\t => Le serveur a démarré avec succès.", true);
+                    $cli->io->ok("\t => Le serveur a démarré avec succès.", true);
                     
                     sleep(2.5);
-                    $cli->_io->writer()->colors("\t => <white>Ouvrez votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end>");
+                    $cli->io->writer()->colors("\t => <white>Ouvrez votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end>");
             
                     sleep(1.5);
                     $cli->end();
@@ -148,7 +141,7 @@ class General extends Cli
                     $shell->kill();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
             });
     }
@@ -163,14 +156,12 @@ class General extends Cli
         return (new Command('test', 'Execute les tests unitaires decrits'))
             ->usage('<bold>  dbot test</end> <comment> ==> Verifie les tests effectués dans le dossier "/spec"</end><eol/>')
             ->action(function() {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
                 try {
-                    /**
-                     * @var Command
-                     */
-                    $cli = $this;
-
                     $cli->start('Service de réalisation de tests unitaires');
-                   // $cli->task('Rollback des migrations');
 
                     error_reporting(E_ALL);
                     $kahlan_dir = SYST_DIR.'dependencies'.DS.'kahlan'.DS.'kahlan';
@@ -223,7 +214,78 @@ class General extends Cli
                     $cli->end();
                 }
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
+                }
+            });
+    }
+
+    /**
+     * Liste des routes
+     *
+     * @return Command
+     */
+    protected function _routes() : Command 
+    {
+        return (new Command('routes', 'Affiche tous les itinéraires définis par l\'utilisateur.'))
+            ->action(function() {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
+                try {
+                    $cli->start('Service de gestion de l\'application');
+                    $cli->task("Recherche des routes");
+                    $cli->io->write("\n");
+
+                    sleep(1.75);
+
+                    require_once APP_DIR . 'config' . DS . 'routes.php';
+                    $collection = $routes;
+                    $methods    = [
+                        'get',
+                        'head',
+                        'post',
+                        'patch',
+                        'put',
+                        'delete',
+                        'options',
+                        'trace',
+                        'connect',
+                        'cli',
+                    ];
+
+                    $table = [];
+                    foreach ($methods as $method)
+                    {
+                        $routes = $collection->getRoutes($method, true);
+
+                        foreach ($routes as $route => $handler)
+                        {
+                            $tab = [
+                                'Method' => strtoupper($method),
+                                'Route' => $route,    
+                                'Name' => '',
+                                'Handler' => ''
+                            ];
+                            if(is_string($handler))
+                            {
+                                $tab['Handler'] = $handler;
+                            }
+                            if(is_array($handler))
+                            {
+                                $tab['Handler'] = is_string($handler['handler']) ? $handler['handler'] : 'Closure';
+                                $tab['Name'] = $handler['name'];
+                            }
+
+                            $table[] = $tab;
+                        }
+                    }
+                    $cli->io->table($table);
+
+                    $cli->end();
+                } 
+                catch (\Throwable $th) {
+                    $cli->showError($th);
                 }
             });
     }

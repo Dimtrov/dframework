@@ -42,16 +42,14 @@ class Database extends Cli
      */
     protected function _seed() : Command
     {
-        return (new Command('db:seed', 'Créé un nouveau fichier de migration'))
+        return (new Command('db:seed', 'Exécute le seeder spécifié pour remplir les données connues dans la base de données.'))
             ->argument('<file>', 'Nom du fichier à seeder')
-            ->usage('<bold>  dbot db:seed user</end> <comment> => Execute la methode User::seed() contenue dans le fichier "/app/resources/database/seeds/User.php"</end><eol/>')
             ->action(function($file) {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
                 try {
-                    /**
-                     * @var Command
-                     */
-                    $cli = $this;
-
                     $cli->start('Service de remplissage de base de donnees');
                     $cli->task('Demarrage du seed');
 
@@ -60,14 +58,14 @@ class Database extends Cli
 
                     if (!file_exists($file)) 
                     {
-                        $cli->_io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true); 
+                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true); 
                         return $cli->showHelp();
                     }
                     require_once $file;
                 
                     if (!class_exists($seed))
                     {
-                        $cli->_io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true); 
+                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true); 
                         return $cli->showHelp();
                     }
             
@@ -75,29 +73,27 @@ class Database extends Cli
 
                     if (!($class instanceof Seeder)) 
                     {
-                        $cli->_io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true); 
+                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true); 
                         return $cli->showHelp();
                     }
                     if (!method_exists($class, 'seed')) 
                     {
-                        $cli->_io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true); 
+                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true); 
                         return $cli->showHelp();
                     }
 
-                    $cli->_io->write("\n\t Remplissage en cours de traitement : Utilisation de la clase '".$seed."' \n");
+                    $cli->io->write("\n\t Remplissage en cours de traitement : Utilisation de la clase '".$seed."' \n");
                     sleep(2.5);
                     $class->seed(new Faker)->run();
                     sleep(2);
-                    $cli->_io->ok("\t => Remplissage terminé avec succès. \n");
+                    $cli->io->ok("\t => Remplissage terminé avec succès. \n");
                     sleep(1.5);
             
                     $cli->end();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
-
-                return true;
             });
     }
 
@@ -112,20 +108,15 @@ class Database extends Cli
             ->option('-b --backup', 'Cree une sauvegarde de la base de donnees')
             ->option('-u --upgrade', 'Importe un script de base de donnees')
             ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
-            ->usage(
-                '<bold>  dbot db:dump --backup</end> <comment> => Cree un fichier de sauvegarde la base de donnees dans le repertoire "/app/resources/database/dump/" sous le nom "nombd_v[num_ver].sql"</end><eol/>' .
-                '<bold>  dbot db:dump -upgrade</end> <comment> => Importe le script de base de donnees du fichier "nombd_v[num_ver].sql" se trouvant dans le repertoire "/app/resources/database/dump/"</end><eol/>' 
-            )
             ->action(function($backup, $upgrade, $database) {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
                 try {
-                    /**
-                     * @var Command
-                     */
-                    $cli = $this;
-
                     if (empty($backup) AND empty($upgrade))
                     {
-                        $cli->_io->warn("\n Veuillez selectionner une option pour pouvoir executer cette tache.", true);
+                        $cli->io->warn("\n Veuillez selectionner une option pour pouvoir executer cette tache.", true);
                         return $cli->showHelp();
                     }
                     $cli->start('Service de d\'import/export de base de donnees');
@@ -135,28 +126,28 @@ class Database extends Cli
                     if (!empty($backup)) 
                     {
                         $cli->task('Sauvegarde de la base de données');
-                        $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
+                        $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
                         $filename = $dump->down($num_ver);
                 
-                        $cli->_io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
-                        $cli->_io->info("\t Fichier de sauvegarde: ".$filename);
+                        $cli->io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
+                        $cli->io->info("\t Fichier de sauvegarde: ".$filename);
                     }
                     else 
                     {
                         $cli->task('Importation de la base de données en cours');
-                        $num_ver = $cli->_io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
+                        $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
                         $filename = $dump->up($num_ver);
                 
-                        $cli->_io->ok("\n\t Base de donnees migrée avec succès.", true);
-                        $cli->_io->info("\t Fichier utilisé: ".$filename);
+                        $cli->io->ok("\n\t Base de donnees migrée avec succès.", true);
+                        $cli->io->info("\t Fichier utilisé: ".$filename);
                     }
 
                     $cli->end();
                 } 
                 catch (\Throwable $th) {
-                    die($th->getMessage());
+                    $cli->showError($th);
                 }
             });
     }

@@ -32,7 +32,7 @@ namespace dFramework\core\utilities;
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @since       3.3.0
  * @credit      CodeIgniter 4.0 (CodeIgniter\Debug\Timer)
- * @file        /system/core/utilities/Timer.php
+ * @file        /system/core/debug/Timer.php
  */
 class Timer
 {

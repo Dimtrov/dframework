@@ -421,20 +421,7 @@ if (!function_exists('current_url'))
 	 */
 	function current_url(bool $returnObject = false)
 	{
-		$uri = (clone service('request'))->getUri();
-	
-
-		// If hosted in a sub-folder, we will have additional
-		// segments that show up prior to the URI path we just
-		// grabbed from the request, so add it on if necessary.
-		$baseUri = new Uri(config('general.base_url'));
-
-		if (! empty($baseUri->getPath()))
-		{
-			$path = rtrim($baseUri->getPath(), '/ ') . '/' . $uri->getPath();
-
-			$uri->setPath($path);
-		}
+		$uri = new Uri(site_url($_SERVER['REQUEST_URI']));
 
 		// Since we're basing off of the IncomingRequest URI,
 		// we are guaranteed to have a host based on our own configs.
@@ -461,7 +448,11 @@ if (!function_exists('previous_url'))
 		// Grab from the session first, if we have it,
 		// since it's more reliable and safer.
 		// Otherwise, grab a sanitized version from $_SERVER.
-		$referer = $_SESSION['_df_previous_url'] ?? Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+		$referer = $_SESSION['_df_previous_url'] ?? null;
+		if (false === filter_var($referer, FILTER_VALIDATE_URL))
+		{
+			$referer = Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+		}	
 
 		$referer = $referer ?? site_url('/');
 
@@ -796,13 +787,16 @@ if (!function_exists('view_exist'))
      * Verifie si un fichier de vue existe. Utile pour limiter les failles include
      *
      * @param string $name
+     * @param string $ext
      * @return boolean
      */
-    function view_exist(string $name) : bool
+    function view_exist(string $name, string $ext = '.php') : bool
     {
-		$name = preg_match('#\.php$#', $name) ? $name : $name.'.php';
+		$ext = str_replace('.', '', $ext);
+		$name = str_replace(VIEW_DIR, '', $name);
+		$name = preg_match('#\.'.$ext.'$#', $name) ? $name : $name.'.'.$ext;
         
-        return is_file(VIEW_DIR.$name);
+        return is_file(VIEW_DIR.rtrim($name, DS));
     }
 }
 

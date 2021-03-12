@@ -355,7 +355,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function patch(string $path, $to, array $options) : self 
+    public function patch(string $path, $to, ?array $options = null) : self 
     {
         $this->create('patch', $path, $to, $options);
 
@@ -613,7 +613,7 @@ class RouteCollection
 
 		// In order to allow customization of allowed id values
 		// we need someplace to store them.
-		$id = $this->placeholders[$this->defaultPlaceholder] ?? '(:segment)';
+		$id = $this->placeholders[$this->config['default_placeholder']] ?? '(:segment)';
 
 		if (isset($options['placeholder']))
 		{
@@ -642,32 +642,32 @@ class RouteCollection
 
 		if (in_array('index', $methods))
 		{
-			$this->get($name, $new_name . '::index', $options);
+			$this->get($name, $new_name . '::index', array_merge($options ?? [], ['as' => strtolower($name.'.index')]));
 		}
 		if (in_array('new', $methods))
 		{
-			$this->get($name . '/new', $new_name . '::new', $options);
+			$this->get($name . '/new', $new_name . '::new', array_merge($options ?? [], ['as' => strtolower($name.'.new')]));
 		}
 		if (in_array('edit', $methods))
 		{
-			$this->get($name . '/' . $id . '/edit', $new_name . '::edit/$1', $options);
+			$this->get($name . '/' . $id . '/edit', $new_name . '::edit/$1', array_merge($options ?? [], ['as' => strtolower($name.'.edit')]));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/' . $id, $new_name . '::show/$1', $options);
+			$this->get($name . '/' . $id, $new_name . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name, $new_name . '::create', $options);
+			$this->post($name, $new_name . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
 		}
 		if (in_array('update', $methods))
 		{
-			$this->put($name . '/' . $id, $new_name . '::update/$1', $options);
-			$this->patch($name . '/' . $id, $new_name . '::update/$1', $options);
+			$this->put($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update_put')]));
+			$this->patch($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update_patch')]));
 		}
 		if (in_array('delete', $methods))
 		{
-			$this->delete($name . '/' . $id, $new_name . '::delete/$1', $options);
+			$this->delete($name . '/' . $id, $new_name . '::delete/$1', array_merge($options ?? [], ['as' => strtolower($name.'.delete')]));
 		}
 
 		// Web Safe? delete needs checking before update because of method name
@@ -675,11 +675,11 @@ class RouteCollection
 		{
 			if (in_array('delete', $methods))
 			{
-				$this->post($name . '/' . $id . '/delete', $new_name . '::delete/$1', $options);
+				$this->post($name . '/' . $id . '/delete', $new_name . '::delete/$1',  array_merge($options ?? [], ['as' => strtolower($name.'.delete_post')]));
 			}
 			if (in_array('update', $methods))
 			{
-				$this->post($name . '/' . $id, $new_name . '::update/$1', $options);
+				$this->post($name . '/' . $id, $new_name . '::update/$1',  array_merge($options ?? [], ['as' => strtolower($name.'.update_post')]));
 			}
 		}
 
@@ -729,7 +729,7 @@ class RouteCollection
 
 		// In order to allow customization of allowed id values
 		// we need someplace to store them.
-		$id = $this->placeholders[$this->defaultPlaceholder] ?? '(:segment)';
+		$id = $this->placeholders[$this->config['default_placeholder']] ?? '(:segment)';
 
 		if (isset($options['placeholder']))
 		{
@@ -758,43 +758,43 @@ class RouteCollection
 
 		if (in_array('index', $methods))
 		{
-			$this->get($name, $newName . '::index', $options);
+			$this->get($name, $newName . '::index', array_merge($options ?? [], ['as' => strtolower($name.'.index')]));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/show/' . $id, $newName . '::show/$1', $options);
+			$this->get($name . '/show/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
 		}
 		if (in_array('new', $methods))
 		{
-			$this->get($name . '/new', $newName . '::new', $options);
+			$this->get($name . '/new', $newName . '::new', array_merge($options ?? [], ['as' => strtolower($name.'.new')]));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name . '/create', $newName . '::create', $options);
+			$this->post($name . '/create', $newName . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
 		}
 		if (in_array('edit', $methods))
 		{
-			$this->get($name . '/edit/' . $id, $newName . '::edit/$1', $options);
+			$this->get($name . '/edit/' . $id, $newName . '::edit/$1', array_merge($options ?? [], ['as' => strtolower($name.'.edit')]));
 		}
 		if (in_array('update', $methods))
 		{
-			$this->post($name . '/update/' . $id, $newName . '::update/$1', $options);
+			$this->post($name . '/update/' . $id, $newName . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update')]));
 		}
 		if (in_array('remove', $methods))
 		{
-			$this->get($name . '/remove/' . $id, $newName . '::remove/$1', $options);
+			$this->get($name . '/remove/' . $id, $newName . '::remove/$1', array_merge($options ?? [], ['as' => strtolower($name.'.remove')]));
 		}
 		if (in_array('delete', $methods))
 		{
-			$this->post($name . '/delete/' . $id, $newName . '::delete/$1', $options);
+			$this->post($name . '/delete/' . $id, $newName . '::delete/$1', array_merge($options ?? [], ['as' => strtolower($name.'.delete')]));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/' . $id, $newName . '::show/$1', $options);
+			$this->get($name . '/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name, $newName . '::create', $options);
+			$this->post($name, $newName . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
 		}
 
 		return $this;
@@ -896,7 +896,7 @@ class RouteCollection
 	 * @param mixed $verb
 	 * @return array
 	 */
-	public function getRoutes($verb = null) : array
+	public function getRoutes($verb = null, bool $with_name = false) : array
 	{
 		if (empty($verb))
 		{
@@ -914,10 +914,20 @@ class RouteCollection
 				$extraRules = array_diff_key($this->routes['*'], $this->routes[$verb]);
 				$collection = array_merge($this->routes[$verb], $extraRules);
 			}
-			foreach ($collection as $r)
+			foreach ($collection as $name => $r)
 			{
 				$key          = key($r['route']);
-				$routes[$key] = $r['route'][$key];
+				if ($with_name === false)
+				{
+					$routes[$key] = $r['route'][$key];
+				}
+				else 
+				{
+					$routes[$key] = [
+						'name' => $name, 
+						'handler' => $r['route'][$key]
+					];
+				}
 			}
 		}
 

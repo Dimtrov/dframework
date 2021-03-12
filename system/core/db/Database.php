@@ -83,6 +83,11 @@ class Database
         }
         return self::$_instance;
     }
+    public function setGroup(?string $group) : self 
+    {
+        $this->group = $group;
+        return $this;
+    }
 
     public static function __callStatic($name, $arguments)
     {

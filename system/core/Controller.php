@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.3
+ *  @version    3.3.0
  */
 
 namespace dFramework\core;
@@ -25,8 +25,6 @@ use dFramework\core\output\Cache;
 use dFramework\core\router\Dispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function GuzzleHttp\Psr7\stream_for;
 
 /**
  * Controller
@@ -153,23 +151,23 @@ class Controller
      * @return View
      * @throws \ReflectionException
      */
-    final protected function view(string $view, ?array $data = [], ?array $options = []) : View
+    final protected function view(string $view, ?array $data = [], ?array $options = [], ?array $config = []) : View
     {
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
-        $view = new View($view, $data, $path, $options, $this->response);
+        $object = new View($data, $path, $options, $config, $this->response);
         if (!empty($this->layout) AND is_string($this->layout)) 
         {
-            $view->layout($this->layout);
+            $object->layout($this->layout);
         }
 
         if (!empty($this->view_datas) AND is_array($this->view_datas))
         {
-            $view->addData($this->view_datas);
+            $object->addData($this->view_datas);
         }
         
-        return $view;
+        return $object->display($view);
     }
     /**
      * Charge et rend directement une vue
@@ -179,15 +177,15 @@ class Controller
      * @param array|null $options
      * @return ResponseInterface
      */
-    final protected function render(?string $view = null, ?array $data = [], ?array $options = []) : ResponseInterface
+    final protected function render(?string $view = null, ?array $data = [], ?array $options = [], ?array $config = []) : ResponseInterface
     {
         if (empty($view)) 
         {
             $view = Dispatcher::getMethod();
         }
-        $view = $this->view($view, $data, $options)->get(Config::get('general.compress_output'));
+        $view = $this->view($view, $data, $options, $config)->get(Config::get('general.compress_output'));
 
-        return $this->response->withBody(stream_for($view));
+        return $this->response->withBody(to_stream($view));
     }
 
     /**
