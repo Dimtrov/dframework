@@ -22,6 +22,7 @@ use ReflectionMethod;
 use dFramework\core\loader\Service;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Uri;
 use Psr\Http\Message\ResponseInterface;
 use dFramework\components\rest\Controller;
 use Psr\Http\Message\ServerRequestInterface;
@@ -104,7 +105,7 @@ class Dispatcher
      *
      * @return self
      */
-    private static function instance() : self
+    public static function instance() : self
     {
         if (null === self::$_instance) 
         {
@@ -178,10 +179,11 @@ class Dispatcher
 
 		Service::event()->trigger('pre_system');
 		
+		$dispatcher = $this;
 		/*
 		 * The bootstrapping in a middleware
 		 */
-		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
+		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) use($dispatcher) {
 			require_once APP_DIR . 'config' . DS . 'routes.php';
 			if (empty($routes) OR ! $routes instanceof RouteCollection)
 			{
@@ -218,7 +220,10 @@ class Dispatcher
 			{
 				$response = $resp;
 			}
-			return $response;
+			
+			$this->totalTime = $this->timer->getElapsedTime('total_execution');
+			
+			return Service::toolbar()->prepare($dispatcher, $request, $response);
 		});
 
 		/**
@@ -229,14 +234,14 @@ class Dispatcher
 			$this->middleware->prepend($middleware);
 		}
 				
-		 /* Execution des middleware
-		 */
-		$this->response = $this->middleware->handle($this->request);
+		// Save our current URI as the previous URI in the session
+		// for safer, more accurate use with `previous_url()` helper function.
+		$this->storePreviousURL((string)current_url(true));
 
 		/**
 		 * Emission de la reponse
 		 */
-		Service::emitter()->emit($this->response);
+		$this->emitResponse($this->middleware->handle($this->request));
 	}
 
 	//--------------------------------------------------------------------
@@ -536,5 +541,114 @@ class Dispatcher
 		}
 
 		throw new \Exception("PageNotFoundException::forPageNotFound($e->getMessage())");
+	}
+
+
+	private $output = '';
+
+	/**
+	 * Gathers the script output from the buffer, replaces some execution
+	 * time tag in the output and displays the debug toolbar, if required.
+	 *
+	 * @param null $returned
+	 */
+	protected function emitResponse($returned = null)
+	{
+		$this->output = ob_get_contents();
+		// If buffering is not null.
+		// Clean (erase) the output buffer and turn off output buffering
+		if (ob_get_length())
+		{
+			ob_end_clean();
+		}
+		// If the controller returned a response object,
+		// we need to grab the body from it so it can
+		// be added to anything else that might have been
+		// echoed already.
+		// We also need to save the instance locally
+		// so that any status code changes, etc, take place.
+		if ($returned instanceof ResponseInterface)
+		{
+			$this->response = $returned;
+			$returned       = $returned->getBody();
+		}
+		if (is_string($returned))
+		{
+			$this->output .= $returned;
+			$this->output = $this->displayPerformanceMetrics($this->output);
+		}
+		/**
+		 * @var \dFramework\core\http\Response
+		 */
+		$response = $this->response;
+		if (empty($response->body())) 
+		{
+			$this->response = $this->response->withBody(to_stream($this->output));
+		}
+		
+		Service::emitter()->emit($this->response);
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * If we have a session object to use, store the current URI
+	 * as the previous URI. This is called just prior to sending the
+	 * response to the client, and will make it available next request.
+	 *
+	 * This helps provider safer, more reliable previous_url() detection.
+	 *
+	 * @param \CodeIgniter\HTTP\URI $uri
+	 */
+	public function storePreviousURL($uri)
+	{
+		// Ignore CLI requests
+		if (is_cli())
+		{
+			return;
+		}
+		// Ignore AJAX requests
+		if (method_exists($this->request, 'isAJAX') AND $this->request->isAJAX())
+		{
+			return;
+		}
+
+		// This is mainly needed during testing...
+		if (is_string($uri))
+		{
+			$uri = new URI($uri);
+		}
+
+		if (isset($_SESSION))
+		{
+			$_SESSION['_df_previous_url'] = (string) $uri;
+		}
+	}
+
+	/**
+	 * Replaces the memory_usage and elapsed_time tags.
+	 *
+	 * @param string $output
+	 *
+	 * @return string
+	 */
+	public function displayPerformanceMetrics(string $output): string
+	{
+		$output = str_replace('{elapsed_time}', $this->totalTime, $output);
+
+		return $output;
+	}
+
+	/**
+	 * Returns an array with our basic performance stats collected.
+	 *
+	 * @return array
+	 */
+	public function getPerformanceStats(): array
+	{
+		return [
+			'startTime' => $this->startTime,
+			'totalTime' => $this->totalTime,
+		];
 	}
 }

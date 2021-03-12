@@ -41,9 +41,9 @@ $general['url_suffix'] = '';
 $general['environment']	= 'dev';
 
 /*
-| Specifie si on doit afficher la trackbar tracy ou pas
+| Specifie si on doit afficher la debugbar ou pas
 */
-$general['show_trackbar'] = true;
+$general['show_debugbar'] = true;
 
 /*
 | Specificie si on doit compresser le code de la vue avant de l'afficher ou pas

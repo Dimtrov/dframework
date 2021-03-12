@@ -12,12 +12,12 @@
  *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core;
 
-use dFramework\core\db\Builder;
+use dFramework\core\db\query\Builder;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Load;
 use dFramework\libraries\Api;
@@ -102,64 +102,6 @@ class Model extends Builder
     {
         $this->{$var} = $api;
     }
-    
-    /**
-     * @alias lastId
-     * @deprecated
-     * @param null $name
-     * @return string
-     */
-    final public function lastInsertId($name = null)
-    {
-        return $this->lastId($name);
-    }
-
-    /**
-     * Initie une transaction
-     *
-     * @return bool
-     */
-    final public function beginTransaction() : bool
-    {
-        if (!$this->transactionCounter++) 
-        {
-            return $this->query->db()->beginTransaction();
-        }
-        
-        $this->query->db()->exec('SAVEPOINT trans' . $this->transactionCounter);
-        return $this->transactionCounter >= 0;
-    }
-    /**
-     * Valide une transaction
-     *
-     * @return bool
-     */
-    final public function commit() : bool
-    {
-        if (!--$this->transactionCounter)
-        {
-            return $this->query->db()->commit();
-        }
-        
-       return $this->transactionCounter >= 0;
-    }
-
-    /**
-     * Annulle une transaction
-     *
-     * @return bool
-     */
-    final public function rollback() : bool
-    {
-        if (--$this->transactionCounter) 
-        {
-            $this->query->db()->exec('ROLLBACK TO trans' . ($this->transactionCounter + 1));
-            return true;
-        }
-
-        return $this->query->db()->rollback();
-    }
-    protected $transactionCounter = 0;
 
     /**
      * Execute un bloc de requete dans une transaction

@@ -19,18 +19,19 @@ namespace dFramework\core\http;
 
 use BadMethodCallException;
 use dFramework\core\Config;
-use dFramework\core\exception\HttpException;
-use dFramework\core\utilities\Arr;
-use dFramework\core\utilities\Utils;
-use GuzzleHttp\Psr7\CachingStream;
-use GuzzleHttp\Psr7\LazyOpenStream;
-use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
-use GuzzleHttp\Psr7\UploadedFile;
 use InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
+use GuzzleHttp\Psr7\UploadedFile;
+use dFramework\core\utilities\Arr;
+use GuzzleHttp\Psr7\CachingStream;
+use Psr\Http\Message\UriInterface;
+use dFramework\core\loader\Service;
+use GuzzleHttp\Psr7\LazyOpenStream;
+use dFramework\core\utilities\Utils;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriInterface;
+use dFramework\core\exception\HttpException;
+use Psr\Http\Message\ServerRequestInterface;
+use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
 
 /**
  * ServerRequest
@@ -227,6 +228,12 @@ class ServerRequest implements ServerRequestInterface
     ];
 
 
+    /**
+	 * Negotiator
+	 *
+	 * @var Negotiator
+	 */
+	protected $negotiator;
 
     /**
      * Create a new request object.
@@ -1879,6 +1886,42 @@ class ServerRequest implements ServerRequestInterface
         return $path;
     }
     
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Provides a convenient way to work with the Negotiate class
+	 * for content negotiation.
+	 *
+	 * @param string  $type
+	 * @param array   $supported
+	 * @param boolean $strictMatch
+	 *
+	 * @return string
+	 */
+	public function negotiate(string $type, array $supported, bool $strictMatch = false): string
+	{
+		if (is_null($this->negotiator))
+		{
+			$this->negotiator = Service::negotiator($this, true);
+		}
+
+		switch (strtolower($type))
+		{
+			case 'media':
+				return $this->negotiator->media($supported, $strictMatch);
+			case 'charset':
+				return $this->negotiator->charset($supported);
+			case 'encoding':
+				return $this->negotiator->encoding($supported);
+			case 'language':
+				return $this->negotiator->language($supported);
+		}
+
+		throw new HTTPException($type . ' is not a valid negotiation type. Must be one of: media, charset, encoding, language.');
+	}
+
+
 
     /**
      * Read data from php://input, mocked in tests.

@@ -710,22 +710,19 @@ class View
         // Render debugbar
         if ($this->debug AND (!isset($options['debug']) || $options['debug'] === true))
 		{
-			/* if (in_array(\dFramework\core\debug\toolbar\collectors\Views::class, Toolbar::COLLECTORS))
-			{
-				// Clean up our path names to make them a little cleaner
-				foreach (['APP_DIR', 'SYST_DIR', 'ROOTPATH'] As $path)
-				{
-					if (strpos($this->renderVars['file'], constant($path)) === 0)
-					{
-						$this->renderVars['file'] = str_replace(constant($path), $path . '/', $this->renderVars['file']);
-						break;
-					}
-				}
-				$this->renderVars['file'] = ++$this->viewsCount . ' ' . $this->renderVars['file'];
-				$output                   = '<!-- DEBUG-VIEW START ' . $this->renderVars['file'] . ' -->' . PHP_EOL
-					. $output . PHP_EOL
-					. '<!-- DEBUG-VIEW ENDED ' . $this->renderVars['file'] . ' -->' . PHP_EOL;
-			} */
+            // Clean up our path names to make them a little cleaner
+            foreach (['APP_DIR', 'SYST_DIR', 'ROOTPATH'] As $path)
+            {
+                if (strpos($this->renderVars['file'], constant($path)) === 0)
+                {
+                    $this->renderVars['file'] = str_replace(constant($path), $path . '/', $this->renderVars['file']);
+                    break;
+                }
+            }
+            $this->renderVars['file'] = ++$this->viewsCount . ' ' . $this->renderVars['file'];
+            $output                   = '<!-- DEBUG-VIEW START ' . $this->renderVars['file'] . ' -->' . PHP_EOL
+                . $output . PHP_EOL
+                . '<!-- DEBUG-VIEW ENDED ' . $this->renderVars['file'] . ' -->' . PHP_EOL;
 		}
         
         // Should we cache?

@@ -23,7 +23,6 @@ use dFramework\core\loader\Load;
 use dFramework\core\router\Dispatcher;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
-use Tracy\Debugger;
 
 /**
  * dFramework
@@ -87,7 +86,6 @@ class dFramework
          * Demarre la session
          */
         Session::start(); 
-        Debugger::dispatch(); // redispatching de la session entre dFramework et Tracy\Debugger
 
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload

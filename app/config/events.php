@@ -21,7 +21,7 @@ $event = Service::event();
  *      $event->on('create', [$myInstance, 'myMethod']);
  */
 
-$event->on('pre_system', function () {
+$event->on('pre_system', function () use ($event) {
 	/*
 	 * --------------------------------------------------------------------
 	 * Debug Toolbar Listeners. 
@@ -30,8 +30,7 @@ $event->on('pre_system', function () {
 	 */
 	if (!preg_match('#prod#i', config('general.environment')))
     {
-        //$event->on('DBQuery', 'CodeIgniter\Debug\Toolbar\Collectors\Database::collect');
-       //Service::toolbar()->respond();
+        $event->on('db.query', 'CodeIgniter\Debug\Toolbar\Collectors\Database::collect');
     }
 
 });

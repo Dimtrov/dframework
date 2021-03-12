@@ -226,7 +226,7 @@ class General extends Cli
      */
     protected function _routes() : Command 
     {
-        return (new Command('routes', 'Affiche tous les itinéraires définis par l\'utilisateur.'))
+        return (new Command('routes:list', 'Affiche tous les itinéraires définis par l\'utilisateur.'))
             ->action(function() {
                 /**
                  * @var Command

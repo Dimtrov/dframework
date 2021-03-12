@@ -24,7 +24,7 @@ use dFramework\core\output\Cache;
 use dFramework\core\http\Response;
 use dFramework\core\router\Router;
 use dFramework\core\output\Language;
-use dFramework\core\utilities\Timer;
+use dFramework\core\debug\Timer;
 use dFramework\core\db\query\Builder;
 use dFramework\core\debug\Toolbar;
 use dFramework\core\http\Redirection;
@@ -248,9 +248,13 @@ class Service
 	 *
 	 * @return \dFramework\core\output\View
 	 */
-	public static function viewer(string $view)
+	public static function viewer(bool $shared = true)
 	{
-		return Injector::factory(View::class, [$view]);
+        if (true === $shared)
+        {
+            return Injector::singleton(View::class);
+        }
+		return Injector::factory(View::class);
 	}
 
     /**

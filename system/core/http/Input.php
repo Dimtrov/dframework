@@ -21,7 +21,7 @@ use dFramework\core\Config;
 use dFramework\core\loader\Service;
 use dFramework\core\security\Session;
 use dFramework\core\security\Xss;
-use dFramework\core\utilities\Chaine;
+use dFramework\core\utilities\Str;
 
 /**
  * Input
@@ -577,7 +577,7 @@ class Input
 		// Clean UTF-8 if supported
 		if (UTF8_ENABLED === TRUE)
 		{
-			$str = Chaine::clean_string($str);
+			$str = Str::clean_string($str);
 		}
 
 		// Remove control characters
@@ -618,7 +618,7 @@ class Input
 		// Clean UTF-8 if supported
 		if (UTF8_ENABLED === TRUE)
 		{
-			return Chaine::clean_string($str);
+			return Str::clean_string($str);
 		}
 
 		return $str;

@@ -46,6 +46,14 @@ class EventManager implements EventManagerInterface
     private static $_instance = null;
 
     /**
+	 * Stores information about the events
+	 * for display in the debug toolbar.
+	 *
+	 * @var array
+	 */
+	protected static $performanceLog = [];
+
+    /**
      * The wildcard event name
      */
     const WILDCARD = '*';
@@ -172,13 +180,14 @@ class EventManager implements EventManagerInterface
                 $event->setParams($argv);
             }
         }
+        $eventName = $event->getName();
 
-        if (!array_key_exists($event->getName(), $this->events)) 
+        if (!array_key_exists($eventName, $this->events)) 
         {
-            $this->events[$event->getName()] = [];
+            $this->events[$eventName] = [];
         }
         
-        $events = array_merge($this->events[self::WILDCARD], $this->events[$event->getName()]);
+        $events = array_merge($this->events[self::WILDCARD], $this->events[$eventName]);
         $result = null;
         
         foreach ($events as $priority) 
@@ -193,10 +202,29 @@ class EventManager implements EventManagerInterface
                 {
                     break 2;
                 }
+                
+                $start = microtime(true);
+
                 $result = call_user_func($callback, $event, $result);
+
+                static::$performanceLog[] = [
+					'start' => $start,
+					'end'   => microtime(true),
+					'event' => strtolower($eventName),
+				];
             }
         }
 
         return $result;
     }
+
+    /**
+	 * Getter for the performance log records.
+	 *
+	 * @return array
+	 */
+	public static function getPerformanceLogs()
+	{
+		return static::$performanceLog;
+	}
 }
