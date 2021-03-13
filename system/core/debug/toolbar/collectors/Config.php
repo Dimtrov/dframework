@@ -20,11 +20,12 @@ class Config
 		$config = (object) CoreConfig::get('general');
 
 		return [
-			'dfVersion'   => dFramework::VERSION,
+			'dFVersion'   => dFramework::VERSION,
 			'phpVersion'  => phpversion(),
+			'os'  => PHP_OS_FAMILY,
 			'phpSAPI'     => php_sapi_name(),
 			'environment' => $config->environment ?? 'dev',
-			'baseURL'     => $config->base_url ?? site_url(),
+			'baseURL'     => $config->base_url ?? '',
 			'locale'      => $config->language ?? 'en',
 		];
 	}

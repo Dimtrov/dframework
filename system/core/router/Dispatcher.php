@@ -99,7 +99,11 @@ class Dispatcher
 	private $startTime;
 
 
-    private static $_instance = null;
+	private static $_instance = null;
+	
+	private $output = '';
+
+	
     /**
      * Renvoi une instance unique de la classe
      *
@@ -177,13 +181,20 @@ class Dispatcher
 
 		$this->spoofRequestMethod();
 
+		/**
+		 * Init event manager
+		 */
+		$events_file = APP_DIR . 'config' . DS . 'events.php';
+		if (file_exists($events_file))
+		{
+			require_once $events_file;
+		}
 		Service::event()->trigger('pre_system');
 		
-		$dispatcher = $this;
 		/*
 		 * The bootstrapping in a middleware
 		 */
-		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) use($dispatcher) {
+		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
 			require_once APP_DIR . 'config' . DS . 'routes.php';
 			if (empty($routes) OR ! $routes instanceof RouteCollection)
 			{
@@ -223,7 +234,7 @@ class Dispatcher
 			
 			$this->totalTime = $this->timer->getElapsedTime('total_execution');
 			
-			return Service::toolbar()->prepare($dispatcher, $request, $response);
+			return $response;
 		});
 
 		/**
@@ -243,6 +254,52 @@ class Dispatcher
 		 */
 		$this->emitResponse($this->middleware->handle($this->request));
 	}
+
+	/**
+	 * Gathers the script output from the buffer, replaces some execution
+	 * time tag in the output and displays the debug toolbar, if required.
+	 *
+	 * @param null $returned
+	 */
+	protected function emitResponse($returned = null)
+	{
+		$this->output = ob_get_contents();
+		// If buffering is not null.
+		// Clean (erase) the output buffer and turn off output buffering
+		if (ob_get_length())
+		{
+			ob_end_clean();
+		}
+		// If the controller returned a response object,
+		// we need to grab the body from it so it can
+		// be added to anything else that might have been
+		// echoed already.
+		// We also need to save the instance locally
+		// so that any status code changes, etc, take place.
+		if ($returned instanceof ResponseInterface)
+		{
+			$this->response = $returned;
+			$returned       = $returned->getBody();
+		}
+		if (is_string($returned))
+		{
+			$this->output .= $returned;
+			$this->output = $this->displayPerformanceMetrics($this->output);
+		}
+		/**
+		 * @var \dFramework\core\http\Response
+		 */
+		$response = $this->response;
+		if (empty($response->body())) 
+		{
+			$this->response = $this->response->withBody(to_stream($this->output));
+		}
+		
+		Service::emitter()->emit(
+			Service::toolbar()->prepare($this, $this->request, $this->response)
+		);
+	}
+
 
 	//--------------------------------------------------------------------
 
@@ -544,50 +601,6 @@ class Dispatcher
 	}
 
 
-	private $output = '';
-
-	/**
-	 * Gathers the script output from the buffer, replaces some execution
-	 * time tag in the output and displays the debug toolbar, if required.
-	 *
-	 * @param null $returned
-	 */
-	protected function emitResponse($returned = null)
-	{
-		$this->output = ob_get_contents();
-		// If buffering is not null.
-		// Clean (erase) the output buffer and turn off output buffering
-		if (ob_get_length())
-		{
-			ob_end_clean();
-		}
-		// If the controller returned a response object,
-		// we need to grab the body from it so it can
-		// be added to anything else that might have been
-		// echoed already.
-		// We also need to save the instance locally
-		// so that any status code changes, etc, take place.
-		if ($returned instanceof ResponseInterface)
-		{
-			$this->response = $returned;
-			$returned       = $returned->getBody();
-		}
-		if (is_string($returned))
-		{
-			$this->output .= $returned;
-			$this->output = $this->displayPerformanceMetrics($this->output);
-		}
-		/**
-		 * @var \dFramework\core\http\Response
-		 */
-		$response = $this->response;
-		if (empty($response->body())) 
-		{
-			$this->response = $this->response->withBody(to_stream($this->output));
-		}
-		
-		Service::emitter()->emit($this->response);
-	}
 
 	//--------------------------------------------------------------------
 

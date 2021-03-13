@@ -20,6 +20,8 @@ namespace dFramework\core\db;
 use dFramework\core\Config;
 use dFramework\core\db\connection\BaseConnection;
 use dFramework\core\db\connection\Mysql;
+use dFramework\core\db\connection\Pgsql;
+use dFramework\core\db\connection\Sqlite;
 use dFramework\core\db\query\Result;
 use dFramework\core\utilities\Arr;
 use dFramework\core\exception\DatabaseException;
@@ -229,6 +231,14 @@ class Database
         if (preg_match('#mysql#', $this->config['driver']))
         {
             return new Mysql($this->config);
+        }
+        if (preg_match('#sqlite#', $this->config['driver']))
+        {
+            return new Sqlite($this->config);
+        }
+        if (preg_match('#pgsql#', $this->config['driver']))
+        {
+            return new Pgsql($this->config);
         }
         /**
          * @todo gerer les autres driver

@@ -173,7 +173,7 @@ class Config
             }
             if (! in_array($config_file, get_included_files()))
             {
-                self::$_config = array_merge(self::$_config, require($config_file));
+                self::$_config = array_merge(self::$_config, (array) require($config_file));
             }
         }
         else 

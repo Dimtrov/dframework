@@ -128,7 +128,7 @@ class Pgsql extends BaseConnection
 		$this->driver = 'postgre';
         $this->type = strpos($this->driver, 'pdo') !== false ? 'pdo' : $this->driver;
 	
-		return $db;
+		return self::pushConnection('pgsql', $this, $db);
 	}
 
 	//--------------------------------------------------------------------
@@ -252,9 +252,10 @@ class Pgsql extends BaseConnection
             throw new DatabaseException('Database error: '.$error);
         }
 
-        $this->last_query = [
-            'query' => $sql,
-            'time' => microtime(true) - $time,
+		$this->last_query = [
+			'sql'      => $sql,
+			'start' => $time,
+			'duration'   => microtime(true) - $time,
         ];
         $this->stats['queries'][] = &$this->last_query;
         

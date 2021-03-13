@@ -317,7 +317,14 @@ abstract class BaseConnection
      *
      * @var \dFramework\core\utilities\Timer
      */
-    protected $timer;
+	protected $timer;
+	
+	/**
+	 * Liste des connexions etablies
+	 *
+	 * @var array
+	 */
+	protected static $allConnections = [];
 
 	//--------------------------------------------------------------------
 
@@ -375,6 +382,30 @@ abstract class BaseConnection
         return $this->stats;
     }  
 
+	/**
+	 * Renvoi la liste des toutes les connexions a la base de donnees
+	 *
+	 * @return array
+	 */
+	public static function getAllConnections() : array 
+    {
+        return static::$allConnections;
+	}
+	/**
+	 * Ajoute une connexion etablie
+	 *
+	 * @param string $name
+	 * @param BaseConnection $driver
+	 * @param object|resource $conn
+	 * @return object|resource
+	 */
+	protected static function pushConnection(string $name, BaseConnection $driver, $conn) 
+	{
+		static::$allConnections[$name] = compact('driver', 'conn');
+
+		return $conn;
+	}
+
 
 
 	//--------------------------------------------------------------------
@@ -403,8 +434,8 @@ abstract class BaseConnection
         $this->timer->start('database.init');
 
 		// Connect to the database and set the connection ID
-        $this->conn = $this->connect($this->pConnect);
-        
+		$this->conn = $this->connect($this->pConnect);
+		
         $this->execCommands();
 
 		// No connection resource? Check if there is a failover else throw an error

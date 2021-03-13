@@ -73,7 +73,7 @@ class Sqlite extends BaseConnection
         }
         $this->type = strpos($this->driver, 'pdo') !== false ? 'pdo' : $this->driver;
 
-		return $db;
+		return self::pushConnection('sqlite', $this, $db);
 	}
 
 	/**
@@ -189,11 +189,12 @@ class Sqlite extends BaseConnection
             throw new DatabaseException('Database error: '.$error);
         }
 
-        $this->last_query = [
-            'query' => $sql,
-            'time' => microtime(true) - $time
+		$this->last_query = [
+			'sql'      => $sql,
+			'start' => $time,
+			'duration'   => microtime(true) - $time,
         ];
-        $this->stats['queries'][] = $this->last_query;
+        $this->stats['queries'][] = &$this->last_query;
         
         return $result;
 	}

@@ -19,6 +19,7 @@ namespace dFramework\core\db\query;
 
 use dFramework\core\db\connection\BaseConnection;
 use dFramework\core\Entity;
+use dFramework\core\loader\Service;
 use PDO;
 
 /**
@@ -73,6 +74,8 @@ class Result
     {
         $this->query = &$query;
         $this->db = &$db;
+
+        Service::event()->trigger('db.query', $this);
     }
 
     /**

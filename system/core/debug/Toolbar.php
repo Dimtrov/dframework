@@ -8,6 +8,7 @@ use dFramework\core\router\Dispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use dFramework\core\debug\toolbar\collectors\History;
+use dFramework\core\output\Format;
 
 /**
  * Debug Toolbar
@@ -24,12 +25,11 @@ class Toolbar
 
 	const COLLECTORS = [
 		\dFramework\core\debug\toolbar\collectors\Timers::class,
+		\dFramework\core\debug\toolbar\collectors\Database::class,
 		\dFramework\core\debug\toolbar\collectors\Views::class,
 		\dFramework\core\debug\toolbar\collectors\Files::class,
 		\dFramework\core\debug\toolbar\collectors\Routes::class,
 		\dFramework\core\debug\toolbar\collectors\Events::class,
-		//\CodeIgniter\Debug\Toolbar\Collectors\Database::class,
-		//\CodeIgniter\Debug\Toolbar\Collectors\Logs::class,
 	];
 
 	/**
@@ -119,6 +119,15 @@ class Toolbar
 			$this->collectors[] = new $collector();
 		}
     }
+	/**
+	 * Retourne les configuration courrante de la toolbar
+	 *
+	 * @return array
+	 */
+	public function getConfig() : array 
+	{
+		return $this->config;
+	}
 
 	/**
 	 * Prepare for debugging..
@@ -392,7 +401,6 @@ class Toolbar
 		}
 
 		$output = '';
-
 		switch ($format)
 		{
 			case 'html':
@@ -406,12 +414,10 @@ class Toolbar
 				$output = ob_get_clean();
 				break;
 			case 'json':
-				$formatter = new JSONFormatter();
-				$output    = $formatter->format($data);
+				$output    = Format::factory($data)->toJson();
 				break;
 			case 'xml':
-				$formatter = new XMLFormatter;
-				$output    = $formatter->format($data);
+				$output    = Format::factory($data)->toXml();
 				break;
 		}
 

@@ -1,2 +1,3 @@
 .git
 vendor/
+app/resources/reserved/debugbar/

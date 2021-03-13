@@ -93,8 +93,7 @@ class Mysql extends BaseConnection
         }
         $this->type = strpos($this->driver, 'pdo') !== false ? 'pdo' : $this->driver;
 
-		
-		return $db;
+		return self::pushConnection('mysql', $this, $db);
 	}
 
 	//--------------------------------------------------------------------
@@ -235,8 +234,9 @@ class Mysql extends BaseConnection
         }
 
         $this->last_query = [
-			'query' => $sql,
-            'time' => microtime(true) - $time,
+			'sql'      => $sql,
+			'start' => $time,
+			'duration'   => microtime(true) - $time,
         ];
         $this->stats['queries'][] = &$this->last_query;
         

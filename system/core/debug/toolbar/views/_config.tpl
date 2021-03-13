@@ -1,16 +1,20 @@
 <p class="debug-bar-alignRight">
-	<a href="https://codeigniter4.github.io/CodeIgniter4/index.html" target="_blank" >Read the CodeIgniter docs...</a>
+	<a href="https://dimtrov.github.io/dFramework/index.html" target="_blank" >Read the dFramework docs...</a>
 </p>
 
 <table>
 	<tbody>
 		<tr>
-			<td>CodeIgniter Version:</td>
-			<td>{ ciVersion }</td>
+			<td>dFramework Version:</td>
+			<td>{ dFVersion }</td>
 		</tr>
 		<tr>
 			<td>PHP Version:</td>
 			<td>{ phpVersion }</td>
+		</tr>
+		<tr>
+			<td>OS:</td>
+			<td>{ os }</td>
 		</tr>
 		<tr>
 			<td>PHP SAPI:</td>
@@ -39,10 +43,6 @@
 		<tr>
 			<td>Locale:</td>
 			<td>{ locale }</td>
-		</tr>
-		<tr>
-			<td>Content Security Policy Enabled:</td>
-			<td>{ if $cspEnabled } Yes { else } No { endif }</td>
 		</tr>
 	</tbody>
 </table>
