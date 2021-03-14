@@ -85,6 +85,23 @@ class Database
         }
         return self::$_instance;
     }
+
+    /**
+     * Connecte la base de donnees
+     *
+     * @param string|null $group
+     * @param boolean $shared
+     * @return BaseConnection
+     */
+    public static function connect(?string $group = null, bool $shared = true) : BaseConnection
+    {
+        if (true === $shared) 
+        {
+            return self::instance($group)->connection();
+        }
+        return (new self($group))->connection($group);
+    }
+
     public function setGroup(?string $group) : self 
     {
         $this->group = $group;

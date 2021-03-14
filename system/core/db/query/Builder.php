@@ -70,7 +70,11 @@ class Builder
      * @var array Parametres de configuration de la base de donnees
      */
     protected $db_config = [];
-
+    
+    /**
+     * @var self
+     */
+    private static $_instance = null;
 
     /**
      * Constructor
@@ -81,6 +85,20 @@ class Builder
     {
         $this->db = Database::instance($group);  
         $this->db_config = $this->db->config();  
+    }
+    public static function instance(?string $group = null) : self 
+    {
+        if (null === self::$_instance) 
+        {
+            self::$_instance = new self($group);
+        }
+        return self::$_instance;
+    }
+
+    public function __clone()
+    {
+        $new = $this;
+        return $new->reset();
     }
 
     /*************************** SQL Utilities Methods ********************/
@@ -1157,7 +1175,7 @@ class Builder
     /**
      * Resets class properties.
      */
-    final public function reset() 
+    final public function reset() : self 
     {
         $this->crud = 'select';
         $this->table = [];
@@ -1172,6 +1190,8 @@ class Builder
         $this->limit = '';
         $this->offset = '';
         $this->sql = '';
+
+        return $this;
     }
     
     /**

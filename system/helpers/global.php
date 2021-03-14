@@ -23,6 +23,7 @@ use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dFramework\core\security\Session;
+use dFramework\core\utilities\Helpers;
 use Kint\Kint;
 use Plasticbrain\FlashMessages\FlashMessages;
 use Psr\Http\Message\ResponseInterface;
@@ -49,11 +50,12 @@ if (!function_exists('env'))
      * for unsupported or inconsistent environment variables
      *
      * @param string $key Environment variable name.
+     * @param mixed $default
      * @return string Environment variable setting.
      */
-    function env(string $key)
+    function env(string $key, $default = null)
     {
-        return Service::helpers()->env($key);
+        return Helpers::env($key, $default);
     }
 }
 

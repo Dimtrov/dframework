@@ -16,7 +16,7 @@
  */
  
 
-$database['connection'] = 'default';
+$database['connection'] = env('db.connection', 'default');
  
 /*
 | -------------------------------------------------------------------
@@ -51,12 +51,12 @@ $database['connection'] = 'default';
 
 
 $database['default'] = [
-    'driver'    => 'pdomysql',
+    'driver'    => env('db.default.driver', 'pdomysql'),
     'port'      => '3306',
-    'host'      => 'localhost',
-    'username'  => 'root',
-    'password'  => '',
-    'database'  => 'laravel_test',
+    'host'      => env('db.default.hostname', 'localhost'),
+    'username'  => env('db.default.username', 'root'),
+    'password'  => env('db.default.password', ''),
+    'database'  => env('db.default.database', 'laravel_test'),
     'debug'     => 'auto',
     'charset'   => 'utf8',
     'collation' => 'utf8_general_ci',

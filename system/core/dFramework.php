@@ -18,6 +18,7 @@
 namespace dFramework\core;
 
 use dFramework\core\exception\Exception;
+use dFramework\core\loader\DotEnv;
 use dFramework\core\loader\FileLocator;
 use dFramework\core\loader\Load;
 use dFramework\core\router\Dispatcher;
@@ -65,8 +66,12 @@ class dFramework
          * Verifie les exigences systeme
          */
         self::checkRequirements();
-        self::configure_ext();
-
+       
+        /**
+         * On initialise le parsing du fichier .env
+         */
+        DotEnv::init(ROOTPATH);
+        
         /**
          * On charge le helper global
          */
@@ -76,6 +81,7 @@ class dFramework
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
         Config::init();
+        self::configure_ext();
 
         /**
          * Lance la capture des exceptions et erreurs
