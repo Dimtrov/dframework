@@ -359,8 +359,8 @@ class Dispatcher
 		$this->controller     = $this->router->handle($request->url ?? null);	
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
-        $this->controllerFile = $this->router->controllerFile();
-
+		$this->controllerFile = $this->router->controllerFile();
+		
 		// If a {locale} segment was matched in the final route,
 		// then we need to set the correct locale on our Request.
 		if ($this->router->hasLocale())

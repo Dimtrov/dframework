@@ -264,7 +264,6 @@ class Router
 	 */
 	public function handle(string $uri = null)
 	{
-		$uri = trim($uri, '/');
 		if (empty($uri)) 
 		{
 			$uri = '/';
@@ -328,24 +327,19 @@ class Router
 	{
 		$routes = $this->collection->getRoutes($this->collection->HTTPVerb());
 
-		$uri = $uri === '/'
-			? $uri
-			: trim($uri, '/ ');
-
 		// Don't waste any time
 		if (empty($routes))
 		{
 			return false;
 		}
-
 		// Loop through the route array looking for wildcards
 		foreach ($routes as $key => $val)
 		{
 			$key = $key === '/'
-				? $key
+			? $key
 				: trim($key, '/ ');
-
-			// Are we dealing with a locale?
+			
+				// Are we dealing with a locale?
 			if (strpos($key, '{locale}') !== false)
 			{
 				$localeSegment = array_search('{locale}', preg_split('/[\/]*((^[a-zA-Z0-9])|\(([^()]*)\))*[\/]+/m', $key));
@@ -354,7 +348,13 @@ class Router
 				// will actually match.
 				$key = str_replace('{locale}', '[^/]+', $key);
 			}
-
+			
+			$key = preg_replace_callback('#{(.+)}#U', function($match) {
+				preg_match('#{(?:[a-z]+)\|(.*)}#i', $match[0], $m);
+				
+				return '(' . ($m[1] ?? '[^/]+') .')';
+			}, $key);
+			
 			// Does the RegEx match?
 			if (preg_match('#^' . $key . '$#', $uri, $matches))
 			{
@@ -374,6 +374,11 @@ class Router
 					unset($localeSegment);
 				}
 
+				// Remove the original string from the matches array
+				array_shift($matches);
+
+				$this->params = $matches;
+				
 				// Are we using Closures? If so, then we need
 				// to collect the params into an array
 				// so it can be passed to the controller method later.
@@ -381,11 +386,6 @@ class Router
 				{
 					$this->controller = $val;
 					
-					// Remove the original string from the matches array
-					array_shift($matches);
-
-					$this->params = $matches;
-
 					$this->matchedRoute = [
 						$key,
 						$val,
@@ -457,6 +457,8 @@ class Router
 	 */
 	public function autoRoute(string $uri)
 	{
+		$uri = trim($uri, '/');
+
 		$segments = $this->validateRequest(explode('/', $uri));
 
 		// If we don't have any segments left - try the default controller;
@@ -630,7 +632,10 @@ class Router
 
 		array_shift($segments);
 
-		$this->params = $segments;
+		if (!empty($segments)) 
+		{
+			$this->params = $segments;
+		}
 	}
 
 	/**
