@@ -20,6 +20,7 @@ namespace dFramework\core\router;
 use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\ServerRequest;
+use dFramework\core\loader\Service;
 
 /**
  * Parses the request URL into controller, action, and parameters. Uses the connected routes
@@ -360,7 +361,8 @@ class Router
 				// Is this route supposed to redirect to another?
 				if ($this->collection->isRedirect($key))
 				{
-					throw new \Exception(key($val), $this->collection->redirectCode($key));
+					$val = is_string($val) ? [$val => $val] : $val;
+					Service::redirection()->to(site_url(key($val)), $this->collection->redirectCode($key));
 				}
 				// Store our locale so CodeIgniter object can
 				// assign it to the Request.

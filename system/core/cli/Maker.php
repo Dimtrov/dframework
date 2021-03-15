@@ -59,7 +59,7 @@ class Maker extends Cli
                     $generator = new Controller($resource, $presenter);
                     $class_name = $generator->generate($name, $path);
 
-                    $cli->io->ok('Contrôleur créer avec succès: '.$class_name);
+                    $cli->io->ok('Contrôleur créé avec succès: '.$class_name);
                     $cli->end();
                 }
                 catch(\Throwable $th) {
@@ -92,7 +92,7 @@ class Maker extends Cli
                     $generator = new Entity($empty);
                     $class_name = $generator->generate($name, $path);
 
-                    $cli->io->ok('Contrôleur créer avec succès: '.$class_name);
+                    $cli->io->ok('Entité créée avec succès: '.$class_name);
                     $cli->end();
                 }
                 catch(\Throwable $th) {

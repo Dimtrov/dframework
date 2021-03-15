@@ -158,6 +158,7 @@ class Uri implements UriInterface
 		{
 			$this->setURI($uri);
 		}
+		$this->port = $_SERVER['SERVER_PORT'] ?? 80;
 	}
 
 	//--------------------------------------------------------------------
@@ -1010,7 +1011,7 @@ class Uri implements UriInterface
 		 * NOTE: We don't use removeDotSegments in this
 		 * algorithm since it's already done by this line!
 		 */
-		$relative = new URI();
+		$relative = new self;
 		$relative->setURI($uri);
 
 		if ($relative->getScheme() === $this->getScheme())

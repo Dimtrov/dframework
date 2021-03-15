@@ -226,7 +226,7 @@ class BaseCollector
 		}
 		elseif (strpos($file, WEBROOT) === 0)
 		{
-			$file = 'WEBROOT/' . substr($file, strlen(SYST_DIR));
+			// $file = 'WEBROOT/' . substr($file, strlen(WEBROOT));
 		}
 
 		return str_replace(['/', '\\'], DS, $file);

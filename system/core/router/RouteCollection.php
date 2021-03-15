@@ -1080,6 +1080,7 @@ class RouteCollection
 		{
 			$to = $prefix.$to;
 		}
+
 		$this->routes[$verb][$name] = [
 			'route' => [$from => $to],
 		];
