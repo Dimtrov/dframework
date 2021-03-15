@@ -26,6 +26,7 @@ use dFramework\core\utilities\Str;
 use Nette\PhpGenerator\PhpNamespace;
 use dFramework\core\Controller as CoreController;
 use dFramework\components\rest\Controller as RestController;
+use dFramework\core\support\traits\CliMessage;
 
 /**
  * generator\Controller
@@ -42,6 +43,7 @@ use dFramework\components\rest\Controller as RestController;
  */
 final class Controller
 {
+    use CliMessage;
     /**
      * @var string Type de controleur a generer
      */
@@ -58,10 +60,7 @@ final class Controller
      * @var string Dossier de sauvegarde
      */
     private $dir = '';
-    /**
-     * @var array messages pour la console
-     */
-    private $messages = [];
+    
 
     /**
      * Constructor
@@ -100,29 +99,6 @@ final class Controller
 
         return $this->full_class_name;
     }
-
-    /**
-     * Renvoi les messages pour la console
-     *
-     * @return array
-     */
-    public function getMessages() : array 
-    {
-        return $this->messages;
-    }
-    /**
-     * Rajoute un nouveau message a la pile de message
-     *
-     * @param string $message
-     * @param string $color
-     * @return void
-     */
-    private function pushMessage(string $message, string $color = 'green')
-    {
-        $this->messages[] = compact('message', 'color');
-        return $this;
-    }
-
 
     /**
      * Ecrit les proprietes de la classe, les getters et les setters

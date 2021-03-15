@@ -26,7 +26,6 @@ class Toolbar
 	const COLLECTORS = [
 		\dFramework\core\debug\toolbar\collectors\Timers::class,
 		\dFramework\core\debug\toolbar\collectors\Database::class,
-		\dFramework\core\debug\toolbar\collectors\Views::class,
 		\dFramework\core\debug\toolbar\collectors\Files::class,
 		\dFramework\core\debug\toolbar\collectors\Routes::class,
 		\dFramework\core\debug\toolbar\collectors\Events::class,

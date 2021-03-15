@@ -234,7 +234,3 @@ class Autoloader
         }
     }
 }
-
-\dFramework\Autoloader::load();
-
-require_once SYST_DIR . 'constants'.DS.'constants.php';

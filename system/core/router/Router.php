@@ -421,10 +421,9 @@ class Router
 				}
 				elseif (strpos($val, '/') !== false)
 				{
-					[
-						$controller,
-						$method,
-					] = explode( '::', $val );
+					$options = explode('::', $val);
+					$controller = $options[0];
+					$method = $options[1] ?? $this->collection->defaultMethod();
 
 					// Only replace slashes in the controller, not in the method.
 					$controller = str_replace('/', '\\', $controller);

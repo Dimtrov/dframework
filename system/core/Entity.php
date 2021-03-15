@@ -68,7 +68,12 @@ abstract class Entity
 	/**
 	 * @var array Attributs autorisés
 	 */
-	protected $fillables = [];
+	protected $accepts = [];
+	/**
+	 * @var array Attributs rejectés
+	 */
+	protected $rejects = [];
+
 
 	/**
 	 * Constructor
@@ -77,7 +82,7 @@ abstract class Entity
 	 */
 	public function __construct(array $data = [], bool $strict = true)
 	{
-		if (true === $strict AND !$this->isFillable($data))
+		if (true === $strict AND (!$this->isAccepts($data) OR $this->isRejects($data)))
 		{
 			throw new DatabaseException("Attribut non autorisé trouvé");
 		}
@@ -89,9 +94,9 @@ abstract class Entity
 	 *
 	 * @return array
 	 */
-	private function _fillables() : array 
+	private function _accepts() : array 
 	{
-		return $this->fillables;
+		return $this->accepts;
 	}
 	/**
 	 * Verifie si un attributs est autorisé
@@ -99,21 +104,53 @@ abstract class Entity
 	 * @param string|array $attributes
 	 * @return boolean
 	 */
-	private function _isFillable($attributes) : bool
+	private function _isAccepts($attributes) : bool
 	{
 		$attributes = (array) $attributes;
-		$isFillable = true;
+		$isAccepts = true;
 
 		foreach ($attributes As $key => $value) 
 		{
-			if (!in_array($key, $this->fillables))
+			if (!in_array($key, $this->accepts))
 			{
-				$isFillable = false;
+				$isAccepts = false;
 				break;
 			}
 		}
-		return $isFillable;
+		return $isAccepts;
 	}
+
+	/**
+	 * Recuperes les attributs  rejetés
+	 * 
+	 * @return array
+	 */
+	private function _rejects() : array 
+	{
+		return $this->rejects;
+	}
+	/**
+	 * Verifie si un attributs est rejeté
+	 *
+	 * @param string|array $attributes
+	 * @return boolean
+	 */
+	private function _isRejects($attributes) : bool
+	{
+		$attributes = (array) $attributes;
+		$isRejects = false;
+
+		foreach ($attributes As $key => $value) 
+		{
+			if (in_array($key, $this->rejects))
+			{
+				$isRejects = false;
+				break;
+			}
+		}
+		return $isRejects;
+	}
+	
 	/**
 	 * Assigne les donnees a l'entite
 	 *

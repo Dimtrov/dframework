@@ -67,10 +67,12 @@ class Parser extends View
 	 *
 	 * @return string
 	 */
-	protected function makeView(string $view, array $options = null) : string
+	protected function makeView(string $view, array $options = null, ?string $viewPath = null) : string
     {
-        $viewPath = $this->config['view_path'];
-
+		if (empty($viewPath))
+		{
+			$viewPath = $this->config['view_path'];
+		}
 		$start = microtime(true);
 	
 		$fileExt = pathinfo($view, PATHINFO_EXTENSION);

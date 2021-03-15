@@ -21,7 +21,8 @@
         "ext-reflection": "*",
         "ext-dom": "*",
         "ext-xml": "*",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "nesbot/carbon": "^2.46"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.9"

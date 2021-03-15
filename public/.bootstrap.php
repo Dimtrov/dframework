@@ -101,3 +101,9 @@ define('BASE_URL', trim(dirname($_SERVER['SCRIPT_NAME'], 2), '\\'));
 
 
 require_once SYST_DIR.'Autoloader.php';
+
+\dFramework\Autoloader::load();
+
+require_once SYST_DIR . 'constants'.DS.'constants.php';
+
+return (new \dFramework\core\dFramework)->init();

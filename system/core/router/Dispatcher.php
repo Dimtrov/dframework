@@ -140,7 +140,7 @@ class Dispatcher
     public static function getClass() : ?string
     {
 		$controller = self::instance()->controller;
-		if (empty($controller)) 
+		if (empty($controller) OR !is_string($controller)) 
 		{
 			$controller = Service::routes()->defaultController();
 		}

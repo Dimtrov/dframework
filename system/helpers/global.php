@@ -802,6 +802,26 @@ if (!function_exists('view_exist'))
     }
 }
 
+if (!function_exists('view'))
+{
+	/**
+     * Charge une vue
+     * 
+     * @param string $view
+     * @param array|null $data
+     * @param array|null $options
+     * @param array|null $config
+     * @return View
+     */
+    function view(string $view, ?array $data = [], ?array $options = [], ?array $config = [])
+    {
+        $object = Service::viewer(false);
+		$object->addData($data)->addConfig($config)->setOptions($options);
+		
+        return $object->display($view);
+    }
+}
+
 if (!function_exists('flash'))
 {
     /**

@@ -74,6 +74,6 @@ class Hydrator
      */
     public static function makeEntityClass(string $class, string $dir, ?string $group = null)
     {
-        (new Entity($group))->generate($class, $dir);
+        (new Entity)->generate($class, $dir);
     }
 }

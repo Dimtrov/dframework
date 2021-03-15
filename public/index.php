@@ -16,6 +16,6 @@
  */
 
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.php';
+$app = require_once __DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.php';
 
-dFramework\core\dFramework::init();
+$app->run();

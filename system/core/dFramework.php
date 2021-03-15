@@ -60,28 +60,32 @@ class dFramework
      * @throws exception\LoadException
      * @throws exception\RouterException
      */
-    public static function init()
+    public function init() : self
     {
         /**
          * Verifie les exigences systeme
          */
         self::checkRequirements();
-       
-        /**
-         * On initialise le parsing du fichier .env
-         */
-        DotEnv::init(ROOTPATH);
-        
+
         /**
          * On charge le helper global
          */
         FileLocator::helper('global');
-
+        
+        /**
+         * On configure quelques extensions
+         */
+        self::configure_ext();
+        
+        /**
+         * On initialise le parsing du fichier .env
+         */
+        DotEnv::init(ROOTPATH);
+                
         /**
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
         Config::init();
-        self::configure_ext();
 
         /**
          * Lance la capture des exceptions et erreurs
@@ -96,8 +100,12 @@ class dFramework
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
          */
-        Load::init();        
-        
+        Load::init();
+
+        return $this;
+    }
+    public function run()
+    {
         /**
          * Initialise le routing de l'application. Point d'entrer de l'application
          */

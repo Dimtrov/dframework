@@ -148,6 +148,7 @@ class Controller
      * @param string $view
      * @param array|null $data
      * @param array|null $options
+     * @param array|null $config
      * @return View
      * @throws \ReflectionException
      */

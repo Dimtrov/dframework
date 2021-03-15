@@ -157,13 +157,12 @@ class View
     public function __construct(?array $data = [], ?string $controller= '', ?array $options = [], ?array $config = [], $response = null)
     {
         $this->data = (array) $data;
-        $this->options = (array) $options;
         $this->controller = strtolower(trim($controller, DS));
-       
+        $this->addConfig($config)->setOptions($options);
+
         $this->response = ($response instanceof Response OR $response instanceof ResponseInterface) ? $response : Service::response();
-        $this->config = array_merge($this->config, (array) $config);
+        
         Load::helper('assets');
-		
         $class = Dispatcher::getClass();
         $method = Dispatcher::getMethod();
 		
@@ -171,6 +170,81 @@ class View
 
         $this->debug = true;
     }
+
+
+    /**
+     * Add the view configuration
+     *
+     * @param array|null $config
+     * @return self
+     */
+    public function addConfig(?array $config = []) : self
+    {
+        $this->config = array_merge($this->config, (array) $config);
+
+        return $this;
+    }
+    /**
+     * Modify view options
+     *
+     * @param array|null $options
+     * @return self
+     */
+    public function setOptions(?array $options = []) : self 
+    {
+        $this->options = (array) $options;
+
+        return $this;
+    }
+    
+
+    /**
+	 * Sets several pieces of view data at once.
+	 *
+	 * @param array  $data
+	 * @return self
+	 */
+	public function addData(array $data = []): self
+	{
+		$this->data = array_merge($this->data, $data);
+
+		return $this;
+	}
+	/**
+	 * Sets a single piece of view data.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return View
+	 */
+	public function setVar(string $name, $value = null): self
+	{
+		$this->data[$name] = $value;
+
+		return $this;
+	}
+    /**
+	 * Removes all of the view data from the system.
+	 *
+	 * @return View
+	 */
+	public function resetData(): self
+	{
+		$this->data = [];
+
+		return $this;
+	}
+	/**
+	 * Returns the current data that will be displayed in the view.
+	 *
+	 * @return array
+	 */
+	public function getData(): array
+	{
+		return $this->data;
+    }
+    
+
     /**
      * set displaying view 
      *
@@ -390,52 +464,6 @@ class View
 		return (strlen($string) > $length) ? substr($string, 0, $length - 3) . '...' : $string;
 	}
 
-    /**
-	 * Sets several pieces of view data at once.
-	 *
-	 * @param array  $data
-	 * @return self
-	 */
-	public function addData(array $data = []): self
-	{
-		$this->data = array_merge($this->data, $data);
-
-		return $this;
-	}
-	/**
-	 * Sets a single piece of view data.
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return View
-	 */
-	public function setVar(string $name, $value = null): self
-	{
-		$this->data[$name] = $value;
-
-		return $this;
-	}
-    /**
-	 * Removes all of the view data from the system.
-	 *
-	 * @return View
-	 */
-	public function resetData(): self
-	{
-		$this->data = [];
-
-		return $this;
-	}
-	/**
-	 * Returns the current data that will be displayed in the view.
-	 *
-	 * @return array
-	 */
-	public function getData(): array
-	{
-		return $this->data;
-	}
-
 	/**
 	 * Returns the performance data that might have been collected
 	 * during the execution. Used primarily in the Debug Toolbar.
@@ -629,9 +657,12 @@ class View
      * @param string $viewPath
      * @return string
      */
-    protected function makeView(string $view, array $options = null) : string
+    protected function makeView(string $view, array $options = null, ?string $viewPath = null) : string
     {
-        $viewPath = $this->config['view_path'];
+        if (empty($viewPath))
+        {
+            $viewPath = $this->config['view_path'];
+        }
 
         $view = preg_replace('#\.(php|tpl|html?)$#i', '', $view);
         $this->renderVars['start'] = microtime(true);
