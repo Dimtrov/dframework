@@ -87,6 +87,7 @@ class Model
 		{ 
 			$this->setData( $newData); 
 		}
+		helper('inflector');
 	}
 
 
@@ -479,7 +480,7 @@ class Model
 		{
 			$related = explode('\\', preg_replace('#Entity$#', '', $related));
 			$related = end($related);
-
+			
 			$pk = Database::indexes(plural(Str::toSnake($related)), 'PRIMARY');
 			$foreign_key = $pk->fields[0] ?? Str::toSnake('id_' . singular($related));
 		}
@@ -501,7 +502,7 @@ class Model
 	 */
 	public function hasMany(string $related, ?string $foreign_key = null) : HasMany
 	{
-		return new Relations\HasMany($this->class, $related, $this->getRelationFk($related, $foreign_key));
+		return new Relations\HasMany($this->class, $related, $this->getRelationFk($this->class->getTable(), $foreign_key));
 	}
 	/**
 	 * @param string $related
@@ -567,6 +568,37 @@ class Model
 
 		$this->setRelation($related, $this->$related());
 	}
+
+
+
+	// ======================================
+	// Utilities Methods
+	// ======================================
+
+	public function exist(array $conditions)
+	{
+		return $this->where($conditions)->count() > 0;
+	}
+	/**
+     * Verifie si une valeur n'existe pas deja pour une cle donnee
+     *
+     * @param array $dif
+     * @param array $eq
+     * @return bool
+     */
+    final public function existOther(array $dif, array $eq) : bool
+    {
+        foreach ($dif As $key => $value) 
+        {
+            $this->where($key . ' !=', $value);
+        }
+        foreach ($eq As $key => $value) 
+        {
+            $this->where($key, $value);
+        }
+        
+        return $this->count() > 0;
+    }
 
 
 	// ======================================
@@ -689,16 +721,6 @@ class Model
 		if (method_exists($this, $name))
 		{
 			return call_user_func_array([$this, $name], $arguments);
-		}
-
-		// Check if the method is a "scope" method
-        // Read documentation about scope method
-        $scope = "scope" . Str::toPascal($name);
-		if (method_exists($this, $scope))
-		{
-			array_unshift($arguments, $this);
-
-			return call_user_func_array([$this, $scope], $arguments);
 		}
 
 		if (is_null($this->queryBuilder)) 

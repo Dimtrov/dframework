@@ -17,12 +17,14 @@
 
 namespace dFramework\core;
 
+use BadMethodCallException;
 use ReflectionClass;
 use dFramework\core\http\Middleware;
 use dFramework\core\loader\Load;
 use dFramework\core\output\View;
 use dFramework\core\output\Cache;
 use dFramework\core\router\Dispatcher;
+use dFramework\core\utilities\Arr;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -58,6 +60,15 @@ class Controller
      * @var \dFramework\core\output\Cache Instance de l'objet Cache
      */
     protected $cache;
+
+    /**
+     * @var array Données partagées entre toutes les vue chargées à partir d'un controleur
+     */
+    protected $view_datas = [];
+    /**
+     * @var string Layout a utiliser
+     */
+    protected $layout = null;
 
     private $_middlewares = [];
     
@@ -141,6 +152,45 @@ class Controller
         }
     }
     
+
+    /**
+     * Validation rapide de donnees
+     *
+     * @param array $rules
+     * @param array|null $data
+     * @return bool
+     */
+    final protected function validate(array $rules, ?array $data = [])  
+    {
+        if (!Arr::isAssoc($rules)) 
+        {
+            throw new BadMethodCallException('Mauvaise utilisation de la methode '. __METHOD__);
+        }
+        $this->loadLibrary('Validator');
+        $this->validator->init(null, $data);
+
+        foreach ($rules As $field => $rule)
+        {
+            $rule = explode('|', $rule);
+
+            foreach ($rule as $r)
+            {
+                $params = [];
+                if (preg_match('#^([a-z-_]+){(.+)}$#isU', $r, $p))
+                {
+                    $params = explode(',', $p[2] ?? '');
+                    $r = $p[1] ?? '';
+                    $this->validator->rule($p[1], ...$params);
+                }
+                if (!empty($r))
+                {
+                    call_user_func([$this->validator, $r], $field, ...$params);
+                }
+            }
+        }
+
+        return $this->validator->validate();
+    }
 
     /**
      * Charge une vue

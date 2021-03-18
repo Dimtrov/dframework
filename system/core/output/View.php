@@ -302,10 +302,11 @@ class View
 	 * Used within layout views to include additional views.
 	 *
 	 * @param string     $view
+	 * @param array|null $data
 	 * @param array|null $options
 	 * @return string
 	 */
-	public function insert(string $view, array $options = null): string
+	public function insert(string $view, ?array $data = [], ?array $options = null): string
 	{
         $view = preg_replace('#\.php$#i', '', $view).'.php';
         $view = str_replace(' ', '', $view);
@@ -319,8 +320,7 @@ class View
                 $view = '/'.trim(dirname($this->view), '/\\').'/'.$view;
             }
         }
-
-        return $this->compressView(
+        return $this->addData($data)->compressView(
             $this->makeView($view, $options), 
             Config::get('general.compress_output')
         );
@@ -423,7 +423,7 @@ class View
 	 * Get or Set page title 
 	 *
 	 * @param string|null $title 
-	 * @return string|null 
+	 * @return string|self 
 	 */
 	public function title(?string $title = null)
 	{
@@ -433,6 +433,8 @@ class View
 		}
 		
 		$this->_page_vars['title'] = esc($title);
+
+        return $this;
 	}
 	
 	/**
@@ -440,7 +442,7 @@ class View
 	 *
 	 * @param string $key 
 	 * @param string|null $value 
-	 * @return string|null 
+	 * @return string|self 
 	 */
 	public function meta(string $key, ?string $value = null)
 	{
@@ -450,6 +452,8 @@ class View
 		}
 		
 		$this->_page_vars['meta'][$key] = esc($value);
+
+        return $this;
 	}
 	
     	/**

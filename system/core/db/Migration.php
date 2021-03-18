@@ -64,7 +64,7 @@ abstract class Migration
 	 *
 	 * @return array
 	 */
-	public function getSchemas() : array 
+	final public function getSchemas() : array 
 	{
 		return $this->schemas;
 	}
@@ -73,7 +73,7 @@ abstract class Migration
 	 *
 	 * @return string|null
 	 */
-	public function getGroup() : ?string 
+	final public function getGroup() : ?string 
 	{
 		return $this->group;
 	}
@@ -85,7 +85,7 @@ abstract class Migration
      * @param  callable  $callback
 	 * @return void
      */
-    protected function create(string $table, callable $callback)
+    final protected function create(string $table, callable $callback)
     {
 		$schema = $this->build($table, $callback);
 		$schema->create();
@@ -100,7 +100,7 @@ abstract class Migration
      * @param  callable  $callback
      * @return void
      */
-    protected function modify(string $table, callable $callback)
+    final protected function modify(string $table, callable $callback)
     {
       	$schema = $this->build($table, $callback);
       	$schema->modify();
@@ -114,7 +114,7 @@ abstract class Migration
      * @param  string  $table
      * @return void
      */
-    protected function drop(string $table)
+    final protected function drop(string $table)
     {
 		$schema = $this->createSchema($table);
 		$schema->drop();
@@ -128,7 +128,7 @@ abstract class Migration
      * @param  string  $table
      * @return void
      */
-    protected function dropIfExists(string $table)
+    final protected function dropIfExists(string $table)
     {
         $schema = $this->createSchema($table);
 		$schema->dropIfExists();
@@ -143,10 +143,12 @@ abstract class Migration
      * @param  string  $to
      * @return void
      */
-    protected function rename(string $from, string $to)
+    final protected function rename(string $from, string $to)
     {
 		$schema = $this->createSchema($from);
 		$schema->rename($to);
+
+		$this->schemas[] = $schema;
     }
 
 
@@ -159,7 +161,8 @@ abstract class Migration
     {        
         return $callback($this->createSchema($table));
     }
-	private function createSchema(string $table) : schema 
+	
+    private function createSchema(string $table) : schema 
     {
         return new Schema($table);
     }

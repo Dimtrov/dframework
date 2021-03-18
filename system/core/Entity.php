@@ -86,7 +86,8 @@ abstract class Entity
 		{
 			throw new DatabaseException("Attribut non autorisé trouvé");
 		}
-		$this->orm = $this->_assignData($data);
+		$this->orm = new Model($this, []);
+		$this->_assignData($data);
     }
 
 	/**
@@ -150,7 +151,7 @@ abstract class Entity
 		}
 		return $isRejects;
 	}
-	
+
 	/**
 	 * Assigne les donnees a l'entite
 	 *
@@ -173,7 +174,7 @@ abstract class Entity
 				$this->{$key} = $value;
 			}
 		}
-        return new Model($this, $attributes);
+		$this->orm->setData($attributes);
 	}
 	/**
 	 * Recupere le groupe de connexion a utiliser
@@ -257,6 +258,15 @@ abstract class Entity
 		if (method_exists($this, '_'.$name))
 		{
 			return call_user_func_array([$this, '_'.$name], $arguments);
+		}
+		// Check if the method is a "scope" method
+        // Read documentation about scope method
+        $scope = "scope" . Str::toPascal($name);
+		if (method_exists($this, $scope))
+		{
+			array_unshift($arguments, $this->orm);
+
+			return call_user_func_array([$this, $scope], $arguments);
 		}
 		return $this->orm->__call($name, $arguments);
 	}

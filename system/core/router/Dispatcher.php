@@ -97,6 +97,10 @@ class Dispatcher
 	 * @var float
 	 */
 	private $startTime;
+	/**
+	 * @var float
+	 */
+	private $totalTime = 0;
 
 
 	private static $_instance = null;
@@ -191,22 +195,23 @@ class Dispatcher
 		}
 		Service::event()->trigger('pre_system');
 		
+		require_once APP_DIR . 'config' . DS . 'routes.php';
+		if (empty($routes) OR ! $routes instanceof RouteCollection)
+		{
+			$routes = Service::routes();
+		}
+		
+		/**
+		 * Route middlewares
+		 */
+		$this->routeMiddlewares = (array) $this->dispatchRoutes($routes, $this->request); 
+	
 		/*
 		 * The bootstrapping in a middleware
 		 */
 		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
-			require_once APP_DIR . 'config' . DS . 'routes.php';
-			if (empty($routes) OR ! $routes instanceof RouteCollection)
-			{
-				$routes = Service::routes();
-			}
 			$resp = null;
 
-			/**
-			 * Route middlewares
-			 */
-			$this->routeMiddlewares = (array) $this->dispatchRoutes($routes, $request); 
-		
 			$resp = $this->startController();
 			// Closure controller has run in startController().
 			if (! is_callable($this->controller))
@@ -231,8 +236,6 @@ class Dispatcher
 			{
 				$response = $resp;
 			}
-			
-			$this->totalTime = $this->timer->getElapsedTime('total_execution');
 			
 			return $response;
 		});
@@ -294,6 +297,9 @@ class Dispatcher
 		{
 			$this->response = $this->response->withBody(to_stream($this->output));
 		}
+
+		$this->totalTime = $this->timer->getElapsedTime('total_execution');
+			
 		
 		Service::emitter()->emit(
 			Service::toolbar()->prepare($this, $this->request, $this->response)

@@ -687,7 +687,7 @@ class Runner
 
             if ($commandName === 'create') 
             {
-                $sql = $this->createTable($table, $columns);
+                $sql = $this->createTable($table, $columns, $passedCommands);
                 break;
             }
             if (in_array($commandName, ['drop', 'dropIfExists'])) 
@@ -700,8 +700,8 @@ class Runner
                 $sql = $this->modifyTable($table, $columns, $passedCommands);
                 break;
             }
-        }
-
+		}
+		
         try {
             if (!empty($sql)) 
             {
@@ -759,9 +759,10 @@ class Runner
 	 *
 	 * @param string $table
 	 * @param array $columns
+	 * @param array $commands
 	 * @return string
 	 */
-	private function createTable(string $table, array $columns) : string
+	private function createTable(string $table, array $columns, array $commands) : string
     {
         $creator = new Creator;
 
@@ -770,7 +771,7 @@ class Runner
             $creator->makeColumn($column);
         }
 
-        return $creator->createTable($table);
+        return $creator->createTable($table, $commands);
     }
 	/**
 	 * Genere la requete sql pour supprimer une table

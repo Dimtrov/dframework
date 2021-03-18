@@ -3,13 +3,13 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.2.2
@@ -18,7 +18,7 @@
 namespace dFramework\core\security;
 
 use dFramework\core\Config;
-use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Arr;
 
 /**
  * Session
@@ -124,7 +124,7 @@ class Session
         } 
         else if(is_string($key))
         {                
-            Tableau::set_recursive($_SESSION[self::$prefix], $key, $value);
+            Arr::setRecursive($_SESSION[self::$prefix], $key, $value);
         }
 
         return true;
@@ -145,7 +145,7 @@ class Session
             return $session;
         }
 
-        return Tableau::get_recusive($session, $key);
+        return Arr::getRecursive($session, $key);
     }
 
     /**

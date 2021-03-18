@@ -99,7 +99,7 @@ class Creator
      * @param string $table
      * @return string
      */
-    public function createTable(string $table) : string 
+    public function createTable(string $table, array $commands = []) : string 
     {
         $this->columns = array_map(function($v){
             return preg_replace('#AFTER ([a-zA-Z0-9_-]+)#', '', $v);
@@ -121,9 +121,23 @@ class Creator
         {
             $sql .= ",\n\tINDEX ".$index."(".$index.")";
         }
-
+        foreach ($commands As $command)
+        {
+            if ($command->name === 'foreign')
+            {
+                $sql .= ", \n\tFOREIGN KEY ".$command->index."(".join(',', $command->columns).") REFERENCES ".$command->on."(".join(',', (array) $command->references).")";
+                if (!empty($command->onUpdate)) 
+                {
+                    $sql .= " ON UPDATE " .$command->onUpdate;
+                }
+                if (!empty($command->onDelete)) 
+                {
+                    $sql .= " ON DELETE " .$command->onDelete;
+                }
+            }
+        }
         $sql .= "\n);";
-
+        
         return $sql;
     }
 
@@ -187,6 +201,19 @@ class Creator
             foreach ($this->indexes['index'] As $index) 
             {
                 $alters = array_merge($alters, ['ADD INDEX '.$index.'('.$index.')']);
+            }
+            if ($command->name === 'foreign')
+            {
+                $sql = 'FOREIGN KEY '.$command->index.'('.join(',', $command->columns).') REFERENCES '.$command->on.'('.join(',', (array) $command->references).')';
+                if (!empty($command->onUpdate)) 
+                {
+                    $sql .= ' ON UPDATE ' .$command->onUpdate;
+                }
+                if (!empty($command->onDelete)) 
+                {
+                    $sql .= ' ON DELETE ' .$command->onDelete;
+                }
+                $alters = array_merge($alters, [$sql]);
             }
         }
         

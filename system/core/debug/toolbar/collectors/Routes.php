@@ -2,6 +2,7 @@
 namespace dFramework\core\debug\toolbar\collectors;
 
 use dFramework\core\loader\Service;
+use dFramework\core\router\Dispatcher;
 
 /**
  * Routes collector
@@ -51,24 +52,27 @@ class Routes extends BaseCollector
 		 */
 		$route = $router->getMatchedRoute();
 
+		$controllerName = Dispatcher::getClass().'Controller';
+		$methodName = Dispatcher::getMethod();
+
 		// Get our parameters
 		// Closure routes
 		if (is_callable($router->controllerName()))
 		{
-			$method = new \ReflectionFunction($router->controllerName());
+			$method = new \ReflectionFunction(!empty($controllerName) ? $controllerName : $router->controllerName());
 		}
 		else
 		{
 			try
 			{
-				$method = new \ReflectionMethod($router->controllerName(), $router->methodName());
+				$method = new \ReflectionMethod(!empty($controllerName) ? $controllerName : $router->controllerName(), !empty($methodName) ? $methodName : $router->methodName());
 			}
 			catch (\ReflectionException $e)
 			{
 				// If we're here, the method doesn't exist
 				// and is likely calculated in _remap.
-				$method = new \ReflectionMethod($router->controllerName(), '_remap');
-			}
+				$method = new \ReflectionMethod(!empty($controllerName) ? $controllerName : $router->controllerName(), '_remap');
+			}	
 		}
 
 		$rawParams = $method->getParameters();
@@ -86,8 +90,8 @@ class Routes extends BaseCollector
 		$matchedRoute = [
 			[
 				'directory'  => $router->directory(),
-				'controller' => $router->controllerName(),
-				'method'     => $router->methodName(),
+				'controller' => !empty($controllerName) ? $controllerName : $router->controllerName(),
+				'method'     => !empty($methodName) ? $methodName : $router->methodName(),
 				'paramCount' => count($router->params()),
 				'truePCount' => count($params),
 				'params'     => $params ?? [],

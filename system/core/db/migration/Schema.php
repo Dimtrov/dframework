@@ -410,7 +410,7 @@ class Schema
      *
      * @param  string|array  $columns
      * @param  string|null  $name
-     * @return Column
+     * @return Foreign|Column
      */
     public function foreign($columns, ?string $name = null)
     {

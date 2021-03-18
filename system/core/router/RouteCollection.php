@@ -829,7 +829,7 @@ class RouteCollection
 	 */
 	public function isFiltered(string $search) : bool
 	{
-		return isset($this->routesOptions[$search]['middleware']);
+		return isset($this->routesOptions[$search]['middlewares']);
     }
     /**
 	 * Returns the filter that should be applied for a single route, along
@@ -851,7 +851,7 @@ class RouteCollection
 			return '';
 		}
 
-		return $this->routesOptions[$search]['middleware'];
+		return $this->routesOptions[$search]['middlewares'];
 	}
     
     //--------------------------------------------------------------------
@@ -1119,14 +1119,22 @@ class RouteCollection
 			// the expected param type.
 			$pos = strpos($from, $pattern);
 
-			if (preg_match("|{$pattern}|", $params[$index]))
+			if (isset($params[$index]))
 			{
-				$from = substr_replace($from, $params[$index], $pos, strlen($pattern));
+				if (preg_match("|{$pattern}|", $params[$index]))
+				{
+					$from = substr_replace($from, $params[$index], $pos, strlen($pattern));
+				}
+				else
+				{
+					throw new RouterException("Invalid parameter type");
+				}
 			}
-			else
+			else 
 			{
-                throw new RouterException("Invalid parameter type");
+				$from = substr_replace($from, '', $pos, strlen($pattern));
 			}
+			
 		}
 
 		return '/' . ltrim($from, '/');
