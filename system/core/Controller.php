@@ -158,33 +158,50 @@ class Controller
      *
      * @param array $rules
      * @param array|null $data
+     * @param string|null $locale
      * @return bool
      */
-    final protected function validate(array $rules, ?array $data = [])  
+    final protected function validate(array $rules, ?array $data = [], ?string $locale = null)  
     {
         if (!Arr::isAssoc($rules)) 
         {
             throw new BadMethodCallException('Mauvaise utilisation de la methode '. __METHOD__);
         }
         $this->loadLibrary('Validator');
-        $this->validator->init(null, $data);
+        $this->validator->init($locale, $data);
 
         foreach ($rules As $field => $rule)
         {
-            $rule = explode('|', $rule);
+            $rule = (array) $rule;
+            $messages = $rule[1] ?? [];
+            $rule = explode('|', $rule[0]);
 
-            foreach ($rule as $r)
+            $field = explode('|', $field);
+            $label = $field[1] ?? '';
+            $field = $field[0];
+
+            for ($i = 0, $size = count($rule); $i < $size; $i++)
             {
+                $r = $rule[$i];
                 $params = [];
+                
                 if (preg_match('#^([a-z-_]+){(.+)}$#isU', $r, $p))
                 {
                     $params = explode(',', $p[2] ?? '');
                     $r = $p[1] ?? '';
-                    $this->validator->rule($p[1], ...$params);
                 }
                 if (!empty($r))
                 {
                     call_user_func([$this->validator, $r], $field, ...$params);
+                    
+                    if (!empty($messages[$i]))
+                    {
+                        $this->validator->message($messages[$i]);
+                    }
+                    if (!empty($label))
+                    {
+                        $this->validator->label($label);
+                    }
                 }
             }
         }
