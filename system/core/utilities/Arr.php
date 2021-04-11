@@ -1222,7 +1222,6 @@ class Arr
 
         if (!isset($data[$key[0]]))
         {
-            dd('s');
             $data[$key[0]] = [];
         }
         
@@ -1272,32 +1271,11 @@ class Arr
      * @param int $direction Direction of sort based on class constants
      * @return array Sorted array
      */
-    public static function sortField(array $data, string $field, int $direction = SORT_ASC) : array
+    public static function sortField(array $data, string $field, int $direction = self::SORT_ASC) : array
     {
-        function getSortField($element, $field)
-        {
-            $field = explode('.', $field);
-                
-            foreach($field As $key) 
-            {
-                if (is_object($element) AND isset($element->$key)) 
-                {
-                    $element = $element->$key;
-                } 
-                elseif (isset($element[$key])) 
-                {
-                    $element = $element[$key];
-                } 
-                else 
-                {
-                    break;
-                }
-            }
-            return $element;
-        }
         usort($data, function($a, $b) use($field, $direction) {
-            $cmp1 = getSortField($a, $field);
-            $cmp2 = getSortField($b, $field);
+            $cmp1 = self::_getSortField_($a, $field);
+            $cmp2 = self::_getSortField_($b, $field);
             
             if ($cmp1 == $cmp2) 
             {
@@ -1314,6 +1292,27 @@ class Arr
         });
 
         return $data;
+    }
+    private static function _getSortField_($element, $field)
+    {
+        $field = explode('.', $field);
+            
+        foreach($field As $key) 
+        {
+            if (is_object($element) AND isset($element->$key)) 
+            {
+                $element = $element->$key;
+            } 
+            elseif (isset($element[$key])) 
+            {
+                $element = $element[$key];
+            } 
+            else 
+            {
+                break;
+            }
+        }
+        return $element;
     }
 
     /**

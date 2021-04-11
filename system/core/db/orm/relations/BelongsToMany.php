@@ -19,7 +19,7 @@ namespace dFramework\core\db\orm\Relations;
 
 use PDO;
 use dFramework\core\Entity;
-use dFramework\core\db\orm\Model;
+use dFramework\core\db\orm\QueryBuilder;
 
 /**
  * BelongsToMany
@@ -35,13 +35,19 @@ use dFramework\core\db\orm\Model;
  */
 class BelongsToMany extends Relation 
 {
-
+	/**
+	 * @var QueryBuilder
+	 */
 	protected $pivot_builder;
+
 	protected $pivot_result;
 	/**
 	 * @var string
 	 */
 	protected $foreign_key;
+	/**
+	 * @var string
+	 */
 	protected $other_key;
 
 	/**
@@ -49,11 +55,11 @@ class BelongsToMany extends Relation
 	 *
 	 * @param Entity $parent
 	 * @param string $related
-	 * @param mixed $pivot_builder
+	 * @param QueryBuilder $pivot_builder
 	 * @param string $foreign_key
-	 * @param mixed $other_key
+	 * @param string $other_key
 	 */
-	function __construct(Entity $parent, string $related, $pivot_builder, string $foreign_key, $other_key)
+	public function __construct(Entity $parent, string $related, QueryBuilder $pivot_builder, string $foreign_key, string $other_key)
 	{
 		parent::__construct($parent, $related);
 
@@ -64,13 +70,13 @@ class BelongsToMany extends Relation
 
 	function setJoin()
 	{
-		if( $this->eagerLoading )
+		if ($this->eagerLoading)
 		{
 			$pivot_query = $this->pivot_builder->in($this->foreign_key, $this->eagerKeys);
 		}
 		else
 		{
-			$pivot_query = $this->pivot_builder->where($this->foreign_key, $this->parent->getData( $this->parent->getPrimaryKey() ))->get();
+			$pivot_query = $this->pivot_builder->where($this->foreign_key, $this->parent->getData( $this->parent->getPrimaryKey() ));
 		}
 
 		$other_id = [];
@@ -85,7 +91,7 @@ class BelongsToMany extends Relation
 
 		if (!empty($other_id)) 
 		{
-			return $this->related->whereIn( $this->related->getPrimaryKey(), $other_id );
+			return $this->related->in( $this->related->getPrimaryKey(), $other_id );
 		}
 	}
 
@@ -102,7 +108,7 @@ class BelongsToMany extends Relation
 			foreach ($this->pivot_result As $pivot_row)
 			{
 				if (
-					$parent->getData( $parent->getPrimaryKey() ) == $pivot_row[ $this->foreign_key ] and
+					$parent->getData( $parent->getPrimaryKey() ) == $pivot_row[ $this->foreign_key ] AND
 					$row->getData( $row->getPrimaryKey() ) == $pivot_row[ $this->other_key ]
 				)
 				{

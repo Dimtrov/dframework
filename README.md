@@ -1,4 +1,4 @@
-# dFramework : v3.2.3 
+# dFramework : v3.3.0
 
 ### The simplest PHP framework for beginners 
 

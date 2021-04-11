@@ -27,6 +27,7 @@ use dFramework\core\exception\Errors;
 use dFramework\core\db\orm\Relations\HasOne;
 use dFramework\core\db\orm\Relations\HasMany;
 use dFramework\core\db\orm\Relations\BelongsTo;
+use dFramework\core\db\orm\Relations\BelongsToMany;
 
 /**
  * Model
@@ -157,6 +158,10 @@ class Model
 	{
 		return json_encode($this->toArray());
 	}
+	public function toJson() : string
+	{
+		return $this->json();
+	}
 
 
 	/**
@@ -238,6 +243,10 @@ class Model
 		}
 
 		return (new Result( $this, $builder))->first();
+	}
+	public function one(array $columns = [])
+	{
+		return $this->first($columns);
 	}
 
 	/**
@@ -470,71 +479,100 @@ class Model
 	/**
 	 * Determine une cle etrangere pour la relation 
 	 *
-	 * @param string $related
-	 * @param string|null $foreign_key
+	 * @param bool $has Specifie si on est dans une relation de type hasOne ou hasMany
+	 * @param string $related Classe de relation
+	 * @param string|null $foreign_key Cle par defaut
 	 * @return string
 	 */
-	private function getRelationFk(string $related, ?string $foreign_key = null) : string 
+	private function getRelationFk(bool $has, string $related, ?string $foreign_key = null) : string 
 	{
 		if (empty($foreign_key))
 		{
-			$related = explode('\\', preg_replace('#Entity$#', '', $related));
-			$related = end($related);
-			
-			$pk = Database::indexes(plural(Str::toSnake($related)), 'PRIMARY');
-			$foreign_key = $pk->fields[0] ?? Str::toSnake('id_' . singular($related));
+			if ($has)
+			{
+				$foreign_key = $this->class->getPrimaryKey();
+			}
+			else 
+			{
+				$related = $this->makeTableFromClass($related);
+
+				$pk = Database::indexes(plural($related), 'PRIMARY');
+				$foreign_key = $pk->fields[0] ?? 'id_' . singular($related);
+			}
 		}
 		return $foreign_key;
 	}
 	/**
+	 * Cree une relation de type 1-1
+	 * 
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasOne
 	 */
 	public function hasOne(string $related, ?string $foreign_key = null) : HasOne
 	{
-		return new Relations\HasOne($this->class, $related, $this->getRelationFk($related, $foreign_key));
+		return new Relations\HasOne($this->class, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 	/**
+	 * Cree une relation de type 1-n 
+	 * 
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasMany
 	 */
 	public function hasMany(string $related, ?string $foreign_key = null) : HasMany
 	{
-		return new Relations\HasMany($this->class, $related, $this->getRelationFk($this->class->getTable(), $foreign_key));
+		return new Relations\HasMany($this->class, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 	/**
+	 * 
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasMany
 	 */
 	public function belongsTo(string $related, ?string $foreign_key = null) : BelongsTo
 	{
-		return new Relations\BelongsTo($this->class, $related, $this->getRelationFk($related, $foreign_key));
+		return new Relations\BelongsTo($this->class, $related, $this->getRelationFk(false, $related, $foreign_key));
 	}
 
-	public function belongsToMany(string $related, ?string $pivot_table = null, ?string $foreign_key = null, $other_key = null)
+	/**
+	 * Cree une relation de type n-n
+	 *
+	 * @param string $related
+	 * @param string|null $pivot_table
+	 * @param string|null $foreign_key
+	 * @param string|null $other_key
+	 * @return BelongsToMany
+	 */
+	public function belongsToMany(string $related, ?string $pivot_table = null, ?string $foreign_key = null, ?string $other_key = null) : BelongsToMany
 	{
 		if (empty($pivot_table))
 		{
-			$models = [strtolower($this->class->getTable()), strtolower($related)];
+			$models = [$this->class->getTable(), $this->makeTableFromClass($related)];
 			sort($models);
 
 			$pivot_table = strtolower(implode('_', $models));
 		}
 
-		if (empty($foreign_key))
-		{
-			$foreign_key = strtolower(get_called_class()) . '_id';
-		}
-		if (empty($other_key))
-		{
-			$other_key = strtolower($related) . '_id';
-		}
+		$foreign_key = $this->getRelationFk(true, $related, $foreign_key);
+		$other_key   = $this->getRelationFk(false, $related, $other_key);
+		
 		$pivot_builder = new QueryBuilder($this->class, $pivot_table);
 
 		return new Relations\BelongsToMany($this->class, $related, $pivot_builder, $foreign_key, $other_key);
+	}
+	/**
+	 * Fabrique un nom de table en fonction du nom de la classe d'entité donnée
+	 *
+	 * @param string $classname Nom (forme absolue) de la classe d'entité
+	 * @return string
+	 */
+	private function makeTableFromClass(string $classname) : string
+	{
+		$classname = explode('\\', preg_replace('#Entity$#', '', $classname));
+		$classname = end($classname);
+
+		return Str::toSnake($classname);
 	}
 
 	/**
@@ -670,12 +708,12 @@ class Model
 	/**
 	 * Load data from properties
 	 */
-	private function loadData(bool $from_fillable = true) : array
+	private function loadData(bool $from_accept = true) : array
 	{
 		$data = [];
-		if (true === $from_fillable)
+		if (true === $from_accept)
 		{
-			foreach($this->class->fillables() As $field)
+			foreach($this->class->accepts() As $field)
 			{
 				$data[$field] = $this->getData($field);
 			}

@@ -588,6 +588,48 @@ class Validator
     }
 
     /**
+     * Defini une regle de validation specifique
+     *
+     * @param string $field
+     * @param string $rule
+     * @param string|null $label
+     * @param array|null $messages
+     * @return self
+     */
+    public function set(string $field, string $rule, ?string $label = null, ?array $messages = []) : self 
+    {
+        $rules = explode('|', $rule);
+        foreach ($rules As $rule) 
+        {
+            $params = [];
+    
+            if (preg_match('#^([a-z-_]+){(.+)}$#isU', $rule, $p))
+            {
+                $params = explode(',', $p[2] ?? '');
+                $rule = $p[1] ?? '';
+            }
+            if (!empty($rule))
+            {
+                if (in_array($rule, ['label', 'labels', 'message', 'rule', 'rules', 'validate', 'init', 'errors', 'clean']))
+                {
+                    continue;
+                }
+                call_user_func([$this, $rule], $field, ...$params);
+                if (!empty($label))
+                {
+                    $this->label($label);
+                }
+                if (!empty($messages[$rule])) 
+                {
+                    $this->message($messages[$rule]);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Add labels to rules
      * 
      * @param array $labels
@@ -620,6 +662,7 @@ class Validator
         $this->validator->message($message);
         return $this;
     }
+
 
     /**
      * Add a single validation rule

@@ -244,11 +244,16 @@ class Builder
      * Définit une condition pour la sélection des données
      * 
      * @param string $field
-     * @param self|array|string $param
+     * @param self|array|callable|string $param
      * @return self
      */
     final public function in(string $field, $param) : self
     {
+        if (is_callable($param))
+        {
+            $param = call_user_func($param, clone $this);
+        }
+        
         if (is_array($param)) 
         {
             $param = implode(',', $param);
@@ -280,11 +285,16 @@ class Builder
      * Définit une condition pour la sélection des données
      * 
      * @param string $field
-     * @param self|array|string $param
+     * @param self|array|callable|string $param
      * @return self
      */
     final public function orIn(string $field, $param) : self
     {
+        if (is_callable($param))
+        {
+            $param = call_user_func($param, clone $this);
+        }
+        
         if (is_array($param)) 
         {
             $param = implode(',', $param);
@@ -304,11 +314,16 @@ class Builder
      * Définit une condition pour la sélection des données
      * 
      * @param string $field
-     * @param self|array|string $param
+     * @param self|array|callable|string $param
      * @return self
      */
     final public function notIn(string $field, $param) : self
     {
+        if (is_callable($param))
+        {
+            $param = call_user_func($param, clone $this);
+        }
+
         if (is_array($param)) 
         {
             $param = implode(',', $param);
@@ -328,11 +343,16 @@ class Builder
      * Définit une condition pour la sélection des données
      * 
      * @param string $field
-     * @param self|array|string $param
+     * @param self|array|callable|string $param
      * @return self
      */
     final public function orNotIn(string $field, $param) : self
     {
+        if (is_callable($param))
+        {
+            $param = call_user_func($param, clone $this);
+        }
+        
         if (is_array($param)) 
         {
             $param = implode(',', $param);

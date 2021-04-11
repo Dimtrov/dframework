@@ -48,7 +48,7 @@ class Database
         'databases', 'tables', 'tableExist', 'columns', 'columnsName',
         'query', 'truncate', 
         'foreignKeys', 'enableFk', 'disableFk', 'indexes',
-        'lastId', 'affectedRows',
+        'lastId', 'insertID', 'affectedRows',
         'beginTransaction', 'commit', 'rollback'
     ];
 

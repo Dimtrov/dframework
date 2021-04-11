@@ -1,3 +1,5 @@
 .git
 vendor/
 app/resources/reserved/debugbar/
+Doxyfile
+phpDocumentor.phar

@@ -25,80 +25,69 @@
 |
 */
 
-/*
-|--------------------------------------------------------------------------
-| REST Language File
-|--------------------------------------------------------------------------
-|
-| Language file to load from the language directory
-|
-*/
+/**
+ * @var string Language file to load from the language directory
+ */
 $rest['language'] = 'en';
 
-/*
-|--------------------------------------------------------------------------
-| HTTP protocol
-|--------------------------------------------------------------------------
-|
-| Set to force the use of HTTPS for REST API calls
-|
-*/
+/**
+ * @var bool Set to force the use of HTTPS for REST API calls
+ */
 $rest['force_https'] = false;
 
-/*
-|--------------------------------------------------------------------------
-| Allowable Methods
-|--------------------------------------------------------------------------
-|
-| List of authorize method to access in web service
-|
-*/
+/**
+ * @var array List of authorize method to access in web service
+ */
 $rest['allowed_methods'] = [
-  'GET',
-  'POST',
-  'OPTIONS',
-  'PUT',
-  'PATCH',
-  'DELETE',
+    'GET',
+    'POST',
+    'OPTIONS',
+    'PUT',
+    'PATCH',
+    'DELETE',
 ];
 
-/*
-|--------------------------------------------------------------------------
-| REST Output Format
-|--------------------------------------------------------------------------
-|
-| The default format of the response
-|
-| 'array':      Array data structure
-| 'csv':        Comma separated file
-| 'json':       Uses json_encode(). Note: If a GET query string
-|               called 'callback' is passed, then jsonp will be returned
-| 'php':        Uses var_export()
-| 'serialized':  Uses serialize()
-| 'xml':        Uses simplexml_load_string()
-|
-*/
+/**
+ * @var The default format of the response
+ *
+ * 'array':      Array data structure
+ * 'csv':        Comma separated file
+ * 'json':       Uses json_encode(). Note: If a GET query string called 'callback' is passed, then jsonp will be returned
+ * 'php':        Uses var_export()
+ * 'serialized':  Uses serialize()
+ * 'xml':        Uses simplexml_load_string()
+ */
 $rest['return_format'] = 'json';
 
-/*
-|--------------------------------------------------------------------------
-| REST Status Field Name
-|--------------------------------------------------------------------------
-|
-| The field name for the status inside the response
-|
-*/
+/**
+ * @var bool Specifie si on doit utiliser le mode strict (envoi des codes HTTP appropries pour la reponse)
+ */
+$rest['strict_mode'] = false;
+
+/**
+ * @var string The field name for the status inside the response
+ */
 $rest['status_field_name'] = 'status';
 
-/*
-|--------------------------------------------------------------------------
-| REST Message Field Name
-|--------------------------------------------------------------------------
-|
-| The field name for the message inside the response
-|
-*/
-$rest['message_field_name'] = 'error';
+/**
+ * @var string The field name for the message inside the response
+ */
+$rest['message_field_name'] = 'message';
+
+/**
+ * @var string The field name for the code inside the response
+ */
+$rest['code_field_name'] = 'code';
+
+/**
+ * @var string The field name for the errors inside the response
+ */
+$rest['errors_field_name'] = 'errors';
+
+/**
+ * @var string The field name for the result inside the response
+ */
+$rest['result_field_name'] = 'result';
 
 /*
 |--------------------------------------------------------------------------

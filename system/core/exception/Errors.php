@@ -3,25 +3,23 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.1
+ *  @version    3.3.0
  */
-
 
  namespace dFramework\core\exception;
 
 use dFramework\core\Config;
 use dFramework\core\http\Response;
 use dFramework\core\loader\Service;
-use dFramework\core\output\View;
 
 /**
  * Errors
@@ -69,10 +67,10 @@ class Errors
 
         Config::set('general.use_template_engine', false);
         Service::response()->statusCode($status_code);
-        (new View('/reserved/errors/'.$status_code, array_merge(
+        Service::viewer()->addData(array_merge(
             !is_array($params) ? [] : $params, 
             compact('message', 'heading')
-        )))->render();
+        ))->display('/reserved/errors/'.$status_code)->render();
         exit;       
     }
 }

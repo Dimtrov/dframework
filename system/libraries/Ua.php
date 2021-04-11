@@ -3,23 +3,23 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\libraries;
 
 use Browser;
 use dFramework\core\Config;
-use dFramework\core\utilities\Chaine;
+use dFramework\core\utilities\Str;
 
 /**
  * Ua
@@ -191,19 +191,19 @@ class Ua
      */
     public function __get($name)
     {
-        $method = Chaine::toCamelCase($name);
+        $method = Str::toCamelCase($name);
         if (method_exists($this, $method))
         {
             return $this->$method();
         }
        
-        $method = Chaine::toCamelCase('is'.$name);
+        $method = Str::toCamelCase('is'.$name);
         if (method_exists($this, $method))
         {
             return $this->$method();
         }
 
-        $method = Chaine::toCamelCase('get'.$name);
+        $method = Str::toCamelCase('get'.$name);
         if (method_exists($this, $method))
         {
             return $this->$method();

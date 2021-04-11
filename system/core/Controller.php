@@ -167,6 +167,9 @@ class Controller
         {
             throw new BadMethodCallException('Mauvaise utilisation de la methode '. __METHOD__);
         }
+        if (empty($data)) {
+            $data = $this->request->getParsedBody();
+        }
         $this->loadLibrary('Validator');
         $this->validator->init($locale, $data);
 
