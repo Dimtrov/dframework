@@ -67,7 +67,6 @@ class Autoloader
             'psr4', 'syst_classmap', 'app_classmap',
             'controllers', 'models', 'entities', 'middlewares'
         ];
-        $input = self::retrieveAlias($input);
 
         foreach ($functions As $func)
         {
@@ -76,6 +75,7 @@ class Autoloader
                 return;
             }
         }
+        self::retrieveAlias($input);
     }
 
 
@@ -93,15 +93,6 @@ class Autoloader
         if (file_exists($class_map_file) AND true !== in_array($class_map_file, \get_included_files()))
         {
             self::$_class_map_psr = require $class_map_file;
-        }
-        
-        $class_map_file = APP_DIR.'config'.DS.'aliases.php';
-        /**
-        * Chargement des alias
-        */
-        if (file_exists($class_map_file) AND true !== in_array($class_map_file, \get_included_files()))
-        {
-            self::$_aliases = require $class_map_file;
         }
 
         $class_map_file = SYST_DIR.'constants'.DS.'.classmap.php';
@@ -127,12 +118,25 @@ class Autoloader
     /**
      * Verifie si on a faire a une alias et retourne la classe correspondante
      *
-     * @param string $input
-     * @return string
+     * @param string $alias
+     * @return void
      */
-    private static function retrieveAlias(string $input) : string 
+    private static function retrieveAlias(string $alias)
     {
-        return self::$_aliases[$input] ?? $input;
+        $class_map_file = APP_DIR.'config'.DS.'aliases.php';
+        /**
+         * Chargement des alias
+         */
+        if (file_exists($class_map_file) AND true !== in_array($class_map_file, \get_included_files()))
+        {
+            self::$_aliases = require $class_map_file;
+        }
+        $original = self::$_aliases[$alias] ?? null;
+
+        if (!empty($original) AND is_string($original) AND !class_exists($alias))
+        {
+            class_alias($original, $alias);
+        }
     }
 
 

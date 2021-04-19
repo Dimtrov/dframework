@@ -44,6 +44,11 @@ class Cors implements MiddlewareInterface
         'MaxAge'           => 86400,                                       // 1 day
     ];
 
+    public function __construct(array $config = [])
+    {
+        $this->config = array_merge($this->config, $config);
+    }
+
     /**
      *
      * @param ServerRequestInterface $request
@@ -135,7 +140,8 @@ class Cors implements MiddlewareInterface
     {
         $allowHeaders = $this->config['AllowHeaders'];
 
-        if ($allowHeaders === true) {
+        if ($allowHeaders === true) 
+        {
             return $request->getHeaderLine('Access-Control-Request-Headers');
         }
 
@@ -150,7 +156,8 @@ class Cors implements MiddlewareInterface
     {
         $exposeHeaders = $this->config['ExposeHeaders'];
 
-        if (is_string($exposeHeaders) || is_array($exposeHeaders)) {
+        if (is_string($exposeHeaders) || is_array($exposeHeaders)) 
+        {
             return implode(', ', (array) $exposeHeaders);
         }
 

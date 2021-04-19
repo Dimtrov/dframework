@@ -48,7 +48,7 @@ $rest['allowed_methods'] = [
 ];
 
 /**
- * @var The default format of the response
+ * @var string The default format of the response
  *
  * 'array':      Array data structure
  * 'csv':        Comma separated file

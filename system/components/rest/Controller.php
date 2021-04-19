@@ -25,6 +25,9 @@ use dFramework\core\Controller as CoreController;
 use dFramework\core\loader\Service;
 use dFramework\core\utilities\Arr;
 use dFramework\core\utilities\Str;
+use ReflectionAnnotatedClass;
+use ReflectionAnnotatedMethod;
+use Throwable;
 
 /**
  * dFramework Rest Controller
@@ -116,7 +119,13 @@ class Controller extends CoreController
         $this->_locale = !empty($locale) ? $locale : 'en';
     }
 
-    public function _remap($method, ?array $params = [])
+    /**
+     * @param string $method
+     * @param array|null $params
+     * @return Response|mixed|void
+     * @throws Throwable
+     */
+    public function _remap(string $method, ?array $params = [])
     {
         $class = get_called_class();
         
@@ -131,9 +140,18 @@ class Controller extends CoreController
             $instance = new $class;
             $instance->initialize($this->request, $this->response);
 
+            require_once __DIR__ . DS . 'annotations.php';
+
+            $reflection = new ReflectionAnnotatedClass($instance);
+            $this->execAnnotations($reflection);
+
+            $reflection = new ReflectionAnnotatedMethod($instance, $method);
+            $this->execAnnotations($reflection);
+
+            $this->checkProcess();
             return call_user_func_array([$instance, $method], (array) $params);
         } 
-        catch (\Throwable $ex) {
+        catch (Throwable $ex) {
             if (Config::get('general.environment') !== 'dev') 
             {
                 $url = explode('?', $this->request->getRequestTarget())[0];
@@ -172,7 +190,7 @@ class Controller extends CoreController
     /**
      * Rend une reponse au client
      * 
-     * @param $data Les donnees a renvoyer
+     * @param mixed $data Les donnees a renvoyer
      * @param int $status Le statut de la reponse
      * @param bool $die Specifie si on bloqur l'execution de tout autre script apres avoir envoyer les donnees ou pas
      */
@@ -213,10 +231,11 @@ class Controller extends CoreController
 
     /**
      * Renvoi un message d'erreur au client
-     * 
+     *
      * @param string $message Le message a enyoyer
      * @param int $code Le code de statut de la reponse
      * @param array $errors La liste des erreurs rencontrées
+     * @return \dFramework\core\http\Response|void
      */
     protected function sendError(?string $message = "Une erreur s'est produite", ?int $code = self::HTTP_INTERNAL_ERROR, ?array $errors = [])
     {
@@ -226,6 +245,7 @@ class Controller extends CoreController
         $response = [
             $this->_config['status_field_name']  => false,
             $this->_config['message_field_name'] => $message,
+            $this->_config['code_field_name'] => $code
         ];
         if (!empty($errors)) 
         {
@@ -233,7 +253,6 @@ class Controller extends CoreController
         }
         if ($this->_config['strict_mode'] !== true) 
         {
-            $response[$this->_config['code_field_name']] = $code;
             $code = self::HTTP_OK;
         }
         return $this->response($response, $code, true);
@@ -241,10 +260,11 @@ class Controller extends CoreController
 
     /**
      * Renvoi un message de succes au client
-     * 
+     *
      * @param string $message Le message a enyoyer
      * @param mixed $result Le resultat de la demande
      * @param int $code Le code de statut de la reponse
+     * @return \dFramework\core\http\Response
      */
     protected function sendSuccess(?string $message = "Resultat", $result = null, ?int $code = self::HTTP_OK)
     {
@@ -269,7 +289,7 @@ class Controller extends CoreController
      * @param string $message
      * @param integer $code
      * @param array $errors
-     * @return void|Response
+     * @return \dFramework\core\http\Response|void
      */
     protected function fail(string $message, ?int $code = self::HTTP_INTERNAL_ERROR, ?array $errors = [])
     {
@@ -282,7 +302,7 @@ class Controller extends CoreController
      * @param string $message
      * @param mixed $result
      * @param integer $code
-     * @return void|Response
+     * @return \dFramework\core\http\Response|void
      */
     protected function success(string $message, $result = null, ?int $code = self::HTTP_OK)
     {
@@ -294,7 +314,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function badRequest(string $message, ?array $errors = [])
     {
@@ -306,7 +326,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function conflict(string $message, ?array $errors = [])
     {
@@ -727,7 +747,7 @@ class Controller extends CoreController
             {
                 $payload = $this->decodeToken($this->getBearerToken(), 'bearer');
                 
-                if ($payload instanceof \Throwable) 
+                if ($payload instanceof Throwable)
                 {
                     return $this->internalError('JWT Exception : ' . $payload->getMessage());
                 }
@@ -750,7 +770,7 @@ class Controller extends CoreController
             try {
                 return JWT::decode($token, $this->_config['jwt']['key'], ['HS256']);
             }
-            catch(\Throwable $e) {
+            catch(Throwable $e) {
                 return $e;
             }
         }
@@ -799,5 +819,36 @@ class Controller extends CoreController
         }
         
         return $header;
+    }
+
+    /**
+     * @param ReflectionAnnotatedClass|ReflectionAnnotatedMethod $reflection
+     */
+    private function execAnnotations($reflection)
+    {
+        if ($annotation = $reflection->getAnnotation('Auth'))
+        {
+            $this->auth($annotation->value);
+        }
+        if ($annotation = $reflection->getAnnotation('Methods'))
+        {
+            $this->allowedMethods(... (array) $annotation->value);
+        }
+        if ($annotation = $reflection->getAnnotation('AjaxOnly'))
+        {
+            $this->ajaxOnly();
+        }
+        if ($annotation = $reflection->getAnnotation('IpBlackList'))
+        {
+            $this->ipBlacklist(... (array) $annotation->value);
+        }
+        if ($annotation = $reflection->getAnnotation('IpWhiteList'))
+        {
+            $this->ipWhitelist(... (array) $annotation->value);
+        }
+        if ($annotation = $reflection->getAnnotation('ForceHttps'))
+        {
+            $this->forceHttps();
+        }
     }
 }

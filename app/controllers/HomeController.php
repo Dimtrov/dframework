@@ -1,10 +1,16 @@
 <?php
-class HomeController extends AppController
+/**
+ *
+ */
+class HomeController extends \dFramework\components\rest\Controller
 {
+    /**
+     * @AjaxOnly
+     */
 	public function index()
 	{
-		service('database')->query('select * from etudiants');
-		$this->view('/welcome')->render();
+	    echo Str::toCamel("un essai");
+		//$this->view('/welcome')->render();
 	}
 
 }

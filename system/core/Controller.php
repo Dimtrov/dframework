@@ -18,13 +18,13 @@
 namespace dFramework\core;
 
 use BadMethodCallException;
-use ReflectionClass;
 use dFramework\core\http\Middleware;
 use dFramework\core\loader\Load;
+use dFramework\core\loader\Service;
 use dFramework\core\output\View;
-use dFramework\core\output\Cache;
 use dFramework\core\router\Dispatcher;
 use dFramework\core\utilities\Arr;
+use ReflectionClass;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -147,11 +147,11 @@ class Controller
         {
             if (self::CACHE_OBJECT === $value)
             {
-                $this->cache = new Cache();
+                $this->cache = Service::cache();
             }
         }
     }
-    
+
 
     /**
      * Validation rapide de donnees
@@ -160,6 +160,7 @@ class Controller
      * @param array|null $data
      * @param string|null $locale
      * @return bool
+     * @throws exception\LoadException
      */
     final protected function validate(array $rules, ?array $data = [], ?string $locale = null)  
     {
@@ -283,9 +284,10 @@ class Controller
 
     /**
      * Charge un model
-     * 
+     *
      * @param string|array $model
      * @param string|null $alias
+     * @throws exception\LoadException
      */
     final protected function loadModel($model, string $alias = null)
     {
@@ -317,10 +319,11 @@ class Controller
     }
 
     /**
-     * Charge un autre controller 
-     * 
+     * Charge un autre controller
+     *
      * @param string|array $controller
      * @param string|null $alias
+     * @throws exception\LoadException
      */
     final protected function loadController($controller, string $alias = null)
     {
@@ -353,10 +356,11 @@ class Controller
 
     /**
      * Charge une librarie
-     * 
+     *
      * @param string|array $library
      * @param string|null $alias
-     * @param mixed $var 
+     * @param mixed $var
+     * @throws exception\LoadException
      */
     final public function loadLibrary($library, string $alias = null, &$var = null)
     {
@@ -398,8 +402,9 @@ class Controller
 
     /**
      * Charge un helper
-     * 
+     *
      * @param string ...$helpers
+     * @throws exception\LoadException
      */
     final public function loadHelper(string ...$helpers)
     {
@@ -411,7 +416,7 @@ class Controller
      *
      * @param string $model
      * @return Controller
-     * @throws \ReflectionException
+     * @throws exception\LoadException
      */
     final protected function setModel(string $model) : self
     {
@@ -422,6 +427,7 @@ class Controller
 
     /**
      * @throws \ReflectionException
+     * @throws exception\LoadException
      */
     private function _getElements()
     {
@@ -431,8 +437,10 @@ class Controller
 
         $this->autoloadLibraries();
     }
+
     /**
      * @throws \ReflectionException
+     * @throws exception\LoadException
      */
     private function getModel()
     {
@@ -444,8 +452,9 @@ class Controller
             $this->setModel($model);
         }
     }
+
     /**
-     * @throws \ReflectionException
+     * @throws exception\LoadException
      */
     private function autoloadModels()
     {
@@ -462,8 +471,9 @@ class Controller
             }
         }
     }
+
     /**
-     * @throws \ReflectionException
+     * @throws exception\LoadException
      */
     private function autoloadLibraries()
     {
@@ -482,7 +492,7 @@ class Controller
         }
     }
 
-   
+
     private function _launchMiddlewares()
     {
         $class = get_called_class();
