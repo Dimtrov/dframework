@@ -32,8 +32,6 @@ namespace dFramework\core\db\seeder;
 class Faker
 {    
     /**
-     * Class FakerWrapper
-     * @package tebazil\dbseeder
      * @property string $name
      * @property string $firstName
      * @property string $firstNameMale
