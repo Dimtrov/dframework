@@ -3,23 +3,23 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
  
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
 use dFramework\core\loader\FileLocator;
-use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Arr;
 
 /**
  * Language
@@ -133,7 +133,7 @@ class Language
 			$parsedLine,
 		] = $this->parseLine($line, $this->locale);
 
-		$output = Tableau::get_recusive($this->language[$this->locale][$file], $parsedLine);
+		$output = Arr::getRecursive($this->language[$this->locale][$file], $parsedLine);
 		
 		if ($output === null AND strpos($this->locale, '-'))
 		{
@@ -144,7 +144,7 @@ class Language
 				$parsedLine,
 			] = $this->parseLine($line, $locale);
 
-			$output = Tableau::get_recusive($this->language[$locale][$file], $parsedLine);
+			$output = Arr::getRecursive($this->language[$locale][$file], $parsedLine);
 		}
 
 		// if still not found, try English
@@ -152,7 +152,7 @@ class Language
 		{
 			$this->parseLine($line, 'en');
 		
-			$output = Tableau::get_recusive($this->language[$this->locale][$file], $parsedLine);
+			$output = Arr::getRecursive($this->language[$this->locale][$file], $parsedLine);
 			//$output = $this->language['en'][$file][$parsedLine] ?? null;
 		}
 

@@ -8,16 +8,16 @@
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework\core\db\seeder;
 
-use dFramework\core\db\Builder;
+use dFramework\core\db\query\Builder;
 
 /**
  * Table
@@ -113,15 +113,12 @@ class Table
      */
     public function setRowQuantity(int $rows = 30) : self 
     {
-        if (is_numeric($rows)) 
-        {
-            $this->rowQuantity = $rows;
-        }
-        else
+        if (!is_numeric($rows)) 
         {
             throw new \Exception('$rows parameter should be numeric');
         }
-
+        $this->rowQuantity = $rows;
+        
         return $this;
     }
 
@@ -202,7 +199,13 @@ class Table
         return $this->isFilled;
     }
 
-    public function canBeFilled($filledTableNames) : bool 
+    /**
+     * Undocumented function
+     *
+     * @param array $filledTableNames
+     * @return boolean
+     */
+    public function canBeFilled(array $filledTableNames) : bool 
     {
         $intersection = array_intersect($filledTableNames, $this->dependsOn);
         sort($intersection);
@@ -311,20 +314,17 @@ class Table
         {
             return false;
         }
-        else 
+        foreach ($this->columnConfig As $name => $config) 
         {
-            foreach ($this->columnConfig As $name => $config) 
+            if (!is_callable($config)) 
             {
-                if (!is_callable($config)) 
+                if (is_array($config) AND ($config[0] === Generator::RELATION) AND ($this->name !== $config[1])) 
                 {
-                    if (is_array($config) AND ($config[0] === Generator::RELATION) AND ($this->name !== $config[1])) 
-                    {
-                        $this->dependsOn[] = $config[1];
-                    }
+                    $this->dependsOn[] = $config[1];
                 }
             }
-            sort($this->dependsOn);
         }
+        sort($this->dependsOn);
     }
 
     private function calcSelfDependentColumns() 
@@ -333,16 +333,13 @@ class Table
         {
             return false;
         }
-        else 
+        foreach ($this->columnConfig as $name => $config) 
         {
-            foreach ($this->columnConfig as $name => $config) 
+            if (!is_callable($config)) 
             {
-                if (!is_callable($config)) 
+                if (is_array($config) AND ($config[0] === Generator::RELATION) AND ($config[1] === $this->name)) 
                 {
-                    if (is_array($config) AND ($config[0] === Generator::RELATION) AND ($config[1] === $this->name)) 
-                    {
-                        $this->selfDependentColumns[]=$name;
-                    }
+                    $this->selfDependentColumns[]=$name;
                 }
             }
         }
@@ -353,6 +350,7 @@ class Table
     {
         if (true === $this->truncateTable)
         {
+            $this->builder->disableFk();
             $this->builder->truncate($this->name);
         } 
         foreach ($this->rows As $row) 

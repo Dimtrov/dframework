@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core\router;
@@ -20,6 +20,7 @@ namespace dFramework\core\router;
 use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\ServerRequest;
+use dFramework\core\loader\Service;
 
 /**
  * Parses the request URL into controller, action, and parameters. Uses the connected routes
@@ -69,12 +70,12 @@ class Router
 	protected $detectedLocale = null;
 
 	/**
-	 * The filter info from Route Collection
+	 * The middleware info from Route Collection
 	 * if the matched route should be filtered.
 	 *
-	 * @var string
+	 * @var string|array
 	 */
-	protected $filterInfo;
+	protected $middlewareInfo;
 
 	
 	/**
@@ -192,13 +193,13 @@ class Router
 		return $this->params;
 	}
 	/**
-	 * Returns the filter info for the matched route, if any.
+	 * Returns the middleware info for the matched route, if any.
 	 *
-	 * @return string
+	 * @return string|array
 	 */
-	public function getFilter()
+	public function getMiddleware()
 	{
-		return $this->filterInfo;
+		return $this->middlewareInfo;
 	}
 	/**
 	 * Returns the name of the sub-directory the controller is in,
@@ -260,12 +261,9 @@ class Router
 	 * @param string|null $uri
 	 *
 	 * @return mixed|string
-	 * @throws \CodeIgniter\Router\Exceptions\RedirectException
-	 * @throws \CodeIgniter\Exceptions\PageNotFoundException
 	 */
 	public function handle(string $uri = null)
 	{
-		$uri = trim($uri, '/');
 		if (empty($uri)) 
 		{
 			$uri = '/';
@@ -275,7 +273,7 @@ class Router
 		{
 			if ($this->collection->isFiltered($this->matchedRoute[0]))
 			{
-				$this->filterInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
+				$this->middlewareInfo = $this->collection->getFilterForRoute($this->matchedRoute[0]);
 			}
 
 			if (is_string($this->controller))
@@ -329,24 +327,19 @@ class Router
 	{
 		$routes = $this->collection->getRoutes($this->collection->HTTPVerb());
 
-		$uri = $uri === '/'
-			? $uri
-			: trim($uri, '/ ');
-
 		// Don't waste any time
 		if (empty($routes))
 		{
 			return false;
 		}
-
 		// Loop through the route array looking for wildcards
 		foreach ($routes as $key => $val)
 		{
 			$key = $key === '/'
-				? $key
+			? $key
 				: trim($key, '/ ');
-
-			// Are we dealing with a locale?
+			
+				// Are we dealing with a locale?
 			if (strpos($key, '{locale}') !== false)
 			{
 				$localeSegment = array_search('{locale}', preg_split('/[\/]*((^[a-zA-Z0-9])|\(([^()]*)\))*[\/]+/m', $key));
@@ -355,14 +348,21 @@ class Router
 				// will actually match.
 				$key = str_replace('{locale}', '[^/]+', $key);
 			}
-
+			
+			$key = preg_replace_callback('#{(.+)}#U', function($match) {
+				preg_match('#{(?:[a-z]+)\|(.*)}#i', $match[0], $m);
+				
+				return '(' . ($m[1] ?? '[^/]+') .')';
+			}, $key);
+			
 			// Does the RegEx match?
 			if (preg_match('#^' . $key . '$#', $uri, $matches))
 			{
 				// Is this route supposed to redirect to another?
 				if ($this->collection->isRedirect($key))
 				{
-					throw new \Exception(key($val), $this->collection->redirectCode($key));
+					$val = is_string($val) ? [$val => $val] : $val;
+					Service::redirection()->to(site_url(key($val)), $this->collection->redirectCode($key));
 				}
 				// Store our locale so CodeIgniter object can
 				// assign it to the Request.
@@ -374,6 +374,11 @@ class Router
 					unset($localeSegment);
 				}
 
+				// Remove the original string from the matches array
+				array_shift($matches);
+
+				$this->params = $matches;
+				
 				// Are we using Closures? If so, then we need
 				// to collect the params into an array
 				// so it can be passed to the controller method later.
@@ -381,11 +386,6 @@ class Router
 				{
 					$this->controller = $val;
 					
-					// Remove the original string from the matches array
-					array_shift($matches);
-
-					$this->params = $matches;
-
 					$this->matchedRoute = [
 						$key,
 						$val,
@@ -423,10 +423,9 @@ class Router
 				}
 				elseif (strpos($val, '/') !== false)
 				{
-					[
-						$controller,
-						$method,
-					] = explode( '::', $val );
+					$options = explode('::', $val);
+					$controller = $options[0];
+					$method = $options[1] ?? $this->collection->defaultMethod();
 
 					// Only replace slashes in the controller, not in the method.
 					$controller = str_replace('/', '\\', $controller);
@@ -458,6 +457,8 @@ class Router
 	 */
 	public function autoRoute(string $uri)
 	{
+		$uri = trim($uri, '/');
+
 		$segments = $this->validateRequest(explode('/', $uri));
 
 		// If we don't have any segments left - try the default controller;
@@ -631,7 +632,10 @@ class Router
 
 		array_shift($segments);
 
-		$this->params = $segments;
+		if (!empty($segments)) 
+		{
+			$this->params = $segments;
+		}
 	}
 
 	/**

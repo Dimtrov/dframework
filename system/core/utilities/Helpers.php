@@ -583,7 +583,7 @@ class Helpers
      * @return string Environment variable setting.
      * @credit CakePHP - http://book.cakephp.org/2.0/en/core-libraries/global-constants-and-functions.html#env
      */
-    public function env(string $key)
+    public static function env(string $key, $default = null)
     {
         if ($key === 'HTTPS') 
         {
@@ -599,12 +599,12 @@ class Helpers
             {
                 return (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) AND strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off');
             }
-            return (strpos($this->env('SCRIPT_URI'), 'https://') === 0);
+            return (strpos(self::env('SCRIPT_URI'), 'https://') === 0);
         }
 
         if ($key === 'SCRIPT_NAME') 
         {
-            if ($this->env('CGI_MODE') AND isset($_ENV['SCRIPT_URL'])) 
+            if (self::env('CGI_MODE') AND isset($_ENV['SCRIPT_URL'])) 
             {
                 $key = 'SCRIPT_URL';
             }
@@ -624,9 +624,9 @@ class Helpers
             $val = getenv($key);
         }
 
-        if ($key === 'REMOTE_ADDR' AND $val === $this->env('SERVER_ADDR')) 
+        if ($key === 'REMOTE_ADDR' AND $val === self::env('SERVER_ADDR')) 
         {
-            $addr = $this->env('HTTP_PC_REMOTE_ADDR');
+            $addr = self::env('HTTP_PC_REMOTE_ADDR');
             if ($addr !== null) 
             {
                 $val = $addr;
@@ -641,8 +641,8 @@ class Helpers
         switch ($key) 
         {
             case 'DOCUMENT_ROOT':
-                $name = $this->env('SCRIPT_NAME');
-                $filename = $this->env('SCRIPT_FILENAME');
+                $name = self::env('SCRIPT_NAME');
+                $filename = self::env('SCRIPT_FILENAME');
                 $offset = 0;
                 if (!strpos($name, '.php')) 
                 {
@@ -650,11 +650,11 @@ class Helpers
                 }
                 return substr($filename, 0, -(strlen($name) + $offset));
             case 'PHP_SELF':
-                return str_replace($this->env('DOCUMENT_ROOT'), '', $this->env('SCRIPT_FILENAME'));
+                return str_replace(self::env('DOCUMENT_ROOT'), '', self::env('SCRIPT_FILENAME'));
             case 'CGI_MODE':
                 return (PHP_SAPI === 'cgi');
             case 'HTTP_BASE':
-                $host = $this->env('HTTP_HOST');
+                $host = self::env('HTTP_HOST');
                 $parts = explode('.', $host);
                 $count = count($parts);
 
@@ -699,7 +699,8 @@ class Helpers
                 array_shift($parts);
                 return '.' . implode('.', $parts);
         }
-        return null;
+
+        return $default;
     }
 
 

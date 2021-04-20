@@ -54,7 +54,6 @@ class Redirection extends Response
 			$url = current_url(true)->resolveRelativeURI($uri);
 			$uri = (string) $url;
 		}
-
 		return $this->redirect($uri, $method, $code);
     }
     

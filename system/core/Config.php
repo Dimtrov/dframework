@@ -3,22 +3,22 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019 - 2020, Dimtrov Lab's
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core;
 
 use dFramework\core\exception\ConfigException;
-use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Arr;
 
 /**
  * Config
@@ -32,7 +32,6 @@ use dFramework\core\utilities\Tableau;
  * @since       1.0
  * @file		/system/core/Config.php
  */
-
 class Config
 {
     /**
@@ -89,7 +88,7 @@ class Config
             self::load($conf);
         }
 
-        return Tableau::get_recusive(self::$_config[$conf], implode('.', $config));
+        return Arr::getRecursive(self::$_config[$conf], implode('.', $config));
     }
 
     /**
@@ -103,7 +102,7 @@ class Config
         $config = explode('.', $config);
         $conf = array_shift($config);
 
-        Tableau::set_recursive(self::$_config[$conf], implode('.', $config), $value);
+        Arr::setRecursive(self::$_config[$conf], implode('.', $config), $value);
     }
 
 
@@ -207,7 +206,7 @@ class Config
 
     private static function setDefaultVar()
     {
-        if(true !== self::get('general.use_absolute_link'))
+        if (true !== self::get('general.use_absolute_link'))
         {
             self::set('general.base_url', str_replace('\\', '/', BASE_URL.'/'));
         }
@@ -241,7 +240,7 @@ class Config
             self::set('general.base_url', rtrim(str_replace('\\', '/', $base_url), '/'));
         }
 
-        if(null === self::get('general.use_template_engine'))
+        if (null === self::get('general.use_template_engine'))
         {
             self::set('general.use_template_engine', true);
         }
@@ -254,7 +253,6 @@ class Config
      */
     private static function initialize()
     {
-
         switch (self::$_config['general']['environment'])
         {
             case 'dev':
@@ -276,7 +274,6 @@ class Config
         ini_set('log_errors', 1);
         ini_set('error_log', APP_DIR.'logs'.DS.'dflogs');
 
-
         self::$_config['general']['compress_output'] = self::$_config['general']['compress_output'] ?? 'auto';
         if (!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
         {
@@ -291,6 +288,7 @@ class Config
         /* ----------------
             Parametres de session
         ------------------- */
+        
         if (!empty(self::get('data.session.cache_limiter')))
         {
             $autorize = ['public', 'private', 'nocache', 'private_no_expire'];

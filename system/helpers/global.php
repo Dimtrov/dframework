@@ -3,39 +3,39 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.3.0
  */
 
 use dFramework\core\Config;
 use dFramework\core\exception\Errors;
 use dFramework\core\http\Input;
-use dFramework\core\http\Redirection;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
-use dFramework\core\router\Router;
 use dFramework\core\security\Session;
 use dFramework\core\utilities\Helpers;
 use Kint\Kint;
 use Plasticbrain\FlashMessages\FlashMessages;
 use Psr\Http\Message\ResponseInterface;
 
+use function GuzzleHttp\Psr7\stream_for;
+
 /**
  * dFramework System Helpers
  *
  * @package		dFramework
  * @subpackage	Helpers
- * @category	Helpers
+ * @category	Global
  * @since 		1.0
  */
 
@@ -50,11 +50,12 @@ if (!function_exists('env'))
      * for unsupported or inconsistent environment variables
      *
      * @param string $key Environment variable name.
+     * @param mixed $default
      * @return string Environment variable setting.
      */
-    function env(string $key)
+    function env(string $key, $default = null)
     {
-        return Service::helpers()->env($key);
+        return Helpers::env($key, $default);
     }
 }
 
@@ -302,6 +303,19 @@ if (!function_exists('is_php'))
 	}
 }
 
+if (!function_exists('is_windows')) 
+{
+    /**
+     * Determine whether the current environment is Windows based.
+     *
+     * @return bool
+     */
+    function is_windows() : bool
+    {
+        return strtolower(substr(PHP_OS, 0, 3)) === 'win';
+    }
+}
+
 if (!function_exists('is_https'))
 {
     /**
@@ -409,20 +423,7 @@ if (!function_exists('current_url'))
 	 */
 	function current_url(bool $returnObject = false)
 	{
-		$uri = (clone service('request'))->getUri();
-	
-
-		// If hosted in a sub-folder, we will have additional
-		// segments that show up prior to the URI path we just
-		// grabbed from the request, so add it on if necessary.
-		$baseUri = new Uri(config('general.base_url'));
-
-		if (! empty($baseUri->getPath()))
-		{
-			$path = rtrim($baseUri->getPath(), '/ ') . '/' . $uri->getPath();
-
-			$uri->setPath($path);
-		}
+		$uri = new Uri(site_url($_SERVER['REQUEST_URI']));
 
 		// Since we're basing off of the IncomingRequest URI,
 		// we are guaranteed to have a host based on our own configs.
@@ -449,7 +450,11 @@ if (!function_exists('previous_url'))
 		// Grab from the session first, if we have it,
 		// since it's more reliable and safer.
 		// Otherwise, grab a sanitized version from $_SERVER.
-		$referer = $_SESSION['_df_previous_url'] ?? Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+		$referer = $_SESSION['_df_previous_url'] ?? null;
+		if (false === filter_var($referer, FILTER_VALIDATE_URL))
+		{
+			$referer = Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+		}	
 
 		$referer = $referer ?? site_url('/');
 
@@ -554,7 +559,7 @@ if (!function_exists('dd'))
 	}
 }
 
-if (!function_exists('r')) 
+if (!function_exists('vd')) 
 {
 	/**
 	 * Shortcut to ref, HTML mode
@@ -562,14 +567,14 @@ if (!function_exists('r'))
 	 * @param   mixed $args
 	 * @return  void|string
 	 */
-	function r()
+	function vd()
 	{
 		$params = func_get_args();
-		return 	Helpers::instance()->r(...$params);
+		return 	Service::helpers()->r(...$params);
   	}
 }
 
-if (!function_exists('rt')) 
+if (!function_exists('vdt')) 
 {
 	/**
 	 * Shortcut to ref, plain text mode
@@ -577,10 +582,10 @@ if (!function_exists('rt'))
 	 * @param   mixed $args
 	 * @return  void|string
 	 */
-	function rt()
+	function vdt()
 	{
 		$params = func_get_args();
-		return 	Helpers::instance()->rt(...$params);
+		return 	Service::helpers()->rt(...$params);
   	}
 }  
   
@@ -784,13 +789,36 @@ if (!function_exists('view_exist'))
      * Verifie si un fichier de vue existe. Utile pour limiter les failles include
      *
      * @param string $name
+     * @param string $ext
      * @return boolean
      */
-    function view_exist(string $name) : bool
+    function view_exist(string $name, string $ext = '.php') : bool
     {
-		$name = preg_match('#\.php$#', $name) ? $name : $name.'.php';
+		$ext = str_replace('.', '', $ext);
+		$name = str_replace(VIEW_DIR, '', $name);
+		$name = preg_match('#\.'.$ext.'$#', $name) ? $name : $name.'.'.$ext;
         
-        return is_file(VIEW_DIR.$name);
+        return is_file(VIEW_DIR.rtrim($name, DS));
+    }
+}
+
+if (!function_exists('view'))
+{
+	/**
+     * Charge une vue
+     * 
+     * @param string $view
+     * @param array|null $data
+     * @param array|null $options
+     * @param array|null $config
+     * @return View
+     */
+    function view(string $view, ?array $data = [], ?array $options = [], ?array $config = [])
+    {
+        $object = Service::viewer(false);
+		$object->addData($data)->addConfig($config)->setOptions($options);
+		
+        return $object->display($view);
     }
 }
 
@@ -819,4 +847,55 @@ if (!function_exists('geo_ip'))
 	{
 		return json_decode(file_get_contents('http://ip-api.com/json/'.$ip), true);
 	}
+}
+
+if (!function_exists('to_stream'))
+{
+	/**
+	 * Create a new stream based on the input type.
+	 *
+	 * Options is an associative array that can contain the following keys:
+	 * - metadata: Array of custom metadata.
+	 * - size: Size of the stream.
+	 *
+	 * @param resource|string|null|int|float|bool|\Psr\Http\Message\StreamInterface|callable|\Iterator $resource Entity body data
+	 * @param array $options  Additional options
+	 *
+	 * @uses GuzzleHttp\Psr7\stream_for
+	 * @return \Psr\Http\Message\StreamInterface
+	 * @throws \InvalidArgumentException if the $resource arg is not valid.
+	 */
+	function to_stream($resource = '', array $options = [])
+	{
+		return stream_for($resource, $options);
+	}
+}
+
+if (! function_exists('value')) 
+{
+    /**
+     * Return the default value of the given value.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    function value($value)
+    {
+        return $value instanceof Closure ? $value() : $value;
+    }
+}
+
+if (! function_exists('with')) 
+{
+    /**
+     * Return the given value, optionally passed through the given callback.
+     *
+     * @param  mixed  $value
+     * @param  callable|null  $callback
+     * @return mixed
+     */
+    function with($value, callable $callback = null)
+    {
+        return is_null($callback) ? $value : $callback($value);
+    }
 }

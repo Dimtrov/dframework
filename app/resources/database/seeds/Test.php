@@ -7,10 +7,10 @@ class Test extends Seeder
 {
     public function seed(Faker $faker) : Seeder
     {
-        $this->table('membres', true)->columns([
+        $this->table('etudiants', true)->columns([
             'nom' => $faker->firstName,
-            'prenom' => $faker->lastName,
-            'date_inscription' => $faker->date()
+            'sexe' => array_rand(['M', 'F']),
+            'date_naissance' => $faker->date()
         ])->rows(50);
 
         return $this;

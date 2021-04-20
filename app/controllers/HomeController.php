@@ -1,8 +1,16 @@
 <?php
-class HomeController extends dFramework\core\Controller
+/**
+ *
+ */
+class HomeController extends \dFramework\components\rest\Controller
 {
+    /**
+     * @AjaxOnly
+     */
 	public function index()
 	{
-		$this->view('/welcome')->render();
+	    echo Str::toCamel("un essai");
+		//$this->view('/welcome')->render();
 	}
+
 }

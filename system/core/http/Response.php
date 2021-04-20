@@ -1146,21 +1146,26 @@ class Response implements ResponseInterface
      */
     public function type($contentType = null)
     {
-        if ($contentType === null) {
+        if ($contentType === null) 
+        {
             return $this->getType();
         }
-        if (is_array($contentType)) {
-            foreach ($contentType as $type => $definition) {
+        if (is_array($contentType)) 
+        {
+            foreach ($contentType as $type => $definition) 
+            {
                 $this->_mimeTypes[$type] = $definition;
             }
 
             return $this->getType();
         }
-        if (isset($this->_mimeTypes[$contentType])) {
+        if (isset($this->_mimeTypes[$contentType])) 
+        {
             $contentType = $this->_mimeTypes[$contentType];
             $contentType = is_array($contentType) ? current($contentType) : $contentType;
         }
-        if (strpos($contentType, '/') === false) {
+        if (strpos($contentType, '/') === false) 
+        {
             return false;
         }
         $this->_setContentType($contentType);
@@ -1882,11 +1887,16 @@ class Response implements ResponseInterface
      */
     protected function _getUTCDate($time = null)
     {
-        if ($time instanceof DateTimeInterface) {
+        if ($time instanceof DateTimeInterface) 
+        {
             $result = clone $time;
-        } elseif (is_int($time)) {
+        } 
+        elseif (is_int($time))
+        {
             $result = new DateTime(date('Y-m-d H:i:s', $time));
-        } else {
+        } 
+        else 
+        {
             $result = new DateTime($time);
         }
 

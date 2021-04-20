@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\core\output;
@@ -122,9 +122,9 @@ class Format
      * @param mixed  $data      Data to convert/parse
      * @param string $from_type Type to convert from e.g. json, csv, html
      *
-     * @return object Instance of the format class
+     * @return self Instance of the format class
      */
-    public static function factory($data, $from_type = null)
+    public static function factory($data, $from_type = null) : self
     {
         // $class = __CLASS__;
         // return new $class();
@@ -142,7 +142,7 @@ class Format
      *
      * @return array Data parsed as an array; otherwise, an empty array
      */
-    public function to_array($data = null)
+    public function to_array($data = null) : array
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
@@ -169,6 +169,10 @@ class Format
             }
         }
         return $array;
+    }
+    public function toArray($data = null) : array
+    {
+        return $this->to_array($data);
     }
 
     /**
@@ -245,7 +249,10 @@ class Format
 
         return $structure->asXML();
     }
-
+    public function toXml($data = null, $structure = null, $basenode = 'xml')
+    {
+        return $this->to_xml($data, $structure, $basenode);
+    }
 
     /**
      * @link http://www.metashock.de/2014/02/create-csv-file-in-memory-php/
@@ -259,13 +266,13 @@ class Format
      *
      * @return string A csv string
      */
-    public function to_csv($data = null, $delimiter = ',', $enclosure = '"')
+    public function to_csv($data = null, $delimiter = ',', $enclosure = '"') : ?string
     {
         // Use a threshold of 1 MB (1024 * 1024)
         $handle = fopen('php://temp/maxmemory:1048576', 'w');
         if ($handle === false) 
         {
-            return;
+            return null;
         }
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
@@ -337,6 +344,10 @@ class Format
 
         return $csv;
     }
+    public function toCsv($data = null, $delimiter = ',', $enclosure = '"') : ?string
+    {
+        return $this->to_csv($data, $delimiter, $enclosure);
+    }
 
     /**
      * Encode data as json.
@@ -346,7 +357,7 @@ class Format
      *
      * @return string Json representation of a value
      */
-    public function to_json($data = null)
+    public function to_json($data = null) : string
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
@@ -374,6 +385,10 @@ class Format
 
         return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
+    public function toJson($data = null) : string 
+    {
+        return $this->to_json($data);
+    }
 
     /**
      * Encode data as a serialized array.
@@ -383,7 +398,7 @@ class Format
      *
      * @return string Serialized data
      */
-    public function to_serialized($data = null)
+    public function to_serialized($data = null) : string
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
@@ -393,6 +408,10 @@ class Format
         }
 
         return serialize($data);
+    }
+    public function toSerialized($data = null) : string
+    {
+        return $this->to_serialized($data);
     }
 
     /**
@@ -414,6 +433,12 @@ class Format
 
         return var_export($data, true);
     }
+    public function toPhp($data = null)
+    {
+        return $this->to_php($data);
+    } 
+
+
 
     // INTERNAL FUNCTIONS
 

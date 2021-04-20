@@ -3,16 +3,16 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.1
+ *  @version    3.3.0
  */
 
 namespace dFramework\core\loader;
@@ -272,7 +272,7 @@ class Load
         $providers = [];
 
         // System services
-        $filename = SYST_DIR . 'constants' . DS . 'provider.php';
+        $filename = SYST_DIR . 'constants' . DS . 'providers.php';
         if (!file_exists($filename))
         {
             LoadException::except('
@@ -288,7 +288,7 @@ class Load
         }
         
         // App services
-        $filename = APP_DIR . 'config' . DS . 'provider.php';
+        $filename = APP_DIR . 'config' . DS . 'providers.php';
         if (file_exists($filename))
         {
             $providers = array_merge($providers, require_once $filename);

@@ -1,15 +1,16 @@
 {
-    "invalid_api_key"      : "Invalid API key %s",
-    "invalid_credentials"  : "Invalid credentials",
-    "token_not_found"      : "Access token not found",
-    "ip_denied"            : "IP denied",
-    "ip_unauthorized"      : "IP unauthorized",
-    "unauthorized"         : "Unauthorized",
-    "ajax_only"            : "Only AJAX requests are allowed",
-    "api_key_unauthorized" : "This API key does not have access to the requested controller",
-    "api_key_permissions"  : "This API key does not have enough permissions",
-    "api_key_time_limit"   : "This API key has reached the time limit for this method",
+    "invalid_api_key": "Invalid API key %s",
+    "invalid_credentials": "Invalid credentials",
+    "token_not_found": "Access token not found",
+    "ip_denied": "IP denied",
+    "ip_unauthorized": "IP unauthorized",
+    "unauthorized": "Unauthorized",
+    "ajax_only": "Only AJAX requests are allowed",
+    "api_key_unauthorized": "This API key does not have access to the requested controller",
+    "api_key_permissions": "This API key does not have enough permissions",
+    "api_key_time_limit": "This API key has reached the time limit for this method",
     "ip_address_time_limit": "This IP Address has reached the time limit for this method",
-    "unknown_method"       : "Unknown method",
-    "unsupported"          : "Unsupported protocol"
+    "unknown_method": "Unknown method",
+    "unsupported": "Unsupported protocol",
+    "bad_used": "Mauvaise utilisation. Veuillez consulter la documentation de votre fournisseur"
 }

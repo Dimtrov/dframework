@@ -3,22 +3,21 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @version     3.3.0
  */
 
 namespace dFramework\core\exception;
 
 use dFramework\core\Config;
-use Tracy\Debugger;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
@@ -45,10 +44,6 @@ class Exception extends \Exception
     {  
         if (Config::get('general.environment') === 'dev') 
         {
-            if (true === Config::get('general.show_trackbar'))
-            {
-                Debugger::enable();
-            }
             $whoops  =  new Run();
             $whoops->pushHandler(new PrettyPageHandler); 
             $whoops->pushHandler([New Log, 'register']);
@@ -62,7 +57,7 @@ class Exception extends \Exception
      */
     public static function Throw(\Throwable $e)
     {
-        Debugger::exceptionHandler($e);
+        throw $e;
     }
 
     /**
@@ -71,8 +66,7 @@ class Exception extends \Exception
      */
     public static function show(string $message, int $code = 0)
     {
-        Debugger::fireLog($message);
-        exit;
+        die($message);
     }
 
     public static function except(string $title, string $message = '', int $code = 0)

@@ -3,26 +3,29 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019, Dimtrov Sarl
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.2.3
  */
  
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
+use dFramework\core\debug\Toolbar;
 use dFramework\core\exception\LoadException;
+use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dframework\core\router\Dispatcher;
 use Exception;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * View
@@ -51,6 +54,12 @@ class View
      * @var array
 	 */
 	protected $performanceData = [];
+    /**
+	 * Should we store performance info?
+	 *
+	 * @var boolean
+	 */
+	protected $debug = false;
 	/**
 	 * The render variables
 	 *
@@ -89,6 +98,10 @@ class View
 
     protected $options = [];
 
+    protected $config = [
+        'view_path' => VIEW_DIR
+    ];
+
     /**
      * Controleur relatif a charger
      *
@@ -125,30 +138,124 @@ class View
      */
     protected $_lib_scripts = [];
 
-	protected $_page_vars = [];
-	
+    protected $_page_vars = [];
+    
+    /**
+     * @var Response
+     */
+    private $response;
 
+    
     /**
      * Constructeur
      *
-     * @param string $view
      * @param array|null $data
      * @param string|null $controller
      * @param array|null $options
+     * @param Response|null $response
      */
-    public function __construct(string $view, ?array $data = [], ?string $controller= '', ?array $options = [])
+    public function __construct(?array $data = [], ?string $controller= '', ?array $options = [], ?array $config = [], $response = null)
     {
         $this->data = (array) $data;
-        $this->options = (array) $options;
         $this->controller = strtolower(trim($controller, DS));
-        $this->view = $view;
+        $this->addConfig($config)->setOptions($options);
 
+        $this->response = ($response instanceof Response OR $response instanceof ResponseInterface) ? $response : Service::response();
+        
         Load::helper('assets');
-		
         $class = Dispatcher::getClass();
         $method = Dispatcher::getMethod();
 		
 		$this->title(ucfirst($method) . ' - ' . ucfirst($class));
+
+        $this->debug = true;
+    }
+
+
+    /**
+     * Add the view configuration
+     *
+     * @param array|null $config
+     * @return self
+     */
+    public function addConfig(?array $config = []) : self
+    {
+        $this->config = array_merge($this->config, (array) $config);
+
+        return $this;
+    }
+    /**
+     * Modify view options
+     *
+     * @param array|null $options
+     * @return self
+     */
+    public function setOptions(?array $options = []) : self 
+    {
+        $this->options = (array) $options;
+
+        return $this;
+    }
+    
+
+    /**
+	 * Sets several pieces of view data at once.
+	 *
+	 * @param array  $data
+	 * @return self
+	 */
+	public function addData(array $data = []): self
+	{
+		$this->data = array_merge($this->data, $data);
+
+		return $this;
+	}
+	/**
+	 * Sets a single piece of view data.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return View
+	 */
+	public function setVar(string $name, $value = null): self
+	{
+		$this->data[$name] = $value;
+
+		return $this;
+	}
+    /**
+	 * Removes all of the view data from the system.
+	 *
+	 * @return View
+	 */
+	public function resetData(): self
+	{
+		$this->data = [];
+
+		return $this;
+	}
+	/**
+	 * Returns the current data that will be displayed in the view.
+	 *
+	 * @return array
+	 */
+	public function getData(): array
+	{
+		return $this->data;
+    }
+    
+
+    /**
+     * set displaying view 
+     *
+     * @param string $view
+     * @return self
+     */
+    public function display(string $view) : self 
+    {
+        $this->view = $view;
+        
+        return $this;
     }
 
     public function __get(string $name)
@@ -195,10 +302,11 @@ class View
 	 * Used within layout views to include additional views.
 	 *
 	 * @param string     $view
+	 * @param array|null $data
 	 * @param array|null $options
 	 * @return string
 	 */
-	public function insert(string $view, array $options = null): string
+	public function insert(string $view, ?array $data = [], ?array $options = null): string
 	{
         $view = preg_replace('#\.php$#i', '', $view).'.php';
         $view = str_replace(' ', '', $view);
@@ -212,8 +320,7 @@ class View
                 $view = '/'.trim(dirname($this->view), '/\\').'/'.$view;
             }
         }
-
-        return $this->compressView(
+        return $this->addData($data)->compressView(
             $this->makeView($view, $options), 
             Config::get('general.compress_output')
         );
@@ -222,11 +329,13 @@ class View
 	 * Specifies that the current view should extend an existing layout.
 	 *
 	 * @param string $layout
-	 * @return void
+	 * @return self
 	 */
-	public function layout(?string $layout)
+	public function layout(?string $layout) : self
 	{
         $this->layout = $layout;
+
+        return $this;
     }
 
     /**
@@ -243,7 +352,7 @@ class View
 	/**
 	 *
 	 *
-	 * @throws \Laminas\Escaper\Exception\RuntimeException
+	 * @throws \RuntimeException
 	 */
 	public function stop()
 	{
@@ -314,7 +423,7 @@ class View
 	 * Get or Set page title 
 	 *
 	 * @param string|null $title 
-	 * @return string|null 
+	 * @return string|self 
 	 */
 	public function title(?string $title = null)
 	{
@@ -324,6 +433,8 @@ class View
 		}
 		
 		$this->_page_vars['title'] = esc($title);
+
+        return $this;
 	}
 	
 	/**
@@ -331,7 +442,7 @@ class View
 	 *
 	 * @param string $key 
 	 * @param string|null $value 
-	 * @return string|null 
+	 * @return string|self 
 	 */
 	public function meta(string $key, ?string $value = null)
 	{
@@ -341,52 +452,20 @@ class View
 		}
 		
 		$this->_page_vars['meta'][$key] = esc($value);
-	}
-		
-    /**
-	 * Sets several pieces of view data at once.
-	 *
-	 * @param array  $data
-	 * @return self
-	 */
-	public function addData(array $data = []): self
-	{
-		$this->data = array_merge($this->data, $data);
 
-		return $this;
+        return $this;
 	}
-	/**
-	 * Sets a single piece of view data.
+	
+    	/**
+	 * Extract first bit of a long string and add ellipsis
 	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return View
+	 * @param  string  $string
+	 * @param  integer $length
+	 * @return string
 	 */
-	public function setVar(string $name, $value = null): self
+	public function excerpt(string $string, int $length = 20): string
 	{
-		$this->data[$name] = $value;
-
-		return $this;
-	}
-    /**
-	 * Removes all of the view data from the system.
-	 *
-	 * @return View
-	 */
-	public function resetData(): self
-	{
-		$this->data = [];
-
-		return $this;
-	}
-	/**
-	 * Returns the current data that will be displayed in the view.
-	 *
-	 * @return array
-	 */
-	public function getData(): array
-	{
-		return $this->data;
+		return (strlen($string) > $length) ? substr($string, 0, $length - 3) . '...' : $string;
 	}
 
 	/**
@@ -573,7 +652,7 @@ class View
     private function create()
     {
         $this->output = $this->makeView($this->view, $this->options); 
-    }
+    } 
     /**
      * Cree une vue demandee et retourne son code html
      *
@@ -582,8 +661,13 @@ class View
      * @param string $viewPath
      * @return string
      */
-    private function makeView(string $view, array $options = null, string $viewPath = VIEW_DIR) : string
+    protected function makeView(string $view, array $options = null, ?string $viewPath = null) : string
     {
+        if (empty($viewPath))
+        {
+            $viewPath = $this->config['view_path'];
+        }
+
         $view = preg_replace('#\.(php|tpl|html?)$#i', '', $view);
         $this->renderVars['start'] = microtime(true);
         $this->renderVars['view']    = $view;
@@ -596,24 +680,20 @@ class View
         }
         $this->renderVars['file'] = str_replace('/', DS, $this->renderVars['file']);
 
-        if (true === Config::get('general.use_template_engine'))
+        $ext = 'php';
+        foreach (['php', 'tpl', 'html'] As $value) 
         {
-            require_once SYST_DIR.'dependencies'.DS.'smarty'.DS.'Smarty.class.php';
-            
-            $smarty = new \Smarty();
-            $smarty->template_dir = VIEW_DIR;
-            $smarty->compile_dir  = VIEW_DIR.'reserved'.DS.'compiles'.DS;
-            $smarty->cache_dir    = VIEW_DIR.'reserved'.DS.'cache'.DS;
-            $smarty->config_dir   = VIEW_DIR.'reserved'.DS.'conf'.DS;
-
-            $smarty->caching = true;
-            $smarty->compile_check = true;
-       
-            $smarty->assign($this->getData());
-            $smarty->display(str_replace($viewPath, '', $this->renderVars['file']).'.tpl');
-
-            return '';
+            if (view_exist($this->renderVars['file'], $value)) 
+            {
+                $ext = $value;
+                break;
+            }
         }
+        if ('php' !== $ext)
+        {
+            return $this->smarty(str_replace($viewPath, '', $this->renderVars['file']), $ext);
+        }
+        
         $this->renderVars['file'] .= '.php';
         
         // Was it cached?
@@ -640,6 +720,10 @@ class View
         $output = ob_get_contents();
         @ob_end_clean();
         
+        if (!empty($this->renderVars['options']['layout'])) 
+        {
+            $this->layout = $this->renderVars['options']['layout'];
+        }
         if (! is_null($this->layout) AND empty($this->currentSection))
 		{
 			$layoutView   = $this->layout;
@@ -653,10 +737,28 @@ class View
 
 		$this->logPerformance($this->renderVars['start'], microtime(true), $this->renderVars['view']);
 
-        if (isset($this->renderVars['options']['compress_output']) AND $this->renderVars['options']['compress_output'] === true)
+        if (isset($this->renderVars['options']['compress_output']) AND is_bool($this->renderVars['options']['compress_output']))
         {
-            $output = $this->compressView($output, true);
+            $output = $this->compressView($output, $this->renderVars['options']['compress_output']);
         }
+
+        // Render debugbar
+        if ($this->debug AND (!isset($options['debug']) || $options['debug'] === true))
+		{
+            // Clean up our path names to make them a little cleaner
+            foreach (['APP_DIR', 'SYST_DIR', 'ROOTPATH'] As $path)
+            {
+                if (strpos($this->renderVars['file'], constant($path)) === 0)
+                {
+                    $this->renderVars['file'] = str_replace(constant($path), $path . '/', $this->renderVars['file']);
+                    break;
+                }
+            }
+            $this->renderVars['file'] = ++$this->viewsCount . ' ' . $this->renderVars['file'];
+            $output                   = '<!-- DEBUG-VIEW START ' . $this->renderVars['file'] . ' -->' . PHP_EOL
+                . $output . PHP_EOL
+                . '<!-- DEBUG-VIEW ENDED ' . $this->renderVars['file'] . ' -->' . PHP_EOL;
+		}
         
         // Should we cache?
 		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
@@ -683,5 +785,19 @@ class View
             $compress = Config::get('general.environment') !== 'dev';
         }
         return (true === $compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
+    }
+     /**
+     * Creer et affiche une vue smarty
+     *
+     * @param string $file
+     * @return string
+     */
+    private function smarty(string $file, string $ext = '.tpl') : string 
+    {
+        $smarty = new Smarty();
+        $smarty->assign($this->getData());
+        $smarty->display($file.'.'.str_replace('.', '', $ext));
+           
+        return '';
     }
 }

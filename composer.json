@@ -1,21 +1,19 @@
 {
     "name": "dimtrov/dframework",
     "description": "The simplest PHP framework for beginners",
-    "type": "library",
+    "type": "project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
-    "homepage": "https://dimtrov.hebfree.org/works/dframework",
-    "version": "3.2.3-beta1",
+    "homepage": "http://dframework.com",
+    "version": "3.3.0",
     "license": "MPL-2.0",
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-    "authors": [
-        {
-            "name": "Dimitric Sitchet Tomkeu",
-            "email": "dev.dst@gmail.com",
-            "role": "Developer, CEO",
-            "homepage": "https://dimtrov.hebfree.org/about"
-        }
-    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "authors": [{
+        "name": "Dimitric Sitchet Tomkeu",
+        "email": "dev.dst@gmail.com",
+        "role": "Developer, CEO",
+        "homepage": "https://dimtrov.hebfree.org/about"
+    }],
     "require": {
         "php": ">=7.2",
         "ext-pdo": "*",
@@ -23,9 +21,35 @@
         "ext-reflection": "*",
         "ext-dom": "*",
         "ext-xml": "*",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "ext-curl": "*",
+        "ext-intl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
     },
     "require-dev": {
-        "fzaninotto/faker": "^1.9"
+        "fakerphp/faker": "^1.14"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "dFramework\\": "system/"
+        }
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php dbot initialize"
+        ],
+        "post-update-cmd": [
+            "dFramework\\core\\support\\ComposerScripts::postUpdate"
+        ]
+    },
+    "support": {
+        "forum": "http://forum.dframework.com/",
+        "source": "https://github.com/Dimtrov/dFramework"
     }
 }

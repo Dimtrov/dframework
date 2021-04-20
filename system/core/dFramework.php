@@ -3,26 +3,27 @@
  *  dFramework
  *
  *  The simplest PHP framework for beginners
- *  Copyright (c) 2019 - 2020, Dimtrov Lab's
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
  *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.2
+ *  @version    3.3.0
  */
 
 namespace dFramework\core;
 
 use dFramework\core\exception\Exception;
+use dFramework\core\loader\DotEnv;
+use dFramework\core\loader\FileLocator;
 use dFramework\core\loader\Load;
 use dFramework\core\router\Dispatcher;
 use dFramework\core\security\Session;
 use MirazMac\Requirements\Checker As envChecker;
-use Tracy\Debugger;
 
 /**
  * dFramework
@@ -37,7 +38,7 @@ use Tracy\Debugger;
  */
 class dFramework
 {
-    const VERSION = '3.2.2';
+    const VERSION = '3.3.0';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
@@ -59,14 +60,28 @@ class dFramework
      * @throws exception\LoadException
      * @throws exception\RouterException
      */
-    public static function init()
+    public function init() : self
     {
         /**
          * Verifie les exigences systeme
          */
         self::checkRequirements();
-        self::configure_ext();
 
+        /**
+         * On charge le helper global
+         */
+        FileLocator::helper('global');
+        
+        /**
+         * On configure quelques extensions
+         */
+        self::configure_ext();
+        
+        /**
+         * On initialise le parsing du fichier .env
+         */
+        DotEnv::init(ROOTPATH);
+                
         /**
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
@@ -81,13 +96,16 @@ class dFramework
          * Demarre la session
          */
         Session::start(); 
-        Debugger::dispatch(); // redispatching de la session entre dFramework et Tracy\Debugger
 
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
          */
-        Load::init();        
-        
+        Load::init();
+
+        return $this;
+    }
+    public function run()
+    {
         /**
          * Initialise le routing de l'application. Point d'entrer de l'application
          */

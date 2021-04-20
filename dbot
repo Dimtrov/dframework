@@ -9,12 +9,13 @@
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	  Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	  Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @link	      https://dimtrov.hebfree.org/works/dframework
+ * @version     3.3.0
  */
+
 
 /*
  * --------------------------------------------------------------------
@@ -27,16 +28,23 @@
 require_once __DIR__.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'.bootstrap.php';
 
 
-$app = new Ahc\Cli\Application('dFramework', dFramework\core\dFramework::VERSION);
+$app = new dFramework\core\cli\Console('dFramework', dFramework\core\dFramework::VERSION);
 
-$app->add(new dFramework\core\cli\Server, 'serve')
-    ->add(new dFramework\core\cli\Seeder, 'seed')
-    ->add(new dFramework\core\cli\Migrate, 'migrate')
-    ->add(new dFramework\core\cli\Mapper, 'map')
-    ->add(new dFramework\core\cli\Tester, 'test')
+$app
+    ->add(dFramework\core\cli\Database::dump())
+    ->add(dFramework\core\cli\Database::seed())
+    ->add(dFramework\core\cli\General::map())
+    ->add(dFramework\core\cli\General::routes())
+    ->add(dFramework\core\cli\General::serve())
+    ->add(dFramework\core\cli\General::test())
+    ->add(dFramework\core\cli\Maker::controller())
+    ->add(dFramework\core\cli\Maker::entity())
+    ->add(dFramework\core\cli\Migration::down())
+    ->add(dFramework\core\cli\Migration::make())
+    ->add(dFramework\core\cli\Migration::up())
+ ;/*
     
     ->add(new dFramework\core\cli\Maker, 'make')
-    ->add(new dFramework\core\cli\Less)
-    ->add(new dFramework\core\cli\Entity);
- 
+    ->add(new dFramework\core\cli\Less);
+  */
 $app->handle($_SERVER['argv']);

@@ -3,34 +3,35 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\core\http;
 
 use BadMethodCallException;
 use dFramework\core\Config;
-use dFramework\core\exception\HttpException;
-use dFramework\core\utilities\Tableau;
-use dFramework\core\utilities\Utils;
-use GuzzleHttp\Psr7\CachingStream;
-use GuzzleHttp\Psr7\LazyOpenStream;
-use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
-use GuzzleHttp\Psr7\UploadedFile;
 use InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
+use GuzzleHttp\Psr7\UploadedFile;
+use dFramework\core\utilities\Arr;
+use GuzzleHttp\Psr7\CachingStream;
+use Psr\Http\Message\UriInterface;
+use dFramework\core\loader\Service;
+use GuzzleHttp\Psr7\LazyOpenStream;
+use dFramework\core\utilities\Utils;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriInterface;
+use dFramework\core\exception\HttpException;
+use Psr\Http\Message\ServerRequestInterface;
+use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
 
 /**
  * ServerRequest
@@ -216,17 +217,23 @@ class ServerRequest implements ServerRequestInterface
      * @var array
      */
     private $deprecatedProperties = [
-        'data' => ['get' => 'getData()', 'set' => 'withData()'],
-        'query' => ['get' => 'getQuery()', 'set' => 'withQueryParams()'],
-        'params' => ['get' => 'getParam()', 'set' => 'withParam()'],
+        'data'    => ['get' => 'getData()', 'set' => 'withData()'],
+        'query'   => ['get' => 'getQuery()', 'set' => 'withQueryParams()'],
+        'params'  => ['get' => 'getParam()', 'set' => 'withParam()'],
         'cookies' => ['get' => 'getCookie()', 'set' => 'withCookieParams()'],
-        'url' => ['get' => 'getPath()', 'set' => 'withRequestTarget()'],
-        'base' => ['get' => 'getAttribute("base")', 'set' => 'withAttribute("base")'],
+        'url'     => ['get' => 'getPath()', 'set' => 'withRequestTarget()'],
+        'base'    => ['get' => 'getAttribute("base")', 'set' => 'withAttribute("base")'],
         'webroot' => ['get' => 'getAttribute("webroot")', 'set' => 'withAttribute("webroot")'],
-        'here' => ['get' => 'getAttribute("here")', 'set' => 'withAttribute("here")'],
+        'here'    => ['get' => 'getAttribute("here")', 'set' => 'withAttribute("here")'],
     ];
 
 
+    /**
+	 * Negotiator
+	 *
+	 * @var Negotiator
+	 */
+	protected $negotiator;
 
     /**
      * Create a new request object.
@@ -1016,7 +1023,7 @@ class ServerRequest implements ServerRequestInterface
             return $this->query;
         }
 
-        return Tableau::get($this->query, $name, $default);
+        return Arr::get($this->query, $name, $default);
     }
 
     /**
@@ -1048,12 +1055,12 @@ class ServerRequest implements ServerRequestInterface
     public function data($name = null, ...$args)
     {
         if (count($args) === 1) {
-            $this->data = Tableau::insert($this->data, $name, $args[0]);
+            $this->data = Arr::insert($this->data, $name, $args[0]);
 
             return $this;
         }
         if ($name !== null) {
-            return Tableau::get($this->data, $name);
+            return Arr::get($this->data, $name);
         }
 
         return $this->data;
@@ -1084,14 +1091,16 @@ class ServerRequest implements ServerRequestInterface
      */
     public function getData($name = null, $default = null)
     {
-        if ($name === null) {
+        if ($name === null) 
+        {
             return $this->data;
         }
-        if (!is_array($this->data) && $name) {
+        if (!is_array($this->data) AND $name) 
+        {
             return $default;
         }
 
-        return Tableau::get($this->data, $name, $default);
+        return Arr::get($this->data, $name, $default);
     }
 
     /**
@@ -1105,8 +1114,9 @@ class ServerRequest implements ServerRequestInterface
      */
     public function param($name, ...$args)
     {
-        if (count($args) === 1) {
-            $this->params = Tableau::insert($this->params, $name, $args[0]);
+        if (count($args) === 1) 
+        {
+            $this->params = Arr::insert($this->params, $name, $args[0]);
 
             return $this;
         }
@@ -1123,7 +1133,8 @@ class ServerRequest implements ServerRequestInterface
      */
     public function cookie($key)
     {
-        if (isset($this->cookies[$key])) {
+        if (isset($this->cookies[$key])) 
+        {
             return $this->cookies[$key];
         }
 
@@ -1139,7 +1150,7 @@ class ServerRequest implements ServerRequestInterface
      */
     public function getCookie($key, $default = null)
     {
-        return Tableau::get($this->cookies, $key, $default);
+        return Arr::get($this->cookies, $key, $default);
     }
 
     /**
@@ -1462,16 +1473,18 @@ class ServerRequest implements ServerRequestInterface
      * @param callable|array $callable A callable or options array for the detector definition.
      * @return void
      */
-    public static function addDetector($name, $callable)
+    public static function addDetector(string $name, $callable)
     {
         $name = strtolower($name);
-        if (is_callable($callable)) {
+        if (is_callable($callable)) 
+        {
             static::$_detectors[$name] = $callable;
 
             return;
         }
-        if (isset(static::$_detectors[$name], $callable['options'])) {
-            $callable = Tableau::merge(static::$_detectors[$name], $callable);
+        if (isset(static::$_detectors[$name], $callable['options'])) 
+        {
+            $callable = Arr::merge(static::$_detectors[$name], $callable);
         }
         static::$_detectors[$name] = $callable;
     }
@@ -1485,7 +1498,7 @@ class ServerRequest implements ServerRequestInterface
      * @deprecated 3.6.0 ServerRequest::addParams() is deprecated. Use `withParam()` or
      *   `withAttribute('params')` instead.
      */
-    public function addParams(array $params)
+    public function addParams(array $params) : self
     {
         $this->params = array_merge($this->params, $params);
 
@@ -1500,10 +1513,12 @@ class ServerRequest implements ServerRequestInterface
      * @return $this The current object, you can chain this method.
      * @deprecated 3.6.0 Mutating a request in place is deprecated. Use `withAttribute()` to modify paths instead.
      */
-    public function addPaths(array $paths)
+    public function addPaths(array $paths) : self
     {
-        foreach (['webroot', 'here', 'base'] as $element) {
-            if (isset($paths[$element])) {
+        foreach (['webroot', 'here', 'base'] As $element) 
+        {
+            if (isset($paths[$element])) 
+            {
                 $this->{$element} = $paths[$element];
             }
         }
@@ -1542,7 +1557,7 @@ class ServerRequest implements ServerRequestInterface
     public function withData($name, $value)
     {
         $copy = clone $this;
-        $copy->data = Tableau::insert($copy->data, $name, $value);
+        $copy->data = Arr::insert($copy->data, $name, $value);
 
         return $copy;
     }
@@ -1559,7 +1574,7 @@ class ServerRequest implements ServerRequestInterface
     public function withoutData($name)
     {
         $copy = clone $this;
-        $copy->data = Tableau::remove($copy->data, $name);
+        $copy->data = Arr::remove($copy->data, $name);
 
         return $copy;
     }
@@ -1577,7 +1592,7 @@ class ServerRequest implements ServerRequestInterface
     public function withParam($name, $value)
     {
         $copy = clone $this;
-        $copy->params = Tableau::insert($copy->params, $name, $value);
+        $copy->params = Arr::insert($copy->params, $name, $value);
 
         return $copy;
     }
@@ -1589,9 +1604,9 @@ class ServerRequest implements ServerRequestInterface
      * @param mixed $default The default value if `$name` is not set. Default `false`.
      * @return mixed
      */
-    public function getParam($name, $default = false)
+    public function getParam(string $name, $default = false)
     {
-        return Tableau::get($this->params, $name, $default);
+        return Arr::get($this->params, $name, $default);
     }
 
     /**
@@ -1678,9 +1693,9 @@ class ServerRequest implements ServerRequestInterface
      * @param string $path The dot separated path to the file you want.
      * @return \Psr\Http\Message\UploadedFileInterface|null
      */
-    public function getUploadedFile($path)
+    public function getUploadedFile(string $path)
     {
-        $file = Tableau::get($this->uploadedFiles, $path);
+        $file = Arr::get($this->uploadedFiles, $path);
         if (!$file instanceof UploadedFile) {
             return null;
         }
@@ -1871,6 +1886,42 @@ class ServerRequest implements ServerRequestInterface
         return $path;
     }
     
+
+    //--------------------------------------------------------------------
+
+	/**
+	 * Provides a convenient way to work with the Negotiate class
+	 * for content negotiation.
+	 *
+	 * @param string  $type
+	 * @param array   $supported
+	 * @param boolean $strictMatch
+	 *
+	 * @return string
+	 */
+	public function negotiate(string $type, array $supported, bool $strictMatch = false): string
+	{
+		if (is_null($this->negotiator))
+		{
+			$this->negotiator = Service::negotiator($this, true);
+		}
+
+		switch (strtolower($type))
+		{
+			case 'media':
+				return $this->negotiator->media($supported, $strictMatch);
+			case 'charset':
+				return $this->negotiator->charset($supported);
+			case 'encoding':
+				return $this->negotiator->encoding($supported);
+			case 'language':
+				return $this->negotiator->language($supported);
+		}
+
+		throw new HTTPException($type . ' is not a valid negotiation type. Must be one of: media, charset, encoding, language.');
+	}
+
+
 
     /**
      * Read data from php://input, mocked in tests.
@@ -2225,7 +2276,7 @@ class ServerRequest implements ServerRequestInterface
      * @param array $data Array of post data.
      * @return array
      */
-    protected function _processPost($data)
+    protected function _processPost(array $data)
     {
         $method = $this->getEnv('REQUEST_METHOD');
         $override = false;
@@ -2237,7 +2288,8 @@ class ServerRequest implements ServerRequestInterface
         else if (
             in_array($method, ['PUT', 'DELETE', 'PATCH'], true) &&
             strpos($this->contentType(), 'application/x-www-form-urlencoded') === 0
-        ) {
+        ) 
+        {
             $data = $this->input();
             parse_str($data, $data);
         }
@@ -2332,14 +2384,14 @@ class ServerRequest implements ServerRequestInterface
         $this->uploadedFiles = $fileData;
 
         // Make a flat map that can be inserted into $post for BC.
-        $fileMap = Tableau::flatten($fileData);
+        $fileMap = Arr::flatten($fileData);
         foreach ($fileMap as $key => $file) {
             $error = $file->getError();
             $tmpName = '';
             if ($error === UPLOAD_ERR_OK) {
                 $tmpName = $file->getStream()->getMetadata('uri');
             }
-            $post = Tableau::insert($post, $key, [
+            $post = Arr::insert($post, $key, [
                 'tmp_name' => $tmpName,
                 'error' => $error,
                 'name' => $file->getClientFilename(),

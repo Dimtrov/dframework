@@ -3,23 +3,23 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2020, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
  * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
  namespace dFramework\libraries;
  
 use dFramework\core\loader\Service;
-use dFramework\core\output\Language;
 use Valitron\Validator As Valitron;
+use dFramework\core\output\Language;
 
 /**
  * Validator
@@ -32,7 +32,7 @@ use Valitron\Validator As Valitron;
  * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
  * @since       3.0
- * @file        /system/libraries/Validator.php
+ * @file        /system/core/utilities/Validator.php
  */
 class Validator
 {
@@ -53,7 +53,7 @@ class Validator
 
         if (empty($data)) 
         {
-            $data = Service::request()->data;
+            $data = Service::request()->getParsedBody();
         }
 
         $this->validator = new Valitron($data, null, $lang);
@@ -135,7 +135,7 @@ class Validator
      * Validate that a field is a valid date
      * 
      * @param string|string[] $fields
-     * @return  dF_validator
+     * @return  self
      */
     public function date($fields) : self 
     {
@@ -588,6 +588,48 @@ class Validator
     }
 
     /**
+     * Defini une regle de validation specifique
+     *
+     * @param string $field
+     * @param string $rule
+     * @param string|null $label
+     * @param array|null $messages
+     * @return self
+     */
+    public function set(string $field, string $rule, ?string $label = null, ?array $messages = []) : self 
+    {
+        $rules = explode('|', $rule);
+        foreach ($rules As $rule) 
+        {
+            $params = [];
+    
+            if (preg_match('#^([a-z-_]+){(.+)}$#isU', $rule, $p))
+            {
+                $params = explode(',', $p[2] ?? '');
+                $rule = $p[1] ?? '';
+            }
+            if (!empty($rule))
+            {
+                if (in_array($rule, ['label', 'labels', 'message', 'rule', 'rules', 'validate', 'init', 'errors', 'clean']))
+                {
+                    continue;
+                }
+                call_user_func([$this, $rule], $field, ...$params);
+                if (!empty($label))
+                {
+                    $this->label($label);
+                }
+                if (!empty($messages[$rule])) 
+                {
+                    $this->message($messages[$rule]);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Add labels to rules
      * 
      * @param array $labels
@@ -620,6 +662,7 @@ class Validator
         $this->validator->message($message);
         return $this;
     }
+
 
     /**
      * Add a single validation rule

@@ -3,114 +3,96 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
- * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2
+ * @package     dFramework
+ * @author      Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @copyright   Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright   Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license     https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @link        https://dimtrov.hebfree.org/works/dframework
+ * @version     3.3.0
  */
-
  
 namespace dFramework\core\generator;
 
+use RuntimeException;
 use dFramework\core\dFramework;
-use dFramework\core\Entity as CoreEntity;
-use dFramework\core\utilities\Chaine;
+use dFramework\core\loader\Load;
 use Nette\PhpGenerator\ClassType;
-use Nette\PhpGenerator\Method;
-use Nette\PhpGenerator\Parameter;
-use Nette\PhpGenerator\Property;
+use dFramework\core\utilities\Str;
+use Nette\PhpGenerator\PhpNamespace;
+use dFramework\core\db\Database;
+use dFramework\core\Entity as CoreEntity;
+use dFramework\core\support\traits\CliMessage;
 
 /**
  * generator\Entity
  *
- * Generate a file for entities class
+ * Generate a file for entity class
  *
- * @package		dFramework
- * @subpackage	Core
+ * @package     dFramework
+ * @subpackage  Core
  * @category    Generator
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @link		https://dimtrov.hebfree.org/docs/dframework/api
+ * @author      Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @link        https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.1
- * @file		/system/core/generator/Entity.php
+ * @file        /system/core/generator/Entity.php
  */
-
-final class Entity extends Generator
+final class Entity
 {
+    use CliMessage;
     
-    public function generate(string $class, string $dir = \ENTITY_DIR) 
-    {
-        $dir = empty($dir) ? \ENTITY_DIR : $dir;
-        $class = preg_replace('#Entity$#i', '', $class);
+    /**
+     * @var bool Specifie si le fichier doit etre vide ou pas
+     */
+    private $empty = false;
+    /**
+     * @var string Classe a generer
+     */
+    private $class = '';
+    /**
+     * @var string Nom complet de la classe généré (namespace y compris)
+     */
+    private $full_class_name = '';
+    /**
+     * @var string Dossier de sauvegarde
+     */
+    private $dir = '';
+    
 
-        $this->makeProperties($class, $properties);
-        $this->writeProperties($class, $properties, $render);
-        $this->createFile($render, $class, $dir);
+    /**
+     * Constructor
+     *
+     * @param mixed $empty
+     */
+    public function __construct($empty = null)
+    {
+        if (!empty($empty)) 
+        {
+            $this->empty = true;
+        }
+        Load::helper('inflector');    
     }
 
 
     /**
-     * Cree les proprietes de la classe a partir des champs de la base de donnees
+     * Demarre la generation
      *
      * @param string $class
-     * @param $properties
-     * @return array
+     * @param string $dir
+     * @return string
      */
-    private function makeProperties($class, &$properties)
+    public function generate(string $class, ?string $dir = \ENTITY_DIR) : string
     {
-        $properties = [];
-        $i = -1;
+        $dir = empty($dir) ? \ENTITY_DIR : $dir;
+        $this->class = preg_replace('#Entity$#i', '', $class);
 
-        $columns = $this->manager->getColumns($class);
+        $this->writeProperties($dir, $render);
+        $this->createFile($render);
 
-        if (!empty($columns))
-        {
-            foreach ($columns As $column)
-            {
-                if (!is_object($column))
-                {
-                    continue;
-                }
-                $i++;
-   
-                $properties[$i]['name'] = $column->field;
-                $properties[$i]['extra'] = $column->extra ?? null;
-                $properties[$i]['null'] = strtolower($column->null ?? '');
-
-                if(preg_match('#^(int|longint|smallint)#i', $column->type))
-                {
-                    $properties[$i]['type'] = 'int';
-                }
-                else if(preg_match('#^(varchar|text|char)#i', $column->type))
-                {
-                    $properties[$i]['type'] = 'string';
-                }
-                else if(preg_match('#^(decimal|float)#i', $column->type))
-                {
-                    $properties[$i]['type'] = 'float';
-                }
-                else if(preg_match('#^(boolean|tinyint)#i', $column->type))
-                {
-                    $properties[$i]['type'] = 'bool';
-                }
-                else
-                {
-                    $properties[$i]['type'] = 'mixed';
-                }
-
-                if(isset($column->default) AND (is_numeric($column->default) OR $column->default !== ''))
-                {
-                    $properties[$i]['default'] = $column->default;
-                }
-            }
-        }
-        
-        return $properties;
+        return $this->full_class_name;
     }
 
     /**
@@ -120,154 +102,87 @@ final class Entity extends Generator
      * @param array $properties
      * @param $render
      */
-    private function writeProperties($class, $properties, &$render)
+    protected function writeProperties($dir, &$render)
     {
-        $class_name = Chaine::toPascalCase($class).'Entity';
-        $generator = new ClassType($class_name);
+        $dir = str_replace(\ENTITY_DIR, '', $dir);
+        $dir = trim($dir, '/\\');
+        $dir = str_replace(['/', '\\'], '/', $dir);
+        $dir = rtrim($dir, '/');
 
-        $generator 
-            ->setExtends(CoreEntity::class)
+        if (!empty($dir)) 
+        {
+            $namespace = new PhpNamespace(str_replace('/', '\\', $dir)); 
+        }
+        $this->dir = $dir . (empty($dir) ? '' : '/');
+        
+        $class_name = Str::toPascalCase(plural($this->class)).'Entity';
+        $generator = (new ClassType($class_name, $namespace ?? null))
             ->addComment($class_name."\n")
             ->addComment('Generated by dFramework v'.dFramework::VERSION)
             ->addComment('Date : '.date('r'))
             ->addComment('PHP Version : '.phpversion())
-            ->addComment('Entity : '.preg_replace("#Entity$#", '', $class_name));
-
-        $generator->addProperty('table', strtolower($class))->setProtected()->setStatic()->addComment('@var string');
+            ->addComment('Entity : '.preg_replace("#Entity$#", '', $class_name))
+            ->setExtends(CoreEntity::class);
         
-        $pks = $this->manager->getKeys($class, 'PRI');
-        if (!empty($pks))
+        if (false === $this->empty)
         {
-            $generator->addProperty('pk', $pks)->setProtected()->addComment('@var string[]');
+            $table = Str::toSnake($this->class);
+            
+            if (Database::tableExist($table)) 
+            {
+                $this->makeProperties($generator, $table);
+            }
+            else if (Database::tableExist(plural($table))) 
+            {
+                $this->makeProperties($generator, plural($table));
+            }
         }
-    
-        /* Ajout des proprietes de classe */
-        $this->addProperties($generator, $properties);
-
-        /* Ajout des modificateurs (Getters et Setters) */
-        $this->addModifiers($generator, $properties);
+        $this->full_class_name = implode('\\', [$namespace ?? '', $class_name]);
 
         $render = (string) $generator;
+    }
+    
+
+    private function makeProperties(ClassType &$generator, string $table)
+    {
+        $generator->addProperty('table', $table)->setProtected()->addComment('@var string Table a utiliser');
+        
+        $pk = Database::indexes($table, 'PRIMARY');
+        $generator->addProperty('primaryKey', $pk->fields[0] ?? singular('id_'.$table))->setProtected()->addComment('@var string Cle primaire de la table');
+        
+        $generator->addProperty('columns', Database::columnsName($table))->setProtected()->addComment('@var array colonnes de l\'entité');
     }
 
     /**
      * Enregistre le code de la classe dans le fichiers
      *
      * @param $render
-     * @param string $class
-     * @param string $file
      */
-    protected function createFile($render, $class, $dir)
-    { 
-        $class_name = ucfirst(Chaine::toCamelCase($class)).'Entity';
+    protected function createFile($render)
+    {
+        $class_name = Str::toPascal(plural($this->class)).'Entity';
 
-        $dir = str_replace(\ENTITY_DIR, '', $dir);
+        $dir = str_replace(\ENTITY_DIR, '', $this->dir);
         $dir = ENTITY_DIR.trim($dir, '/\\');
         $dir = str_replace(['/', '\\'], DS, $dir);
         $dir = rtrim($dir, DS).DS;
-
-        if (!is_dir($dir))
+        
+        $this->dir = $dir;
+        if (!is_dir($this->dir))
         {
-            mkdir($dir);
+            mkdir($this->dir);
         }
-        $filename  = $dir.$class_name.'.php';
-    
+        $filename  = $this->dir.$class_name.'.php';
         $f = fopen($filename, 'w');
         if (!is_resource($f))
         {
-            return false;
-            exit("impossible de generer l'entite : ".$class);
+            throw new RuntimeException('impossible de generer la classe d\'entité: '.$this->class);
         }
+
         fwrite($f, "<?php \n".$render);
         fclose($f);
     }
-    
-    
-    /**
-     * addModifiers
-     *
-     * @param  ClassType $generator
-     * @param  array $properties
-     * @return void
-     */
-    private function addModifiers(ClassType &$generator, array $properties)
-    {
-        foreach ($properties As $property) 
-        {                
-            $property = (object) $property;
-            $property_name = CoreEntity::getProperty($property->name);
-            $property_is_nullable = \in_array($property->null, ['yes', 'YES']);
 
-            // Creation des getters
-            $m = (new Method('get'.\ucfirst($property_name)))
-                ->setPublic()
-                ->addComment('@return '.$property->type.($property_is_nullable ? '|null' : ''));
-            if ($property->type !== 'mixed')
-            {
-                $m->setReturnType($property->type);
-                if ($property_is_nullable)
-                {
-                    $m->setReturnNullable();
-                }
-            }
-            $m->setBody('return $this->'.$property_name.';');
-            $generator->addMember($m);
-            
-            // Creation des setters
-            $m = (new Method('set'.\ucfirst($property_name)))
-                ->addComment('@param '.$property->type.($property_is_nullable ? '|null' : '').' $'.$property_name)
-                ->addComment('@return self')
-                ->setReturnType('self')
-                ->setPublic();
-                $param = new Parameter($property_name);
-                if ($property_is_nullable)
-                {
-                    $param->setDefaultValue(null);
-                    $param->setNullable();
-                }
-                if ($property->type !== 'mixed')
-                {
-                    $param->setType($property->type);
-                }
-            $m->setParameters([$param])
-                ->addBody('$this->'.$property_name.' = $'.$property_name.';')
-                ->addBody('return $this;');
-            $generator->addMember($m);
-        }
-    }
     
-    /**
-     * addProperties
-     *
-     * @param  ClassType $generator
-     * @param  array $properties
-     * @return void
-     */
-    private function addProperties(ClassType &$generator, array $properties)
-    {
-        foreach ($properties As $property) 
-        {
-            $property = (object) $property;
-            $property_name = CoreEntity::getProperty($property->name);
-            $property_is_nullable = \in_array($property->null, ['yes', 'YES']);
-
-            // Creation des proprietes
-            $p = new Property($property_name);
-            if (isset($property->default))
-            {
-                $p->setValue($property->default);
-            }
-            else if ($property_is_nullable)
-            {
-                $p->setNullable()->setInitialized();
-            }
-            if (\version_compare(\phpversion(), '7.4', '>=') AND $property->type !== 'mixed')
-            {
-                $p->setType($property->type);
-            }            
-            $p->setProtected();
-            $p->addComment('@var '.$property->type.($property_is_nullable ? '|null' : ''));
-            $generator->addMember($p);
-        }
-    }
+   
 }

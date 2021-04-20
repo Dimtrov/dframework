@@ -1,2 +1,6 @@
 .git
+.idea
 vendor/
+app/resources/reserved/debugbar/
+Doxyfile
+phpDocumentor.phar
