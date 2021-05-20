@@ -43,7 +43,7 @@ use dFramework\core\db\orm\Relations\BelongsToMany;
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
  * @file		/system/core/db/orm/Model.php
  */
-class Model 
+class Model
 {
 	/**
 	 * @var boolean Specifie si on autoincremente les donnees en bd
@@ -55,7 +55,7 @@ class Model
 	 * @var boolean
 	 */
 	public $exists = false;
-	
+
 	protected $per_page = 20;
 
 	/**
@@ -73,20 +73,20 @@ class Model
 	/**
 	 * @var Entity classe d'entite courrante
 	 */
-	public $class;
+	public $entity;
 
 
 	// To stored loaded relation
 	protected $relations = [];
 
 
-	public function __construct(Entity $class, array $newData = [])
+	public function __construct(Entity $entity, array $newData = [])
 	{
-		$this->class = $class;
-		
-		if (is_array($newData)) 
-		{ 
-			$this->setData( $newData); 
+		$this->entity = $entity;
+
+		if (is_array($newData))
+		{
+			$this->setData( $newData);
 		}
 		helper('inflector');
 	}
@@ -118,17 +118,17 @@ class Model
 	{
 		if (is_array($field))
 		{
-			foreach ($field As $key => $value) 
+			foreach ($field As $key => $value)
 			{
 				$this->setData($key, $value);
 			}
 		}
-		else 
+		else
 		{
 			$this->data[self::getProperty($field)] = $value;
 		}
 
-		return clone $this->class;
+		return clone $this->entity;
 	}
 	/**
 	 * Undocumented function
@@ -139,7 +139,7 @@ class Model
 	{
 	    $exposed = array_map(function ($elt) {
 	        return self::getProperty($elt);
-        }, $this->class->exposes());
+        }, $this->entity->exposes());
 
         $array = [];
 
@@ -192,36 +192,36 @@ class Model
 	public function find($id)
 	{
 		$args = func_get_args();
-		
+
 		if (count($args) > 1)
 		{
 			$id = [];
-			foreach ($args As $arg) 
-			{ 
-				$id[] = $arg; 
+			foreach ($args As $arg)
+			{
+				$id[] = $arg;
 			}
 		}
 		$builder = $this->builder();
 		$builder->in($this->getPrimaryKey(), (array) $id);
 
 		$result = new Result($this, $builder);
-		
+
 		return is_array($id) ? $result->rows() : $result->first();
 	}
-	
+
 	/**
 	 * Recupere les donnees
 	 *
 	 * @param array $columns
 	 * @return mixed
 	 */
-	public function get(array $columns = []) 
+	public function get(array $columns = [])
 	{
-		if (is_null( $this->queryBuilder )) 
+		if (is_null( $this->queryBuilder ))
 		{
 			return $this->all($columns);
 		}
-		if (!empty($columns)) 
+		if (!empty($columns))
 		{
 			$this->queryBuilder->select($columns);
 		}
@@ -236,16 +236,16 @@ class Model
 	 * @param array $columns
 	 * @return array
 	 */
-	public function all(array $columns = []) 
+	public function all(array $columns = [])
 	{
 		$builder = $this->builder();
-		if (!empty($columns)) 
+		if (!empty($columns))
 		{
 			$builder->select($columns);
 		}
 		return (new Result($this, $builder))->rows();
 	}
-	
+
 	/**
 	 * Recupere les donnees du premier element dans la table d'entite
 	 *
@@ -256,7 +256,7 @@ class Model
 	{
 		$builder = $this->queryBuilder ?: $this->builder();
 
-		if (!empty($columns)) 
+		if (!empty($columns))
 		{
 			$builder->select($columns);
 		}
@@ -284,70 +284,74 @@ class Model
 	protected function value(string $field)
 	{
 		return $this->pluck($field);
-	} 
+	}
 
 	/**
 	 * Cree une entite ou modifie l'entite si elle existe deja
 	 *
 	 * @return mixed
 	 */
-	public function save(bool $from_fillable = false)
+	public function save(bool $from_accept = true)
 	{
-		$data = $this->loadData($from_fillable);
+		$pk = $this->getPrimaryKey();
+		$data = $this->loadData($from_accept);
+		$builder = $this->builder();
 
-		if (empty($data)) 
+		if ($this->exists)
+		{
+			$data = $this->getData();
+			if (method_exists($this->entity, 'beforeUpdate'))
+			{
+				$data = call_user_func([$this->entity, 'beforeUpdate'], $data);
+			}
+			return $builder->update($data, [$pk => $data[$pk]]);
+		}
+
+		if (empty($data))
 		{
 			return false;
 		}
-		$builder = $this->builder();
-		$pk = $this->getPrimaryKey();
-
-
-		// Do an insert statement
-		if (!$this->exists)
+		if ( !$this->incrementing AND empty($data[$pk]))
 		{
-			if ( !$this->incrementing AND empty($data[$pk])) 
-			{
-				return false;
-			}
-
-			$return = $builder->insert($data);
-
-			if ($return !== false)
-			{
-				$this->exists = true;
-
-				if ($this->incrementing) 
-				{
-					$this->setData($pk, $builder->lastId());
-				}
-			}
-
-			return $return;
+			return false;
 		}
-		else
+		if (method_exists($this->entity, 'beforeCreate'))
 		{
-			return $builder->update($this->getData(), [$pk => $this->getData($pk)]);
+			$data = call_user_func([$this->entity, 'beforeCreate'], $data);
 		}
+
+		$entry = $builder->insert($data);
+
+		if ($entry !== false)
+		{
+			$this->exists = true;
+
+			if ($this->incrementing)
+			{
+				$this->setData($pk, $builder->lastId());
+			}
+		}
+
+		return $entry;
 	}
-	
+
 	/**
 	 * Cree une nouvelle entite
 	 *
 	 * @param array $data
-	 * @return Entity
+	 * @return Entity|false
 	 */
-	public function create(array $data) : Entity
+	public function create(array $data)
 	{
-		if (empty($data)) 
+		if (empty($data))
 		{
 			return false;
 		}
 
-		$class = (new ReflectionClass($this->class))->newInstance($data);
-		$class->save(true);
+		$entity = (new ReflectionClass($this->entity))->newInstance($data);
+		$entity->save(true);
 
-		return $class;
+		return $entity;
 	}
 
 	/**
@@ -362,7 +366,7 @@ class Model
 		{
 			$param = func_get_args();
 
-			if (count($param) < 1) 
+			if (count($param) < 1)
 			{
 				return false;
 			}
@@ -388,13 +392,13 @@ class Model
 		if (!$this->exists AND empty($this->queryBuilder))
 		{
 			$params = func_get_args();
-			if (empty($params)) 
-			{ 
-				return false; 
+			if (empty($params))
+			{
+				return false;
 			}
 			$first = reset($params);
-			
-			if (is_array($first)) 
+
+			if (is_array($first))
 			{
 				$params = $first;
 			}
@@ -402,7 +406,7 @@ class Model
 
 			foreach ($params As $id)
 			{
-				if (is_array($id)) 
+				if (is_array($id))
 				{
 					continue;
 				}
@@ -411,11 +415,11 @@ class Model
 
 			$builder = $this->builder();
 
-			if (count($where) <= 1) 
+			if (count($where) <= 1)
 			{
 				$builder->where($pk, reset($where));
-			} 
-			else 
+			}
+			else
 			{
 				$builder->in($pk, $where);
 			}
@@ -423,7 +427,7 @@ class Model
 			return $builder->delete();
 		}
 
-		if ($this->exists) 
+		if ($this->exists)
 		{
 			$this->where($pk, $this->getData($pk));
 		}
@@ -434,7 +438,7 @@ class Model
 		}
 	}
 
-	
+
 	// ======================================
 	// Pagination Methods
 	// ======================================
@@ -449,13 +453,13 @@ class Model
 	public function paging(int $page = 1, int $per_page = null)
 	{
 		$page = intval($page);
-		if (empty($page) OR $page < 0) 
+		if (empty($page) OR $page < 0)
 		{
 			$page = 1;
 		}
-		if (empty($per_page)) 
+		if (empty($per_page))
 		{
-			$per_page = $this->class->getPerPage();
+			$per_page = $this->entity->getPerPage();
 		}
 		$offset = ($page - 1) * $per_page;
 
@@ -472,21 +476,21 @@ class Model
 	public function paginate(?int $per_page = null)
 	{
 		$per_page = intval($per_page);
-		if ($per_page <= 0) 
+		if ($per_page <= 0)
 		{
-			$per_page = $this->class->getPerPage();
+			$per_page = $this->entity->getPerPage();
 		}
-		
+
 		$builder = $this->pagingBuilder ?: $this->builder();
 		$builder->offset(false);
-		
+
 		$paginator = Load::library('Paginator');
 		$paginator->init([
 			'run_query' => false,
 			'max_item'  => (int) $builder->count(),
 			'limit'     => $per_page
 		]);
-		
+
 		return $paginator->pagine();
 	}
 
@@ -496,22 +500,22 @@ class Model
 	// ======================================
 
 	/**
-	 * Determine une cle etrangere pour la relation 
+	 * Determine une cle etrangere pour la relation
 	 *
 	 * @param bool $has Specifie si on est dans une relation de type hasOne ou hasMany
 	 * @param string $related Classe de relation
 	 * @param string|null $foreign_key Cle par defaut
 	 * @return string
 	 */
-	private function getRelationFk(bool $has, string $related, ?string $foreign_key = null) : string 
+	private function getRelationFk(bool $has, string $related, ?string $foreign_key = null) : string
 	{
 		if (empty($foreign_key))
 		{
 			if ($has)
 			{
-				$foreign_key = $this->class->getPrimaryKey();
+				$foreign_key = $this->entity->getPrimaryKey();
 			}
-			else 
+			else
 			{
 				$related = $this->makeTableFromClass($related);
 
@@ -523,35 +527,35 @@ class Model
 	}
 	/**
 	 * Cree une relation de type 1-1
-	 * 
+	 *
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasOne
 	 */
 	public function hasOne(string $related, ?string $foreign_key = null) : HasOne
 	{
-		return new Relations\HasOne($this->class, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new Relations\HasOne($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 	/**
-	 * Cree une relation de type 1-n 
-	 * 
+	 * Cree une relation de type 1-n
+	 *
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasMany
 	 */
 	public function hasMany(string $related, ?string $foreign_key = null) : HasMany
 	{
-		return new Relations\HasMany($this->class, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new Relations\HasMany($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 	/**
-	 * 
+	 *
 	 * @param string $related
 	 * @param string|null $foreign_key
 	 * @return HasMany
 	 */
 	public function belongsTo(string $related, ?string $foreign_key = null) : BelongsTo
 	{
-		return new Relations\BelongsTo($this->class, $related, $this->getRelationFk(false, $related, $foreign_key));
+		return new Relations\BelongsTo($this->entity, $related, $this->getRelationFk(false, $related, $foreign_key));
 	}
 
 	/**
@@ -567,7 +571,7 @@ class Model
 	{
 		if (empty($pivot_table))
 		{
-			$models = [$this->class->getTable(), $this->makeTableFromClass($related)];
+			$models = [$this->entity->getTable(), $this->makeTableFromClass($related)];
 			sort($models);
 
 			$pivot_table = strtolower(implode('_', $models));
@@ -575,23 +579,23 @@ class Model
 
 		$foreign_key = $this->getRelationFk(true, $related, $foreign_key);
 		$other_key   = $this->getRelationFk(false, $related, $other_key);
-		
-		$pivot_builder = new QueryBuilder($this->class, $pivot_table);
 
-		return new Relations\BelongsToMany($this->class, $related, $pivot_builder, $foreign_key, $other_key);
+		$pivot_builder = new QueryBuilder($this->entity, $pivot_table);
+
+		return new Relations\BelongsToMany($this->entity, $related, $pivot_builder, $foreign_key, $other_key);
 	}
 	/**
 	 * Fabrique un nom de table en fonction du nom de la classe d'entité donnée
 	 *
-	 * @param string $classname Nom (forme absolue) de la classe d'entité
+	 * @param string $entityname Nom (forme absolue) de la classe d'entité
 	 * @return string
 	 */
-	private function makeTableFromClass(string $classname) : string
+	private function makeTableFromClass(string $entityname) : string
 	{
-		$classname = explode('\\', preg_replace('#Entity$#', '', $classname));
-		$classname = end($classname);
+		$entityname = explode('\\', preg_replace('#Entity$#', '', $entityname));
+		$entityname = end($entityname);
 
-		return Str::toSnake($classname);
+		return Str::toSnake($entityname);
 	}
 
 	/**
@@ -603,7 +607,7 @@ class Model
 	 */
 	public function setRelation(string $name, Relations\Relation $relation)
 	{
-		$this->relations[$name] = $relation->relate($this->class);
+		$this->relations[$name] = $relation->relate($this->entity);
 	}
 	/**
 	 * Recupere une relation
@@ -621,7 +625,7 @@ class Model
 		if(!method_exists($this, $related))
 		{
 			return false;
-		} 
+		}
 
 		$this->setRelation($related, $this->$related());
 	}
@@ -645,15 +649,15 @@ class Model
      */
     final public function existOther(array $dif, array $eq) : bool
     {
-        foreach ($dif As $key => $value) 
+        foreach ($dif As $key => $value)
         {
             $this->where($key . ' !=', $value);
         }
-        foreach ($eq As $key => $value) 
+        foreach ($eq As $key => $value)
         {
             $this->where($key, $value);
         }
-        
+
         return $this->count() > 0;
     }
 
@@ -700,7 +704,7 @@ class Model
 		{
 			return $this->queryBuilder;
 		}
-		return $this->queryBuilder = new QueryBuilder($this->class);
+		return $this->queryBuilder = new QueryBuilder($this->entity);
 	}
 
 	/**
@@ -710,7 +714,7 @@ class Model
 	 */
 	public function getPrimaryKey() : string
 	{
-		return $this->class->getPrimaryKey();
+		return $this->entity->getPrimaryKey();
 	}
 	/**
 	 * Renvoi le nom de la classe
@@ -720,8 +724,8 @@ class Model
 	 */
 	public function getClassName(bool $withNamespace = true) : string
 	{
-		$class = new ReflectionClass($this->class);
-		return $withNamespace === true ? $class->getName() : $class->getShortName();
+		$entity = new ReflectionClass($this->entity);
+		return $withNamespace === true ? $entity->getName() : $entity->getShortName();
 	}
 
 	/**
@@ -732,12 +736,12 @@ class Model
 		$data = [];
 		if (true === $from_accept)
 		{
-			foreach($this->class->accepts() As $field)
+			foreach($this->entity->accepts() As $field)
 			{
 				$data[$field] = $this->getData($field);
 			}
 		}
-		else 
+		else
 		{
 			foreach ($this->data As $key => $value)
 			{
@@ -758,11 +762,11 @@ class Model
         if (in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
         {
             return Str::{'to'.$case}($fieldName);
-        }        
+        }
         return $fieldName;
     }
 
-	
+
 	// ======================================
 	// Magic Methods
 	// ======================================
@@ -780,7 +784,7 @@ class Model
 			return call_user_func_array([$this, $name], $arguments);
 		}
 
-		if (is_null($this->queryBuilder)) 
+		if (is_null($this->queryBuilder))
 		{
 			$this->queryBuilder = $this->builder();
 		}
@@ -792,7 +796,7 @@ class Model
 
 		Errors::show_error('Unknown function '.$name, 'Unknow function');
 	}
-	
+
 	/**
 	 * @param string $field
 	 * @return boolean
