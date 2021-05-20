@@ -118,7 +118,7 @@ class Helpers
         $uri = $uri[0];
         $uri = preg_replace('#'.$this->item('url_suffix').'$#i', '', $uri);
 
-        $base_url = $this->slash_item('base_url');
+        $base_url = $this->getBaseUrl();
 
         if (isset($protocol))
         {
@@ -177,7 +177,7 @@ class Helpers
      */
     public function base_url($uri = '', $protocol = NULL)
     {
-        $base_url = $this->slash_item('base_url');
+        $base_url = $this->getBaseUrl();
 
         if (isset($protocol))
         {
@@ -192,6 +192,14 @@ class Helpers
             }
         }
         return $base_url.$this->_uri_string($uri);
+    }
+    private function getBaseUrl() : string
+    {
+        return $this->slash_item('base_url');
+        
+        return true !== Config::get('general.use_absolute_link') 
+        ? str_replace('\\', '/', BASE_URL.'/') 
+        : $this->slash_item('base_url');
     }
 
     // -------------------------------------------------------------

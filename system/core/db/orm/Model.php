@@ -137,7 +137,26 @@ class Model
 	 */
 	public function toArray() : array
 	{
-		$array = $this->data;
+	    $exposed = array_map(function ($elt) {
+	        return self::getProperty($elt);
+        }, $this->class->exposes());
+
+        $array = [];
+
+        if (empty($exposed))
+        {
+            $array = $this->data;
+        }
+        else
+        {
+            foreach ($this->data As $key => $value)
+            {
+                if (in_array($key, $exposed))
+                {
+                    $array[$key] = $value;
+                }
+            }
+        }
 
 		foreach ($this->relations As $relation => $models)
 		{

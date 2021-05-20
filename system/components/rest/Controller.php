@@ -17,6 +17,7 @@
 
 namespace dFramework\components\rest;
 
+use dFramework\middlewares\Cors;
 use Firebase\JWT\JWT;
 use dFramework\core\Config;
 use dFramework\core\output\Format;
@@ -481,6 +482,30 @@ class Controller extends CoreController
     }
 
     /**
+     * Recupere les donnees envoyees en POST
+     *
+     * @param true|string|null $key Si $key === true, retourne les donnees dans un objet
+     * @return mixed
+     */
+    final protected function postFields($key = null)
+    {
+        $post = $this->request->getParsedBody();
+        $input = $this->request->input();
+
+        if (!empty($input))
+        {
+            $input = json_decode($input, true);
+            $post = array_merge($post, $input);
+        }
+        if (!empty($key) AND $key !== true)
+        {
+            return $post[$key] ?? null;
+        }
+        return $key === true ? (object) $post : $post;
+    }
+
+
+    /**
      * Specifie que seules les requetes ajax sont acceptees
      *
      * @return self
@@ -850,5 +875,23 @@ class Controller extends CoreController
         {
             $this->forceHttps();
         }
+        if ($annotation = $reflection->getAnnotation('Cors'))
+        {
+            $config = [];
+            $value = $annotation->value;
+
+            $origin = $value['origin'] ?? null;
+            if ($origin === false OR $origin === 'false')
+            {
+                $config['AllowOrigin'] = false;
+            }
+            elseif (!empty($origin))
+            {
+                $config['AllowOrigin'] = (array) $origin;
+            }
+
+            $this->runMiddleware(new Cors($config));
+        }
+
     }
 }

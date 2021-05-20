@@ -132,8 +132,11 @@ class Controller
     protected function runMiddleware($middlewares)
     {
         $middleware = new Middleware($this->response);
-
-        $middleware->add($this->_middlewares)->add($middlewares);
+        if (!empty($this->_middlewares))
+        {
+            $middleware->add($this->_middlewares);
+        }
+        $middleware->add($middlewares);
 
         $this->response = $middleware->handle($this->request);
     }

@@ -73,6 +73,10 @@ abstract class Entity
 	 * @var array Attributs rejectés
 	 */
 	protected $rejects = [];
+    /**
+     * @var array Attributs exposés
+     */
+	protected $exposes = '*';
 
 
 	/**
@@ -151,6 +155,38 @@ abstract class Entity
 		}
 		return $isRejects;
 	}
+
+    /**
+     * Recuperes les attributs  exposés
+     *
+     * @return array
+     */
+    private function _exposes() : array
+    {
+        return (array) ($this->exposes == '*' ? $this->columns : $this->exposes);
+    }
+    /**
+     * Verifie si un attributs est exposé
+     *
+     * @param string|array $attributes
+     * @return boolean
+     */
+    private function _isExposes($attributes) : bool
+    {
+        $attributes = (array) $attributes;
+        $isExposes = true;
+        $exposed = $this->_exposes();
+
+        foreach ($attributes As $key => $value)
+        {
+            if (!in_array($key, $exposed))
+            {
+                $isExposes = false;
+                break;
+            }
+        }
+        return $isExposes;
+    }
 
 	/**
 	 * Assigne les donnees a l'entite
