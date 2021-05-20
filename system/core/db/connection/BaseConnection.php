@@ -811,7 +811,7 @@ abstract class BaseConnection
 
 		return false;
 	}
-	public function beginTransaction(bool $test_mode) : bool 
+	public function beginTransaction(bool $test_mode = false) : bool 
 	{
 		return $this->transBegin($test_mode);
 	}
@@ -1107,17 +1107,17 @@ abstract class BaseConnection
 		$item = trim($item, $this->escapeChar);
 
 		// Is there a table prefix? If not, no need to insert it
-		if ($this->DBPrefix !== '')
+		if ($this->prefix !== '')
 		{
 			// Verify table prefix and replace if necessary
 			if ($this->swapPre !== '' && strpos($item, $this->swapPre) === 0)
 			{
-				$item = preg_replace('/^' . $this->swapPre . '(\S+?)/', $this->DBPrefix . '\\1', $item);
+				$item = preg_replace('/^' . $this->swapPre . '(\S+?)/', $this->prefix . '\\1', $item);
 			}
 			// Do we prefix an item with no segments?
-			elseif ($prefixSingle === true && strpos($item, $this->DBPrefix) !== 0)
+			elseif ($prefixSingle === true && strpos($item, $this->prefix) !== 0)
 			{
-				$item = $this->DBPrefix . $item;
+				$item = $this->prefix . $item;
 			}
 		}
 
