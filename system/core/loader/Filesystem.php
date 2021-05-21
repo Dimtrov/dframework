@@ -484,29 +484,73 @@ class Filesystem
      *
      * @param  string  $directory
      * @param  bool  $hidden
+     * @param  string  $sortBy
      * @return \Symfony\Component\Finder\SplFileInfo[]
      */
-    private function _files(string $directory, bool $hidden = false) : array
+    private function _files(string $directory, bool $hidden = false, string $sortBy = 'name') : array
     {
-        return iterator_to_array(
-            Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory)->depth(0)->sortByName(),
-            false
-        );
+		$files = Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory)->depth(0);
+
+		switch (strtolower($sortBy))
+		{
+			case 'type':
+				$files = $files->sortByType();
+				break;
+			case 'modifiedtime':
+			case 'modified':
+				$files = $files->sortByModifiedTime();
+				break;
+			case 'changedtime':
+			case 'changed':
+				$files = $files->sortByChangedTime();
+				break;
+			case 'accessedtime':
+			case 'accessed':
+				$files = $files->sortByAccessedTime();
+				break;
+			default:
+				$files = $files->sortByName();
+				break;
+		}
+
+		return iterator_to_array($files, false);
     }
 
     /**
      * Get all of the files from the given directory (recursive).
      *
      * @param  string  $directory
-     * @param  bool  $hidden
+	 * @param  bool  $hidden
+     * @param  string  $sortBy
      * @return \Symfony\Component\Finder\SplFileInfo[]
      */
-    private function _allFiles(string $directory, bool $hidden = false) : array
+    private function _allFiles(string $directory, bool $hidden = false, string $sortBy = 'name') : array
     {
-        return iterator_to_array(
-            Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory)->sortByName(),
-            false
-        );
+		$files = Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory);
+
+		switch (strtolower($sortBy))
+		{
+			case 'type':
+				$files = $files->sortByType();
+				break;
+			case 'modifiedtime':
+			case 'modified':
+				$files = $files->sortByModifiedTime();
+				break;
+			case 'changedtime':
+			case 'changed':
+				$files = $files->sortByChangedTime();
+				break;
+			case 'accessedtime':
+			case 'accessed':
+				$files = $files->sortByAccessedTime();
+				break;
+			default:
+				$files = $files->sortByName();
+				break;
+		}
+
+        return iterator_to_array($files, false);
     }
 
     /**

@@ -12,7 +12,6 @@ use CachingIterator;
 use dFramework\core\loader\Service;
 use JsonSerializable;
 use IteratorAggregate;
-use Symfony\Component\VarDumper\VarDumper;
 use dFramework\core\support\traits\Macroable;
 use dFramework\core\support\contracts\Jsonable;
 use dFramework\core\support\contracts\Arrayable;
@@ -284,7 +283,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
     {
         if (func_num_args() === 2) {
             return $this->contains(function ($item) use ($key, $value) {
-                return data_get($item, $key) === $value;
+				return Arr::get($item, $key) === $value;
             });
         }
 
@@ -669,7 +668,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
         }
 
         return function ($item) use ($key, $operator, $value) {
-            $retrieved = data_get($item, $key);
+            $retrieved = Arr::get($item, $key);
 
             $strings = array_filter([$retrieved, $value], function ($value) {
                 return is_string($value) || (is_object($value) && method_exists($value, '__toString'));
@@ -720,7 +719,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
         $values = $this->getArrayableItems($values);
 
         return $this->filter(function ($item) use ($key, $values, $strict) {
-            return in_array(data_get($item, $key), $values, $strict);
+            return in_array(Arr::get($item, $key), $values, $strict);
         });
     }
 
@@ -758,7 +757,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
     public function whereNotBetween($key, $values)
     {
         return $this->filter(function ($item) use ($key, $values) {
-            return data_get($item, $key) < reset($values) || data_get($item, $key) > end($values);
+            return Arr::get($item, $key) < reset($values) || Arr::get($item, $key) > end($values);
         });
     }
 
@@ -775,7 +774,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
         $values = $this->getArrayableItems($values);
 
         return $this->reject(function ($item) use ($key, $values, $strict) {
-            return in_array(data_get($item, $key), $values, $strict);
+            return in_array(Arr::get($item, $key), $values, $strict);
         });
     }
 
@@ -1898,7 +1897,7 @@ class Collection implements ArrayAccess, Arrayable, Countable, IteratorAggregate
         }
 
         return function ($item) use ($value) {
-            return data_get($item, $value);
+            return Arr::get($item, $value);
         };
     }
 
