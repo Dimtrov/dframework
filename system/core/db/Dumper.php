@@ -18,6 +18,7 @@
 namespace dFramework\core\db;
 
 use dFramework\core\exception\DatabaseException;
+use dFramework\core\loader\Filesystem;
 
 /**
  * Dumper
@@ -61,7 +62,7 @@ class Dumper
      */
     public function __construct(?string $group = null)
     {
-        if ('cli' !== PHP_SAPI) 
+        if ('cli' !== PHP_SAPI)
         {
             exit('Fonctionnalités disponible uniquement en invite de commande');
         }
@@ -71,7 +72,7 @@ class Dumper
 
     /**
      * Sauvegarde une base de donnee
-     * 
+     *
      * @param string $version
      * @return string a path for saved file
      */
@@ -113,9 +114,23 @@ class Dumper
 
     public function up(string $version) : string
     {
-        $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
-        $filename .= '_version_'.$version.'.sql';
-        $file = rtrim($this->save_folder, DS).DS.$filename;
+		if ($version === 'last')
+		{
+			/**
+			 * @var \Symfony\Component\Finder\SplFileInfo
+			 */
+			$filename = Filesystem::files($this->save_folder, false, 'modifiedTime')[0] ?? '';
+			if (!empty($filename))
+			{
+				$filename = $filename->getFilename();
+			}
+		}
+		else
+		{
+			$filename = !empty($this->filename) ? $this->filename : $this->config['database'];
+			$filename .= '_version_'.$version.'.sql';
+		}
+		$file = rtrim($this->save_folder, DS).DS.$filename;
 
         if (!file_exists($file) OR !is_readable($file))
         {
@@ -137,14 +152,14 @@ class Dumper
             . ' < ' . $file;
 
         shell_exec($command);
-        
+
         return $file;
     }
 
 
     /**
      * suppression des anciennes sauvegardes
-     * 
+     *
      * @param int $duration Ancienneté des fichiers à conserver en minute
      */
     public function deleteOldFile(int $duration = 7200)
@@ -165,12 +180,12 @@ class Dumper
      *
      */
     private function deleteAllTables()
-    {  
+    {
         $pdo = $this->db->connection();
 
         $tables = $pdo->tables();
         $pdo->disableFk();
-        foreach ($tables As $table) 
+        foreach ($tables As $table)
         {
             $pdo->query('DROP TABLE '.$table);
         }
