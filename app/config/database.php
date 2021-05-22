@@ -14,10 +14,10 @@
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
  *  @version    3.3.0
  */
- 
+
 
 $database['connection'] = env('db.connection', 'default');
- 
+
 /*
 | -------------------------------------------------------------------
 | DATABASE CONNECTIVITY SETTINGS
@@ -56,7 +56,7 @@ $database['default'] = [
     'host'      => env('db.default.hostname', 'localhost'),
     'username'  => env('db.default.username', 'root'),
     'password'  => env('db.default.password', ''),
-    'database'  => env('db.default.database', 'laravel_test'),
+    'database'  => env('db.default.database', 'test'),
     'debug'     => 'auto',
     'charset'   => 'utf8',
     'collation' => 'utf8_general_ci',
