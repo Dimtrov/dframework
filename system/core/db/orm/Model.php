@@ -49,12 +49,13 @@ class Model
 	 * @var boolean Specifie si on autoincremente les donnees en bd
 	 */
 	protected $incrementing = true;
+
 	/**
 	 * Verifie si une entite existe deja
 	 *
 	 * @var boolean
 	 */
-	public $exists = false;
+	protected $exists = false;
 
 	protected $per_page = 20;
 
@@ -91,6 +92,16 @@ class Model
 		helper('inflector');
 	}
 
+	/**
+	 * Modifie le parametre d'existanse d'un element
+	 *
+	 * @param boolean $exists
+	 * @return void
+	 */
+	public function setExist(bool $exists)
+	{
+		$this->exists = $exists;
+	}
 
 	/**
 	 * Recupere les donnees
