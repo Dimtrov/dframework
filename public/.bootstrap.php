@@ -78,7 +78,7 @@ if (!empty($composer_autoload_file))
 
     if (is_dir($composer_autoload_file))
     {
-        $composer_autoload_file .= DS.'autoload.php';    
+        $composer_autoload_file .= DS.'autoload.php';
     }
     if (!is_file($composer_autoload_file))
     {
@@ -104,6 +104,11 @@ require_once SYST_DIR.'Autoloader.php';
 
 \dFramework\Autoloader::load();
 
+if (file_exists(APP_DIR . 'config' . DS . 'constants.php'))
+{
+	require_once APP_DIR . 'config' . DS . 'constants.php';
+}
 require_once SYST_DIR . 'constants'.DS.'constants.php';
+
 
 return (new \dFramework\core\dFramework)->init();
