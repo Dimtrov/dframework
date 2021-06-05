@@ -17,6 +17,7 @@
 
 namespace dFramework\core\db\orm;
 
+use Exception;
 use ReflectionClass;
 use dFramework\core\Config;
 use dFramework\core\Entity;
@@ -72,6 +73,11 @@ class Model
 	protected $data = [];
 
 	/**
+	 * @var array Donnees reelles de la bd sans transformations de casse
+	 */
+	private $trustData = [];
+
+	/**
 	 * @var Entity classe d'entite courrante
 	 */
 	public $entity;
@@ -115,7 +121,7 @@ class Model
 		{
 			return $this->data;
 		}
-		return $this->data[$field] ?? ($this->data[self::getProperty($field)] ?? null);
+		return $this->data[$field] ?? ($this->data[self::getProperty($field)] ?? ($this->trustData[$field] ?? null));
 	}
 
 	/**
@@ -137,6 +143,7 @@ class Model
 		else
 		{
 			$this->data[self::getProperty($field)] = $value;
+			$this->trustData[$field] = $value;
 		}
 
 		return clone $this->entity;
@@ -308,9 +315,13 @@ class Model
 		$data = $this->loadData($from_accept);
 		$builder = $this->builder();
 
+		if (empty($data))
+		{
+			return false;
+		}
+
 		if ($this->exists)
 		{
-			$data = $this->getData();
 			if (method_exists($this->entity, 'beforeUpdate'))
 			{
 				$data = call_user_func([$this->entity, 'beforeUpdate'], $data);
@@ -318,10 +329,6 @@ class Model
 			return $builder->update($data, [$pk => $data[$pk]]);
 		}
 
-		if (empty($data))
-		{
-			return false;
-		}
 		if ( !$this->incrementing AND empty($data[$pk]))
 		{
 			return false;
@@ -647,9 +654,32 @@ class Model
 	// Utilities Methods
 	// ======================================
 
-	public function exist(array $conditions)
+	/**
+	 * Check if a column with a specific value is present in current table
+	 *
+	 * @param string|array $key
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function exist($key, $value = null) : bool
 	{
-		return $this->where($conditions)->count() > 0;
+		$process = false;
+		$conditions = [];
+		if (is_array($key))
+		{
+			$conditions = $key;
+			$process = true;
+		}
+		else if (is_string($key) AND !empty($value))
+		{
+			$conditions = [$key => $value];
+			$process = true;
+		}
+		if ($process)
+		{
+			return $this->where($conditions)->count() > 0;
+		}
+		throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
 	}
 	/**
      * Verifie si une valeur n'existe pas deja pour une cle donnee
@@ -751,6 +781,9 @@ class Model
 			{
 				$data[$field] = $this->getData($field);
 			}
+
+			$pk = $this->getPrimaryKey();
+			$data[$pk] = $this->getData($pk);
 		}
 		else
 		{
