@@ -42,7 +42,7 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class Controller
 {
-    CONST 
+    CONST
         /**
          * Utilisation de l'objet Cache
          */
@@ -71,7 +71,7 @@ class Controller
     protected $layout = null;
 
     private $_middlewares = [];
-    
+
 
     /**
      * Controller
@@ -102,7 +102,7 @@ class Controller
      */
     public static function instance() : self
     {
-        if (null === self::$_instance) 
+        if (null === self::$_instance)
         {
             self::$_instance = new self;
         }
@@ -110,7 +110,7 @@ class Controller
     }
     private static $_instance;
 
-   
+
     /**
      * Defini une liste de filtres specifique a la methode
      *
@@ -140,7 +140,7 @@ class Controller
 
         $this->response = $middleware->handle($this->request);
     }
-    
+
     /**
      * @param int ...$object
      */
@@ -165,9 +165,9 @@ class Controller
      * @return bool
      * @throws exception\LoadException
      */
-    final protected function validate(array $rules, ?array $data = [], ?string $locale = null)  
+    final protected function validate(array $rules, ?array $data = [], ?string $locale = null)
     {
-        if (!Arr::isAssoc($rules)) 
+        if (!Arr::isAssoc($rules))
         {
             throw new BadMethodCallException('Mauvaise utilisation de la methode '. __METHOD__);
         }
@@ -191,7 +191,7 @@ class Controller
             {
                 $r = $rule[$i];
                 $params = [];
-                
+
                 if (preg_match('#^([a-z-_]+){(.+)}$#isU', $r, $p))
                 {
                     $params = explode(',', $p[2] ?? '');
@@ -200,7 +200,7 @@ class Controller
                 if (!empty($r))
                 {
                     call_user_func([$this->validator, $r], $field, ...$params);
-                    
+
                     if (!empty($messages[$i]))
                     {
                         $this->validator->message($messages[$i]);
@@ -218,7 +218,7 @@ class Controller
 
     /**
      * Charge une vue
-     * 
+     *
      * @param string $view
      * @param array|null $data
      * @param array|null $options
@@ -232,7 +232,7 @@ class Controller
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
         $object = new View($data, $path, $options, $config, $this->response);
-        if (!empty($this->layout) AND is_string($this->layout)) 
+        if (!empty($this->layout) AND is_string($this->layout))
         {
             $object->layout($this->layout);
         }
@@ -241,7 +241,7 @@ class Controller
         {
             $object->addData($this->view_datas);
         }
-        
+
         return $object->display($view);
     }
     /**
@@ -254,7 +254,7 @@ class Controller
      */
     final protected function render(?string $view = null, ?array $data = [], ?array $options = [], ?array $config = []) : ResponseInterface
     {
-        if (empty($view)) 
+        if (empty($view))
         {
             $view = Dispatcher::getMethod();
         }
@@ -289,35 +289,46 @@ class Controller
      * Charge un model
      *
      * @param string|array $model
-     * @param string|null $alias
+     * @param string|false|null $alias
+	 * @return Model|Model[]|void
      * @throws exception\LoadException
      */
-    final protected function loadModel($model, string $alias = null)
+    final protected function loadModel($model, $alias = null)
     {
         if (is_array($model))
         {
-            foreach ($model As $k => $v) 
+			$modelInstances = [];
+            foreach ($model As $k => $v)
             {
-                if (is_string($k)) 
-                {
-                    $mod = $k;
-                    $alias = $v;
-                }
-                else 
-                {
-                    $mod = $v;
-                    $alias = $v;
-                }
-                $this->loadModel($mod, $alias);
+                $mod = is_string($k) ? $k : $v;
+				$alias = false !== $alias ? $v : $alias;
+
+				$instance = $this->loadModel($mod, $alias);
+
+				if (!empty($instance))
+				{
+					$modelInstances[] = $instance;
+				}
             }
+
+			if (!empty($modelInstances))
+			{
+				return $modelInstances;
+			}
         }
-        else 
+        else
         {
-            $mod = explode('/', $model);
+            $instance = Load::model($model);
+
+			if ($alias == false) {
+				return $instance;
+			}
+
+			$mod = explode('/', $model);
             $mod = end($mod);
-            $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $mod);
-     
-            $this->{$property} = Load::model($model);
+
+			$property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $mod);
+			$this->{$property} = $instance;
         }
     }
 
@@ -325,36 +336,47 @@ class Controller
      * Charge un autre controller
      *
      * @param string|array $controller
-     * @param string|null $alias
+     * @param string|false|null $alias
+	 * @return Controller|Controller[]|void
      * @throws exception\LoadException
      */
-    final protected function loadController($controller, string $alias = null)
+    final protected function loadController($controller, $alias = null)
     {
         if (is_array($controller))
         {
-            foreach ($controller As $k => $v) 
+			$controllerInstances = [];
+            foreach ($controller As $k => $v)
             {
-                if (is_string($k)) 
-                {
-                    $con = $k;
-                    $alias = $v;
-                }
-                else 
-                {
-                    $con = $v;
-                    $alias = $v;
-                }
-                $this->loadController($con, $alias);
+				$con = is_string($k) ? $k : $v;
+				$alias = false !== $alias ? $v : $alias;
+
+				$instance = $this->loadController($con, $alias);
+
+				if (!empty($instance))
+				{
+					$controllerInstances[] = $instance;
+				}
             }
+
+			if (!empty($controllerInstances))
+			{
+				return $controllerInstances;
+			}
         }
-        else 
+        else
         {
-            $con = explode('/', $controller);
+			$instance = Load::controller($controller);
+
+			if ($alias == false) {
+				return $instance;
+			}
+
+			$con = explode('/', $controller);
             $con = end($con);
+
             $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $con);
-     
-            $this->{$property} = Load::controller($controller);
-        }
+			$this->{$property} = $instance;
+     	}
     }
 
     /**
@@ -369,14 +391,14 @@ class Controller
     {
         if (is_array($library))
         {
-            foreach ($library As $k => $v) 
+            foreach ($library As $k => $v)
             {
-                if (is_string($k)) 
+                if (is_string($k))
                 {
                     $lib = $k;
                     $alias = $v;
                 }
-                else 
+                else
                 {
                     $lib = $v;
                     $alias = $v;
@@ -384,14 +406,14 @@ class Controller
                 $this->loadLibrary($lib, $alias);
             }
         }
-        else 
+        else
         {
             $lib = explode('/', $library);
             $lib = end($lib);
             $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $lib);
-     
+
             $this->{$property} = Load::library($library);
-                
+
             /**
              * @since 2.2
              */
@@ -502,8 +524,8 @@ class Controller
         if (is_string($class))
         {
             $class = new $class;
-         
-            if (method_exists($class, 'middleware')) 
+
+            if (method_exists($class, 'middleware'))
 		    {
 			    $middleware = $class->middleware(New Middleware($this->response));
 
