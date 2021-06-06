@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * dFramework
  *
@@ -17,22 +17,23 @@
 
 namespace dFramework\components\rest;
 
-use dFramework\middlewares\Cors;
-use Firebase\JWT\JWT;
 use dFramework\core\Config;
-use dFramework\core\output\Format;
-use dFramework\core\exception\Exception;
 use dFramework\core\Controller as CoreController;
+use dFramework\core\Entity;
+use dFramework\core\exception\Exception;
 use dFramework\core\loader\Service;
+use dFramework\core\output\Format;
 use dFramework\core\utilities\Arr;
 use dFramework\core\utilities\Str;
+use dFramework\middlewares\Cors;
+use Firebase\JWT\JWT;
 use ReflectionAnnotatedClass;
 use ReflectionAnnotatedMethod;
 use Throwable;
 
 /**
  * dFramework Rest Controller
- * 
+ *
  * A fully RESTful server implementation for dFramework (inspired by CodeIgniter) using one library, one config file and one controller.
  *
  * @package		dFramework
@@ -98,8 +99,8 @@ class Controller extends CoreController
         'xml'        => 'application/xml',
     ];
     /**
-     * @var array Configurations of rest controller 
-     */    
+     * @var array Configurations of rest controller
+     */
     private $_config;
     /**
      * @var string Language variables of rest controller
@@ -110,7 +111,6 @@ class Controller extends CoreController
     protected $payload;
 
 
-    
     public function __construct()
     {
         $this->_config = Config::get('rest');
@@ -129,9 +129,9 @@ class Controller extends CoreController
     public function _remap(string $method, ?array $params = [])
     {
         $class = get_called_class();
-        
+
         // Sure it exists, but can they do anything with it?
-        if (!method_exists($class, $method)) 
+        if (!method_exists($class, $method))
         {
             return $this->methodNotAllowed(lang('rest.unknown_method', null, $this->_locale));
         }
@@ -151,14 +151,14 @@ class Controller extends CoreController
 
             $this->checkProcess();
             return call_user_func_array([$instance, $method], (array) $params);
-        } 
+        }
         catch (Throwable $ex) {
-            if (Config::get('general.environment') !== 'dev') 
+            if (Config::get('general.environment') !== 'dev')
             {
                 $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->badRequest(lang('rest.bad_used', [$url], $this->_locale));
             }
-            if ($this->_config['handle_exceptions'] === false) 
+            if ($this->_config['handle_exceptions'] === false)
             {
                 throw $ex;
             }
@@ -166,20 +166,20 @@ class Controller extends CoreController
            Exception::Throw($ex);
         }
     }
-    
+
     public function __call($name, $arguments)
     {
         $method = Str::toCamel($name);
-        if (method_exists($this, $method)) 
+        if (method_exists($this, $method))
         {
             return call_user_func_array([$this, $method], $arguments);
-        }    
+        }
         throw new Exception("Unknow method " .$name);
     }
 
     /**
      * Verifie si les informations du processus sont valide ou pas
-     * 
+     *
      * @throws Exception
      */
     protected function checkProcess()
@@ -190,24 +190,25 @@ class Controller extends CoreController
 
     /**
      * Rend une reponse au client
-     * 
+     *
      * @param mixed $data Les donnees a renvoyer
      * @param int $status Le statut de la reponse
      * @param bool $die Specifie si on bloqur l'execution de tout autre script apres avoir envoyer les donnees ou pas
      */
     protected function response($data, int $status = self::HTTP_OK, bool $die = false)
     {
-        ob_start();
-        
+		ob_start();
+		$die = $this->_config['die_mode'] ?? null === true ? true : $die;
+
         // If the HTTP status is not NULL, then cast as an integer
-        if ($status !== null) 
+        if ($status !== null)
         {
             // So as to be safe later on in the process
             $status = (int) $status;
         }
 
         // If data is NULL and no HTTP status code provided, then display, error and exit
-        if ($data === null AND $status === null) 
+        if ($data === null AND $status === null)
         {
             $status = self::HTTP_NOT_FOUND;
         }
@@ -217,13 +218,13 @@ class Controller extends CoreController
             ->withStatus($status);
 
         $this->_parseResponse($data);
-        
-        if ($die === false) 
+
+        if ($die === false)
         {
             // Display the data and exit execution
             return $this->response;
-        } 
-        else 
+        }
+        else
         {
             exit(Service::emitter()->emit($this->response));
         }
@@ -242,21 +243,21 @@ class Controller extends CoreController
     {
         $message  = empty($message) ? "Une erreur s'est produite" : $message;
         $code  = empty($code) ? self::HTTP_INTERNAL_ERROR : $code;
-        
+
         $response = [
             $this->_config['status_field_name']  => false,
             $this->_config['message_field_name'] => $message,
             $this->_config['code_field_name'] => $code
         ];
-        if (!empty($errors)) 
+        if (!empty($errors))
         {
             $response[$this->_config['errors_field_name']] = $errors;
         }
-        if ($this->_config['strict_mode'] !== true) 
+        if ($this->_config['strict_mode'] !== true)
         {
             $code = self::HTTP_OK;
         }
-        return $this->response($response, $code, true);
+        return $this->response($response, $code);
     }
 
     /**
@@ -271,16 +272,31 @@ class Controller extends CoreController
     {
         $message  = empty($message) ? "Resultat" : $message;
         $code  = empty($code) ? self::HTTP_OK : $code;
-        
+
         $response = [
             $this->_config['status_field_name']  => true,
             $this->_config['message_field_name'] => $message,
         ];
-        if (!empty($result)) 
+
+		if (is_array($result))
         {
-            $response[$this->_config['result_field_name']] = $result;
+            $result = array_map(function($element) {
+                if ($element instanceof Entity)
+                {
+                    $element = $element->toArray();
+                }
+
+                return $element;
+            }, $result);
         }
-        return $this->response($response, $code, true);
+
+        if ($result instanceof Entity)
+        {
+            $result = $result->toArray();
+        }
+		$response[$this->_config['result_field_name']] = $result;
+
+		return $this->response($response, $code);
     }
 
 
@@ -345,7 +361,7 @@ class Controller extends CoreController
     {
         return $this->success($message, $result, self::HTTP_CREATED);
     }
-    
+
     /**
      * Reponse de type forbidden
      *
@@ -405,7 +421,7 @@ class Controller extends CoreController
     {
         return $this->success($message, $result, self::HTTP_NO_CONTENT);
     }
-    
+
     /**
      * Reponse de type not acceptable
      *
@@ -453,7 +469,7 @@ class Controller extends CoreController
     {
         return $this->success($message, $result, self::HTTP_OK);
     }
-    
+
     /**
      * Reponse de type unauthorized
      *
@@ -466,7 +482,7 @@ class Controller extends CoreController
         return $this->fail($message, self::HTTP_UNAUTHORIZED, $errors);
     }
 
-    
+
     /**
      * Modifie une configuration du controleur rest
      *
@@ -474,7 +490,7 @@ class Controller extends CoreController
      * @param mixed $value
      * @return self
      */
-    final protected function config(string $key, $value) : self 
+    final protected function config(string $key, $value) : self
     {
         Arr::setRecursive($this->_config, $key, $value);
 
@@ -517,7 +533,7 @@ class Controller extends CoreController
     }
     /**
      * Definit les methodes authorisees par le web service
-     * 
+     *
      * @param string ...$methods
      * @return Controller
      */
@@ -531,7 +547,7 @@ class Controller extends CoreController
     }
     /**
      * Definit le format de donnees a renvoyer au client
-     * 
+     *
      * @param string $format
      * @return Controller
      */
@@ -551,19 +567,19 @@ class Controller extends CoreController
         $this->_config['force_https'] = true;
 
         return $this;
-    }    
+    }
     /**
      * auth
      *
      * @param  string|false $type
      * @return Controller
      */
-    final protected function auth($type) : self 
+    final protected function auth($type) : self
     {
         $this->_config['auth'] = $type;
 
         return $this;
-    }    
+    }
     /**
      * Definit la liste des adresses IP a bannir
      * Le premier argument doit etre un boolean specifiant si on active la blacklist ou pas
@@ -572,25 +588,25 @@ class Controller extends CoreController
      * @param  mixed $params
      * @return Controller
      */
-    final protected function ipBlacklist(...$params) : self 
+    final protected function ipBlacklist(...$params) : self
     {
         $this->_config['ip_blacklist_enabled'] = true;
 
         $params = func_get_args();
         $enable = array_shift($params);
-        
-        if (is_bool($enable)) 
+
+        if (is_bool($enable))
         {
             $this->_config['ip_blacklist_enabled'] = (bool) $enable;
-        } 
-        else 
+        }
+        else
         {
             array_unshift($params, $enable);
         }
         $this->_config['ip_blacklist'] = array_merge($this->_config['ip_blacklist'] ?? [], $params);
 
         return $this;
-    }    
+    }
     /**
      * Definit la liste des adresses IP qui sont autorisees a acceder a la ressources
      * Le premier argument doit etre un boolean specifiant si on active la whitelist ou pas
@@ -599,18 +615,18 @@ class Controller extends CoreController
      * @param  mixed $params
      * @return self
      */
-    final protected function ipWhitelist(...$params) : self 
+    final protected function ipWhitelist(...$params) : self
     {
         $this->_config['ip_whitelist_enabled'] = true;
 
         $params = func_get_args();
         $enable = array_shift($params);
-        
-        if (is_bool($enable)) 
+
+        if (is_bool($enable))
         {
             $this->_config['ip_whitelist_enabled'] = (bool) $enable;
-        } 
-        else 
+        }
+        else
         {
             array_unshift($params, $enable);
         }
@@ -635,7 +651,7 @@ class Controller extends CoreController
             'iss' => base_url(),
             'exp' => time() + (60 * $jwt_conf['exp_time'])
         ], $data);
-        
+
         try {
             return JWT::encode($payload, $jwt_conf['key']);
         }
@@ -644,10 +660,10 @@ class Controller extends CoreController
         }
     }
 
-    
+
     /**
      * Formatte les donnees a envoyer au bon format
-     * 
+     *
      * @param $data Les donnees a envoyer
      */
     private function _parseResponse($data)
@@ -655,7 +671,7 @@ class Controller extends CoreController
         $format = strtolower($this->_config['return_format']);
 
         // If the format method exists, call and return the output in that format
-        if (method_exists(Format::class, 'to_'.$format)) 
+        if (method_exists(Format::class, 'to_'.$format))
         {
             // CORB protection
             // First, get the output content.
@@ -663,26 +679,26 @@ class Controller extends CoreController
 
             // Set the format header
             // Then, check if the client asked for a callback, and if the output contains this callback :
-            if (isset($this->request->query['callback']) AND $format == 'json' AND preg_match('/^'.$this->request->query['callback'].'/', $output)) 
+            if (isset($this->request->query['callback']) AND $format == 'json' AND preg_match('/^'.$this->request->query['callback'].'/', $output))
             {
                 $this->response = $this->response->withType($this->_supported_formats['jsonp']);
-            } 
-            else 
+            }
+            else
             {
                 $this->response = $this->response->withType($this->_supported_formats[$format]);
             }
 
             // An array must be parsed as a string, so as not to cause an array to string error
             // Json is the most appropriate form for such a data type
-            if ($format === 'array') 
+            if ($format === 'array')
             {
                 $output = Format::factory($output)->{'to_json'}();
             }
-        } 
-        else 
+        }
+        else
         {
             // If an array or object, then parse as a json, so as to be a 'string'
-            if (is_array($data) OR is_object($data)) 
+            if (is_array($data) OR is_object($data))
             {
                 $data = Format::factory($data)->{'to_json'}();
             }
@@ -695,7 +711,7 @@ class Controller extends CoreController
 
     /**
      * Verifie si les informations fournis par le developpeurs du ws sont conforme aux attentes du composant
-     * 
+     *
      * @throws Exception
      */
     private function _checkDevProcess()
@@ -708,7 +724,7 @@ class Controller extends CoreController
 
     /**
      * Verifie si les informations fournis par le client du ws sont conforme aux attentes du developpeur
-     * 
+     *
      * @throws Exception
      */
     private function _checkClientProcess()
@@ -720,7 +736,7 @@ class Controller extends CoreController
         }
 
         // Verifie si la requete est en https
-        if (true !== $this->request->is('https') AND true === $this->_config['force_https']) 
+        if (true !== $this->request->is('https') AND true === $this->_config['force_https'])
         {
             return $this->forbidden(lang('rest.unsupported', null, $this->_locale));
         }
@@ -735,12 +751,12 @@ class Controller extends CoreController
         if (true === $this->_config['ip_blacklist_enabled'])
         {
             $this->_config['ip_blacklist'] = join(',', $this->_config['ip_blacklist']);
-            
+
             // Match an ip address in a blacklist e.g. 127.0.0.0, 0.0.0.0
             $pattern = sprintf('/(?:,\s*|^)\Q%s\E(?=,\s*|$)/m', $this->request->clientIp());
-            
+
             // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
-            if (preg_match($pattern, $this->_config['ip_blacklist'])) 
+            if (preg_match($pattern, $this->_config['ip_blacklist']))
             {
                 return $this->unauthorized(lang('rest.ip_denied', null, $this->_locale));
             }
@@ -752,14 +768,14 @@ class Controller extends CoreController
             $whitelist = $this->_config['ip_whitelist'];
             array_push($whitelist, '127.0.0.1', '0.0.0.0');
 
-            foreach ($whitelist as &$ip) 
+            foreach ($whitelist as &$ip)
             {
                 // As $ip is a reference, trim leading and trailing whitespace, then store the new value
                 // using the reference
                 $ip = trim($ip);
             }
 
-            if (true !== in_array($this->request->clientIp(), $whitelist)) 
+            if (true !== in_array($this->request->clientIp(), $whitelist))
             {
                 return $this->unauthorized(lang('rest.ip_unauthorized', null, $this->_locale));
             }
@@ -771,7 +787,7 @@ class Controller extends CoreController
             if ('bearer' === strtolower($this->_config['auth']))
             {
                 $payload = $this->decodeToken($this->getBearerToken(), 'bearer');
-                
+
                 if ($payload instanceof Throwable)
                 {
                     return $this->internalError('JWT Exception : ' . $payload->getMessage());
@@ -787,10 +803,10 @@ class Controller extends CoreController
      * @param string $token
      * @param string $authType
      * @return mixed
-     */    
-    protected function decodeToken($token, string $authType = 'bearer') 
+     */
+    protected function decodeToken($token, string $authType = 'bearer')
     {
-        if ('bearer' === $authType) 
+        if ('bearer' === $authType)
         {
             try {
                 return JWT::decode($token, $this->_config['jwt']['key'], ['HS256']);
@@ -834,7 +850,7 @@ class Controller extends CoreController
             $requestHeaders = apache_request_headers();
 
             $requestHeaders = array_combine(
-                array_map('ucwords', array_keys($requestHeaders)), 
+                array_map('ucwords', array_keys($requestHeaders)),
                 array_values(($requestHeaders))
             );
             if (isset($requestHeaders['Authorization']))
@@ -842,7 +858,7 @@ class Controller extends CoreController
                 $header = trim($requestHeaders['Authorization']);
             }
         }
-        
+
         return $header;
     }
 
