@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -21,7 +21,7 @@ use dFramework\core\Entity;
 
 /**
  * BelongsTo
- * 
+ *
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Orm
@@ -31,7 +31,7 @@ use dFramework\core\Entity;
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
  * @file		/system/core/db/orm/BelongsTo.php
  */
-class BelongsTo extends Relation 
+class BelongsTo extends Relation
 {
 	/**
 	 * @var string
@@ -83,10 +83,15 @@ class BelongsTo extends Relation
 	 */
 	public function getResult() : ?Entity
 	{
-		if (empty($this->join)) 
+		if (empty($this->join))
 		{
 			$this->join = $this->setJoin();
 		}
-		return $this->join->first();
+		if (!empty($this->join) AND is_object($this->join) AND method_exists($this->join, 'first'))
+		{
+			return $this->join->first();
+		}
+
+		return null;
 	}
 }

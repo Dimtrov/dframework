@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -21,7 +21,7 @@ use dFramework\core\Entity;
 
 /**
  * HasMany
- * 
+ *
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Orm
@@ -31,7 +31,7 @@ use dFramework\core\Entity;
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
  * @file		/system/core/db/orm/HasMany.php
  */
-class HasMany extends Relation 
+class HasMany extends Relation
 {
 	/**
 	 * @var string
@@ -87,10 +87,16 @@ class HasMany extends Relation
 	 */
 	public function getResult() : array
 	{
-		if (empty($this->join)) 
+		if (empty($this->join))
 		{
 			$this->join = $this->setJoin();
 		}
-		return $this->join->get();
+
+		if (!empty($this->join) AND is_object($this->join) AND method_exists($this->join, 'get'))
+		{
+			return $this->join->get();
+		}
+
+		return [];
 	}
 }

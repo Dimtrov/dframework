@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -23,7 +23,7 @@ use dFramework\core\db\orm\QueryBuilder;
 
 /**
  * BelongsToMany
- * 
+ *
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Orm
@@ -33,7 +33,7 @@ use dFramework\core\db\orm\QueryBuilder;
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
  * @file		/system/core/db/orm/BelongsToMany.php
  */
-class BelongsToMany extends Relation 
+class BelongsToMany extends Relation
 {
 	/**
 	 * @var QueryBuilder
@@ -89,7 +89,7 @@ class BelongsToMany extends Relation
 
 		$other_id = array_unique($other_id);
 
-		if (!empty($other_id)) 
+		if (!empty($other_id))
 		{
 			return $this->related->in( $this->related->getPrimaryKey(), $other_id );
 		}
@@ -128,10 +128,16 @@ class BelongsToMany extends Relation
 	 */
 	public function getResult() : array
 	{
-		if (empty($this->join)) 
+		if (empty($this->join))
 		{
 			$this->join = $this->setJoin();
 		}
-		return $this->join->all();
+
+		if (!empty($this->join) AND is_object($this->join) AND method_exists($this->join, 'all'))
+		{
+			return $this->join->all();
+		}
+
+		return [];
 	}
 }
