@@ -16,7 +16,7 @@ namespace dFramework\core\http\cookie;
 use Cake\Chronos\Chronos;
 use DateTimeImmutable;
 use DateTimeZone;
-use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Arr;
 use InvalidArgumentException;
 
 /**
@@ -475,13 +475,13 @@ class Cookie implements CookieInterface
      * @param string $path Path to check
      * @return bool
      */
-    public function check($path)
+    public function check($path) : bool
     {
         if ($this->isExpanded === false) {
             $this->value = $this->_expand($this->value);
         }
 
-        return Tableau::check($this->value, $path);
+        return Arr::check($this->value, $path);
     }
 
     /**
@@ -497,7 +497,7 @@ class Cookie implements CookieInterface
         if ($new->isExpanded === false) {
             $new->value = $new->_expand($new->value);
         }
-        $new->value = Tableau::insert($new->value, $path, $value);
+        $new->value = Arr::insert($new->value, $path, $value);
 
         return $new;
     }
@@ -514,7 +514,7 @@ class Cookie implements CookieInterface
         if ($new->isExpanded === false) {
             $new->value = $new->_expand($new->value);
         }
-        $new->value = Tableau::remove($new->value, $path);
+        $new->value = Arr::remove($new->value, $path);
 
         return $new;
     }
@@ -538,7 +538,7 @@ class Cookie implements CookieInterface
             return $this->value;
         }
 
-        return Tableau::get($this->value, $path);
+        return Arr::get($this->value, $path);
     }
 
     /**

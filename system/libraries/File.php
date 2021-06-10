@@ -34,12 +34,12 @@ class File
 	 * @var string
 	 */
 	private $path	= null;
-    
-    
+
+
     /**
      * @return string|null
      */
-    public function getPath() : ?string 
+    public function getPath() : ?string
     {
         return $this->path;
     }
@@ -53,7 +53,7 @@ class File
 
     /**
      * Check if a path is a directory
-     * 
+     *
      * @param string|null $path
      * @return bool
      */
@@ -71,7 +71,7 @@ class File
     }
     /**
      * Check if a path is a directory
-     * 
+     *
      * @param string $file
      * @return bool
      */
@@ -90,7 +90,7 @@ class File
 
     /**
 	 * Return the list of all entity included in the path
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
 	 * @return array|null
@@ -119,10 +119,10 @@ class File
 	{
         return $this->ls($path, $withroot, 'FILE');
 	}
-    
+
     /**
 	 * Return infos of all entity included in the path
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
 	 * @return array|false
@@ -133,7 +133,7 @@ class File
     }
     /**
 	 * Return infos of all entity included in the path
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
 	 * @return array|null
@@ -144,7 +144,7 @@ class File
     }
     /**
 	 * Return infos of all entity included in the path
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
 	 * @return array|null
@@ -156,7 +156,7 @@ class File
 
     /**
      * Change the chmod of directory
-     * 
+     *
      * @param string|null $path
      * @param int $mode
      * @return bool
@@ -175,7 +175,7 @@ class File
     }
 	/**
 	 * Return the mod of a file/directory
-     * 
+     *
 	 * Credits goes to Ambriel_Angel (www.ambriels.net)
 	 * @param string|null $path
 	 * @return int
@@ -184,11 +184,11 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
 		// Initialisation
 		$val	= 0;
 		$perms	= fileperms($path);
-		
+
 		// Owner; User
 		$val += (($perms & 0x0100) ? 0x0100 : 0x0000);		// Read
 		$val += (($perms & 0x0080) ? 0x0080 : 0x0000);		// Write
@@ -212,12 +212,12 @@ class File
 		$val += (($perms & 0x0400) ? 0x0400 : 0x0000);		// System file (setgid bit) (02000)
 		$val += (($perms & 0x0200) ? 0x0200 : 0x0000);		// Archive bit (sticky bit) (01000)
 
-		return decoct($val);
+		return (int) decoct($val);
 	}
 
     /**
-	 * Create a file with or without 
-     * 
+	 * Create a file with or without
+     *
 	 * @param string $path
 	 * @param string $content
 	 * @return bool
@@ -225,7 +225,7 @@ class File
 	public function mkfile(?string $path = null, string $content = '') : bool
 	{
 		$this->test_var($path, $this->path);
-		
+
 		if ($handle = fopen($path, 'w+'))
 		{
             if (strlen($content) != 0)
@@ -233,14 +233,14 @@ class File
                 fwrite($handle, $content);
             }
 			fclose($handle);
-			
+
 			return true;
         }
         return false;
 	}
     /**
-	 * Read the content of a file 
-     * 
+	 * Read the content of a file
+     *
 	 * @param string $path
 	 * @param bool $byline
 	 * @param int $length
@@ -250,7 +250,7 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
         if(true !== $this->isFile($path))
         {
             return false;
@@ -259,12 +259,12 @@ class File
 		{
 			if($handle = fopen($path, 'r'))
 			{
-                while(true !== feof($handle)) 
+                while(true !== feof($handle))
                 {
                     $lines[] = fgets($handle, $length);
                 }
 				fclose($handle);
-				
+
 				return $lines;
             }
             return false;
@@ -277,7 +277,7 @@ class File
 
     /**
 	 * Create a directory with/without chmod
-     * 
+     *
 	 * @param string|null $path
 	 * @param int|null $chmod
 	 * @return bool
@@ -286,7 +286,7 @@ class File
 	{
 		$this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-        
+
 		if(@mkdir($path))
 		{
             if (!is_null($chmod))
@@ -297,16 +297,16 @@ class File
         }
         return false;
     }
-    
+
     /**
 	 * Move a file or a directory
-     * 
+     *
 	 * @param string $path
 	 * @param string $where
 	 * @return bool
 	 */
 	public function mv(string $path, string $where) : bool
-	{	
+	{
         if(true !== $this->isDir($where))
         {
             return false;
@@ -326,7 +326,7 @@ class File
     }
     /**
 	 * Remove files or/and directories
-     * 
+     *
 	 * @param string|string[]|null $path
 	 * @return bool
 	 */
@@ -334,7 +334,7 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = (array) $path;
-		
+
 		foreach($path As $file)
 		{
             $file = rtrim($file, DS);
@@ -342,7 +342,7 @@ class File
 			{
 				$tree = $this->tree($file);
 				rsort($tree);
-				
+
 				foreach($tree As $f)
 				{
                     $f = rtrim($f, DS);
@@ -366,13 +366,13 @@ class File
     }
     /**
 	 * Copy files or/and directories
-     * 
+     *
 	 * @param string $path
 	 * @param string $where
-	 * @return boo
+	 * @return bool
 	 */
 	public function cp(?string $path = null, $where) : bool
-	{	
+	{
         $where = rtrim($where, DS);
         if(true !== $this->isDir($where))
         {
@@ -380,7 +380,7 @@ class File
         }
         $this->test_var($path, $this->path);
 		$path = (array) $path;
-			
+
 		foreach($path As $file)
 		{
             $file = rtrim($file, DS);
@@ -392,7 +392,7 @@ class File
 			{
 				$files = $this->tree($file);
 				$this->mkdir($where.DS.$file);
-				
+
 				foreach ($files As $f)
 				{
                     if(true === $this->isFile($f))
@@ -402,29 +402,29 @@ class File
                     else if(true === $this->isDir($f))
                     {
                         $this->mkdir($where.DS.$f);
-                    }	
+                    }
 				}
 			}
 		}
 		return true;
     }
-    
-    
+
+
 	/**
 	 * Return infos concerning the entity
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
 	 * @param bool $content
 	 * @param bool $byline
 	 * @param int $length
-	 * @return array
+	 * @return array|false
 	 */
 	public function details(string $path = null, bool $withroot = true, bool $content = false, bool $byline = false, int $length = 1024)
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
 		if(true === $this->isDir($path))
 		{
 			if($handle = opendir($path))
@@ -437,20 +437,20 @@ class File
 				$infos['chmod']			= $this->mod($path);
 				$infos['owner_id']		= fileowner($path);
                 $infos['group_id']		= filegroup($path);
-				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') 
+				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')
                 {
                     $infos['owner_infos']	= posix_getpwuid($infos['owner_id']);
-    				$infos['group_infos']	= posix_getgrgid($infos['group_id']);			
+    				$infos['group_infos']	= posix_getgrgid($infos['group_id']);
                 }
 				$infos['size']			= $this->filesize($path);
 				$infos['files_count']	= 0;
 				$infos['files']			= [];
 				$infos['dir_count']		= 0;
 				$infos['directories']	= [];
-				
+
 				while(false !== ($file = readdir($handle)))
 				{
-					if(true === $this->isDir($path.DS.$file)) 
+					if(true === $this->isDir($path.DS.$file))
 					{
 						if ($file != '..' AND $file != '.' AND $file != '')
 						{
@@ -466,19 +466,19 @@ class File
 				}
 				$infos['files']			= array_map([$this, 'format_path'], $infos['files']);
 				$infos['directories']	= array_map([$this, 'format_path'], $infos['directories']);
-				
+
 				$this->sort_results($infos['directories']);
 				$this->sort_results($infos['files']);
-				
+
 				closedir($handle);
-				
+
 				return $infos;
 			}
 			return false;
 		}
 		else if(true === $this->isFile($path))
 		{
-			if($handle = fopen($path, 'r')) 
+			if($handle = fopen($path, 'r'))
 			{
 				$infos['type']			= 'file';
 				$infos['path_infos']	= pathinfo($path);
@@ -488,21 +488,21 @@ class File
 				$infos['chmod']			= $this->mod($path);
                 $infos['owner_id']		= fileowner($path);
                 $infos['group_id']		= filegroup($path);
-				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') 
+				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')
                 {
                     $infos['owner_infos']	= posix_getpwuid($infos['owner_id']);
-    				$infos['group_infos']	= posix_getgrgid($infos['group_id']);			
+    				$infos['group_infos']	= posix_getgrgid($infos['group_id']);
                 }
 				$infos['lines_count']	= 0;
 				$infos['size']			= $this->filesize($path);
 				$infos['md5']			= md5_file($path);
 				$infos['sha1']			= sha1_file($path);
-				
+
                 if(true === $content)
                 {
 					$infos['content']	= (true === $byline) ? [] : file_get_contents($path);
                 }
-				while(true !== feof($handle)) 
+				while(true !== feof($handle))
 				{
                     if(true === $byline AND true === $content)
                     {
@@ -511,7 +511,7 @@ class File
 					$infos['lines_count']++;
 				}
 				fclose($handle);
-				
+
 				return $infos;
 			}
 			return false;
@@ -521,7 +521,7 @@ class File
 
 	/**
 	 * Return tree of a directory
-     * 
+     *
 	 * @param string|null $path
 	 * @param bool $expand2files
 	 * @return array
@@ -530,20 +530,20 @@ class File
 	{
 		$this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-        
+
 		$directories = $this->elements_d($path);
-		
+
 		for($x = 0; $x < count($directories); $x++)
 		{
             if(true !== $this->isDir($directories[$x]))
             {
 				continue;
-            }	
+            }
 			if($handle = opendir($directories[$x]))
 			{
 				while(false !== ($file = readdir($handle)))
 				{
-					if(true === $this->isDir($directories[$x].DS.$file)) 
+					if(true === $this->isDir($directories[$x].DS.$file))
 					{
 						if($file != '..' AND $file != '.' AND $file != '')
 						{
@@ -560,13 +560,13 @@ class File
 		}
         $directories[]	= $path;
 		$directories	= array_map([$this, 'format_path'], $directories);
-			
+
 		if(true === $expand2files)
-		{		 
+		{
 			foreach($directories As $dir)
-			{	
+			{
 				$expanded_directories[] = $dir;
-				
+
 				if($handle = opendir($dir))
 				{
                     while(false !== ($file = readdir($handle)))
@@ -583,7 +583,7 @@ class File
 				}
 			}
 
-			$expanded_directories = array_map([$this, 'format_path'], $expanded_directories);			
+			$expanded_directories = array_map([$this, 'format_path'], $expanded_directories);
 			$this->sort_results($expanded_directories);
 		}
 		else
@@ -592,10 +592,10 @@ class File
 		}
 		return (true === $expand2files) ? $expanded_directories : $directories;
     }
-    
+
     /**
 	 * Return the size of an entity
-     * 
+     *
 	 * @param string|null $path
 	 * @return int
 	 */
@@ -603,7 +603,7 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
         if(true === $this->isFile($path))
         {
 			return filesize($path);
@@ -612,7 +612,7 @@ class File
 		{
 			$tree = $this->tree($path);
 			$size = 0;
-			
+
             foreach($tree As $file)
             {
                 if(true === $this->isFile($file))
@@ -623,10 +623,10 @@ class File
 			return $size;
 		}
 	}
-	
+
 	/**
 	 * Serialize and creates a file with the serial
-     * 
+     *
 	 * @param mixed $var
 	 * @param string $path
 	 * @return bool
@@ -635,12 +635,12 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
 		return ($this->mkfile(serialize($var), $path));
     }
     /**
 	 * Unserialize a file
-     * 
+     *
 	 * @param string|null $path
 	 * @return array|false
 	 */
@@ -648,17 +648,17 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
         if($this->isFile($path))
         {
             return unserialize($this->read_file($path));
         }
-        false;
+        return false;
 	}
 
     /**
 	 * Parse a ini file
-     * 
+     *
 	 * @param string|null $path
      * @param bool $withsection
 	 * @return array|false
@@ -667,7 +667,7 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
         if(true === $this->isFile($path))
         {
             return parse_ini_file($path, $whithsection);
@@ -684,9 +684,9 @@ class File
 	{
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-		
+
 		$out = '';
-		
+
 		foreach($content As $key => $ini)
 		{
 			if(is_array($ini))
@@ -704,15 +704,15 @@ class File
 		}
 		return $this->mkfile($out, $path);
 	}
-	
 
-	
-    /* Private section									 
-	------------------------------------------------- */	
+
+
+    /* Private section
+	------------------------------------------------- */
 
     /**
 	 * Return the list of all entity included in the path
-     * 
+     *
 	 * @param string $path
 	 * @param bool $withroot
      * @param string|null $entity
@@ -722,7 +722,7 @@ class File
     {
         $this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-        
+
         if(true !== $this->isDir($path))
         {
             return null;
@@ -737,18 +737,18 @@ class File
                     {
                         $infos[] = (true === $withroot) ? $path.DS.$file : $file;
                     }
-                    else if(strtolower($entity) == 'dir' AND true === $this->isDir($path.DS.$file)) 
+                    else if(strtolower($entity) == 'dir' AND true === $this->isDir($path.DS.$file))
                     {
                         $infos[] = (true === $withroot) ? $path.DS.$file : $file;
                     }
-                    else if(strtolower($entity) == 'file' AND true === $this->isFile($path.DS.$file)) 
+                    else if(strtolower($entity) == 'file' AND true === $this->isFile($path.DS.$file))
                     {
                         $infos[] = (true === $withroot) ? $path.DS.$file : $file;
                     }
 				}
 			}
 			closedir($handle);
-			
+
 			return array_map([$this, 'format_path'], $infos);
 		}
 		return null;
@@ -765,7 +765,7 @@ class File
 	{
 		$this->test_var($path, $this->path);
         $path = rtrim($path, DS);
-        
+
         if(true !== $this->isDir($path))
         {
             return null;
@@ -773,7 +773,7 @@ class File
 		if($handle = opendir($path))
 		{
             $infos = [];
-			while(false !== ($file = readdir($handle))) 
+			while(false !== ($file = readdir($handle)))
 			{
                 $ech = null;
 				if($file != '..' && $file != '.' && $file != '')
@@ -788,23 +788,23 @@ class File
                         $temp = $this->format_path($file);
                         $ech[$temp] = $this->details($path.DS.$file);
                     }
-                    
+
                     if(empty($entity))
                     {
                         array_push($infos, $ech);
                     }
-                    else if(strtolower($entity) == 'dir' AND true === $this->isDir($path.DS.$file)) 
+                    else if(strtolower($entity) == 'dir' AND true === $this->isDir($path.DS.$file))
                     {
                         array_push($infos, $ech);
                     }
-                    else if(strtolower($entity) == 'file' AND true === $this->isFile($path.DS.$file)) 
+                    else if(strtolower($entity) == 'file' AND true === $this->isFile($path.DS.$file))
                     {
                         array_push($infos, $ech);
                     }
 				}
 			}
 			closedir($handle);
-			
+
 			return $infos;
         }
         return null;
@@ -822,7 +822,7 @@ class File
             $var = $default;
         }
 	}
-	
+
 	/**
 	 * Replace '//' by '/' in paths
 	 * @param string $path
@@ -834,35 +834,38 @@ class File
         //$path = preg_replace('#\\{2,}#', '\\', $path);
         return $path;
 	}
-	
+
 	/**
 	 * Quote ini var if needed
-	 * @param anything $var
-	 * @return anything
+	 *
+	 * @param mixed $var
+	 * @return mixed
 	 */
 	private function quote_ini($var)
 	{
 		return (is_string($var)) ? '"'.str_replace('"', '\"', $var).'"' : $var;
 	}
-	
+
 	/**
 	 * Sort results
+	 *
 	 * @param array $array
-	 * @return array
+	 * @return mixed
 	 */
 	private function sort_results(&$array)
 	{
         if (is_array($array))
         {
-            array_multisort(array_map('strtolower', $array), SORT_STRING, SORT_ASC, $array);
+			$array = array_map('strtolower', $array);
+            array_multisort($array, SORT_STRING, SORT_ASC, $array);
         }
     }
-    
+
     private function setError($error,$linea="not specified",$archivo="undefined")
     {
        /* if (!$error) $this->error = "Unknow error";
        else $this->error = $error."<br><li> Line: ".$linea."</li><li> File:".$archivo; */
     }
-	
+
 
 }

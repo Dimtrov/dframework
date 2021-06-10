@@ -44,11 +44,11 @@ class Negotiator
 	/**
 	 * Stores the request instance to grab the headers from.
 	 *
-	 * @param RequestInterface $request
+	 * @param ServerRequest $request
 	 *
-	 * @return $this
+	 * @return self
 	 */
-	public function setRequest(ServerRequest $request)
+	public function setRequest(ServerRequest $request) : self
 	{
 		$this->request = $request;
 

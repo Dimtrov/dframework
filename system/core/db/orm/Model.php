@@ -376,7 +376,7 @@ class Model
 	 * Modifie une entite
 	 *
 	 * @param array $data
-	 * @return void
+	 * @return mixed
 	 */
 	public function update($data)
 	{

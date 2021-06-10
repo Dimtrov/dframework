@@ -130,7 +130,7 @@ abstract class BaseConnection
 	 * @var string
 	 */
     protected $collation = 'utf8_general_ci';
-    
+
     protected $options = [
         'column_case' => 'inherit',
         'enable_stats' => false,
@@ -166,7 +166,7 @@ abstract class BaseConnection
 	 * @var boolean
 	 */
     protected $strictOn;
-    
+
 	//--------------------------------------------------------------------
 
     /**
@@ -311,14 +311,14 @@ abstract class BaseConnection
 	 * @var boolean
 	 */
 	protected $transFailure = false;
-    
+
     /**
      * Benchmark
      *
-     * @var \dFramework\core\utilities\Timer
+     * @var \dFramework\core\debug\Timer
      */
 	protected $timer;
-	
+
 	/**
 	 * Liste des connexions etablies
 	 *
@@ -344,12 +344,12 @@ abstract class BaseConnection
         }
         $this->timer = Service::timer();
     }
-    
-    public function getType() : string 
+
+    public function getType() : string
     {
         return $this->type;
     }
-    public function getDriver() : string 
+    public function getDriver() : string
     {
         return $this->driver;
     }
@@ -357,16 +357,16 @@ abstract class BaseConnection
     /**
      * Gets the query statistics.
      */
-    public function stats() 
+    public function stats()
     {
         $this->stats['total_time'] = 0;
         $this->stats['num_queries'] = 0;
         $this->stats['num_rows'] = 0;
         $this->stats['num_changes'] = 0;
 
-        if (isset($this->stats['queries'])) 
+        if (isset($this->stats['queries']))
         {
-            foreach ($this->stats['queries'] as $query) 
+            foreach ($this->stats['queries'] as $query)
             {
                 $this->stats['total_time'] += $query['time'];
                 $this->stats['num_queries'] += 1;
@@ -380,14 +380,14 @@ abstract class BaseConnection
             (float)(($this->stats['num_queries'] > 0) ? $this->stats['num_queries'] : 1);
 
         return $this->stats;
-    }  
+    }
 
 	/**
 	 * Renvoi la liste des toutes les connexions a la base de donnees
 	 *
 	 * @return array
 	 */
-	public static function getAllConnections() : array 
+	public static function getAllConnections() : array
     {
         return static::$allConnections;
 	}
@@ -399,7 +399,7 @@ abstract class BaseConnection
 	 * @param object|resource $conn
 	 * @return object|resource
 	 */
-	protected static function pushConnection(string $name, BaseConnection $driver, $conn) 
+	protected static function pushConnection(string $name, BaseConnection $driver, $conn)
 	{
 		static::$allConnections[$name] = compact('driver', 'conn');
 
@@ -435,7 +435,7 @@ abstract class BaseConnection
 
 		// Connect to the database and set the connection ID
 		$this->conn = $this->connect($this->pConnect);
-		
+
         $this->execCommands();
 
 		// No connection resource? Check if there is a failover else throw an error
@@ -668,7 +668,7 @@ abstract class BaseConnection
 		{
 			$this->initialize();
 		}
-        
+
 	    $this->queryResult = $this->execute($sql, $params);
 
         return !empty($this->queryResult) ? new Result($this, $this->queryResult) : $this->queryResult;
@@ -811,7 +811,7 @@ abstract class BaseConnection
 
 		return false;
 	}
-	public function beginTransaction(bool $test_mode = false) : bool 
+	public function beginTransaction(bool $test_mode = false) : bool
 	{
 		return $this->transBegin($test_mode);
 	}
@@ -841,7 +841,7 @@ abstract class BaseConnection
 		}
 		return false;
 	}
-	public function commit() : bool 
+	public function commit() : bool
 	{
 		return $this->transCommit();
 	}
@@ -872,7 +872,7 @@ abstract class BaseConnection
 
 		return false;
 	}
-	public function roolback() : bool 
+	public function roolback() : bool
 	{
 		return $this->transRollback();
 	}
@@ -882,10 +882,10 @@ abstract class BaseConnection
 	 * @return boolean
 	 */
 	abstract protected function _transRollback(): bool;
-	
+
 	/**
      * Renvoi la dernier requete executée avant la requete courante
-     * 
+     *
      * @return array
      */
     public function getLastQuery() : array
@@ -1330,11 +1330,11 @@ abstract class BaseConnection
 	}
 
 	//--------------------------------------------------------------------
-	
+
 	//--------------------------------------------------------------------
 	// Custom META Methods
 	//--------------------------------------------------------------------
-	
+
 	/**
 	 * Truncate a table
 	 *
@@ -1345,15 +1345,15 @@ abstract class BaseConnection
 	{
 		$table = $this->prefix.$table;
 
-        if (preg_match('#pgsql#', $this->driver)) 
+        if (preg_match('#pgsql#', $this->driver))
         {
             $sql = 'TRUNCATE ' . $table . ' RESTART IDENTITY';
         }
-        else if (preg_match('#sqlite#', $this->driver)) 
+        else if (preg_match('#sqlite#', $this->driver))
         {
             $sql = 'DELETE FROM ' . $table;
         }
-        else 
+        else
         {
             $sql = 'TRUNCATE TABLE ' . $table;
         }
@@ -1361,11 +1361,11 @@ abstract class BaseConnection
         return $this->query($sql);
 	}
 
-	
 
-	
-	
-	
+
+
+
+
 	//--------------------------------------------------------------------
 	// META Methods
 	//--------------------------------------------------------------------
@@ -1411,7 +1411,7 @@ abstract class BaseConnection
 	{
 		return $this->listDatabases();
 	}
-	
+
 	/**
 	 * Returns an array of table names
 	 *
@@ -1488,7 +1488,7 @@ abstract class BaseConnection
 	{
 		return in_array($this->protectIdentifiers($this->prefixTable($tableName), true, false, false), $this->listTables());
 	}
-	public function tableExist(string $table) : bool 
+	public function tableExist(string $table) : bool
 	{
 		return $this->tableExists($table);
 	}
@@ -1586,7 +1586,7 @@ abstract class BaseConnection
 
 		return $fields ?? false;
 	}
-	public function columns(string $table) 
+	public function columns(string $table)
 	{
 		return $this->getFieldData($table);
 	}
@@ -1675,7 +1675,7 @@ abstract class BaseConnection
 
 		return $this->query($sql);
 	}
-	public function enableFk() 
+	public function enableFk()
 	{
 		return $this->enableForeignKeyChecks();
 	}
@@ -1685,7 +1685,7 @@ abstract class BaseConnection
 	 * @return string
 	 */
     abstract protected function _enableForeignKeyChecks();
-    
+
 	//--------------------------------------------------------------------
 
 	/**
@@ -1762,10 +1762,10 @@ abstract class BaseConnection
      * Renvoi le nombre de ligne retourné par la requete
      *
      * @return integer
-	 */ 
+	 */
 	abstract public function numRows(): int;
-	
-	
+
+
 
 	/**
 	 * Generates the SQL for listing tables in a platform-dependent manner.
@@ -1800,7 +1800,7 @@ abstract class BaseConnection
 
 	//--------------------------------------------------------------------
 
-	
+
 
 	//--------------------------------------------------------------------
 

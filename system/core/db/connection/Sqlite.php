@@ -14,7 +14,7 @@
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\db\connection;
 
 use PDO;
@@ -48,13 +48,13 @@ class Sqlite extends BaseConnection
 	 * @param boolean $persistent
 	 *
 	 * @return mixed
-	 * @throws \DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function connect(bool $persistent = false)
 	{
         $db = null;
-        
-        switch ($this->driver) 
+
+        switch ($this->driver)
         {
             case 'sqlite3':
                 $db = (! $this->password)
@@ -65,7 +65,7 @@ class Sqlite extends BaseConnection
             case 'pdosqlite':
             case 'pdo_sqlite':
                 $db = new PDO('sqlite:/'.$this->database);
-				
+
 				break;
             default:
                 # code...
@@ -150,22 +150,22 @@ class Sqlite extends BaseConnection
         if ($this->type !== 'pdo')
         {
             $result = $this->isWriteType($sql) ? $this->conn->exec($sql) : $this->conn->query($sql);
-            if (!$result) 
+            if (!$result)
             {
                 $this->error['code'] = $this->conn->lastErrorCode();
                 $this->error['message'] = $error = $this->conn->lastErrorMsg();
             }
         }
-        else 
+        else
         {
             try {
                 $result = $this->conn->prepare($sql);
 
-                if (!$result) 
+                if (!$result)
                 {
                     $error = $this->conn->errorInfo();
                 }
-                else 
+                else
                 {
                     foreach ($params As $key => $value)
                     {
@@ -183,7 +183,7 @@ class Sqlite extends BaseConnection
                 $this->error['message'] = $error = $ex->getMessage();
             }
         }
-        if ($error !== null) 
+        if ($error !== null)
         {
             $error .= "\nSQL: ".$sql;
             throw new DatabaseException('Database error: '.$error);
@@ -195,10 +195,10 @@ class Sqlite extends BaseConnection
 			'duration'   => microtime(true) - $time,
         ];
         $this->stats['queries'][] = &$this->last_query;
-        
+
         return $result;
 	}
-    
+
     /**
 	 * Platform-dependant string escape
 	 *
@@ -486,7 +486,7 @@ class Sqlite extends BaseConnection
      * Renvoi le nombre de ligne retourné par la requete
      *
      * @return integer
-	 */ 
+	 */
 	public function numRows(): int
 	{
 		if ($this->type !== 'pdo')

@@ -361,8 +361,8 @@ class ServerRequest implements ServerRequestInterface
      * and a 405 error will be returned.
      *
      * @param string|array $methods Allowed HTTP request methods.
-     * @return bool true
-     * @throws \Cake\Http\Exception\MethodNotAllowedException
+     * @return bool|void
+     * @throws \dFramework\core\exception\HttpException
      */
     public function allowMethod($methods)
     {
@@ -373,7 +373,7 @@ class ServerRequest implements ServerRequestInterface
             }
         }
         HttpException::except('The method\'s <b>'.strtoupper(implode(', ', $methods)).'</b> is not allowed', 405);
-    
+
     }
 
     /**
@@ -929,7 +929,7 @@ class ServerRequest implements ServerRequestInterface
 
         return in_array(strtolower($language), $accept, true);
     }
-    
+
     /**
      * register trusted proxies
      *
@@ -1091,11 +1091,11 @@ class ServerRequest implements ServerRequestInterface
      */
     public function getData($name = null, $default = null)
     {
-        if ($name === null) 
+        if ($name === null)
         {
             return $this->data;
         }
-        if (!is_array($this->data) AND $name) 
+        if (!is_array($this->data) AND $name)
         {
             return $default;
         }
@@ -1114,7 +1114,7 @@ class ServerRequest implements ServerRequestInterface
      */
     public function param($name, ...$args)
     {
-        if (count($args) === 1) 
+        if (count($args) === 1)
         {
             $this->params = Arr::insert($this->params, $name, $args[0]);
 
@@ -1133,7 +1133,7 @@ class ServerRequest implements ServerRequestInterface
      */
     public function cookie($key)
     {
-        if (isset($this->cookies[$key])) 
+        if (isset($this->cookies[$key]))
         {
             return $this->cookies[$key];
         }
@@ -1285,7 +1285,7 @@ class ServerRequest implements ServerRequestInterface
     {
         if (isset($this->deprecatedProperties[$name])) {
             $method = $this->deprecatedProperties[$name]['set'];
-     
+
             return $this->{$name} = $value;
         }
         throw new BadMethodCallException("Cannot set {$name} it is not a known property.");
@@ -1328,7 +1328,7 @@ class ServerRequest implements ServerRequestInterface
     {
         if (isset($this->deprecatedProperties[$name])) {
             $method = $this->deprecatedProperties[$name]['get'];
-            
+
             return isset($this->{$name});
         }
 
@@ -1476,13 +1476,13 @@ class ServerRequest implements ServerRequestInterface
     public static function addDetector(string $name, $callable)
     {
         $name = strtolower($name);
-        if (is_callable($callable)) 
+        if (is_callable($callable))
         {
             static::$_detectors[$name] = $callable;
 
             return;
         }
-        if (isset(static::$_detectors[$name], $callable['options'])) 
+        if (isset(static::$_detectors[$name], $callable['options']))
         {
             $callable = Arr::merge(static::$_detectors[$name], $callable);
         }
@@ -1515,9 +1515,9 @@ class ServerRequest implements ServerRequestInterface
      */
     public function addPaths(array $paths) : self
     {
-        foreach (['webroot', 'here', 'base'] As $element) 
+        foreach (['webroot', 'here', 'base'] As $element)
         {
-            if (isset($paths[$element])) 
+            if (isset($paths[$element]))
             {
                 $this->{$element} = $paths[$element];
             }
@@ -1885,7 +1885,7 @@ class ServerRequest implements ServerRequestInterface
 
         return $path;
     }
-    
+
 
     //--------------------------------------------------------------------
 
@@ -2083,7 +2083,7 @@ class ServerRequest implements ServerRequestInterface
         return false;
     }
 
-    
+
 
     /**
      * Worker for the public is() function
@@ -2165,7 +2165,7 @@ class ServerRequest implements ServerRequestInterface
         }
         $this->url = $url;
         $this->here = $this->base . '/' . $this->url;
-   
+
         if (isset($config['input'])) {
             $stream = new CachingStream(new LazyOpenStream('php://memory', 'rw'));
             $stream->write($config['input']);
@@ -2179,7 +2179,7 @@ class ServerRequest implements ServerRequestInterface
         $this->data = $this->_processFiles($config['post'], $config['files']);
         $this->query = $this->_processGet($config['query'], $querystr);
         $this->params = $config['params'];
-   
+
     }
 
 
@@ -2250,7 +2250,7 @@ class ServerRequest implements ServerRequestInterface
      * URL Rewriting is activated (and thus not needed) it swallows
      * the unnecessary part from $base to prevent issue #3318.
      *
-     * @return string Base URL
+     * @return mixed Base URL
      * @link https://cakephp.lighthouseapp.com/projects/42648-cakephp/tickets/3318
      */
     protected function _base()
@@ -2288,7 +2288,7 @@ class ServerRequest implements ServerRequestInterface
         else if (
             in_array($method, ['PUT', 'DELETE', 'PATCH'], true) &&
             strpos($this->contentType(), 'application/x-www-form-urlencoded') === 0
-        ) 
+        )
         {
             $data = $this->input();
             parse_str($data, $data);
@@ -2297,7 +2297,7 @@ class ServerRequest implements ServerRequestInterface
         {
             $data = Utils::stripslashes_deep($this->data);
         }
-        
+
         if ($this->hasHeader('X-Http-Method-Override')) {
             $data['_method'] = $this->getHeaderLine('X-Http-Method-Override');
             $override = true;
@@ -2337,7 +2337,7 @@ class ServerRequest implements ServerRequestInterface
 
         $unsetUrl = '/' . str_replace(['.', ' '], '_', urldecode($this->url));
         unset($query[$unsetUrl], $query[$this->base . $unsetUrl]);
-        
+
         if (strpos($this->url, '?') !== false)
         {
             list(, $querystr) = explode('?', $this->url);
@@ -2451,5 +2451,5 @@ class ServerRequest implements ServerRequestInterface
         }
 
         return $normalizedFiles;
-    }   
+    }
 }

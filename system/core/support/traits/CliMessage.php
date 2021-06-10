@@ -14,7 +14,7 @@
  * @link        https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\support\traits;
 
 /**
@@ -27,19 +27,19 @@ namespace dFramework\core\support\traits;
  * @since       3.3.0
  * @file        /system/core/support/traits/CliMessage.php
  */
-trait CliMessage 
+trait CliMessage
 {
     /**
      * @var array messages pour la console
      */
-    private $messages = []; 
+    private $messages = [];
 
     /**
      * Renvoi les messages pour la console
      *
      * @return array
      */
-    public function getMessages() : array 
+    public function getMessages() : array
     {
         return $this->messages;
     }
@@ -48,9 +48,9 @@ trait CliMessage
      *
      * @param string $message
      * @param string $color
-     * @return void
+     * @return self
      */
-    private function pushMessage(string $message, string $color = 'green')
+    private function pushMessage(string $message, string $color = 'green') : self
     {
         $this->messages[] = compact('message', 'color');
         return $this;

@@ -1,4 +1,4 @@
-<?php if (ENVIRONMENT !== 'testing') : ?>
+<?php if (config('general.environment') !== 'test') : ?>
 document.addEventListener('DOMContentLoaded', loadDoc, false);
 
 function loadDoc(time) {

@@ -72,7 +72,7 @@ class Events extends BaseCollector
 	/**
 	 * Instance of the Renderer service
 	 *
-	 * @var View
+	 * @var \dFramework\core\output\View
 	 */
 	protected $viewer;
 

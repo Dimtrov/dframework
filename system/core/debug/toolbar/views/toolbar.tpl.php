@@ -266,7 +266,7 @@
 	<div id="ci-config" class="tab">
 		<h2>System Configuration</h2>
 
-		<?= $parser->setData($config)->display('_config.tpl')->render(); ?>
+		<?= $parser->setData($config)->display('_config.tpl')->get(); ?>
 	</div>
 </div>
 <style type="text/css">

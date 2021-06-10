@@ -41,7 +41,7 @@ class Csrf
     private $time;
 
     private $sysTime;
-    
+
     /**
      * __construct.
      *
@@ -60,7 +60,7 @@ class Csrf
     private static $_instance = null;
     public static function instance()
     {
-        if(null === self::$_instance) 
+        if(null === self::$_instance)
         {
             self::$_instance = new Csrf;
         }
@@ -76,7 +76,7 @@ class Csrf
      */
     public function delete($token)
     {
-        if (isset($_SESSION[self::$prefix]['csrf'][$token])) 
+        if (isset($_SESSION[self::$prefix]['csrf'][$token]))
         {
             unset($_SESSION[self::$prefix]['csrf'][$token]);
         }
@@ -90,11 +90,11 @@ class Csrf
      */
     public function deleteExpires()
     {
-        if (isset($_SESSION[self::$prefix]['csrf'])) 
+        if (isset($_SESSION[self::$prefix]['csrf']))
         {
-            foreach ($_SESSION[self::$prefix]['csrf'] As $token => $value) 
+            foreach ($_SESSION[self::$prefix]['csrf'] As $token => $value)
             {
-                if (time() >= $value) 
+                if (time() >= $value)
                 {
                     $this->delete($token);
                 }
@@ -118,7 +118,7 @@ class Csrf
 
         $tokens = array_slice($tokens_deleted, 0, $delete);
 
-        foreach ($tokens as $token => $time) 
+        foreach ($tokens as $token => $time)
         {
             $this->delete($token);
         }
@@ -128,7 +128,7 @@ class Csrf
      * Debug
      *	return all tokens.
      *
-     * @return json object;
+     * @return void
      */
     public static function debug()
     {
@@ -144,12 +144,12 @@ class Csrf
      */
     public function updateTime($time)
     {
-        if(is_int($time) AND is_numeric($time)) 
+        if(is_int($time) AND is_numeric($time))
         {
             $this->time = $time;
 
             return $this->time;
-        } 
+        }
         return false;
     }
 
@@ -178,7 +178,7 @@ class Csrf
 
         $randomString = '';
 
-        for ($i = 0; $i < $length; $i++) 
+        for ($i = 0; $i < $length; $i++)
         {
             $randomString .= $chars[rand(0, $stringlength - 1)];
         }
@@ -213,7 +213,7 @@ class Csrf
      */
     protected function generateSession()
     {
-        if (!isset($_SESSION[self::$prefix]['csrf'])) 
+        if (!isset($_SESSION[self::$prefix]['csrf']))
         {
             $_SESSION[self::$prefix]['csrf'] = [];
         }
@@ -228,11 +228,11 @@ class Csrf
      */
     public static function show($token)
     {
-        if (isset($_SESSION[self::$prefix]['csrf'][$token])) 
+        if (isset($_SESSION[self::$prefix]['csrf'][$token]))
         {
             return $_SESSION[self::$prefix]['csrf'][$token];
-        } 
-        else 
+        }
+        else
         {
             return false;
         }
@@ -257,11 +257,11 @@ class Csrf
      */
     public static function lastToken()
     {
-        if (isset($_SESSION[self::$prefix]['csrf'])) 
+        if (isset($_SESSION[self::$prefix]['csrf']))
         {
             return end($_SESSION[self::$prefix]['csrf']);
-        } 
-        else 
+        }
+        else
         {
             return false;
         }
@@ -274,11 +274,11 @@ class Csrf
      */
     public static function countTokens()
     {
-        if (isset($_SESSION[self::$prefix]['csrf'])) 
+        if (isset($_SESSION[self::$prefix]['csrf']))
         {
             return count($_SESSION[self::$prefix]['csrf']);
-        } 
-        else 
+        }
+        else
         {
             return 0;
         }
@@ -289,24 +289,24 @@ class Csrf
      * Check if request is from the same server
      *
      * @return bool
-     */		 		
+     */
     public static function checkHost() : bool
     {
-        if (isset($_SERVER['HTTP_REFERER'])) 
+        if (isset($_SERVER['HTTP_REFERER']))
         {
             $referer = parse_url($_SERVER['HTTP_REFERER']);
-            if (isset($_SERVER['HTTP_HOST'])) 
+            if (isset($_SERVER['HTTP_HOST']))
             {
                 return ($referer['host'] == $_SERVER['HTTP_HOST']);
-            } 
-            if(isset($_SERVER['SERVER_NAME'])) 
+            }
+            if(isset($_SERVER['SERVER_NAME']))
             {
                 return ($referer['host'] == $_SERVER['SERVER_NAME']);
-            } 
+            }
             return false;
-        }	
+        }
         return false;
-    }		 		
+    }
     /**
      * Check if it's a postback action
      *
@@ -314,118 +314,118 @@ class Csrf
      */
     public static function checkSameScript() : bool
     {
-        if (isset($_SERVER['HTTP_REFERER'])) 
+        if (isset($_SERVER['HTTP_REFERER']))
         {
             $referer = parse_url($_SERVER['HTTP_REFERER']);
             return ($referer['path'] == $_SERVER['SCRIPT_NAME']);
-        }	
-        return false;			
+        }
+        return false;
     }
     /**
      * Checking if not javascript injection
      *
-     * @return bool False if allright or true if found injection		 
+     * @return bool False if allright or true if found injection
      */
-    public static function checkVars() 
+    public static function checkVars()
     {
         $ret = true;
-        foreach($_GET as $k => $v) 
+        foreach($_GET as $k => $v)
         {
-            if (!self::checkValue($v)) 
+            if (!self::checkValue($v))
             {
                 $_GET[$k] = self::escapeValue($v);
                 $ret = false;
             }
         }
-        foreach($_POST as $k => $v) 
+        foreach($_POST as $k => $v)
         {
-            if (!self::checkValue($v)) 
+            if (!self::checkValue($v))
             {
                 $_POST[$k] = self::escapeValue($v);
                 $ret = false;
             }
         }
-        foreach($_COOKIE as $k => $v) 
+        foreach($_COOKIE as $k => $v)
         {
-            if (!self::checkValue($v)) 
+            if (!self::checkValue($v))
             {
                 $_COOKIE[$k] = self::escapeValue($v);
                 $ret = false;
             }
         }
         return $ret;
-    } 
+    }
 
     /**
      * Disable injection expressions
      *
      * @param string|array $contents
      * @return string
-     */ 		
-    public static function escapeValue($contents) : string 
+     */
+    public static function escapeValue($contents) : string
     {
-        if (is_array($contents)) 
+        if (is_array($contents))
         {
-            foreach($contents as $k => $v) 
+            foreach($contents as $k => $v)
             {
                 $contents[$k] = self::escapeValue($v);
             }
-        } 
-        else 
+        }
+        else
         {
             // 1. Disable script injection with script tag
-            if (strpos($contents, '<script') !== false) 
+            if (strpos($contents, '<script') !== false)
             {
                 $contents = str_replace('<script', '<!-- script', $contents);
                 $contents = str_replace('script>', 'script -->', $contents);
             }
             // 2. Disable javascript command
-            if (strpos($contents, 'javascript') !== false) 
+            if (strpos($contents, 'javascript') !== false)
             {
                 $contents = str_replace('javascript', '***', $contents);
-            }		
-            if (strpos($contents, "java\nscript") !== false) 
+            }
+            if (strpos($contents, "java\nscript") !== false)
             {
                 $contents = str_replace('javascript', '***', $contents);
             }
             // 3. Disable location command
-            if (strpos($contents, 'document.location') !== false) 
+            if (strpos($contents, 'document.location') !== false)
             {
                 $contents = str_replace('document.location', 'null', $contents);
             }
-            // 4. Disable cookies command	
-            if (strpos($contents, 'document.cookie') !== false) 
+            // 4. Disable cookies command
+            if (strpos($contents, 'document.cookie') !== false)
             {
                 $contents = str_replace('document.cookie', 'null', $contents);
-            }			
+            }
         }
-        return $contents;		
-    }		 	
+        return $contents;
+    }
     /**
      * Verify if found an injection expression
      *
      * @param string|array $contents
      * @return bool
-     */	
-    public static function checkValue($contents) 
+     */
+    public static function checkValue($contents)
     {
-        if (is_array($contents)) 
+        if (is_array($contents))
         {
-            foreach($contents As $k => $v) 
+            foreach($contents As $k => $v)
             {
                 return (!self::checkValue($v));
             }
-        } 
-        else 
+        }
+        else
         {
             // 1. Disable script injection with script tag
             if (strpos($contents, '<script') !== false) {
                 return false;
-            }			
+            }
             // 2. Disable javascript command
             if (strpos($contents, 'javascript') !== false) {
-                return false;		
-            }		
+                return false;
+            }
             if (strpos($contents, "java\nscript") !== false) {
                 return false;
             }
@@ -433,12 +433,12 @@ class Csrf
             if (strpos($contents, 'document.location') !== false) {
                 return false;
             }
-            // 4. Disable cookies command	
+            // 4. Disable cookies command
             if (strpos($contents, 'document.cookie') !== false) {
                 return false;
-            }			
+            }
         }
-        return true;			
+        return true;
     }
-    
+
 }

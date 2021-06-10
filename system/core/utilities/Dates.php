@@ -33,7 +33,7 @@ use DateTimeZone;
  * @since       3.3.0
  * @file        /system/core/utilities/Dates.php
  */
-class Dates 
+class Dates
 {
     // Default time zone used as a default parameter for date functions
 	// Time zones are listed here: http://php.net/manual/en/timezones.php
@@ -53,23 +53,23 @@ class Dates
 	 * (this might be incompatible with some countries and may default to false)
 	 * @return DateTime|false Date if valid and false if not
 	 */
-	public static function convertToDate($date, string $timezone = self::DEFAULT_TIMEZONE, bool $forceFixDate = true) 
+	public static function convertToDate($date, string $timezone = self::DEFAULT_TIMEZONE, bool $forceFixDate = true)
     {
 		// If the input was not a DateTime object
-		if (!$date instanceof DateTime) 
+		if (!$date instanceof DateTime)
         {
 			// Set the timezone to default
 			date_default_timezone_set($timezone);
 
 			// If we need to use the date fix for United States dates
 			// and there are no characters as in 02-JAN-03 then...
-			if (($forceFixDate OR self::isTimeZoneInCountry($timezone, 'US')) AND is_string($date) AND !preg_match('/[a-z]/i', $date)) 
+			if (($forceFixDate OR self::isTimeZoneInCountry($timezone, 'US')) AND is_string($date) AND !preg_match('/[a-z]/i', $date))
             {
 				// U.S. dates with '-' do not convert correctly so replace them with '/'
 				$datevalue = self::fixUSDateString($date);
-			} 
-            else 
-            { 
+			}
+            else
+            {
                 // No fix needed..., Use the date passed in
 				$datevalue = $date;
 			}
@@ -78,23 +78,23 @@ class Dates
 			$timestamp = strtotime($datevalue);
 
 			// If this was a valid date
-			if ($timestamp) 
+			if ($timestamp)
             {
 				// Convert the UNIX time stamp into a date object
 				$date = DateTime::createFromFormat('U', $timestamp);
 
-			} 
-            else 
-            { 
+			}
+            else
+            {
                 // Not a valid date... This was not a valid date
 				$date = false;
 			}
 		}
 
 		// Make sure the date isn't a converted "0000-00-00 00:00:00"
-		if ($date instanceof DateTime) 
+		if ($date instanceof DateTime)
         {
-			if (intval($date->format('Y')) <= 0) 
+			if (intval($date->format('Y')) <= 0)
             {
 				$date = false;
 			}
@@ -116,37 +116,37 @@ class Dates
 	private static function modifyDateInterval($date, int $interval, string $type, bool $is_time) : DateTime
     {
 		// Let's make sure we have a date
-		if ($date instanceof DateTime) 
+		if ($date instanceof DateTime)
         {
 			// Don't make changes to the original date
 			$new_date = clone $date;
-		} 
-        else 
+		}
+        else
         {
 			// Convert the date
 			$new_date = self::convertToDate($date);
 		}
 		// If we have a valid date
-		if ($new_date) 
+		if ($new_date)
         {
-			if ($is_time) 
+			if ($is_time)
             {
                 // Is this an hour, minute, or second?
 				$pre = 'PT';
-			} 
-            else 
-            { 
+			}
+            else
+            {
                 // This is a year, month, or day
 				$pre = 'P';
 			}
 
 			// If the interval of time is negative
-			if (intval($interval) < 0) 
+			if (intval($interval) < 0)
             {
 				// Subtract the interval
 				$new_date->sub(new DateInterval($pre . strval($interval * -1) . $type));
-			} 
-            else 
+			}
+            else
             {
 				// Add the interval
 				$new_date->add(new DateInterval($pre . strval($interval) . $type));
@@ -175,7 +175,7 @@ class Dates
 	 * @param int $hours The number of hours to add (negative subtracts)
 	 * @return DateTime Returns the new date
 	 */
-	public static function addHours($date, int $hours) : DateTime 
+	public static function addHours($date, int $hours) : DateTime
     {
 		return self::modifyDateInterval($date, intval($hours), 'H', true);
 	}
@@ -187,7 +187,7 @@ class Dates
 	 * @param int $minutes The number of minutes to add (negative subtracts)
 	 * @return DateTime Returns the new date
 	 */
-	public static function addMinutes($date, int $minutes) 
+	public static function addMinutes($date, int $minutes)
     {
 		return self::modifyDateInterval($date, intval($minutes), 'M', true);
 	}
@@ -233,21 +233,20 @@ class Dates
 	 *
 	 * @param DateTime|string $date1 First date
 	 * @param DateTime|string $date2 Second date
-	 * @return interval Returns an interval object
+	 * @return mixed Returns an interval object
 	 */
-	private static function differenceInterval($date1, $date2) 
+	private static function differenceInterval($date1, $date2)
     {
 		// Make sure our dates are DateTime objects
 		$datetime1 = self::convertToDate($date1);
 		$datetime2 = self::convertToDate($date2);
 
 		// If both variables were valid dates...
-		if ($datetime1 AND $datetime2) 
+		if ($datetime1 AND $datetime2)
         {
-
 			// Get the time interval between the two dates
 			return $datetime1->diff($datetime2);
-        } 
+        }
 		// The dates were invalid... Return false
         return false;
     }
@@ -259,15 +258,15 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of days or false if invalid dates
 	 */
-	public static function differenceDays($date1, $date2) 
+	public static function differenceDays($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
-		if ($interval) 
+		if ($interval)
         {
             // Return the number of days
             return $interval->days;
-		} 
+		}
         // The passed in values were not dates
         return false;
 	}
@@ -279,15 +278,15 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of hours or false if invalid dates
 	 */
-	public static function differenceHours($date1, $date2) 
+	public static function differenceHours($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
-		if ($interval) 
+		if ($interval)
         {
 			// Return the number of hours
 			return ($interval->days * 24) + $interval->h;
-		} 
+		}
         // The passed in values were not dates
         return false;
     }
@@ -299,15 +298,15 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of minutes or false if invalid dates
 	 */
-	public static function differenceMinutes($date1, $date2) 
+	public static function differenceMinutes($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
-		if ($interval) 
+		if ($interval)
         {
             // Return the number of minutes
 			return ((($interval->days * 24) + $interval->h) * 60) + $interval->i;
-		} 
+		}
         // The passed in values were not dates
         return false;
 	}
@@ -319,11 +318,11 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of months or false if invalid dates
 	 */
-	public static function differenceMonths($date1, $date2) 
+	public static function differenceMonths($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
-		if ($interval) 
+		if ($interval)
         {
 			// Return the number of months
 			return ($interval->y * 12) + $interval->m;
@@ -339,7 +338,7 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of seconds or false if invalid dates
 	 */
-	public static function differenceSeconds($date1, $date2) 
+	public static function differenceSeconds($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -359,7 +358,7 @@ class Dates
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of years or false if invalid dates
 	 */
-	public static function differenceYears($date1, $date2) 
+	public static function differenceYears($date1, $date2)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -379,15 +378,15 @@ class Dates
 	 * @return string If the passed in value is a string, returns fixed date
 	 *	               otherwise return the value passed in to the function
 	 */
-	public static function fixUSDateString($date) 
+	public static function fixUSDateString($date)
     {
 		// If the passed in value is a string and there are not alpha
 		// characters that hold month names (as in 02-JAN-03) then...
-		if (is_string($date) AND !preg_match('/[a-z]/i', $date)) 
+		if (is_string($date) AND !preg_match('/[a-z]/i', $date))
         {
 			// Replace '-' with '/'
 			return str_replace('-', '/', $date);
-		} 
+		}
         // No fix needed... Use the date passed in
 		return $date;
 	}
@@ -402,13 +401,13 @@ class Dates
 	 * @param string $timezone [OPTIONAL] The timezone to use
 	 * @return string|false The date formatted as a string or false if not a date
 	 */
-	public static function formatDate($date, string $format, string $timezone = self::DEFAULT_TIMEZONE) 
+	public static function formatDate($date, string $format, string $timezone = self::DEFAULT_TIMEZONE)
     {
 		// Convert the string to a date
 		$new_date = self::convertToDate($date, $timezone);
 
 		// If the string was successfully converted into a date
-		if ($new_date) 
+		if ($new_date)
         {
 			// Format it
 			return $new_date->format($format);
@@ -424,7 +423,7 @@ class Dates
 	 * @param string $timezone Default timezone
 	 * @return int The age in number of years
 	 */
-	public static function getAge($dob, string $timezone = self::DEFAULT_TIMEZONE) : int 
+	public static function getAge($dob, string $timezone = self::DEFAULT_TIMEZONE) : int
     {
 		$date     = self::convertToDate($dob, $timezone);
 		$now      = new DateTime();
@@ -438,7 +437,7 @@ class Dates
 	 * @param string $timezone [OPTIONAL] The timezone to use
 	 * @return integer The current year formatted as an integer
 	 */
-	public static function getCurrentYear(string $timezone = self::DEFAULT_TIMEZONE) : int 
+	public static function getCurrentYear(string $timezone = self::DEFAULT_TIMEZONE) : int
     {
 		return intval(self::formatDate('Today', 'Y', $timezone));
 	}
@@ -449,13 +448,13 @@ class Dates
 	 * @param string|DateTime $date [OPTIONAL] A date
 	 * @return int|false The number of the last day of the month
 	 */
-	public static function getLastDayOfMonth($date = 'Today') 
+	public static function getLastDayOfMonth($date = 'Today')
     {
 		$datetime = self::convertToDate($date);
-		if ($datetime) 
+		if ($datetime)
         {
 			return intval($datetime->format('t'));
-		} 
+		}
         return false;
 	}
 
@@ -465,7 +464,7 @@ class Dates
 	 * @param string $country The name of the country
 	 * @return array Returns an array with a list of valid time zones
 	 */
-	public static function getTimeZonesInCountry(string $country) : array 
+	public static function getTimeZonesInCountry(string $country) : array
     {
 		// Get an array of all the timezones for the specified country
 		return DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, $country);
@@ -478,7 +477,7 @@ class Dates
 	 * @param string $timezone
 	 * @return bool TRUE if the value is a date, FALSE if not
 	 */
-	public static function isDate($value, string $timezone = self::DEFAULT_TIMEZONE) : bool 
+	public static function isDate($value, string $timezone = self::DEFAULT_TIMEZONE) : bool
     {
 		return (self::convertToDate($value, $timezone) instanceof DateTime);
 	}
@@ -490,7 +489,7 @@ class Dates
 	 * @param string $country The name of the country
 	 * @return bool TRUE if in the country and FALSE if not
 	 */
-	public static function isTimeZoneInCountry(string $timezone, string $country) : bool 
+	public static function isTimeZoneInCountry(string $timezone, string $country) : bool
     {
 		// Get an array of all the timezones (for example, in the U.S.)
 		$timezone_identifiers = array_map('strtolower',
@@ -510,14 +509,14 @@ class Dates
 	 */
 	public static function makeDate($day = false, $month = false, $year = false)
     {
-		if ($day === false OR $month === false OR $year === false) 
+		if ($day === false OR $month === false OR $year === false)
         {
 			$date_parts  = explode('-', self::convertToDate('Today')->format('d-m-Y'));
-			if ($day === false) 
+			if ($day === false)
             {
 				$day = $date_parts[0];
 			}
-			if ($month === false) 
+			if ($month === false)
             {
 				$month = $date_parts[1];
 			}
@@ -537,11 +536,11 @@ class Dates
 	 * @param string $timezone [OPTIONAL] Default timezone
 	 * @return DateTime|string The DateTime object or a formatted string
 	 */
-	public static function now($format = false, $timezone = self::DEFAULT_TIMEZONE) 
+	public static function now($format = false, $timezone = self::DEFAULT_TIMEZONE)
     {
 		$now = new DateTime();
 		$now->setTimeZone(new DateTimeZone($timezone));
-		if ($format) 
+		if ($format)
         {
 			return $now->format($format);
 		}
@@ -557,10 +556,10 @@ class Dates
 	 * @param string $timezone [OPTIONAL] Default timezone
 	 * @return DateTime|string The DateTime object or a formatted string
 	 */
-	public static function today($format = false, $timezone = self::DEFAULT_TIMEZONE) 
+	public static function today($format = false, $timezone = self::DEFAULT_TIMEZONE)
     {
 		$today = self::convertToDate('Today', $timezone);
-		if ($format) 
+		if ($format)
         {
 			return $today->format($format);
 		}

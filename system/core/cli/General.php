@@ -166,8 +166,6 @@ class General extends Cli
 
                     $specs->run();
                     exit($specs->status());
-
-                    $cli->end();
                 }
                 catch (\Throwable $th) {
                     $cli->showError($th);

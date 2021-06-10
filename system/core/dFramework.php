@@ -56,9 +56,9 @@ class dFramework
     /**
      * @throws Exception
      * @throws \ReflectionException
-     * @throws exception\ConfigException
-     * @throws exception\LoadException
-     * @throws exception\RouterException
+     * @throws \dFramework\core\exception\ConfigException
+     * @throws \dFramework\core\exception\LoadException
+     * @throws \dFramework\core\exception\RouterException
      */
     public function init() : self
     {

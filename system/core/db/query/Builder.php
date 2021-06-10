@@ -173,7 +173,7 @@ class Builder
      * @param array $fields Fields to join on
      * @param string $type Type of join
      * @return object Self reference
-     * @throws Exception For invalid join type
+     * @throws DatabaseException For invalid join type
      */
     final public function join($table, array $fields, $type = 'INNER') : self
     {
@@ -1109,7 +1109,7 @@ class Builder
     /**
      * Parses a condition statement.
      *
-     * @param string $field Database field
+     * @param string|string[] $field Database field
      * @param string $value Condition value
      * @param string $join Joining word
      * @param boolean $escape Escape values setting

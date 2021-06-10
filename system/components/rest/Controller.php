@@ -123,7 +123,7 @@ class Controller extends CoreController
     /**
      * @param string $method
      * @param array|null $params
-     * @return Response|mixed|void
+     * @return \dFramework\core\http\Response|mixed|void
      * @throws Throwable
      */
     public function _remap(string $method, ?array $params = [])
@@ -283,7 +283,14 @@ class Controller extends CoreController
             $result = array_map(function($element) {
                 if ($element instanceof Entity)
                 {
-                    $element = $element->toArray();
+					if (method_exists($element, 'format'))
+					{
+						$element = $element->format();
+					}
+					else
+					{
+						$element = $element->toArray();
+					}
                 }
 
                 return $element;
@@ -355,7 +362,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param mixed $result
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function created(string $message, $result = null)
     {
@@ -367,7 +374,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function forbidden(string $message, ?array $errors = [])
     {
@@ -379,7 +386,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function internalError(string $message, ?array $errors = [])
     {
@@ -391,7 +398,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function invalidToken(string $message, ?array $errors = [])
     {
@@ -403,7 +410,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function methodNotAllowed(string $message, ?array $errors = [])
     {
@@ -415,7 +422,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param mixed $result
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function noContent(string $message, $result = null)
     {
@@ -427,7 +434,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function notAcceptable(string $message, ?array $errors = [])
     {
@@ -439,7 +446,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function notFound(string $message, ?array $errors = [])
     {
@@ -451,7 +458,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function notImplemented(string $message, ?array $errors = [])
     {
@@ -463,7 +470,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param mixed $result
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function ok(string $message, $result = null)
     {
@@ -475,7 +482,7 @@ class Controller extends CoreController
      *
      * @param string $message
      * @param array|null $errors
-     * @return void
+     * @return \dFramework\core\http\Response|void
      */
     protected function unauthorized(string $message, ?array $errors = [])
     {
@@ -664,7 +671,7 @@ class Controller extends CoreController
     /**
      * Formatte les donnees a envoyer au bon format
      *
-     * @param $data Les donnees a envoyer
+     * @param mixed $data Les donnees a envoyer
      */
     private function _parseResponse($data)
     {

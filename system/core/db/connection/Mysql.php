@@ -14,7 +14,7 @@
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\db\connection;
 
 use PDO;
@@ -48,13 +48,13 @@ class Mysql extends BaseConnection
 	 * @param boolean $persistent
 	 *
 	 * @return mixed
-	 * @throws \DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function connect(bool $persistent = false)
 	{
         $db = null;
-        
-        switch ($this->driver) 
+
+        switch ($this->driver)
         {
             case 'mysqli':
                 $db = new mysqli(
@@ -65,7 +65,7 @@ class Mysql extends BaseConnection
                     $this->port
                 );
 
-                if ($db->connect_error) 
+                if ($db->connect_error)
                 {
                     throw new DatabaseException('Connection error: '.$db->connect_error);
                 }
@@ -81,7 +81,7 @@ class Mysql extends BaseConnection
 				);
 				$db = new PDO($this->dsn, $this->username, $this->password);
 				$this->commands[] = 'SET SQL_MODE=ANSI_QUOTES';
-    
+
 				break;
             default:
                 # code...
@@ -174,7 +174,7 @@ class Mysql extends BaseConnection
 		{
 			$this->initialize();
         }
-        
+
 		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_info : $this->conn->getAttribute(PDO::ATTR_CLIENT_VERSION);
 	}
 
@@ -194,22 +194,22 @@ class Mysql extends BaseConnection
         if ($this->driver === 'mysqli')
         {
             $result = $this->conn->query($sql);
-            if (!$result) 
+            if (!$result)
             {
                 $this->error['code'] = $this->conn->errno;
                 $this->error['message'] = $error = $this->conn->error;
             }
         }
-        else 
+        else
         {
             try {
                 $result = $this->conn->prepare($sql);
 
-                if (!$result) 
+                if (!$result)
                 {
                     $error = $this->conn->errorInfo();
                 }
-                else 
+                else
                 {
                     foreach ($params As $key => $value)
                     {
@@ -219,7 +219,7 @@ class Mysql extends BaseConnection
                             is_int($value) || is_bool($value) ? PDO::PARAM_INT : PDO::PARAM_STR
                         );
                     }
-                    $result->execute(); 
+                    $result->execute();
                 }
             }
             catch (PDOException $ex) {
@@ -227,7 +227,7 @@ class Mysql extends BaseConnection
                 $this->error['message'] = $error = $ex->getMessage();
             }
         }
-        if ($error !== null) 
+        if ($error !== null)
         {
             $error .= "\nSQL: ".$sql;
             throw new DatabaseException('Database error: '.$error);
@@ -239,10 +239,10 @@ class Mysql extends BaseConnection
 			'duration'   => microtime(true) - $time,
         ];
         $this->stats['queries'][] = &$this->last_query;
-        
+
         return $result;
 	}
-    
+
     /**
 	 * Platform-dependant string escape
 	 *
@@ -302,8 +302,6 @@ class Mysql extends BaseConnection
 			'\\' . '_',
 		], $str
 		);
-
-		return $str;
 	}
 
     //--------------------------------------------------------------------
@@ -543,7 +541,7 @@ class Mysql extends BaseConnection
      * Renvoi le nombre de ligne retourné par la requete
      *
      * @return integer
-	 */ 
+	 */
 	public function numRows(): int
 	{
 		if ($this->driver === 'mysqli')
