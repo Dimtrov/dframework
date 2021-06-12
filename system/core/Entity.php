@@ -192,7 +192,7 @@ abstract class Entity
 	 * Assigne les donnees a l'entite
 	 *
 	 * @param array $data
-	 * @return Model
+	 * @return void
 	 */
 	private function _assignData(array $data)
 	{

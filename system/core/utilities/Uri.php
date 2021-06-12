@@ -15,7 +15,7 @@
  * @version     3.0
  */
 
- 
+
  namespace dFramework\core\utilities;
 
  use dFramework\core\Config;
@@ -34,8 +34,8 @@
  * @credit		CodeIgniter - https://codeigniter.com/user_guide/libraries/uri.html - EllisLab Dev Team
  * @file		/system/core/utilities/Uri.php
  */
- 
-class Uri 
+
+class Uri
 {
 
 	/**
@@ -78,9 +78,9 @@ class Uri
 	 * @var	string
 	 */
 	protected $_permitted_uri_chars = 'a-z 0-9~%.:_\-=';
-	
-	
-	
+
+
+
 	private $_config;
 
 	/**
@@ -105,14 +105,14 @@ class Uri
 
 //		log_message('info', 'URI Class Initialized');
 	}
-	
+
 	public static function instance() : self
 	{
-		if (null === self::$_instance) 
+		if (null === self::$_instance)
 		{
 			self::$_instance = new self;
 		}
-		
+
 		return self::$_instance;
 	}
 	private static $_instance = null;
@@ -583,7 +583,7 @@ class Uri
 	/**
 	 * Fetch URI string
 	 *
-	 * @return	string	
+	 * @return	string
 	 */
 	public function uri_string()
 	{
@@ -596,6 +596,7 @@ class Uri
 	 */
 	public function ruri_string()
 	{
+		return '';
 //		return ltrim(load_class('Router', 'core')->directory, '/').implode('/', $this->rsegments);
 	}
 

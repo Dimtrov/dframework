@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -21,6 +21,7 @@ use dFramework\core\Config;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\loader\Service;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Parses the request URL into controller, action, and parameters. Uses the connected routes
@@ -37,8 +38,8 @@ use dFramework\core\loader\Service;
  * @credit		CodeIgniter 4.0 (CodeIgniter\Router\Router)
  * @file        /system/core/router/Router.php
  */
-class Router 
-{   
+class Router
+{
     /**
 	 * @var RouteCollection
 	 */
@@ -77,7 +78,7 @@ class Router
 	 */
 	protected $middlewareInfo;
 
-	
+
 	/**
 	 * Sub-directory that contains the requested controller class.
 	 * Primarily used by 'autoRoute'.
@@ -117,7 +118,7 @@ class Router
 	/**
 	 * Stores a reference to the RouteCollection object.
 	 *
-	 * @param RouteCollectionInterface $routes
+	 * @param RouteCollection $routes
 	 * @param ServerRequestInterface   $request
 	 */
 	public function __construct(RouteCollection $routes, ServerRequest $request)
@@ -151,11 +152,11 @@ class Router
 	{
 		$this->controller = $this->makeController($name);
 	}
-	private function makeController(string $name) : string 
+	private function makeController(string $name) : string
 	{
 		return preg_replace(
-			['#Controller$#', '#'.config('general.url_suffix').'$#i'], 
-			'', 
+			['#Controller$#', '#'.config('general.url_suffix').'$#i'],
+			'',
 			ucfirst($name)
 		) . 'Controller';
 	}
@@ -174,7 +175,7 @@ class Router
 		$this->method = preg_replace('#'.config('general.url_suffix').'$#i', '', strtolower($name));
 	}
 
-	public function controllerFile() : string 
+	public function controllerFile() : string
 	{
 		return $this->controllerFile;
 	}
@@ -264,11 +265,11 @@ class Router
 	 */
 	public function handle(string $uri = null)
 	{
-		if (empty($uri)) 
+		if (empty($uri))
 		{
 			$uri = '/';
 		}
-		
+
 		if ($this->checkRoutes($uri))
 		{
 			if ($this->collection->isFiltered($this->matchedRoute[0]))
@@ -284,16 +285,16 @@ class Router
 				{
 					RouterException::except(
 						'Controller not found',
-						'Can\'t load controller <b>'.preg_replace('#Controller$#', '',$this->controllerFile.'\\'.$this->controller).'</b>. 
-						The file &laquo; '.$file.' &raquo; do not exist', 
+						'Can\'t load controller <b>'.preg_replace('#Controller$#', '',$this->controllerFile.'\\'.$this->controller).'</b>.
+						The file &laquo; '.$file.' &raquo; do not exist',
 						404
 					);
 				}
-				
+
 				$this->controllerFile = $file;
-				include_once $this->controllerFile;	
+				include_once $this->controllerFile;
 			}
-			
+
 			return $this->controller;
 		}
 
@@ -303,7 +304,7 @@ class Router
 		if (! $this->collection->autoRoute())
 		{
 			RouterException::except(
-				'Aucune route trouvée', 
+				'Aucune route trouvée',
 				'Nous n\'avons trouvé aucune route correspondante à l\'URI &laquo; '.$uri.' &raquo;',
 				404
 			);
@@ -338,7 +339,7 @@ class Router
 			$key = $key === '/'
 			? $key
 				: trim($key, '/ ');
-			
+
 				// Are we dealing with a locale?
 			if (strpos($key, '{locale}') !== false)
 			{
@@ -348,13 +349,13 @@ class Router
 				// will actually match.
 				$key = str_replace('{locale}', '[^/]+', $key);
 			}
-			
+
 			$key = preg_replace_callback('#{(.+)}#U', function($match) {
 				preg_match('#{(?:[a-z]+)\|(.*)}#i', $match[0], $m);
-				
+
 				return '(' . ($m[1] ?? '[^/]+') .')';
 			}, $key);
-			
+
 			// Does the RegEx match?
 			if (preg_match('#^' . $key . '$#', $uri, $matches))
 			{
@@ -378,14 +379,14 @@ class Router
 				array_shift($matches);
 
 				$this->params = $matches;
-				
+
 				// Are we using Closures? If so, then we need
 				// to collect the params into an array
 				// so it can be passed to the controller method later.
 				if (! is_string($val) AND is_callable($val))
 				{
 					$this->controller = $val;
-					
+
 					$this->matchedRoute = [
 						$key,
 						$val,
@@ -403,13 +404,13 @@ class Router
 				if (strpos($val, '$') !== false AND strpos($key, '(') !== false AND strpos($key, '/') !== false)
 				{
 					$replacekey = str_replace('/(.*)', '', $key);
-					$uri = 
+					$uri =
 					$val        = preg_replace('#^' . $key . '$#', $val, $uri);
 					//	$val        = str_replace($replacekey, str_replace('/', '\\', $replacekey), $val);
-					
+
 					/**
 					 * @update
-					 * @date 06-09-2020 
+					 * @date 06-09-2020
 					 * @author Dimitri Sitchet Tomkeu <dst@email.com>
 					 */
 					$parts = explode('::', $val);
@@ -469,7 +470,7 @@ class Router
 		}
 		// If not empty, then the first segment should be the controller
 		else
-		{	
+		{
 			$this->setController(array_shift($segments));
 		}
 
@@ -488,12 +489,12 @@ class Router
 
 		// Load the file so that it's available for dFramework.
 		$file = str_replace('/', DS, CONTROLLER_DIR . $this->directory . $this->controllerName() . '.php');
-		
+
 		if (!is_file($file))
 		{
 			RouterException::except(
 				'Controller file not found',
-                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $this->controllerName()).'</b> souhaité. 
+                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $this->controllerName()).'</b> souhaité.
                 <br/>
                 Le fichier &laquo; '.$file.' &raquo; n\'existe pas'
 			);
@@ -515,9 +516,9 @@ class Router
 		$segments = array_filter($segments, function ($segment) {
 			return ! empty($segment) OR ($segment !== '0' OR $segment !== 0);
 		});
-	
+
 		$segments = array_values($segments);
-		$segments[0] = preg_replace('#'.Config::get('general.url_suffix').'$#i', '', $segments[0]); 
+		$segments[0] = preg_replace('#'.Config::get('general.url_suffix').'$#i', '', $segments[0]);
 
 		$c                  = count($segments);
 		$directory_override = isset($this->directory);
@@ -618,7 +619,7 @@ class Router
 		list($controller, $method) = array_pad(explode('::', $segments[0]), 2, null);
 
 		$controller = explode('\\', $controller);
-		
+
 		$this->setController(array_pop($controller));
 
 		$this->controllerFile = implode(DS, $controller);
@@ -632,7 +633,7 @@ class Router
 
 		array_shift($segments);
 
-		if (!empty($segments)) 
+		if (!empty($segments))
 		{
 			$this->params = $segments;
 		}

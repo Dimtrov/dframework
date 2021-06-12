@@ -61,7 +61,7 @@ class Dispatcher
 	 */
 	private $middleware;
 	/**
-	 * @var \dFramework\core\utilities\Timer
+	 * @var \dFramework\core\debug\Timer
 	 */
 	private $timer;
 
@@ -640,7 +640,7 @@ class Dispatcher
 	 *
 	 * This helps provider safer, more reliable previous_url() detection.
 	 *
-	 * @param \CodeIgniter\HTTP\URI $uri
+	 * @param \dFramework\core\http\URI|string $uri
 	 */
 	public function storePreviousURL($uri)
 	{

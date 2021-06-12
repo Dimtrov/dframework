@@ -64,7 +64,7 @@ class Filesystem
 	 * @param mixed $arguments
 	 * @return mixed
 	 */
-    private function __call($name, $arguments)
+    public function __call($name, $arguments)
     {
         return self::execFacade($name, $arguments);
     }
@@ -321,7 +321,7 @@ class Filesystem
      *
      * @param  string  $target
      * @param  string  $link
-     * @return void
+     * @return bool|void
      */
     private function _link(string $target, string $link)
     {

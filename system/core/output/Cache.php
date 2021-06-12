@@ -14,7 +14,7 @@
  * @link	    https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
@@ -86,9 +86,9 @@ class Cache
     public function write(string $label, string $content, ?int $cache_time = null)
     {
         $content = (empty($cache_time) ? $this->cache_time : $cache_time).';'.$content;
-        
+
         return file_put_contents(
-            $this->cache_dir . $this->safe_filename($label) . $this->cache_ext, 
+            $this->cache_dir . $this->safe_filename($label) . $this->cache_ext,
             $content
         );
     }
@@ -102,7 +102,7 @@ class Cache
         if ($this->is_cached($label))
         {
             $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
-        
+
             $content = file_get_contents($filename);
             $content = explode(';', $content);
             array_shift($content);
@@ -121,7 +121,7 @@ class Cache
     public function remove(string $label)
     {
         $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
-        
+
         if(file_exists($filename))
         {
             unlink($filename);
@@ -133,7 +133,7 @@ class Cache
     public function clear()
     {
         $files = glob(rtrim($this->cache_dir, DS).DS.'*');
-        
+
         foreach ($files As $file)
         {
             unlink($file);
@@ -168,7 +168,7 @@ class Cache
      * Initialise le tampon de sortie
      *
      * @param string $label
-     * @return bool
+     * @return bool|void
      */
     public function start(string $label)
     {
@@ -185,7 +185,7 @@ class Cache
     /**
      * Termine le tampon de sortie et affiche le contenu
      *
-     * @return bool
+     * @return bool|void
      */
     public function end()
     {

@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -34,7 +34,7 @@ use dFramework\core\exception\RouterException;
  * @credit		CodeIgniter 4.0 (CodeIgniter\Router\RouteCollection)
  * @file        /system/core/router/RouteCollection.php
  */
-class RouteCollection 
+class RouteCollection
 {
     /**
      * Routes config
@@ -114,7 +114,7 @@ class RouteCollection
 		'connect',
 		'cli',
 	];
-    
+
 	/**
 	 * The current method that the script is being called by.
 	 *
@@ -181,13 +181,13 @@ class RouteCollection
 	 * You can pass an associative array as $middleware, and have
 	 * multiple middlewares added at once.
 	 *
-	 * @param string|array|object|calable $middleware
+	 * @param string|array|object|callable $middleware
 	 *
 	 * @return self|array
 	 */
 	public function middlewares($middleware = null)
 	{
-		if (empty($middleware)) 
+		if (empty($middleware))
 		{
 			return $this->middlewares;
 		}
@@ -203,7 +203,7 @@ class RouteCollection
 
     /**
      * Get/Set autorouting
-     * 
+     *
 	 * If TRUE, the system will attempt to match the URI against
 	 * Controllers by matching each segment against folders/files
 	 * in APPPATH/Controllers, when a match wasn't found against
@@ -231,7 +231,7 @@ class RouteCollection
      * @param string|null $value
 	 * @return string|self
 	 */
-	public function defaultController(?string $value = null) 
+	public function defaultController(?string $value = null)
 	{
         if (empty($value))
         {
@@ -239,7 +239,7 @@ class RouteCollection
         }
 
         $this->config['default_controller'] = filter_var(ucfirst($value), FILTER_SANITIZE_STRING);
-        
+
         return $this;
 	}
 	/**
@@ -248,7 +248,7 @@ class RouteCollection
      * @param string|null $value
 	 * @return string|self
 	 */
-	public function defaultMethod(?string $value = null) 
+	public function defaultMethod(?string $value = null)
 	{
         if (empty($value))
         {
@@ -256,7 +256,7 @@ class RouteCollection
         }
 
         $this->config['default_method'] = filter_var(strtolower($value), FILTER_SANITIZE_STRING);
-        
+
         return $this;
 	}
     /**
@@ -278,7 +278,7 @@ class RouteCollection
 	}
 	/**
 	 * Get / set 404 override
-	 * 
+	 *
 	 * Sets the class/method that should be called if routing doesn't
 	 * find a match. It can be either a closure or the controller/method
 	 * name exactly like a route is defined: Users::index
@@ -287,7 +287,7 @@ class RouteCollection
 	 *
 	 * @param callable|false|null $callable
 	 *
-	 * @return self
+	 * @return mixed
 	 */
 	public function override_404($callable = null)
 	{
@@ -295,7 +295,7 @@ class RouteCollection
 		{
 			return $this->override404;
 		}
-		if (false === $callable) 
+		if (false === $callable)
 		{
 			$callable = null;
 		}
@@ -304,7 +304,7 @@ class RouteCollection
 		return $this;
 	}
 	//--------------------------------------------------------------------
-    
+
     /**
      * Specifies a route that is only available to GET requests.
      *
@@ -313,7 +313,7 @@ class RouteCollection
      * @param array|null $options
      * @return self
      */
-    public function get(string $path, $to, ?array $options = null) : self 
+    public function get(string $path, $to, ?array $options = null) : self
     {
         $this->create('get', $path, $to, $options);
 
@@ -327,7 +327,7 @@ class RouteCollection
      * @param array|null $options
      * @return self
      */
-    public function post(string $path, $to, ?array $options = null) : self 
+    public function post(string $path, $to, ?array $options = null) : self
     {
         $this->create('post', $path, $to, $options);
 
@@ -341,7 +341,7 @@ class RouteCollection
      * @param array|null $options
      * @return self
      */
-    public function put(string $path, $to, ?array $options = null) : self 
+    public function put(string $path, $to, ?array $options = null) : self
     {
         $this->create('put', $path, $to, $options);
 
@@ -355,7 +355,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function patch(string $path, $to, ?array $options = null) : self 
+    public function patch(string $path, $to, ?array $options = null) : self
     {
         $this->create('patch', $path, $to, $options);
 
@@ -369,12 +369,12 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function head(string $path, $to, array $options) : self 
+    public function head(string $path, $to, array $options) : self
     {
         $this->create('head', $path, $to, $options);
 
         return $this;
-    }   
+    }
     /**
      * Specifies a route that is only available to OPTIONS requests.
      *
@@ -383,7 +383,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function options(string $path, $to, array $options) : self 
+    public function options(string $path, $to, array $options) : self
     {
         $this->create('options', $path, $to, $options);
 
@@ -397,7 +397,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function delete(string $path, $to, ?array $options = null) : self 
+    public function delete(string $path, $to, ?array $options = null) : self
     {
         $this->create('delete', $path, $to, $options);
 
@@ -412,7 +412,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function add(string $path, $to, ?array $options = null) : self 
+    public function add(string $path, $to, ?array $options = null) : self
     {
         $this->create('*', $path, $to, $options);
 
@@ -623,8 +623,8 @@ class RouteCollection
 		// Make sure we capture back-references
 		$id = '(' . trim($id, '()') . ')';
 
-        $methods = isset($options['only']) 
-            ? (is_string($options['only']) ? explode(',', $options['only']) : $options['only']) 
+        $methods = isset($options['only'])
+            ? (is_string($options['only']) ? explode(',', $options['only']) : $options['only'])
             : ['index', 'show', 'create', 'update', 'delete', 'new', 'edit'];
 
 		if (isset($options['except']))
@@ -739,8 +739,8 @@ class RouteCollection
 		// Make sure we capture back-references
 		$id = '(' . trim($id, '()') . ')';
 
-        $methods = isset($options['only']) 
-            ? (is_string($options['only']) ? explode(',', $options['only']) : $options['only']) 
+        $methods = isset($options['only'])
+            ? (is_string($options['only']) ? explode(',', $options['only']) : $options['only'])
             : ['index', 'show', 'new', 'create', 'edit', 'update', 'remove', 'delete'];
 
 		if (isset($options['except']))
@@ -853,7 +853,7 @@ class RouteCollection
 
 		return $this->routesOptions[$search]['middlewares'];
 	}
-    
+
     //--------------------------------------------------------------------
 
 	/**
@@ -883,7 +883,7 @@ class RouteCollection
 	 */
 	public function routesOptions(string $from = null) : array
 	{
-        if (empty($from)) 
+        if (empty($from))
         {
             return $this->routesOptions;
         }
@@ -921,10 +921,10 @@ class RouteCollection
 				{
 					$routes[$key] = $r['route'][$key];
 				}
-				else 
+				else
 				{
 					$routes[$key] = [
-						'name' => $name, 
+						'name' => $name,
 						'handler' => $r['route'][$key]
 					];
 				}
@@ -945,8 +945,8 @@ class RouteCollection
 			$this->routes[$verb] = [];
 		}
 	}
- 
-    
+
+
     //--------------------------------------------------------------------
 
     /**
@@ -1068,7 +1068,7 @@ class RouteCollection
 		{
 			$from = str_ireplace(':' . $tag, $pattern, $from);
         }
-        
+
 		$name = $options['as'] ?? $from;
 
 		if (isset($this->routes[$verb][$name]))
@@ -1130,11 +1130,11 @@ class RouteCollection
 					throw new RouterException("Invalid parameter type");
 				}
 			}
-			else 
+			else
 			{
 				$from = substr_replace($from, '', $pos, strlen($pattern));
 			}
-			
+
 		}
 
 		return '/' . ltrim($from, '/');
