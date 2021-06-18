@@ -235,11 +235,11 @@ class Dispatcher
 		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
 			$resp = null;
 
-			$resp = $this->startController();
+			$resp = $this->startController($request, $response);
 			// Closure controller has run in startController().
 			if (! is_callable($this->controller))
 			{
-				$controller = $this->createController();
+				$controller = $this->createController($request, $response);
 
 				// Is there a "post_controller_constructor" event?
 				Service::event()->trigger('post_controller_constructor');
@@ -253,7 +253,6 @@ class Dispatcher
 			}
 
 			Service::event()->trigger('post_system');
-
 
 			if ($resp instanceof ResponseInterface)
 			{
@@ -406,8 +405,11 @@ class Dispatcher
 	 * Now that everything has been setup, this method attempts to run the
 	 * controller method and make the script go. If it's not able to, will
 	 * show the appropriate Page Not Found error.
+	 *
+	 * @param ServerRequestInterface $request
+	 * @param ResponseInterface $response
 	 */
-	private function startController()
+	private function startController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		$this->timer->start('controller');
 		$this->timer->start('controller_constructor');
@@ -426,7 +428,7 @@ class Dispatcher
 		{
 			$controller = $this->controller;
 
-			return $controller(...$this->parameters);
+			return $controller($request, $response, ...$this->parameters);
 		}
 
 		// Try to autoload the class
@@ -539,14 +541,14 @@ class Dispatcher
 	 *
 	 * @return mixed
 	 */
-	private function createController()
+	private function createController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		/**
 		 * @var \dFramework\core\Controller
 		 */
 		$class = new $this->controller();
 
-		$class->initialize($this->request, $this->response);
+		$class->initialize($request, $response);
 
 		return $class;
 	}
@@ -600,7 +602,7 @@ class Dispatcher
 
 				unset($override);
 
-				$controller = $this->createController();
+				$controller = $this->createController($this->request, $this->response);
 				$this->runController($controller);
 			}
 
