@@ -197,12 +197,19 @@ $rest['jwt'] = [
     /**
      * Cle du token
      */
-    'key' => 'df_jwt_key',
+    'key' => env('jwt.key', 'df_jwt_key'),
     /**
      * Temps d'expiration du token en minute
      */
-    'exp_time' => 5,
-
+    'exp_time' => env('jwt.time', 5),
+	/**
+	 * Specifie si on doit stoker les données du payload dans un champ distinct
+	 */
+	'distinct' => env('jwt.distinct', false),
+	/**
+	 * Defini l'algorithme a utiliser
+	 */
+	'algo' => env('jwt.algo', 'HS256')
 ];
 
 
