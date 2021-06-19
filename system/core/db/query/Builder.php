@@ -157,13 +157,13 @@ class Builder
     /**
      * Sets the table
      *
-     * @param string|string[] $tables
+     * @param string $table
      * @alias self::from()
      * @return self
      */
-    final public function into($tables) : self
+    final public function into(string $table) : self
     {
-        return $this->from($tables);
+        return $this->from($table);
     }
 
     /**
