@@ -265,6 +265,8 @@ class Router
 	 */
 	public function handle(string $uri = null)
 	{
+		$uri = trim($uri, '/');
+
 		if (empty($uri))
 		{
 			$uri = '/';
