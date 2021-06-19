@@ -47,26 +47,25 @@ use Throwable;
  */
 class Controller extends CoreController
 {
-    /**
+	/**
      * Common HTTP status codes and their respective description.
      *
      * @link http://www.restapitutorial.com/httpstatuscodes.html
      */
-    const HTTP_OK                 = 200;
-    const HTTP_CREATED            = 201;
-    const HTTP_NO_CONTENT         = 204;
-    const HTTP_NOT_MODIFIED       = 304;
-    const HTTP_BAD_REQUEST        = 400;
-    const HTTP_UNAUTHORIZED       = 401;
-    const HTTP_FORBIDDEN          = 403;
-    const HTTP_NOT_FOUND          = 404;
-    const HTTP_METHOD_NOT_ALLOWED = 405;
-    const HTTP_NOT_ACCEPTABLE     = 406;
-    const HTTP_CONFLICT           = 409;
-    const HTTP_INVALID_TOKEN      = 498;
-    const HTTP_INTERNAL_ERROR     = 500;
-    const HTTP_NOT_IMPLEMENTED    = 501;
-
+	const HTTP_OK                 = 200;
+	const HTTP_CREATED            = 201;
+	const HTTP_NO_CONTENT         = 204;
+	const HTTP_NOT_MODIFIED       = 304;
+	const HTTP_BAD_REQUEST        = 400;
+	const HTTP_UNAUTHORIZED       = 401;
+	const HTTP_FORBIDDEN          = 403;
+	const HTTP_NOT_FOUND          = 404;
+	const HTTP_METHOD_NOT_ALLOWED = 405;
+	const HTTP_NOT_ACCEPTABLE     = 406;
+	const HTTP_CONFLICT           = 409;
+	const HTTP_INVALID_TOKEN      = 498;
+	const HTTP_INTERNAL_ERROR     = 500;
+	const HTTP_NOT_IMPLEMENTED    = 501;
 
     /**
      * List of allowed REST format.
@@ -150,6 +149,8 @@ class Controller extends CoreController
             $this->execAnnotations($reflection);
 
             $this->checkProcess();
+			$instance->payload = $this->payload;
+
             return call_user_func_array([$instance, $method], (array) $params);
         }
         catch (Throwable $ex) {
@@ -185,7 +186,12 @@ class Controller extends CoreController
     protected function checkProcess()
     {
         $this->_checkDevProcess();
-        $this->_checkClientProcess();
+
+        if (!$this->_checkClientProcess())
+        {
+            Service::emitter()->emit($this->response);
+            exit;
+        }
     }
 
     /**
@@ -732,26 +738,33 @@ class Controller extends CoreController
     /**
      * Verifie si les informations fournis par le client du ws sont conforme aux attentes du developpeur
      *
+     * @return bool
      * @throws Exception
      */
-    private function _checkClientProcess()
+    private function _checkClientProcess() : bool
     {
         // Verifie si la requete est en ajax
         if (true !== $this->request->is('ajax') AND true === $this->_config['ajax_only'])
         {
-            return $this->notAcceptable(lang('rest.ajax_only', null, $this->_locale));
+            $this->notAcceptable(lang('rest.ajax_only', null, $this->_locale));
+
+            return false;
         }
 
         // Verifie si la requete est en https
         if (true !== $this->request->is('https') AND true === $this->_config['force_https'])
         {
-            return $this->forbidden(lang('rest.unsupported', null, $this->_locale));
+            $this->forbidden(lang('rest.unsupported', null, $this->_locale));
+
+            return false;
         }
 
         // Verifie si la methode utilisee pour la requete est autorisee
         if (true !== in_array(strtoupper($this->request->getMethod()), $this->_config['allowed_methods']))
         {
-            return $this->notAcceptable(lang('rest.unknown_method', null,$this->_locale));
+            $this->notAcceptable(lang('rest.unknown_method', null,$this->_locale));
+
+            return false;
         }
 
         // Verifie que l'ip qui emet la requete n'est pas dans la blacklist
@@ -765,7 +778,9 @@ class Controller extends CoreController
             // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
             if (preg_match($pattern, $this->_config['ip_blacklist']))
             {
-                return $this->unauthorized(lang('rest.ip_denied', null, $this->_locale));
+                $this->unauthorized(lang('rest.ip_denied', null, $this->_locale));
+
+                return false;
             }
         }
 
@@ -784,7 +799,9 @@ class Controller extends CoreController
 
             if (true !== in_array($this->request->clientIp(), $whitelist))
             {
-                return $this->unauthorized(lang('rest.ip_unauthorized', null, $this->_locale));
+                $this->unauthorized(lang('rest.ip_unauthorized', null, $this->_locale));
+
+                return false;
             }
         }
 
@@ -797,11 +814,15 @@ class Controller extends CoreController
 
                 if ($payload instanceof Throwable)
                 {
-                    return $this->internalError('JWT Exception : ' . $payload->getMessage());
+					$this->invalidToken('JWT Exception : ' . $payload->getMessage());
+
+                    return false;
                 }
                 $this->payload = $payload;
             }
         }
+
+        return true;
     }
 
     /**
@@ -840,7 +861,10 @@ class Controller extends CoreController
             return $matches[1];
         }
     }
-    protected function getAuthorizationHeader()
+	/**
+	 * Recupere le header "Authorization"
+	 */
+	protected function getAuthorizationHeader()
     {
         $header = null;
         if (isset($_SERVER['Authorization']))
@@ -915,6 +939,5 @@ class Controller extends CoreController
 
             $this->runMiddleware(new Cors($config));
         }
-
     }
 }
