@@ -17,11 +17,11 @@
 
 use dFramework\core\loader\Service;
 use dFramework\core\output\Format;
-use Firebase\JWT\JWT;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use dFramework\core\utilities\Jwt;
 
 /**
  * dFramework JwtAuthMiddleware
@@ -72,16 +72,13 @@ class JwtAuthMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        $headers = getallheaders();
-        $authorization = $headers['Authorization'] ?? null;
+		$token = Jwt::getToken();
 
-        if (empty($authorization)) {
+        if (empty($token)) {
             return $this->respond(lang('rest.token_not_found', null, $this->config['language']));
         }
-        $token = str_replace('Bearer ', '', $authorization);
-
         try {
-            $payload = JWT::decode($token, $this->config['jwt']['key'], ['HS256']);
+			$payload = Jwt::decode($token);
 
 			/**
 			 * @example
@@ -104,7 +101,7 @@ class JwtAuthMiddleware implements MiddlewareInterface
 			*/
         }
         catch(Throwable $e) {
-            return $this->respond('JWT Exception : ' . $e->getMessage());
+            return $this->respond($e->getMessage());
         }
 
         return $handler->handle($request);

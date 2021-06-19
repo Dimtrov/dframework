@@ -25,8 +25,8 @@ use dFramework\core\loader\Service;
 use dFramework\core\output\Format;
 use dFramework\core\utilities\Arr;
 use dFramework\core\utilities\Str;
+use dFramework\core\utilities\Jwt;
 use dFramework\middlewares\Cors;
-use Firebase\JWT\JWT;
 use ReflectionAnnotatedClass;
 use ReflectionAnnotatedMethod;
 use Throwable;
@@ -657,19 +657,11 @@ class Controller extends CoreController
      */
     final protected function generateToken(array $data = [], array $config = []) : string
     {
-        $jwt_conf = array_merge($this->_config['jwt'], $config);
-
-        $payload = array_merge([
-            'iat' => time(),
-            'iss' => base_url(),
-            'exp' => time() + (60 * $jwt_conf['exp_time'])
-        ], $data);
-
         try {
-            return JWT::encode($payload, $jwt_conf['key']);
+            return Jwt::encode($data, $config);
         }
         catch(\Exception $e) {
-            return $this->internalError('JWT Exception : ' . $e->getMessage());
+            return $this->internalError($e->getMessage());
         }
     }
 
@@ -814,7 +806,7 @@ class Controller extends CoreController
 
                 if ($payload instanceof Throwable)
                 {
-					$this->invalidToken('JWT Exception : ' . $payload->getMessage());
+					$this->invalidToken($payload->getMessage());
 
                     return false;
                 }
@@ -830,14 +822,15 @@ class Controller extends CoreController
      *
      * @param string $token
      * @param string $authType
+     * @param array $config
      * @return mixed
      */
-    protected function decodeToken($token, string $authType = 'bearer')
+    protected function decodeToken(string $token, string $authType = 'bearer', array $config = [])
     {
         if ('bearer' === $authType)
         {
             try {
-                return JWT::decode($token, $this->_config['jwt']['key'], ['HS256']);
+                return JWT::decode($token, $config);
             }
             catch(Throwable $e) {
                 return $e;
@@ -848,49 +841,22 @@ class Controller extends CoreController
 
     /**
      * Recupere le token d'acces a partier des headers
+	 *
+	 * @return string|null
      */
-    protected function getBearerToken()
+    protected function getBearerToken() : ?string
     {
-        $headers = $this->getAuthorizationHeader();
-        if (empty($headers))
-        {
-            return $this->unauthorized(lang('rest.token_not_found', null, $this->_locale));
-        }
-        if (preg_match('/Bearer\s(\S+)/', $headers, $matches))
-        {
-            return $matches[1];
-        }
+		return Jwt::getToken();
     }
+
 	/**
 	 * Recupere le header "Authorization"
+	 *
+	 * @return string|null
 	 */
-	protected function getAuthorizationHeader()
+	protected function getAuthorizationHeader() : ?string
     {
-        $header = null;
-        if (isset($_SERVER['Authorization']))
-        {
-            $header = trim($_SERVER['Authorization']);
-        }
-        else if (isset($_SERVER['HTTP_AUTHORIZATION']))
-        {
-            // Ngnix or fast CGI
-            $header = trim($_SERVER['HTTP_AUTHORIZATION']);
-        }
-        else if (function_exists('apache_request_headers'))
-        {
-            $requestHeaders = apache_request_headers();
-
-            $requestHeaders = array_combine(
-                array_map('ucwords', array_keys($requestHeaders)),
-                array_values(($requestHeaders))
-            );
-            if (isset($requestHeaders['Authorization']))
-            {
-                $header = trim($requestHeaders['Authorization']);
-            }
-        }
-
-        return $header;
+		return Jwt::getAuthorization();
     }
 
     /**
