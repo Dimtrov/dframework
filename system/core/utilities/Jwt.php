@@ -62,6 +62,8 @@ class Jwt
 			'algo'     => 'HS256'
 		], $config['jwt'] ?? []);
 
+		$this->config['public_key'] = $this->config['public_key'] ?? $this->config['key'];
+
 		$this->locale = $config['language'] ?? 'en';
 	}
 
@@ -172,7 +174,7 @@ class Jwt
 		$conf = self::config($config);
 
         try {
-			return Firebase::decode($token, $conf->key, (array) $conf->algo);
+			return Firebase::decode($token, $conf->public_key, (array) $conf->algo);
 		}
 		catch(Throwable $e) {
 			throw new Exception('JWT Exception : ' . $e->getMessage(), 0, $e);

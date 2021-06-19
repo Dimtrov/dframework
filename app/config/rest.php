@@ -199,6 +199,12 @@ $rest['jwt'] = [
      */
     'key' => env('jwt.key', 'df_jwt_key'),
     /**
+	 * La cle et la cle publique doivent etre les memes en cas d'utilisation simple
+	 * si vous utiliser l'algorithme RS256, vous devez definir la clé privée et la clé public respectivement
+	 * @link https://github.com/firebase/php-jwt#example-with-rs256-openssl
+	 */
+	'public_key' => env('jwt.public_key', 'df_jwt_key'),
+    /**
      * Temps d'expiration du token en minute
      */
     'exp_time' => env('jwt.time', 5),
