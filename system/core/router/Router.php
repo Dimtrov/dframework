@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -22,6 +22,8 @@ use dFramework\core\exception\RouterException;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ServerRequestInterface;
+use dFramework\core\http\Response;
+use dFramework\core\output\Format;
 
 /**
  * Parses the request URL into controller, action, and parameters. Uses the connected routes
@@ -32,7 +34,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * @package		dFramework
  * @subpackage	Core
  * @category    Router
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       2.0
  * @credit		CodeIgniter 4.0 (CodeIgniter\Router\Router)
@@ -44,10 +46,16 @@ class Router
 	 * @var RouteCollection
 	 */
 	protected $collection;
-    /**
+
+	/**
      * @var ServerRequest
      */
     protected $request;
+
+	/**
+     * @var Response
+     */
+    protected $response;
 
 	/**
 	 * The route that was matched for this request.
@@ -125,6 +133,7 @@ class Router
 	{
         $this->collection = $routes;
     	$this->request = $request;
+		$this->response = Service::response();
 
 		$this->setController($this->collection->defaultController());
 		$this->setMethod($this->collection->defaultMethod());
@@ -160,6 +169,7 @@ class Router
 			ucfirst($name)
 		) . 'Controller';
 	}
+
 	/**
 	 * Returns the name of the method to run in the
 	 * chosen container.
@@ -285,12 +295,11 @@ class Router
 
 				if (!is_file($file))
 				{
-					RouterException::except(
-						'Controller not found',
-						'Can\'t load controller <b>'.preg_replace('#Controller$#', '',$this->controllerFile.'\\'.$this->controller).'</b>.
-						The file &laquo; '.$file.' &raquo; do not exist',
-						404
-					);
+					$this->respondError('
+						Controller not found
+						<br>
+						Can\'t load controller <b>'.preg_replace('#Controller$#', '',$this->controllerFile.'\\'.$this->controller).'</b>. The file « '.$file.' » do not exist
+					', 404);
 				}
 
 				$this->controllerFile = $file;
@@ -305,11 +314,11 @@ class Router
 		// want this, like in the case of API's.
 		if (! $this->collection->autoRoute())
 		{
-			RouterException::except(
-				'Aucune route trouvée',
-				'Nous n\'avons trouvé aucune route correspondante à l\'URI &laquo; '.$uri.' &raquo;',
-				404
-			);
+			$this->respondError('
+				Aucune route trouvée
+				<br>
+				Nous n\'avons trouvé aucune route correspondante à l\'URI « '.$uri.' »
+			', 404);
 		}
 
 		$this->autoRoute($uri);
@@ -494,12 +503,11 @@ class Router
 
 		if (!is_file($file))
 		{
-			RouterException::except(
-				'Controller file not found',
-                'Impossible de charger le controleur <b>'.str_replace('Controller', '', $this->controllerName()).'</b> souhaité.
-                <br/>
-                Le fichier &laquo; '.$file.' &raquo; n\'existe pas'
-			);
+			$this->respondError('
+				Controller file not found
+				<br>
+				Can\'t load controller <b>'.str_replace('Controller', '', $this->controllerName()).'</b>. The file « '.$file.' » do not exist
+			', 404);
 		}
 		$this->controllerFile = $file;
 
@@ -666,5 +674,36 @@ class Router
 		}
 
 		$this->setController($class);
+	}
+
+	/**
+	 * Formatte et renvoie les erreurs liées au routing
+	 *
+	 * @param string $message
+	 * @param int $code
+	 * @return void
+	 */
+	private function respondError(string $message, int $code)
+	{
+		$message = explode('<br>', $message);
+		$error = array_shift($message);
+		$details = implode('<br>', $message);
+
+		$error = trim($error);
+		$details = trim($details);
+
+		if (preg_match('#json#i', $this->request->getHeaderLine('CONTENT-TYPE')))
+		{
+			$output = Format::factory(compact('code', 'error', 'details'))->to_json();
+
+        	$this->response = $this->response->withStringBody($output);
+			$this->response = $this->response->withCharset(strtolower(config('general.charset') ?? 'utf-8'));
+			$this->response = $this->response->withType('application/json');
+			$this->response = $this->response->withStatus($code);
+
+			exit(Service::emitter()->emit($this->response));
+		}
+
+		RouterException::except($error, $details, $code);
 	}
 }
