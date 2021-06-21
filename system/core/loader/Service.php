@@ -17,24 +17,25 @@
 
 namespace dFramework\core\loader;
 
-use dFramework\core\http\Uri;
-use dFramework\core\http\Input;
 use dFramework\core\db\Database;
-use dFramework\core\output\Cache;
-use dFramework\core\http\Response;
-use dFramework\core\router\Router;
-use dFramework\core\output\Language;
-use dFramework\core\debug\Timer;
 use dFramework\core\db\query\Builder;
+use dFramework\core\debug\Timer;
 use dFramework\core\debug\Toolbar;
-use dFramework\core\http\Redirection;
-use dFramework\core\utilities\Helpers;
 use dFramework\core\event\EventManager;
+use dFramework\core\exception\Logger;
+use dFramework\core\http\Input;
 use dFramework\core\http\Negotiator;
-use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Redirection;
+use dFramework\core\http\Response;
 use dFramework\core\http\ResponseEmitter;
+use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Uri;
+use dFramework\core\output\Cache;
+use dFramework\core\output\Language;
 use dFramework\core\output\View;
 use dFramework\core\router\RouteCollection;
+use dFramework\core\router\Router;
+use dFramework\core\utilities\Helpers;
 
 /**
  * Service
@@ -310,7 +311,7 @@ class Service
 	 *
 	 * @param \dFramework\core\router\RouteCollection $routes
 	 * @param \dFramework\core\http\ServerRequest                    $request
-	 * @param boolean                                      $getShared
+	 * @param boolean                                      $shared
 	 *
 	 * @return \dFramework\core\router\Router
 	 */
@@ -367,7 +368,7 @@ class Service
     /**
 	 * Return the debug toolbar.
 	 *
-	 * @param boolean         $getShared
+	 * @param boolean         $shared
 	 *
 	 * @return \dFramework\core\debug\Toolbar
 	 */
@@ -379,6 +380,23 @@ class Service
 		}
 
 		return Injector::factory(Toolbar::class);
+	}
+
+	/**
+	 * Return the logger class.
+	 *
+	 * @param boolean         $shared
+	 *
+	 * @return \dFramework\core\exception\Logger
+	 */
+	public static function logger(bool $shared = true)
+	{
+		if ($shared)
+		{
+            return Injector::singleton(Logger::class);
+		}
+
+		return Injector::factory(Logger::class);
 	}
 
 
