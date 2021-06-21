@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -42,7 +42,7 @@ use function GuzzleHttp\Psr7\stream_for;
 
 // ================================= FONCTIONS D'ACCESSIBILITE ================================= //
 
-if (!function_exists('env')) 
+if (!function_exists('env'))
 {
 
     /**
@@ -165,11 +165,11 @@ if (! function_exists('config'))
      */
 	function config(string $config, $value = null, $force_set = false)
 	{
-        if (!empty($value) OR (empty($value) AND true == $force_set)) 
+        if (!empty($value) OR (empty($value) AND true == $force_set))
         {
             Config::set($config, $value);
         }
-        
+
         return Config::get($config);
     }
 }
@@ -303,7 +303,7 @@ if (!function_exists('is_php'))
 	}
 }
 
-if (!function_exists('is_windows')) 
+if (!function_exists('is_windows'))
 {
     /**
      * Determine whether the current environment is Windows based.
@@ -347,7 +347,7 @@ if (!function_exists('is_online'))
 {
     /**
      * Test if a application is running in local or online
-     * 
+     *
      * @return bool
      */
     function is_online()
@@ -356,7 +356,7 @@ if (!function_exists('is_online'))
     }
 }
 
-if (!function_exists('is_ajax_request')) 
+if (!function_exists('is_ajax_request'))
 {
     /**
      * Test to see if a request contains the HTTP_X_REQUESTED_WITH header.
@@ -409,7 +409,7 @@ if (!function_exists('base_url'))
     }
 }
 
-if (!function_exists('current_url')) 
+if (!function_exists('current_url'))
 {
     /**
 	 * Current URL
@@ -454,7 +454,7 @@ if (!function_exists('previous_url'))
 		if (false === filter_var($referer, FILTER_VALIDATE_URL))
 		{
 			$referer = Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
-		}	
+		}
 
 		$referer = $referer ?? site_url('/');
 
@@ -462,7 +462,7 @@ if (!function_exists('previous_url'))
 	}
 }
 
-if (!function_exists('redirect')) 
+if (!function_exists('redirect'))
 {
     /**
      * Redirect user
@@ -526,7 +526,7 @@ if (!function_exists('link_to'))
 	}
 }
 
-if (!function_exists('clean_url')) 
+if (!function_exists('clean_url'))
 {
     /**
      * @param string $url
@@ -559,7 +559,7 @@ if (!function_exists('dd'))
 	}
 }
 
-if (!function_exists('vd')) 
+if (!function_exists('vd'))
 {
 	/**
 	 * Shortcut to ref, HTML mode
@@ -574,7 +574,7 @@ if (!function_exists('vd'))
   	}
 }
 
-if (!function_exists('vdt')) 
+if (!function_exists('vdt'))
 {
 	/**
 	 * Shortcut to ref, plain text mode
@@ -587,8 +587,8 @@ if (!function_exists('vdt'))
 		$params = func_get_args();
 		return 	Service::helpers()->rt(...$params);
   	}
-}  
-  
+}
+
 
 // ================================= FONCTIONS DIVERSES ================================= //
 
@@ -637,17 +637,17 @@ if (! function_exists('force_https'))
 		}
 
         $baseURL = base_url();
-        
+
 		if (strpos($baseURL, 'http://') === 0)
 		{
 			$baseURL = (string) substr($baseURL, strlen('http://'));
 		}
 
 		$uri = Uri::createURIString(
-            'https', 
-            $baseURL, 
+            'https',
+            $baseURL,
             $request->uri()->getPath(), // Absolute URIs should use a "/" for an empty path
-            $request->uri()->getQuery(), 
+            $request->uri()->getQuery(),
             $request->uri()->getFragment()
 		);
 
@@ -658,7 +658,7 @@ if (! function_exists('force_https'))
 	}
 }
 
-if (!function_exists('ip_address')) 
+if (!function_exists('ip_address'))
 {
     /**
      * Return IP Address of current user
@@ -703,7 +703,7 @@ if (!function_exists('lang'))
 	}
 }
 
-if (!function_exists('log'))
+if (!function_exists('logger'))
 {
 	/**
 	 * A convenience/compatibility method for logging events through
@@ -719,18 +719,22 @@ if (!function_exists('log'))
 	 *  - info
 	 *  - debug
 	 *
-	 * @param string     $level
+	 * @param string|int $level
 	 * @param string     $message
 	 * @param array|null $context
 	 *
-	 * @return mixed
+	 * @return \dFramework\core\exception\Logger|mixed
 	 */
-	function log(string $level, string $message, array $context = [])
+	function logger($level = null, ?string $message = null, ?string $file = null, ?int $line = null)
 	{
-		// @codeCoverageIgnoreStart
-		//return Services::logger(true)
-		//	->log($level, $message, $context);
-		// @codeCoverageIgnoreEnd
+		$logger = Service::logger();
+
+		if (!empty($level) AND !empty($message))
+		{
+			return $logger->write($level, $message, $file, $line);
+		}
+
+		return $logger;
 	}
 }
 
@@ -797,7 +801,7 @@ if (!function_exists('view_exist'))
 		$ext = str_replace('.', '', $ext);
 		$name = str_replace(VIEW_DIR, '', $name);
 		$name = preg_match('#\.'.$ext.'$#', $name) ? $name : $name.'.'.$ext;
-        
+
         return is_file(VIEW_DIR.rtrim($name, DS));
     }
 }
@@ -806,7 +810,7 @@ if (!function_exists('view'))
 {
 	/**
      * Charge une vue
-     * 
+     *
      * @param string $view
      * @param array|null $data
      * @param array|null $options
@@ -817,7 +821,7 @@ if (!function_exists('view'))
     {
         $object = Service::viewer(false);
 		$object->addData($data)->addConfig($config)->setOptions($options);
-		
+
         return $object->display($view);
     }
 }
@@ -871,7 +875,7 @@ if (!function_exists('to_stream'))
 	}
 }
 
-if (! function_exists('value')) 
+if (! function_exists('value'))
 {
     /**
      * Return the default value of the given value.
@@ -885,7 +889,7 @@ if (! function_exists('value'))
     }
 }
 
-if (! function_exists('with')) 
+if (! function_exists('with'))
 {
     /**
      * Return the given value, optionally passed through the given callback.
