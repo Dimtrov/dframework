@@ -7,7 +7,7 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -18,8 +18,11 @@
 namespace dFramework\core\exception;
 
 use dFramework\core\Config;
+use Whoops\Handler\JsonResponseHandler;
+use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
+use Whoops\Util\Misc;
 
 /**
  * Exception
@@ -29,7 +32,7 @@ use Whoops\Run;
  * @package		dFramework
  * @subpackage	Core
  * @category    Exception
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.0
  * @file        /system/core/exception/Exception.php
@@ -41,12 +44,25 @@ class Exception extends \Exception
      * Initialise la capture des exception
      */
     public static function init() : void
-    {  
-        if (Config::get('general.environment') === 'dev') 
+    {
+        if (Config::get('general.environment') === 'dev')
         {
             $whoops  =  new Run();
-            $whoops->pushHandler(new PrettyPageHandler); 
-            $whoops->pushHandler([New Log, 'register']);
+
+			if (Misc::isCommandLine())
+			{
+				$whoops->pushHandler(new PlainTextHandler);
+			}
+			else if (Misc::isAjaxRequest())
+			{
+				$whoops->pushHandler(new JsonResponseHandler);
+			}
+			else
+			{
+				$whoops->pushHandler(new PrettyPageHandler);
+			}
+			$whoops->pushHandler([New Logger, 'register']);
+
             $whoops->register();
         }
     }

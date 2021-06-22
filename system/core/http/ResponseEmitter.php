@@ -7,23 +7,23 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\http;
 
-use dFramework\core\exception\Log;
+use dFramework\core\exception\Logger;
 use GuzzleHttp\Psr7\LimitStream;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Response Emitter
- * 
+ *
  * Emits a Response to the PHP Server API.
  *
  * This emitter offers a few changes from the emitters offered by
@@ -38,7 +38,7 @@ use Psr\Http\Message\ResponseInterface;
  * @package		dFramework
  * @subpackage	Core
  * @category    Http
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/middleware
  * @since       3.3.0
  * @credit      CakePHP 4.0 (Cake\Http\ResponseEmitter)
@@ -55,16 +55,16 @@ class ResponseEmitter
     public function emit(ResponseInterface $response, int $maxBufferLength = 8192)
     {
         $file = $line = null;
-        if (headers_sent($file, $line)) 
+        if (headers_sent($file, $line))
         {
             $message = "Unable to emit headers. Headers sent in file=$file line=$line";
-            if (config('general.environment') === 'dev') 
+            if (config('general.environment') === 'dev')
             {
                 trigger_error($message, E_USER_WARNING);
-            } 
-            else 
+            }
+            else
             {
-                Log::warning($message, __FILE__, __LINE__);
+                Logger::warning($message, __FILE__, __LINE__);
             }
         }
 
@@ -73,16 +73,16 @@ class ResponseEmitter
         $this->flush();
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
-        if (is_array($range)) 
+        if (is_array($range))
         {
             $this->emitBodyRange($range, $response, $maxBufferLength);
-        } 
-        else 
+        }
+        else
         {
             $this->emitBody($response, $maxBufferLength);
         }
 
-        if (function_exists('fastcgi_finish_request')) 
+        if (function_exists('fastcgi_finish_request'))
         {
             session_write_close();
             fastcgi_finish_request();
@@ -98,13 +98,13 @@ class ResponseEmitter
      */
     protected function emitBody(ResponseInterface $response, int $maxBufferLength)
     {
-        if (in_array($response->getStatusCode(), [204, 304])) 
+        if (in_array($response->getStatusCode(), [204, 304]))
         {
             return;
         }
         $body = $response->getBody();
 
-        if (!$body->isSeekable()) 
+        if (!$body->isSeekable())
         {
             echo $body;
 
@@ -112,7 +112,7 @@ class ResponseEmitter
         }
 
         $body->rewind();
-        while (!$body->eof()) 
+        while (!$body->eof())
         {
             echo $body->read($maxBufferLength);
         }
@@ -132,7 +132,7 @@ class ResponseEmitter
 
         $body = $response->getBody();
 
-        if (!$body->isSeekable()) 
+        if (!$body->isSeekable())
         {
             $contents = $body->getContents();
             echo substr($contents, $first, $last - $first + 1);
@@ -144,9 +144,9 @@ class ResponseEmitter
         $body->rewind();
         $pos = 0;
         $length = $last - $first + 1;
-        while (!$body->eof() && $pos < $length) 
+        while (!$body->eof() && $pos < $length)
         {
-            if (($pos + $maxBufferLength) > $length) 
+            if (($pos + $maxBufferLength) > $length)
             {
                 echo $body->read($length - $pos);
                 break;
@@ -195,15 +195,15 @@ class ResponseEmitter
             $cookies = $response->getCookies();
         }
 
-        foreach ($response->getHeaders() as $name => $values) 
+        foreach ($response->getHeaders() as $name => $values)
         {
-            if (strtolower($name) === 'set-cookie') 
+            if (strtolower($name) === 'set-cookie')
             {
                 $cookies = array_merge($cookies, $values);
                 continue;
             }
             $first = true;
-            foreach ($values as $value) 
+            foreach ($values as $value)
             {
                 header(sprintf(
                     '%s: %s',
@@ -225,7 +225,7 @@ class ResponseEmitter
      */
     protected function emitCookies(array $cookies)
     {
-        foreach ($cookies as $cookie) 
+        foreach ($cookies as $cookie)
         {
             if (is_array($cookie)) {
                 setcookie(
@@ -240,12 +240,12 @@ class ResponseEmitter
                 continue;
             }
 
-            if (strpos($cookie, '";"') !== false) 
+            if (strpos($cookie, '";"') !== false)
             {
                 $cookie = str_replace('";"', '{__cookie_replace__}', $cookie);
                 $parts = str_replace('{__cookie_replace__}', '";"', explode(';', $cookie));
-            } 
-            else 
+            }
+            else
             {
                 $parts = preg_split('/\;[ \t]*/', $cookie);
             }
@@ -261,13 +261,13 @@ class ResponseEmitter
                 'httponly' => false,
             ];
 
-            foreach ($parts as $part) 
+            foreach ($parts as $part)
             {
-                if (strpos($part, '=') !== false) 
+                if (strpos($part, '=') !== false)
                 {
                     list($key, $value) = explode('=', $part);
-                } 
-                else 
+                }
+                else
                 {
                     $key = $part;
                     $value = true;
@@ -276,7 +276,7 @@ class ResponseEmitter
                 $key = strtolower($key);
                 $data[$key] = $value;
             }
-            if (!empty($data['expires'])) 
+            if (!empty($data['expires']))
             {
                 $data['expires'] = strtotime($data['expires']);
             }
@@ -301,12 +301,12 @@ class ResponseEmitter
      */
     protected function flush(?int $maxBufferLevel = null)
     {
-        if (null === $maxBufferLevel) 
+        if (null === $maxBufferLevel)
         {
             $maxBufferLevel = ob_get_level();
         }
 
-        while (ob_get_level() > $maxBufferLevel) 
+        while (ob_get_level() > $maxBufferLevel)
         {
             ob_end_flush();
         }
@@ -322,7 +322,7 @@ class ResponseEmitter
      */
     protected function parseContentRange(string $header)
     {
-        if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) 
+        if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches))
         {
             return [
                 $matches['unit'],
