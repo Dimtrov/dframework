@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -26,7 +26,7 @@ use dFramework\core\exception\Exception;
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Migration
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.3.0
  * @file		/system/core/db/migration/Creator.php
@@ -41,9 +41,9 @@ class Creator
      * @var array
      */
     protected $indexes = [
-        'index' => [],
+        'index'   => [],
         'primary' => [],
-        'unique' => [],
+        'unique'  => [],
     ];
     /**
      * @var array
@@ -56,41 +56,42 @@ class Creator
     private $sql;
 
     private $mapTypes = [
-        'boolean' => 'TINYINT(1)',
-        
-        'bigInteger' => 'BIGINT',
-        'integer' => 'INT',
+        'boolean'       => 'TINYINT(1)',
+
+		'bigInteger'    => 'BIGINT',
+        'integer'       => 'INT',
         'mediumInteger' => 'MEDIUMINT',
-        'smallInteger' => 'SMALLINT',
-        'tinyInteger' => 'TINYINT',
-        'decimal' => 'DECIMAL',
-        'double' => 'DOUBLE',
-        'float' => 'FLOAT',
-        
-        'date' => 'DATE',
-        'dateTime' => 'DATETIME',
-        'dateTimeTz' => 'DATETIME',
-        'time' => 'TIME',
-        'timeTz' => 'TIME',
-        'timestamp' => 'TIMESTAMP',
-        'timestampTz' => 'TIMESTAMP',
-        'year' => 'YEAR',
-        
-        'binary' => 'BINARY',
-        'char' => 'CHAR',
-        'longText' => 'LONGTEXT',
-        'mediumText' => 'MEDIUMTEXT',
-        'string' => 'VARCHAR',
-        'text' => 'TEXT',
+        'smallInteger'  => 'SMALLINT',
+        'tinyInteger'   => 'TINYINT',
+        'decimal'       => 'DECIMAL',
+        'double'        => 'DOUBLE',
+        'float'         => 'FLOAT',
 
-        'enum' => 'ENUM',
-        'set' => 'SET',
+		'date'          => 'DATE',
+        'dateTime'      => 'DATETIME',
+        'dateTimeTz'    => 'DATETIME',
+        'time'          => 'TIME',
+        'timeTz'        => 'TIME',
+        'timestamp'     => 'TIMESTAMP',
+        'timestampTz'   => 'TIMESTAMP',
+        'year'          => 'YEAR',
 
-        'json' => 'JSON',
-        'jsonb' => 'JSON',
+		'binary'        => 'BINARY',
+        'char'          => 'CHAR',
+        'longText'      => 'LONGTEXT',
+        'mediumText'    => 'MEDIUMTEXT',
+        'string'        => 'VARCHAR',
+        'text'          => 'TEXT',
+        'uuid'          => 'VARCHAR(37)',
 
-        'geometry' => 'GEOMETRY',
-        'point' => 'POINT',
+		'enum'          => 'ENUM',
+        'set'           => 'SET',
+
+		'json'          => 'JSON',
+        'jsonb'         => 'JSON',
+
+        'geometry'      => 'GEOMETRY',
+        'point'         => 'POINT',
     ];
 
     /**
@@ -99,7 +100,7 @@ class Creator
      * @param string $table
      * @return string
      */
-    public function createTable(string $table, array $commands = []) : string 
+    public function createTable(string $table, array $commands = []) : string
     {
         $this->columns = array_map(function($v){
             return preg_replace('#AFTER ([a-zA-Z0-9_-]+)#', '', $v);
@@ -108,16 +109,16 @@ class Creator
         $sql = "DROP TABLE IF EXISTS ".$table.";\n";
         $sql .= "CREATE TABLE ".$table." (";
         $sql .= "\n\t".join(", \n\t", $this->columns);
-          
-        if (!empty($this->indexes['primary'])) 
+
+        if (!empty($this->indexes['primary']))
         {
             $sql .= ",\n\tPRIMARY KEY(".join(',', $this->indexes['primary']).")";
         }
-        foreach ($this->indexes['unique'] As $index) 
+        foreach ($this->indexes['unique'] As $index)
         {
             $sql .= ",\n\tUNIQUE INDEX ".$index."(".$index.")";
         }
-        foreach ($this->indexes['index'] As $index) 
+        foreach ($this->indexes['index'] As $index)
         {
             $sql .= ",\n\tINDEX ".$index."(".$index.")";
         }
@@ -126,18 +127,18 @@ class Creator
             if ($command->name === 'foreign')
             {
                 $sql .= ", \n\tFOREIGN KEY ".$command->index."(".join(',', $command->columns).") REFERENCES ".$command->on."(".join(',', (array) $command->references).")";
-                if (!empty($command->onUpdate)) 
+                if (!empty($command->onUpdate))
                 {
                     $sql .= " ON UPDATE " .$command->onUpdate;
                 }
-                if (!empty($command->onDelete)) 
+                if (!empty($command->onDelete))
                 {
                     $sql .= " ON DELETE " .$command->onDelete;
                 }
             }
         }
         $sql .= "\n);";
-        
+
         return $sql;
     }
 
@@ -148,7 +149,7 @@ class Creator
      * @param bool $ifExist
      * @return string
      */
-    public function dropTable(string $table, bool $ifExist) : string 
+    public function dropTable(string $table, bool $ifExist) : string
     {
         return 'DROP TABLE '.($ifExist ? 'IF EXISTS ' : '').$table;
     }
@@ -160,11 +161,11 @@ class Creator
      * @param array $commands
      * @return string
      */
-    public function modifyTable(string $table, array $commands = []) : string 
+    public function modifyTable(string $table, array $commands = []) : string
     {
         $alters = array_merge([], array_map(function($v){ return 'ADD COLUMN ' .$v; }, $this->columns));
-        
-        foreach ($commands As $command) 
+
+        foreach ($commands As $command)
         {
             if ($command->name === 'dropColumn')
             {
@@ -194,38 +195,38 @@ class Creator
             {
                 $alters = array_merge($alters, ['DROP INDEX '.($command->index ?? '').', ADD INDEX '.($command->index ?? '').'('.join(',', $command->columns).')']);
             }
-            foreach ($this->indexes['unique'] As $index) 
+            foreach ($this->indexes['unique'] As $index)
             {
                 $alters = array_merge($alters, ['ADD UNIQUE INDEX '.$index.'('.$index.')']);
             }
-            foreach ($this->indexes['index'] As $index) 
+            foreach ($this->indexes['index'] As $index)
             {
                 $alters = array_merge($alters, ['ADD INDEX '.$index.'('.$index.')']);
             }
             if ($command->name === 'foreign')
             {
                 $sql = 'FOREIGN KEY '.$command->index.'('.join(',', $command->columns).') REFERENCES '.$command->on.'('.join(',', (array) $command->references).')';
-                if (!empty($command->onUpdate)) 
+                if (!empty($command->onUpdate))
                 {
                     $sql .= ' ON UPDATE ' .$command->onUpdate;
                 }
-                if (!empty($command->onDelete)) 
+                if (!empty($command->onDelete))
                 {
                     $sql .= ' ON DELETE ' .$command->onDelete;
                 }
                 $alters = array_merge($alters, [$sql]);
             }
         }
-        
+
         $sql = "ALTER TABLE ".$table;
         $sql .= "\n\t";
-        $sql .= join(", \n\t", $alters);    
+        $sql .= join(", \n\t", $alters);
         $sql .= "\n;";
 
         return $sql;
     }
 
-    public function getSql() : string 
+    public function getSql() : string
     {
         return trim(trim($this->sql, "\n"), ',');
     }
@@ -237,39 +238,39 @@ class Creator
      * @param object $column
      * @return self
      */
-    public function makeColumn(object $column) : self 
+    public function makeColumn(object $column) : self
     {
-        if (empty($column->name) OR empty($column->type)) 
+        if (empty($column->name) OR empty($column->type))
         {
             throw new Exception("Error Processing Request", 1);
         }
         $code = [];
 
         $code[] = $column->name;
-        
+
         $code[] = $this->makeType($column);
-        
-        if (!$this->isNullable($column)) 
+
+        if (!$this->isNullable($column))
         {
             $code[] = 'NOT NULL';
         }
-        
+
         $code[] = $this->addDefault($column);
 
-       
-        if ($this->isAutoincrement($column)) 
+
+        if ($this->isAutoincrement($column))
         {
             $code[] = 'AUTO_INCREMENT';
         }
-        if (!empty($column->comment)) 
+        if (!empty($column->comment))
         {
             $code[] = 'COMMENT "'.htmlspecialchars($column->comment).'"';
         }
-        if (!empty($column->collation)) 
+        if (!empty($column->collation))
         {
             $code[] = 'COLLATE "'.htmlspecialchars($column->collation).'"';
         }
-        if (!empty($column->after)) 
+        if (!empty($column->after))
         {
             $code[] = 'AFTER '.$column->after;
         }
@@ -290,14 +291,14 @@ class Creator
      * @param object $column
      * @return string
      */
-    private function makeType(object $column) : string 
+    private function makeType(object $column) : string
     {
         $type  = $this->mapTypes[$column->type];
-        if ($this->isNumeric($column) AND $this->isUnsigned($column)) 
+        if ($this->isNumeric($column) AND $this->isUnsigned($column))
         {
             $type .= ' UNSIGNED';
-        } 
-        if ($this->isChar($column)) 
+        }
+        if ($this->isChar($column))
         {
             $type .= '('.($column->length ?? 255).')';
         }
@@ -305,9 +306,9 @@ class Creator
         {
             $type .= '('.($column->total ?? 8).', '.($column->places ?? 2).')';
         }
-        if ($this->isEnum($column)) 
+        if ($this->isEnum($column))
         {
-            if (empty($column->allowed)) 
+            if (empty($column->allowed))
             {
                 throw new Exception("Undefined ENUM/SET values");
             }
@@ -328,9 +329,9 @@ class Creator
         {
              return 'DEFAULT CURRENT_TIMESTAMP';
         }
-        if ($this->isDefault($column)) 
+        if ($this->isDefault($column))
         {
-            if ($column->type === 'boolean') 
+            if ($column->type === 'boolean')
             {
                 return 'DEFAULT '. (int) $column->default;
             }
@@ -344,17 +345,17 @@ class Creator
      * @param object $column
      * @return void
      */
-    private function addIndexes(object $column) 
+    private function addIndexes(object $column)
     {
-        if ($this->isPk($column)) 
+        if ($this->isPk($column))
         {
             $this->indexes['primary'][] = $column->name;
         }
-        if ($this->isUnique($column)) 
+        if ($this->isUnique($column))
         {
             $this->indexes['unique'][] = $column->name;
         }
-        if ($this->isIndex($column)) 
+        if ($this->isIndex($column))
         {
             $this->indexes['index'][] = $column->name;
         }
@@ -367,7 +368,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isPk(object $column) : bool 
+    private function isPk(object $column) : bool
     {
         return property_exists($column, 'primary') AND $column->primary === true;
     }
@@ -377,7 +378,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isUnique(object $column) : bool 
+    private function isUnique(object $column) : bool
     {
         return property_exists($column, 'unique') AND $column->unique === true;
     }
@@ -387,12 +388,12 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isIndex(object $column) : bool 
+    private function isIndex(object $column) : bool
     {
         return property_exists($column, 'index') AND $column->index === true;
     }
-    
-    
+
+
     /**
      * Check if a column is unsigned numerical value
      *
@@ -419,7 +420,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isUseCurrent(object $column) : bool 
+    private function isUseCurrent(object $column) : bool
     {
         return $this->isTimestamp($column) AND property_exists($column, 'useCurrent') AND $column->useCurrent === true;
     }
@@ -443,7 +444,7 @@ class Creator
     {
         return $this->isInteger($column) AND property_exists($column, 'autoIncrement') AND $column->autoIncrement === true;
     }
-    
+
 
     /**
      * Check if a column is a character type
@@ -451,7 +452,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isChar(object $column) : bool 
+    private function isChar(object $column) : bool
     {
         return in_array($column->type, ['char', 'string']);
     }
@@ -461,7 +462,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isEnum(object $column) : bool 
+    private function isEnum(object $column) : bool
     {
         return in_array($column->type, ['enum', 'set']);
     }
@@ -471,7 +472,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isInteger(object $column) : bool 
+    private function isInteger(object $column) : bool
     {
         return in_array($column->type, ['integer', 'int', 'bigInteger', 'mediumInteger', 'smallInteger', 'tinyInteger']);
     }
@@ -481,7 +482,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isNumeric(object $column) : bool 
+    private function isNumeric(object $column) : bool
     {
         return $this->isInteger($column) OR $this->isReal($column);
     }
@@ -491,7 +492,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isReal(object $column) : bool 
+    private function isReal(object $column) : bool
     {
         return in_array($column->type, ['decimal', 'double', 'float']);
     }
@@ -501,7 +502,7 @@ class Creator
      * @param object $column
      * @return boolean
      */
-    private function isTimestamp(object $column) : bool 
+    private function isTimestamp(object $column) : bool
     {
         return in_array($column->type, ['timestamp', 'timestampTz']);
     }
