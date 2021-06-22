@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
  namespace dFramework\libraries;
@@ -21,28 +21,30 @@ use \Codedepp\BBCode\BBCode;
 use \Parsedown;
 
 /**
- * dF_Parser
+ * Parser
  *
  * Parse du bbcode ou le markdown en html
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Parser.html
  * @since       2.1
  * @file        /system/libraries/Parser.php
  */
 class Parser
-{   
+{
     /**
      * @var bool Specifie si on echappe les entités HTML (pour eviter les failles XSS)
      */
     private $safeMode = true;
-    /**
+
+	/**
      * @var bool
      */
     private $markupEscaped = true;
-    /**
+
+	/**
      * @var int  Type de parsing a utiliser self::MARKDOWN | self::BBCODE
      */
     private $type = self::MARKDOWN;
@@ -51,6 +53,7 @@ class Parser
      * Parseur markdown
      */
     const MARKDOWN = 1;
+
     /**
      * Parseur bbcode
      */
@@ -62,12 +65,16 @@ class Parser
      * @var Parsedown Instance markdown
      */
     private $markdown_engine;
-    /**
+
+	/**
      * @var BBCode Instance bbcode
      */
     private $bbcode_engine;
 
 
+	/**
+	 * Constructor
+	 */
     public function __construct()
     {
         $this->markdown_engine = new Parsedown;
@@ -84,10 +91,11 @@ class Parser
      */
     public function parse(string $text) : string
     {
-        if(self::BBCODE === $this->type)
+        if (self::BBCODE === $this->type)
         {
             return $this->bbcode($text);
         }
+
         return $this->markdown($text);
     }
 
@@ -99,11 +107,12 @@ class Parser
      */
     public function uglify(string $text) : string
     {
-        if(self::BBCODE === $this->type) 
+        if (self::BBCODE === $this->type)
         {
             return $this->bbcode_engine->convertFromHtml($text);
         }
-        return $text;
+
+		return $text;
     }
 
     /**
@@ -133,18 +142,19 @@ class Parser
     }
 
 
-    
-    
+
+
     /**
      * Specifie le type de parsing a utilise (markdown ou bbcode)
      *
      * @param int $type
-     * @return dF_Parser
+     * @return self
      */
-    public function type(int $type) : self 
+    public function type(int $type) : self
     {
         $this->type = $type;
-        return $this;
+
+		return $this;
     }
 
     /**
@@ -155,30 +165,33 @@ class Parser
      */
     public function instance(?int $type = self::MARKDOWN)
     {
-        if(self::BBCODE === $type) 
+        if (self::BBCODE === $type)
         {
             return $this->bbcode_engine;
         }
+
         return $this->markdown_engine;
     }
 
     /**
      * @param bool $safeMode
-     * @return dF_Parser
+     * @return self
      */
     public function setSafeMode(bool $safeMode) : self
     {
         $this->safeMode = $safeMode;
+
         return $this;
     }
 
     /**
      * @param bool $markupEscaped
-     * @return dF_Parser
+     * @return self
      */
     public function setMarkupEscaped(bool $markupEscaped) : self
     {
         $this->markupEscaped = $markupEscaped;
-        return $this;
+
+		return $this;
     }
 }

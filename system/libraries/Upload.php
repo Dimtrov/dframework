@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2020, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
  namespace dFramework\libraries;
@@ -28,7 +28,7 @@ use ReflectionProperty;
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/works/dframework/docs/Upload.html
  * @since       2.0
  */
@@ -77,7 +77,7 @@ class Upload
     public function use(int $type) : self
     {
         $this->type = $type;
-        
+
         return $this;
     }
 
@@ -100,18 +100,21 @@ class Upload
 
     /**
      * @return bool
-     * @throws ReflectionException
+     * @throws \ReflectionException
      */
     public function run() : bool
     {
-        if($this->type === self::NATIVE)
+        if ($this->type === self::NATIVE)
         {
             return $this->nativeUpload($this->input, $this->folder);
         }
-        if($this->type === self::VEROT)
+
+        if ($this->type === self::VEROT)
         {
             return $this->verotUpload($this->input, $this->folder);
         }
+
+		return  false;
     }
 
     /**
@@ -149,28 +152,31 @@ class Upload
 
         $params = $this->params; $name = null;
 
-        if(isset($params['max_size']) AND is_int($params['max_size']))
+        if (isset($params['max_size']) AND is_int($params['max_size']))
         {
             $this->uploader->cl_taille_maxi = $params['max_size'];
         }
-        if(isset($params['extensions']) AND is_array($params['extensions']))
+
+        if (isset($params['extensions']) AND is_array($params['extensions']))
         {
             foreach ($params['extensions'] As $key => $value)
             {
-                if(is_string($value) AND $value[0] != '.')
+                if (is_string($value) AND $value[0] != '.')
                 {
                     $params['extensions'][$key] = '.'.$value;
                 }
             }
             $this->uploader->cl_extensions = $params['extensions'];
         }
+
         if (isset($params['overwrite']) AND is_bool($params['overwrite']))
         {
             $this->uploader->cl_overwrite = $params['overwrite'];
         }
-        if(isset($params['new_name']))
+
+        if (isset($params['new_name']))
         {
-            if(is_string($params['new_name']))
+            if (is_string($params['new_name']))
             {
                 $name = $params['new_name'];
             }
@@ -179,7 +185,7 @@ class Upload
                 $this->uploader->cl_nb_char_aleatoire = $params['new_name'];
                 $name = 'aleatoire';
             }
-            else if(true === $params['new_name'])
+            else if (true === $params['new_name'])
             {
                 $name = 'dFramework_uploadfile_'.date('YmdHis');
             }
@@ -187,7 +193,7 @@ class Upload
 
         $upload = $this->uploader->uploadFichier($name);
 
-        if(!$upload)
+        if (!$upload)
         {
             $this->errors = $this->uploader->affichageErreur();
         }
@@ -211,6 +217,7 @@ class Upload
                 'tmp_path'  => $this->uploader->cGetNameTemp()
             ];
         }
+
         return $upload;
     }
 
@@ -219,17 +226,17 @@ class Upload
      * @param array $input
      * @param string $folder
      * @return bool
-     * @throws ReflectionException
+     * @throws \ReflectionException
      */
     private function verotUpload(array $input, string $folder) : bool
     {
         $this->uploader = new verotUpload($input);
-        
+
         $props = (new ReflectionClass($this->uploader))->getProperties(ReflectionProperty::IS_PUBLIC);
         foreach ($props As $prop)
         {
             $key = $prop->getName();
-            if(array_key_exists($key, $this->params))
+            if (array_key_exists($key, $this->params))
             {
                 $this->uploader->{$key} = $this->params[$key];
             }
@@ -238,12 +245,12 @@ class Upload
         $uploaded = $processed = false;
         $uploaded = $this->uploader->uploaded;
 
-        if($uploaded)
+        if ($uploaded)
         {
             $this->uploader->process($folder);
             $processed = $this->uploader->processed;
 
-            if($processed)
+            if ($processed)
             {
                 $this->details = [
                     'extension' => $this->uploader->file_src_name_ext,

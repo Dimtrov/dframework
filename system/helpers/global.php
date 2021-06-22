@@ -815,7 +815,7 @@ if (!function_exists('view'))
      * @param array|null $data
      * @param array|null $options
      * @param array|null $config
-     * @return View
+     * @return \dFramework\core\output\View
      */
     function view(string $view, ?array $data = [], ?array $options = [], ?array $config = [])
     {

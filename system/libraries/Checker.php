@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Lab's
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\libraries;
@@ -27,7 +27,7 @@ use Exception;
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Checker.html
  * @since       1.0
  * @file        /system/libraries/Checker.php
@@ -49,7 +49,7 @@ class Checker
 
     /**
      * Definit les champs de donnees a utiliser pour la verification
-     * 
+     *
      * @param bool $using
      * @param array $field
      */
@@ -117,11 +117,11 @@ class Checker
     public function in($value, $array) : bool
     {
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
-        if (is_string($array)) 
+        if (is_string($array))
         {
             $array = explode(';', $array);
         }
-        if (!is_array($array)) 
+        if (!is_array($array))
         {
             throw new Exception('Unsupported parameter to second argument. use a string or array variable');
         }
@@ -160,6 +160,7 @@ class Checker
         }
         return false;
     }
+
     /**
      * Verifie si une donne ne contient que des caractere alphanumerique ou que c'est un tableau qui n'a que des caractere aphanumerique
      *
@@ -215,6 +216,7 @@ class Checker
 
         return ((new DateTime()) > (new DateTime($date)));
     }
+
     /**
      * Verifie si une donnee est une date valide
      *
@@ -270,7 +272,7 @@ class Checker
         $a = (true == $this->use_input_field) ? ($this->field[$a] ?? null) : $a;
         $b = (true == $this->use_input_field) ? ($this->field[$b] ?? null) : $b;
 
-        if (true == $strict) 
+        if (true == $strict)
         {
             return $a === $b;
         }
@@ -280,7 +282,7 @@ class Checker
     /**
      * Verifie si une donnees correspond a une adresse ip valide
      *
-     * @param $value Donnée à vérifier
+     * @param mixed $value Donnée à vérifier
      * @return bool
      */
     public function is_ip($value) : bool
@@ -292,7 +294,7 @@ class Checker
     /**
      * Verifie si une donnee est un nombre valide
      *
-     * @param $value Donnée à vérifier
+     * @param mixed $value Donnée à vérifier
      * @return bool
      */
     public function is_number($value) : bool
@@ -349,7 +351,7 @@ class Checker
     /**
      * Verifie si une donnee est une url
      *
-     * @param $value Donnée à vérifier
+     * @param mixed $value Donnée à vérifier
      * @param bool $natif Spécifie si on utilise la filtre natif de PHP pour la verification ou pas
      * @return bool
      */
@@ -381,6 +383,7 @@ class Checker
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         return strlen(trim($value)) == $length;
     }
+
     /**
      * Verifie si une chaine a une longueur comprise entre une valeur minimale et une valeur maximale
      *
@@ -400,8 +403,9 @@ class Checker
         }
         return (strlen(trim($value)) <= $max AND strlen(trim($value)) >= $min);
     }
+
     /**
-     * @param $value Donnée à vérifier
+     * @param mixed $value Donnée à vérifier
      * @param int $length Longueur recherchée
      * @return bool
      */
@@ -410,6 +414,7 @@ class Checker
         $value = (true == $this->use_input_field) ? ($this->field[$value] ?? null) : $value;
         return strlen(trim($value)) <= $length;
     }
+
     /**
      * @param string $value Donnée à vérifier
      * @param int $length Longueur récherchée
@@ -424,8 +429,8 @@ class Checker
 
     /**
      * Verifie une données en utilisant un groupe de fonctions simultanément
-     * 
-     * @param $input L'entrée à vérifier
+     *
+     * @param mixed $input L'entrée à vérifier
      * @param string $functions Les fonctions à utiliser (séparées par des pipes `|`)
      * @param callable|null $callback Le callback à exécuter à la fin de la vérification
      * @return mixed
@@ -438,7 +443,7 @@ class Checker
         $functions = explode('|', $functions);
         foreach ($functions As $function)
         {
-            if ($status === false) 
+            if ($status === false)
             {
                 break;
             }
@@ -446,14 +451,14 @@ class Checker
 
             if (preg_match('#^in\[(.+)\]$#isU', $function, $params))
             {
-                $status = $this->in($input, $params[1]); 
+                $status = $this->in($input, $params[1]);
                 $code = 1;
                 $message = ($status === true) ? 'Ok' : 'La donnée demandée n\'existe pas dans les entrées';
             }
 
             if (preg_match('#^is_birthday\[(.+)\]$#isU', $function, $params))
             {
-                $status = $this->is_birthday($input, $params[1]); 
+                $status = $this->is_birthday($input, $params[1]);
                 $code = 2;
                 $message = ($status === true) ? 'Ok' : 'Entrez une date de naissance valide';
             }
@@ -466,7 +471,7 @@ class Checker
 
             if (preg_match('#^is_email$#isU', $function))
             {
-                $status = $this->is_email($input); 
+                $status = $this->is_email($input);
                 $code = 4;
                 $message = ($status === true) ? 'Ok' : 'Entrez une adresse email valide';
             }
@@ -485,14 +490,14 @@ class Checker
                 $code = 6;
                 $message = ($status === true) ? 'Ok' : 'Entrez une adresse ip valide';
             }
-			
+
             if (preg_match('#^is_tel\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_tel($input, $params[1]);
                 $code = 7;
                 $message = ($status === true) ? 'Ok' : 'Entrez un numero de telephone valide';
             }
-			
+
             if (preg_match('#^is_url\[(.+)\]$#isU', $function, $params))
             {
                 $status = $this->is_url($input, (bool) $params[1]);
