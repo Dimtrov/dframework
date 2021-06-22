@@ -1,6 +1,6 @@
-# dFramework : v3.3.0
+# dFramework : v3.3
 
-### The simplest PHP framework for beginners 
+### The simplest PHP framework for beginners
 
 
 
@@ -28,13 +28,13 @@ Télécharger la dernière version https://github.com/Dimtrov/dframework/release
 Vous pouvez également l'installer via Composer
 
 ```
-composer create-project dimtrov/dframework:dev-master project-name
+composer create-project dimtrov/dframework project-name
 ```
 
 Si vous avez un projet existant, ajoutez dFramework à ce dernier via la commande
 
 ```
-composer require dimtrov/dframework:dev-master
+composer require dimtrov/dframework
 ```
 
 Cependant, vous devez faire quelques manipulations pour que dFramework soit integré à votre projet.
