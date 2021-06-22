@@ -4,7 +4,7 @@
     "type": "project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
     "homepage": "http://dframework.com",
-    "version": "3.3.0",
+    "version": "3.3",
     "license": "MPL-2.0",
     "minimum-stability": "stable",
     "prefer-stable": true,
