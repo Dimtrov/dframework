@@ -10,9 +10,9 @@
     "prefer-stable": true,
     "authors": [{
         "name": "Dimitric Sitchet Tomkeu",
-        "email": "dev.dst@gmail.com",
+        "email": "dimitrisitchet@gmail.com",
         "role": "Developer, CEO",
-        "homepage": "https://dimtrov.hebfree.org/about"
+        "homepage": "http://dst.totalh.net"
     }],
     "require": {
         "php": ">=7.2",

@@ -56,29 +56,29 @@ class Database extends Cli
                     $seed = ucfirst(strtolower($file));
                     $file = RESOURCE_DIR.'database'.DS.'seeds'.DS.$seed.'.php';
 
-                    if (!file_exists($file)) 
+                    if (!file_exists($file))
                     {
-                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true); 
+                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true);
                         return $cli->showHelp();
                     }
                     require_once $file;
-                
+
                     if (!class_exists($seed))
                     {
-                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true); 
+                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true);
                         return $cli->showHelp();
                     }
-            
+
                     $class = new $seed;
 
-                    if (!($class instanceof Seeder)) 
+                    if (!($class instanceof Seeder))
                     {
-                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true); 
+                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true);
                         return $cli->showHelp();
                     }
-                    if (!method_exists($class, 'seed')) 
+                    if (!method_exists($class, 'seed'))
                     {
-                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true); 
+                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true);
                         return $cli->showHelp();
                     }
 
@@ -88,9 +88,9 @@ class Database extends Cli
                     sleep(2);
                     $cli->io->ok("\t => Remplissage terminé avec succès. \n");
                     sleep(1.5);
-            
+
                     $cli->end();
-                } 
+                }
                 catch (\Throwable $th) {
                     $cli->showError($th);
                 }
@@ -122,30 +122,30 @@ class Database extends Cli
                     $cli->start('Service de d\'import/export de base de donnees');
 
                     $dump = new Dumper($database);
-                        
-                    if (!empty($backup)) 
+
+                    if (!empty($backup))
                     {
                         $cli->task('Sauvegarde de la base de données');
                         $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
                         $filename = $dump->down($num_ver);
-                
+
                         $cli->io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
                         $cli->io->info("\t Fichier de sauvegarde: ".$filename);
                     }
-                    else 
+                    else
                     {
                         $cli->task('Importation de la base de données en cours');
-                        $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
+                        $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", 'last');
 
                         $filename = $dump->up($num_ver);
-                
+
                         $cli->io->ok("\n\t Base de donnees migrée avec succès.", true);
                         $cli->io->info("\t Fichier utilisé: ".$filename);
                     }
 
                     $cli->end();
-                } 
+                }
                 catch (\Throwable $th) {
                     $cli->showError($th);
                 }

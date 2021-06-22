@@ -14,7 +14,7 @@
  *  @link	    https://dimtrov.hebfree.org/works/dframework
  *  @version    3.2.3
  */
- 
+
 namespace dFramework\core\utilities;
 
 use dFramework\core\Config;
@@ -118,7 +118,7 @@ class Helpers
         $uri = $uri[0];
         $uri = preg_replace('#'.$this->item('url_suffix').'$#i', '', $uri);
 
-        $base_url = $this->slash_item('base_url');
+        $base_url = $this->getBaseUrl();
 
         if (isset($protocol))
         {
@@ -152,7 +152,7 @@ class Helpers
             }
         }
 
-        if (!empty($query)) 
+        if (!empty($query))
         {
             $uri .= '?'.$query;
         }
@@ -177,7 +177,7 @@ class Helpers
      */
     public function base_url($uri = '', $protocol = NULL)
     {
-        $base_url = $this->slash_item('base_url');
+        $base_url = $this->getBaseUrl();
 
         if (isset($protocol))
         {
@@ -192,6 +192,19 @@ class Helpers
             }
         }
         return $base_url.$this->_uri_string($uri);
+    }
+    private function getBaseUrl() : string
+    {
+        return $this->slash_item('base_url');
+
+		/**
+		 * @todo text
+		 */
+		/*
+        return true !== Config::get('general.use_absolute_link')
+        ? str_replace('\\', '/', BASE_URL.'/')
+        : $this->slash_item('base_url');
+		*/
     }
 
     // -------------------------------------------------------------
@@ -235,7 +248,7 @@ class Helpers
         $this->config[$item] = $value;
     }
 
-    
+
 	/**
 	 * Determines if the current version of PHP is equal to or greater than the supplied value
 	 *
@@ -254,7 +267,7 @@ class Helpers
 
 		return $_is_php[$version];
     }
-    
+
     /**
      * Verifies if the file you want to access is a local file of your application or not
      *
@@ -276,7 +289,7 @@ class Helpers
 
     /**
      * Test if a application is running in local or online
-     * 
+     *
      * @return bool
      */
     public function is_online() : bool
@@ -339,7 +352,7 @@ class Helpers
 
 		return true;
     }
-    
+
     /**
      * @param string $url
      * @return string
@@ -416,7 +429,7 @@ class Helpers
 
 		return $str;
     }
-    
+
     /**
 	 * Performs simple auto-escaping of data for security reasons.
 	 * Might consider making this more complex at a later date.
@@ -497,20 +510,20 @@ class Helpers
      */
     public function purify($dirty_html, $config = false)
     {
-        if (is_array($dirty_html)) 
+        if (is_array($dirty_html))
         {
-            foreach ($dirty_html As $key => $val) 
+            foreach ($dirty_html As $key => $val)
             {
                 $clean_html[$key] = $this->purify($val, $config);
             }
-        } 
-        else 
+        }
+        else
         {
             $charset = Config::get('general.charset');
 
-            switch ($config) 
+            switch ($config)
             {
-                
+
                 case 'comment':
                     $config = HTMLPurifier_Config::createDefault();
                     $config->set('Core.Encoding', $charset);
@@ -572,7 +585,7 @@ class Helpers
 
 		return rtrim($atts, ',');
 	}
-    
+
     /**
      * Gets an environment variable from available sources, and provides emulation
      * for unsupported or inconsistent environment variables (i.e. DOCUMENT_ROOT on
@@ -585,9 +598,9 @@ class Helpers
      */
     public static function env(string $key, $default = null)
     {
-        if ($key === 'HTTPS') 
+        if ($key === 'HTTPS')
         {
-            if (isset($_SERVER['HTTPS'])) 
+            if (isset($_SERVER['HTTPS']))
             {
                 return (!empty($_SERVER['HTTPS']) AND $_SERVER['HTTPS'] !== 'off');
             }
@@ -595,56 +608,56 @@ class Helpers
             {
                 return (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) AND strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
             }
-            if (isset($_SERVER['HTTP_FRONT_END_HTTPS'])) 
+            if (isset($_SERVER['HTTP_FRONT_END_HTTPS']))
             {
                 return (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) AND strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off');
             }
             return (strpos(self::env('SCRIPT_URI'), 'https://') === 0);
         }
 
-        if ($key === 'SCRIPT_NAME') 
+        if ($key === 'SCRIPT_NAME')
         {
-            if (self::env('CGI_MODE') AND isset($_ENV['SCRIPT_URL'])) 
+            if (self::env('CGI_MODE') AND isset($_ENV['SCRIPT_URL']))
             {
                 $key = 'SCRIPT_URL';
             }
         }
 
         $val = null;
-        if (isset($_SERVER[$key])) 
+        if (isset($_SERVER[$key]))
         {
             $val = $_SERVER[$key];
-        } 
-        elseif (isset($_ENV[$key])) 
+        }
+        elseif (isset($_ENV[$key]))
         {
             $val = $_ENV[$key];
-        } 
-        elseif (getenv($key) !== false) 
+        }
+        elseif (getenv($key) !== false)
         {
             $val = getenv($key);
         }
 
-        if ($key === 'REMOTE_ADDR' AND $val === self::env('SERVER_ADDR')) 
+        if ($key === 'REMOTE_ADDR' AND $val === self::env('SERVER_ADDR'))
         {
             $addr = self::env('HTTP_PC_REMOTE_ADDR');
-            if ($addr !== null) 
+            if ($addr !== null)
             {
                 $val = $addr;
             }
         }
 
-        if ($val !== null) 
+        if ($val !== null)
         {
             return $val;
         }
 
-        switch ($key) 
+        switch ($key)
         {
             case 'DOCUMENT_ROOT':
                 $name = self::env('SCRIPT_NAME');
                 $filename = self::env('SCRIPT_FILENAME');
                 $offset = 0;
-                if (!strpos($name, '.php')) 
+                if (!strpos($name, '.php'))
                 {
                     $offset = 4;
                 }
@@ -658,15 +671,15 @@ class Helpers
                 $parts = explode('.', $host);
                 $count = count($parts);
 
-                if ($count === 1) 
+                if ($count === 1)
                 {
                     return '.' . $host;
-                } 
-                elseif ($count === 2) 
+                }
+                elseif ($count === 2)
                 {
                     return '.' . $host;
-                } 
-                elseif ($count === 3) 
+                }
+                elseif ($count === 3)
                 {
                     $gTLD = array(
                         'aero',
@@ -691,7 +704,7 @@ class Helpers
                         'travel',
                         'xxx'
                     );
-                    if (in_array($parts[1], $gTLD)) 
+                    if (in_array($parts[1], $gTLD))
                     {
                         return '.' . $host;
                     }
@@ -713,24 +726,24 @@ class Helpers
     public function r()
     {
         $args = func_get_args();
-  
+
 		$options = [];
-	
+
 		$expressions = \ref::getInputExpressions($options);
 		$capture = in_array('@', $options, true);
-  
+
 	    if (func_num_args() !== count($expressions))
 	    {
             $expressions = null;
         }
 	    $format = (php_sapi_name() !== 'cli') || $capture ? 'html' : 'cliText';
-  
+
         if (!$capture && ($format === 'html') && !headers_sent() && (!ob_get_level() || ini_get('output_buffering')))
         {
             print '<!DOCTYPE HTML><html><head><title>REF</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body>';
         }
         $ref = new \ref($format);
-  
+
 	    if ($capture)
 	    {
             ob_start();
@@ -739,17 +752,17 @@ class Helpers
         {
             $ref->query($arg, $expressions ? $expressions[$index] : null);
         }
-  
+
         if ($capture)
         {
             return ob_get_clean();
         }
-	
+
         if (in_array('~', $options, true) && ($format === 'html'))
         {
 	        print '</body></html>';
 	        exit(0);
-	    }  
+	    }
     }
 
     /**
@@ -761,22 +774,22 @@ class Helpers
     public function rt()
     {
         $args        = func_get_args();
-        $options     = array();  
+        $options     = array();
         $expressions = \ref::getInputExpressions($options);
-        $capture     = in_array('@', $options, true);  
-        $ref         = new \ref((php_sapi_name() !== 'cli') || $capture ? 'text' : 'cliText');  
-  
+        $capture     = in_array('@', $options, true);
+        $ref         = new \ref((php_sapi_name() !== 'cli') || $capture ? 'text' : 'cliText');
+
         if (func_num_args() !== count($expressions))
         {
             $expressions = null;
         }
-        if (!headers_sent())    
+        if (!headers_sent())
         {
-            header('Content-Type: text/plain; charset=utf-8');  
+            header('Content-Type: text/plain; charset=utf-8');
         }
         if ($capture)
         {
-            ob_start();  
+            ob_start();
         }
         foreach ($args as $index => $arg)
         {
@@ -784,11 +797,11 @@ class Helpers
         }
         if ($capture)
         {
-            return ob_get_clean(); 
+            return ob_get_clean();
         }
         if (in_array('~', $options, true))
         {
-            exit(0);  
+            exit(0);
         }
     }
 }

@@ -46,7 +46,7 @@ class Database
      */
     const allowedFacadeMethods = [
         'databases', 'tables', 'tableExist', 'columns', 'columnsName',
-        'query', 'truncate', 
+        'query', 'truncate',
         'foreignKeys', 'enableFk', 'disableFk', 'indexes',
         'lastId', 'insertID', 'affectedRows',
         'beginTransaction', 'commit', 'rollback'
@@ -56,6 +56,10 @@ class Database
      * @var array
      */
     private $config;
+	/**
+	 * @var array
+	 */
+	private $customConfig = [];
 
     /**
      * @var string
@@ -73,13 +77,14 @@ class Database
     private static $_instance = null;
 
 
-    public function __construct(?string $group = null)
+    public function __construct(?string $group = null, array $customConfig = [])
     {
         $this->group = $group;
+		$this->customConfig = $customConfig;
     }
-    public static function instance(?string $group = null) : self 
+    public static function instance(?string $group = null) : self
     {
-        if (null === self::$_instance) 
+        if (null === self::$_instance)
         {
             self::$_instance = new self($group);
         }
@@ -95,14 +100,14 @@ class Database
      */
     public static function connect(?string $group = null, bool $shared = true) : BaseConnection
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return self::instance($group)->connection();
         }
         return (new self($group))->connection($group);
     }
 
-    public function setGroup(?string $group) : self 
+    public function setGroup(?string $group) : self
     {
         $this->group = $group;
         return $this;
@@ -124,7 +129,7 @@ class Database
             return call_user_func_array([$connection, $name], $arguments);
         }
         return false;
-    }   
+    }
 
     /**
      * Verifie si on utilise une connexion pdo ou pas
@@ -145,13 +150,13 @@ class Database
      * @param mixed $value mixed value
      * @return mixed Quoted value
      */
-    public function quote($value, ?string $group = null) 
+    public function quote($value, ?string $group = null)
     {
-        if ($value === null) 
+        if ($value === null)
         {
             return 'NULL';
         }
-        if (is_string($value)) 
+        if (is_string($value))
         {
             $connection = $this->connection($group);
 
@@ -184,26 +189,26 @@ class Database
         {
             if ($group === $this->group)
             {
-                if (!empty($this->config)) 
+                if (!empty($this->config))
                 {
                     $config = $this->config;
                 }
             }
-            else 
+            else
             {
                 $config = $this->config = $this->makeConfig($group);
             }
         }
-        else if (!empty($this->config)) 
+        else if (!empty($this->config))
         {
             $config = $this->config;
         }
-        else 
+        else
         {
             $config = $this->config = $this->makeConfig();
         }
 
-        if (!empty($key)) 
+        if (!empty($key))
         {
             return $config[$key] ?? null;
         }
@@ -222,14 +227,14 @@ class Database
         {
             if ($group === $this->group)
             {
-                if (!empty($this->connection)) 
+                if (!empty($this->connection))
                 {
                     return $this->connection;
                 }
             }
             return $this->connection = $this->createConnection($group);
         }
-        if (!empty($this->connection)) 
+        if (!empty($this->connection))
         {
             return $this->connection;
         }
@@ -289,7 +294,7 @@ class Database
     {
         $config = Config::get('database');
 
-        if (empty($config['connection'])) 
+        if (empty($config['connection']))
         {
             DatabaseException::except('Used connction not found', '
                 The key <b>connection</b> is required. <br>
@@ -298,14 +303,15 @@ class Database
         }
         $group = empty($group) ? $config['connection'] : $group;
 
-        if (empty($config[$group])) 
+        if (empty($config[$group]))
         {
             DatabaseException::except('Database configuration not found', '
                 The <b>'.$group.'</b> database configuration is not define. <br>
                 Please open the "'.Config::$_config_file['database'].'" file to correct it
             ');
         }
-        $config = $config[$group];
+
+        $config = array_merge($config[$group], $this->customConfig ?? []);
         $this->group = $group;
 
         $keys = ['driver','port','host','username','password','database','charset'];
@@ -316,13 +322,13 @@ class Database
             {
                 DatabaseException::except('Configuration key don\'t exist', '
                     The <b>'.$key.'</b> key of the '.$group.' database configuration don\'t exist. <br>
-                    Please fill it in array $database["'.$group.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo; 
+                    Please fill it in array $database["'.$group.'"] of the file  &laquo; '.Config::$_config_file['database'].' &raquo;
                 ');
             }
         }
         foreach ($config As $key => $value)
         {
-            if (!in_array($key, ['password', 'options','prefix', 'debug']) AND empty($value)) 
+            if (!in_array($key, ['password', 'options','prefix', 'debug']) AND empty($value))
 			{
                 DatabaseException::except('Invalid configuration key', '
                     The <b>' . $key . '</b> key of ' . $group . ' database configuration must have a valid value. <br>
@@ -355,7 +361,7 @@ class Database
         {
             $value = 'auto';
         }
-        
+
         if (!in_array($value, ['auto', true, false]))
         {
             DatabaseException::except('Invalid key set', '

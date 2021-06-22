@@ -3,24 +3,24 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitric Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.2
+ * @version     3.3.0
  */
 
 namespace dFramework\libraries;
 
 use dFramework\core\loader\Service;
 use dFramework\core\security\Csrf;
-use dFramework\core\utilities\Chaine;
-use dFramework\core\utilities\Tableau;
+use dFramework\core\utilities\Str;
+use dFramework\core\utilities\Arr;
 
 /**
  * Form
@@ -29,7 +29,7 @@ use dFramework\core\utilities\Tableau;
  *
  * @package		dFramework
  * @subpackage	Library
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Form.html
  * @since       2.1
  * @file        /system/libraries/Form.php
@@ -97,7 +97,7 @@ class Form
         }
         if (is_string($key))
         {
-            $this->datas = Tableau::merge($this->datas, [$key => $value]);
+            $this->datas = Arr::merge($this->datas, [$key => $value]);
         }
         return $this;
     }
@@ -107,10 +107,11 @@ class Form
      * @param array $values
      * @return self
      */
-    public function values(array $values) : self 
+    public function values(array $values) : self
     {
         return $this->value($values);
     }
+
     /**
      * Definie l'erreur pour une cle donnee
      *
@@ -133,16 +134,18 @@ class Form
         }
         return $this;
     }
+
     /**
      * Alias of error() method for array datas
      *
      * @param array $errors
      * @return self
      */
-    public function errors(array $errors) : self 
+    public function errors(array $errors) : self
     {
         return $this->error($errors);
     }
+
     /**
      * Affiche les erreurs d'un champ
      *
@@ -219,6 +222,7 @@ class Form
                 {$token}
 HTML;
     }
+
     /**
      * Ferme un formulaire
      *
@@ -245,6 +249,7 @@ HTML;
     {
         return $this->input('text', $key, $label, $attributes);
     }
+
     /**
      * Cree un input de type hidden
      *
@@ -258,6 +263,7 @@ HTML;
         $this->surround(null);
         return $r;
     }
+
     /**
      * Creer un input de type password
      *
@@ -270,6 +276,7 @@ HTML;
     {
         return $this->input('password', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type tel
      *
@@ -282,6 +289,7 @@ HTML;
     {
         return $this->input('tel', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type email
      *
@@ -294,6 +302,7 @@ HTML;
     {
         return $this->input('email', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type url
      *
@@ -306,6 +315,7 @@ HTML;
     {
         return $this->input('url', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type search
      *
@@ -318,6 +328,7 @@ HTML;
     {
         return $this->input('search', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type number
      *
@@ -330,6 +341,7 @@ HTML;
     {
         return $this->input('number', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type range
      *
@@ -340,8 +352,9 @@ HTML;
      */
     public function range(string $key, $label = null, ?array $attributes = []) : string
     {
-        return $this->input('range', $key, $label, Tableau::merge($attributes, ['class' => 'form-control-range']));
+        return $this->input('range', $key, $label, Arr::merge($attributes, ['class' => 'form-control-range']));
     }
+
     /**
      * Creer un input de type color
      *
@@ -354,6 +367,7 @@ HTML;
     {
         return $this->input('color', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type date
      *
@@ -366,6 +380,7 @@ HTML;
     {
         return $this->input('date', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type time
      *
@@ -378,6 +393,7 @@ HTML;
     {
         return $this->input('time', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type datetime
      *
@@ -390,6 +406,7 @@ HTML;
     {
         return $this->input('datetime', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type datetime-local
      *
@@ -402,6 +419,7 @@ HTML;
     {
         return $this->input('datetime-local', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type month
      *
@@ -414,6 +432,7 @@ HTML;
     {
         return $this->input('month', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type week
      *
@@ -426,6 +445,7 @@ HTML;
     {
         return $this->input('week', $key, $label, $attributes);
     }
+
     /**
      * Creer un input de type file
      *
@@ -436,7 +456,7 @@ HTML;
      */
     public function file(string $key, $label = null, ?array $attributes = []) : string
     {
-        return $this->input('file', $key, $label, Tableau::merge($attributes, ['class' => 'custom-file-input']));
+        return $this->input('file', $key, $label, Arr::merge($attributes, ['class' => 'custom-file-input']));
     }
 
     /**
@@ -475,6 +495,7 @@ HTML;
     {
         return $this->button($value, $attributes, $key, 'submit');
     }
+
     /**
      * Cree un bouton de type reset
      *
@@ -487,6 +508,7 @@ HTML;
     {
         return $this->button($value, $attributes, $key, 'reset');
     }
+
     /**
      * Cree un bouton de type image
      *
@@ -765,6 +787,7 @@ HTML;
         }
         return '';
     }
+
     /**
      * Renvoie la/les classe(s) d'un input
      *
@@ -774,7 +797,7 @@ HTML;
      */
     protected function getInputClass(string $key, ?string $class = '') : string
     {
-        $inputClass = Tableau::merge(explode(' ', $class), ['form-control']);
+        $inputClass = Arr::merge(explode(' ', $class), ['form-control']);
         if (isset($this->errors[$key]))
         {
             $inputClass[] = 'is-invalid';
@@ -783,6 +806,7 @@ HTML;
 
         return $inputClass;
     }
+
     /**
      * Renvoie le label d'un champ
      *
@@ -799,6 +823,7 @@ HTML;
         return (false === $label) ? '' :
 			'<label for="field_'.$key.'" class="form-label">'.ucfirst($label ?? $key).' '.$required.'</label>';
     }
+
     /**
      * Renvoie la valeur par defaut (predefinie) d'un champ de formulaire
      *
@@ -808,17 +833,19 @@ HTML;
     protected function getValues(string $key) : array
     {
         $post = (array) (Service::request()->data[$key] ?? []);
-        
+
         return (array) (!empty($post) ? $post : ($this->datas[$key] ?? []));
     }
+
     /**
      * @param string $key
      * @return string
      */
-    protected function getValue(string $key) : string 
+    protected function getValue(string $key) : string
     {
         return (string) ($this->getValues($key)[0] ?? null);
     }
+
     /**
      * Compile les autres attributs du champ
      *
@@ -835,7 +862,7 @@ HTML;
 
         foreach ($reserved_attributes As $value)
         {
-            $attributes = Tableau::remove($attributes, $value);
+            $attributes = Arr::remove($attributes, $value);
         }
         $return = '';
 
@@ -852,6 +879,7 @@ HTML;
         }
         return trim($return);
     }
+
     /**
      * Transforme et renvoi la cle d'un champ
      *
@@ -864,6 +892,6 @@ HTML;
         {
             return '';
         }
-        return str_replace('\'', '', Chaine::toSnake($key));
+        return str_replace('\'', '', Str::toSnake($key));
     }
 }

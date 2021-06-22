@@ -26,9 +26,9 @@
 
 /**
  * Create a new instance of our RouteCollection class.
- * 
+ *
  * NE PAS CHANGER CETTE VARIABLE CAR ELLE EST UTILISEE POUR  L'AMORCAGE DE VOTRE APPLICATION
- * 
+ *
  * @var dFramework\core\router\RouteCollection
  */
 $routes = dFramework\core\loader\Service::routes();
@@ -58,9 +58,3 @@ $routes = dFramework\core\loader\Service::routes();
  * Route Definitions
  * --------------------------------------------------------------------
  */
-$routes->presenter('Posts');
-$routes->resource('users');
-
-$routes->get('test', function(){
-    echo 'sss';
-}, ['as' => 'signin']);

@@ -22,7 +22,7 @@ use Psr\Http\Message\UriInterface;
 
 /**
  * Uri
- * 
+ *
  * Abstraction for a uniform resource identifier (URI).
  *
  * @package		dFramework
@@ -709,7 +709,7 @@ class Uri implements UriInterface
 	{
 		return $this->setPort($port);
 	}
-	
+
 	/**
 	 * Sets the path portion of the URI.
 	 *
@@ -756,9 +756,9 @@ class Uri implements UriInterface
 	 *
 	 * @param string $query
 	 *
-	 * @return $this
+	 * @return self
 	 */
-	public function setQuery(string $query)
+	public function setQuery(string $query) : self
 	{
 		if (strpos($query, '#') !== false)
 		{
@@ -789,9 +789,9 @@ class Uri implements UriInterface
 	 *
 	 * @param array $query
 	 *
-	 * @return \CodeIgniter\HTTP\URI
+	 * @return self
 	 */
-	public function setQueryArray(array $query)
+	public function setQueryArray(array $query) : self
 	{
 		$query = http_build_query($query);
 
@@ -1003,9 +1003,9 @@ class Uri implements UriInterface
 	 *
 	 * @param string $uri
 	 *
-	 * @return \CodeIgniter\HTTP\URI
+	 * @return self
 	 */
-	public function resolveRelativeURI(string $uri)
+	public function resolveRelativeURI(string $uri) : self
 	{
 		/*
 		 * NOTE: We don't use removeDotSegments in this

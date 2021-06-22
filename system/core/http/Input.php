@@ -14,7 +14,7 @@
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.2.2
  */
- 
+
 namespace dFramework\core\http;
 
 use dFramework\core\Config;
@@ -65,7 +65,7 @@ class Input
 	protected $headers = array();
 
     private static $_instance;
-    
+
     /**
      * Constructor
      */
@@ -104,11 +104,11 @@ class Input
             return $this->_find_entries($_GET, $index, $filter);
         }
 
-        if (!empty($value)) 
+        if (!empty($value))
         {
             $_GET[$index] = $value;
         }
-        
+
         return $this->_fetch_from_array($_GET, $index, $filter);
     }
 
@@ -144,8 +144,8 @@ class Input
      */
     public function post_get(string $index, ?array $filter = [])
     {
-        return isset($_POST[$index]) 
-            ? $this->post($index, null, $filter) 
+        return isset($_POST[$index])
+            ? $this->post($index, null, $filter)
             : $this->get($index, null, $filter);
     }
 
@@ -158,8 +158,8 @@ class Input
      */
     public function get_post(string $index, ?array $filter = [])
     {
-        return isset($_GET[$index]) 
-            ? $this->get($index, null, $filter) 
+        return isset($_GET[$index])
+            ? $this->get($index, null, $filter)
             : $this->post($index, null, $filter);
     }
 
@@ -236,9 +236,9 @@ class Input
 
         if ($value === false)
         {
-            Session::set($index, null);            
+            Session::set($index, null);
         }
-        if(!empty($value)) 
+        if(!empty($value))
         {
             Session::set($index, $value);
         }
@@ -251,7 +251,7 @@ class Input
      */
     public function free_session(string ...$index)
     {
-        foreach ($index As $value) 
+        foreach ($index As $value)
         {
             Session::destroy($value);
         }
@@ -324,24 +324,24 @@ class Input
         if ($path === '/' AND !empty($cookies_config['path']) AND $cookies_config['path'] !== '/') {
             $path = $cookies_config['path'];
         }
-    
+
         $secure = ($secure === NULL AND isset($cookies_config['secure']) AND $cookies_config['secure'] !== NULL)
             ? (bool) $cookies_config['secure']
-    
+
             : (bool) $secure;
         $httponly = ($httponly === NULL AND isset($cookies_config['httponly']) AND $cookies_config['httponly'] !== NULL)
             ? (bool) $cookies_config['httponly']
             : (bool) $httponly;
-    
-        if (!is_numeric($expire)) 
+
+        if (!is_numeric($expire))
         {
             $expire = time() - 86500;
         }
-        else if($expire != -1) 
+        else if($expire != -1)
         {
             $expire = ($expire > 0) ? time() + $expire : 0;
         }
-        
+
         setcookie($prefix.$name, $value, (int) $expire, $path, $domain, $secure, $httponly);
     }
 
@@ -423,7 +423,7 @@ class Input
     private function _find_entries(array $array, array $index, array $filter = [])
     {
         $val = [];
-        foreach ($index As $v) 
+        foreach ($index As $v)
         {
             if (is_string($v))
             {
@@ -553,7 +553,7 @@ class Input
 	 * standardizing newline characters to PHP_EOL.
 	 *
 	 * @param	string|string[]	$str	Input string(s)
-	 * @return	string
+	 * @return	string|string[]
 	 */
 	private function _clean_input_data($str)
 	{
@@ -573,7 +573,7 @@ class Input
 		         it will probably not exist in future versions at all.
 		*/
 		$str = stripslashes($str);
-		
+
 		// Clean UTF-8 if supported
 		if (UTF8_ENABLED === TRUE)
 		{
@@ -607,7 +607,7 @@ class Input
 			{
 				return FALSE;
 			}
-   
+
             $response = Service::response();
             $response->statusCode(503);
             $response->body('Disallowed Key Characters.');
@@ -622,5 +622,5 @@ class Input
 		}
 
 		return $str;
-	}	
+	}
 }

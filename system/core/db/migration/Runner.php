@@ -96,7 +96,7 @@ class Runner
      */
     private static $_instance;
 
-	
+
     //--------------------------------------------------------------------
 
 	/**
@@ -105,7 +105,7 @@ class Runner
 	 */
 	public function __construct(?string $group = null)
 	{
-		if (PHP_SAPI !== 'cli') 
+		if (PHP_SAPI !== 'cli')
         {
         	throw new RuntimeException("Disponible unique via l'invite de commande", 1);
         }
@@ -113,20 +113,20 @@ class Runner
 		$this->files = new Filesystem;
     }
 	/**
-     * Get a single instance 
+     * Get a single instance
      *
      * @return self
      */
-    public static function instance() : self 
+    public static function instance() : self
     {
-        if (null === self::$_instance) 
+        if (null === self::$_instance)
         {
             self::$_instance = new self;
         }
         return self::$_instance;
     }
 
-	
+
 	/**
 	 * Locate and run all new migrations
 	 */
@@ -142,7 +142,7 @@ class Runner
 		{
 			return true;
 		}
-	
+
 		// Remove any migrations already in the history
 		foreach ($this->getHistory() As $history)
 		{
@@ -151,7 +151,7 @@ class Runner
 
 		// Start a new batch
 		$batch = $this->getLastBatch() + 1;
-		
+
 		// Run each migration
 		foreach ($migrations as $migration)
 		{
@@ -169,7 +169,7 @@ class Runner
 			{
 				$this->regress(-1);
 
-				throw new \RuntimeException('Migration failed!');
+				throw new RuntimeException('Migration failed!');
 			}
 		}
 
@@ -196,21 +196,21 @@ class Runner
 		{
 			$targetBatch = $batches[count($batches) - 1 + $targetBatch] ?? 0;
 		}
-		
+
 		// If the goal was rollback then check if it is done
 		if (empty($batches) AND $targetBatch === 0)
 		{
 			return true;
 		}
-		
+
 		// Make sure $targetBatch is found
 		if ($targetBatch !== 0 AND ! in_array($targetBatch, $batches))
 		{
-			throw new \RuntimeException('Target batch not found: ' . $targetBatch);
+			throw new RuntimeException('Target batch not found: ' . $targetBatch);
 		}
-		
+
 		$allMigrations   = $this->getMigrations();
-		
+
 		// Gather migrations down through each batch until reaching the target
 		$migrations = [];
 		while ($batch = array_pop($batches))
@@ -230,7 +230,7 @@ class Runner
 				// Make sure the migration is still available
 				if (! isset($allMigrations[$uid]))
 				{
-					throw new \RuntimeException('There is a gap in the migration sequence near version number: ' . $history->version);
+					throw new RuntimeException('There is a gap in the migration sequence near version number: ' . $history->version);
 				}
 
 				// Add the history and put it on the list
@@ -239,7 +239,7 @@ class Runner
 				$migrations[]       = $migration;
 			}
 		}
-		
+
 		// Run each migration
 		foreach ($migrations As $migration)
 		{
@@ -250,7 +250,7 @@ class Runner
 			// If a migration failed then quit so as not to ruin the whole batch
 			else
 			{
-				throw new \RuntimeException('Migration failed!');
+				throw new RuntimeException('Migration failed!');
 			}
 		}
 
@@ -274,7 +274,7 @@ class Runner
 		$migration = $this->migrationFromFile($path);
 		if (empty($migration))
 		{
-			throw new \RuntimeException('Migration file not found: '.$path);
+			throw new RuntimeException('Migration file not found: '.$path);
 		}
 
 		// Check the history for a match
@@ -309,7 +309,7 @@ class Runner
 			return true;
 		}
 
-		throw new \RuntimeException('Migration failed!');
+		throw new RuntimeException('Migration failed!');
 	}
 
 	//--------------------------------------------------------------------
@@ -325,7 +325,7 @@ class Runner
         $migrations = [];
         $paths = $this->getMigrationFiles(array_merge($this->paths, $paths));
 
-       	foreach ($paths As $item) 
+       	foreach ($paths As $item)
         {
 			$migration = $this->migrationFromFile($item->getPathname());
 			$migrations[$migration->uid] = $migration;
@@ -345,7 +345,7 @@ class Runner
         $files = [];
 
         Collection::make($paths)->each(function($path) use(&$files) {
-            $files = array_merge($files, $this->files->files($path));    
+            $files = array_merge($files, $this->files->files($path));
         });
         return Collection::make($files)->flatMap(function ($path) {
             return Str::endsWith($path, '.php') ? [$path] : [$this->files->glob($path.'/*_*.php')];
@@ -389,7 +389,7 @@ class Runner
 
 		return $migration;
 	}
-	
+
 	/**
 	 * Extracts the migration number from a filename
 	 *
@@ -409,7 +409,7 @@ class Runner
 	 * @param string $migration
 	 * @return string
 	 */
-	private function getMigrationClass(string $migration) : string 
+	private function getMigrationClass(string $migration) : string
 	{
 		return Str::toPascal(preg_replace('/^\d{4}\d{2}\d{2}\d{6}-/', '', $migration));
 	}
@@ -445,7 +445,7 @@ class Runner
 	 * @param string $color
 	 * @return self
 	 */
-	private function pushMessage(string $message, string $color = 'green') : self 
+	private function pushMessage(string $message, string $color = 'green') : self
 	{
 		$this->messages[] = compact('message', 'color');
 		return $this;
@@ -456,7 +456,7 @@ class Runner
 	/**
 	 * Truncates the history table.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
 	public function clearHistory()
 	{
@@ -631,8 +631,8 @@ class Runner
 	/**
 	 * Handles the actual running of a migration.
 	 *
-	 * @param $direction   "up" or "down"
-	 * @param $migration   The migration to run
+	 * @param string $direction   "up" or "down"
+	 * @param object $migration   The migration to run
 	 *
 	 * @return boolean
 	 */
@@ -641,24 +641,24 @@ class Runner
 		include_once $migration->location;
 
 		$class = $migration->class;
-		
+
 		// Validate the migration file structure
 		if (! class_exists($class, false))
 		{
-			throw new \RuntimeException(sprintf('The migration class "%s" could not be found.', $class));
+			throw new RuntimeException(sprintf('The migration class "%s" could not be found.', $class));
 		}
 
 		// Initialize migration
 		$instance = new $class();
-		
+
 		if (! is_callable([$instance, $direction]))
 		{
-			throw new \RuntimeException(sprintf('The migration class is missing an "%s" method.', $direction));
+			throw new RuntimeException(sprintf('The migration class is missing an "%s" method.', $direction));
 		}
 
 		$instance->{$direction}();
 
-		foreach ($instance->getSchemas() As $schema) 
+		foreach ($instance->getSchemas() As $schema)
 		{
 			$this->execute($schema);
 		}
@@ -681,33 +681,33 @@ class Runner
         $columns = $this->getSchemaColumns($schema);
 		$passedCommands = $this->passedCommands($commands);
 
-        foreach ($commands as $command) 
+        foreach ($commands as $command)
         {
             $commandName = $command->name ?? '';
 
-            if ($commandName === 'create') 
+            if ($commandName === 'create')
             {
                 $sql = $this->createTable($table, $columns, $passedCommands);
                 break;
             }
-            if (in_array($commandName, ['drop', 'dropIfExists'])) 
+            if (in_array($commandName, ['drop', 'dropIfExists']))
             {
                 $sql = $this->dropTable($table, $commandName === 'dropIfExists');
                 break;
             }
-            if ($commandName === 'modify') 
+            if ($commandName === 'modify')
             {
                 $sql = $this->modifyTable($table, $columns, $passedCommands);
                 break;
             }
 		}
-		
+
         try {
-            if (!empty($sql)) 
+            if (!empty($sql))
             {
                 $this->db->query($sql);
             }
-        } 
+        }
         catch (Throwable $th) {
             throw $th;
         }
@@ -719,7 +719,7 @@ class Runner
 	 * @param Schema $schema
 	 * @return array
 	 */
-	private function getSchemaCommands(Schema $schema) : array 
+	private function getSchemaCommands(Schema $schema) : array
 	{
 		$commands = Collection::make($schema->getCommands())->map(function($command) {
             return $command->getAttributes();
@@ -733,7 +733,7 @@ class Runner
 	 * @param Schema $schema
 	 * @return array
 	 */
-	private function getSchemaColumns(Schema $schema) : array 
+	private function getSchemaColumns(Schema $schema) : array
 	{
 		$columns = Collection::make($schema->getColumns())->map(function($column) {
             return $column->getAttributes();
@@ -747,12 +747,12 @@ class Runner
 	 * @param array $commands
 	 * @return array
 	 */
-	private function passedCommands(array $commands) : array 
+	private function passedCommands(array $commands) : array
 	{
 		return array_filter($commands, function($v) {
 			return !in_array($v->name, ['create', 'modify']);
 		});
-	}	
+	}
 
 	/**
 	 * Genere la requete sql permetant de creer une table a partie du schema
@@ -766,7 +766,7 @@ class Runner
     {
         $creator = new Creator;
 
-        foreach ($columns as $column) 
+        foreach ($columns as $column)
         {
             $creator->makeColumn($column);
         }
@@ -780,7 +780,7 @@ class Runner
 	 * @param boolean $ifExist
 	 * @return string
 	 */
-    private function dropTable(string $table, bool $ifExist) : string 
+    private function dropTable(string $table, bool $ifExist) : string
     {
         return (new Creator)->dropTable($table, $ifExist);
     }
@@ -796,7 +796,7 @@ class Runner
     {
         $creator = new Creator;
 
-        foreach ($columns as $column) 
+        foreach ($columns as $column)
         {
             $creator->makeColumn($column);
         }

@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -15,7 +15,7 @@
  *  @version    3.3.0
  */
 
- namespace dFramework\core\exception;
+namespace dFramework\core\exception;
 
 use dFramework\core\Config;
 use dFramework\core\http\Response;
@@ -29,33 +29,53 @@ use dFramework\core\loader\Service;
  * @package		dFramework
  * @subpackage	Core
  * @category    Exception
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.1
  * @file    	/system/core/exception/Errors.php
  */
-
 class Errors
 {
 
-    public function log($message, $code, $file, $line)
+	/**
+	 * Registry a log message
+	 *
+	 * @param string $message
+	 * @param int $code
+	 * @param string $file
+	 * @param int $line
+	 */
+    public function log(string $message, int $code, string $file, int $line)
     {
-        Log::save($message, $code, $file, $line);
+		return Logger::write($code, $message, $file, $line);
     }
 
-
+	/**
+	 * Display 404 error page
+	 *
+	 * @param string $message
+	 * @param string $heading
+	 * @param array $params
+	 */
     public static function show404(string $message = 'The page you requested was not found.', string $heading = 'Page Not Found', array $params = [])
     {
         return self::show_error($message, $heading, $params, 404);
     }
 
-
+	/**
+	 * Display an error page
+	 *
+	 * @param string $message
+	 * @param string $heading
+	 * @param array $params
+	 * @param int $status_code
+	 */
     public static function show_error($message, $heading, array $params = [], int $status_code = 500)
     {
         if(\php_sapi_name() === 'cli')
         {
             $message = "\t".(is_array($message) ? implode("\n\t", $message) : $message);
-            
+
             echo "\nERROR: ",
                 $heading,
                 "\n\n",
@@ -68,9 +88,9 @@ class Errors
         Config::set('general.use_template_engine', false);
         Service::response()->statusCode($status_code);
         Service::viewer()->addData(array_merge(
-            !is_array($params) ? [] : $params, 
+            !is_array($params) ? [] : $params,
             compact('message', 'heading')
         ))->display('/reserved/errors/'.$status_code)->render();
-        exit;       
+        exit;
     }
 }

@@ -44,21 +44,21 @@ class dFramework
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
 	 */
 	public static $required_extensions = [
-        'pdo', 
-        'reflection', 
-        'openssl', 
-        'dom', 
-        'xml', 
+        'pdo',
+        'reflection',
+        'openssl',
+        'dom',
+        'xml',
         'fileinfo'
     ];
-	
-	
+
+
     /**
      * @throws Exception
      * @throws \ReflectionException
-     * @throws exception\ConfigException
-     * @throws exception\LoadException
-     * @throws exception\RouterException
+     * @throws \dFramework\core\exception\ConfigException
+     * @throws \dFramework\core\exception\LoadException
+     * @throws \dFramework\core\exception\RouterException
      */
     public function init() : self
     {
@@ -71,17 +71,17 @@ class dFramework
          * On charge le helper global
          */
         FileLocator::helper('global');
-        
-        /**
-         * On configure quelques extensions
-         */
-        self::configure_ext();
-        
+
         /**
          * On initialise le parsing du fichier .env
          */
         DotEnv::init(ROOTPATH);
-                
+
+		/**
+         * On configure quelques extensions
+         */
+        self::configure_ext();
+
         /**
          * Initialise les configurations du systeme a partir des fichiers se trouvant dans /app/config
          */
@@ -95,7 +95,7 @@ class dFramework
         /**
          * Demarre la session
          */
-        Session::start(); 
+        Session::start();
 
         /**
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
@@ -128,7 +128,7 @@ class dFramework
             ->requireDirectory(APP_DIR, envChecker::CHECK_IS_READABLE);
 
         $output = $checker->check();
-        if (! $checker->isSatisfied()) 
+        if (! $checker->isSatisfied())
         {
             echo '<h3>An error encourred</h3>';
             exit(join('<br/> ', $checker->getErrors()));

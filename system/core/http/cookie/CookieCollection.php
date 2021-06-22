@@ -35,7 +35,7 @@ class CookieCollection implements IteratorAggregate, Countable
     /**
      * Cookie objects
      *
-     * @var \Cake\Http\Cookie\CookieInterface[]
+     * @var \dFramework\core\http\cookie\CookieInterface[]
      */
     protected $cookies = [];
 
@@ -99,7 +99,7 @@ class CookieCollection implements IteratorAggregate, Countable
      * cookies if a cookie collection is used for cookies across multiple
      * domains. This can impact how get(), has() and remove() behave.
      *
-     * @param \dFramework\core\http\cookies\CookieInterface $cookie Cookie instance to add.
+     * @param \dFramework\core\http\cookie\CookieInterface $cookie Cookie instance to add.
      * @return static
      */
     public function add(CookieInterface $cookie)
@@ -114,7 +114,7 @@ class CookieCollection implements IteratorAggregate, Countable
      * Get the first cookie by name.
      *
      * @param string $name The name of the cookie.
-     * @return \Cake\Http\Cookie\CookieInterface|null
+     * @return \dFramework\core\http\cookie\CookieInterface|null
      */
     public function get($name)
     {
@@ -226,7 +226,7 @@ class CookieCollection implements IteratorAggregate, Countable
             $cookie = sprintf("%s=%s", rawurlencode($key), rawurlencode($value));
             $size = strlen($cookie);
             if ($size > 4096) {
-                
+
             }
             $cookiePairs[] = $cookie;
         }
@@ -330,7 +330,7 @@ class CookieCollection implements IteratorAggregate, Countable
      * Parse Set-Cookie headers into array
      *
      * @param array $values List of Set-Cookie Header values.
-     * @return \Cake\Http\Cookie\Cookie[] An array of cookie objects
+     * @return \dFramework\core\http\cookie\Cookie[] An array of cookie objects
      */
     protected static function parseSetCookieHeader($values)
     {

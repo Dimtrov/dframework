@@ -415,7 +415,7 @@ class Response implements ResponseInterface
     /**
      * Collection of cookies to send to the client
      *
-     * @var \Cake\Http\Cookie\CookieCollection
+     * @var \dFramework\core\http\cookie\CookieCollection
      */
     protected $_cookies = null;
 
@@ -510,7 +510,7 @@ class Response implements ResponseInterface
         if ($this->hasHeader('Location') && $this->_status === 200) {
             $this->withStatus(302);
         }
-        
+
         $this->sendHeaders();
         $this->_setContent();
 
@@ -533,7 +533,7 @@ class Response implements ResponseInterface
      * @return void
      */
     public function sendHeaders()
-    {   
+    {
         $file = $line = null;
         if (headers_sent($file, $line)) {
             return;
@@ -703,7 +703,7 @@ class Response implements ResponseInterface
         }
 
         $headers = is_array($header) ? $header : [$header => $value];
-     
+
         foreach ($headers as $header => $value) {
             if (is_numeric($header)) {
                 list($header, $value) = [$value, null];
@@ -758,17 +758,17 @@ class Response implements ResponseInterface
      */
     public function location(?string $url = null, int $code = 302)
     {
-        if ($url === null) 
+        if ($url === null)
         {
             $result = $this->getHeaderLine('Location');
-            if (!$result) 
+            if (!$result)
             {
                 return null;
             }
 
             return $result;
         }
-        if ($this->_status === 200) 
+        if ($this->_status === 200)
         {
             $this->_status = 302;
         }
@@ -1146,25 +1146,25 @@ class Response implements ResponseInterface
      */
     public function type($contentType = null)
     {
-        if ($contentType === null) 
+        if ($contentType === null)
         {
             return $this->getType();
         }
-        if (is_array($contentType)) 
+        if (is_array($contentType))
         {
-            foreach ($contentType as $type => $definition) 
+            foreach ($contentType as $type => $definition)
             {
                 $this->_mimeTypes[$type] = $definition;
             }
 
             return $this->getType();
         }
-        if (isset($this->_mimeTypes[$contentType])) 
+        if (isset($this->_mimeTypes[$contentType]))
         {
             $contentType = $this->_mimeTypes[$contentType];
             $contentType = is_array($contentType) ? current($contentType) : $contentType;
         }
-        if (strpos($contentType, '/') === false) 
+        if (strpos($contentType, '/') === false)
         {
             return false;
         }
@@ -1887,15 +1887,15 @@ class Response implements ResponseInterface
      */
     protected function _getUTCDate($time = null)
     {
-        if ($time instanceof DateTimeInterface) 
+        if ($time instanceof DateTimeInterface)
         {
             $result = clone $time;
-        } 
+        }
         elseif (is_int($time))
         {
             $result = new DateTime(date('Y-m-d H:i:s', $time));
-        } 
-        else 
+        }
+        else
         {
             $result = new DateTime($time);
         }
@@ -2332,7 +2332,7 @@ class Response implements ResponseInterface
      * This method is compatible with the historical behavior of Cake\Http\Response,
      * where `httponly` is `httpOnly` and `expires` is `expire`
      *
-     * @param dFramework\core\http\CookieInterface $cookie Cookie object.
+     * @param \dFramework\core\http\cookie\CookieInterface $cookie Cookie object.
      * @return array
      */
     protected function convertCookieToArray(CookieInterface $cookie)
@@ -2351,7 +2351,7 @@ class Response implements ResponseInterface
     /**
      * Get the CookieCollection from the response
      *
-     * @return dFramework\core\http\CookieCollection
+     * @return \dFramework\core\http\cookie\CookieCollection
      */
     public function getCookieCollection()
     {
@@ -2361,7 +2361,7 @@ class Response implements ResponseInterface
     /**
      * Get a new instance with provided cookie collection.
      *
-     * @param \Cake\Http\Cookie\CookieCollection $cookieCollection Cookie collection to set.
+     * @param \dFramework\core\http\cookie\CookieCollection $cookieCollection Cookie collection to set.
      * @return static
      */
     public function withCookieCollection(CookieCollection $cookieCollection)
@@ -2405,11 +2405,11 @@ class Response implements ResponseInterface
      * *Note* The `$allowedDomains`, `$allowedMethods`, `$allowedHeaders` parameters are deprecated.
      * Instead the builder object should be used.
      *
-     * @param dFrammework\core\http\ServerRequest $request Request object
+     * @param \dFramework\core\http\ServerRequest $request Request object
      * @param string|string[] $allowedDomains List of allowed domains, see method description for more details
      * @param string|string[] $allowedMethods List of HTTP verbs allowed
      * @param string|string[] $allowedHeaders List of HTTP headers allowed
-     * @return dFramework\core\http\CorsBuilder A builder object the provides a fluent interface for defining
+     * @return \dFramework\core\http\CorsBuilder A builder object the provides a fluent interface for defining
      *   additional CORS headers.
      */
     public function cors(ServerRequest $request, $allowedDomains = [], $allowedMethods = [], $allowedHeaders = [])
@@ -2424,7 +2424,7 @@ class Response implements ResponseInterface
         if (empty($allowedDomains) && empty($allowedMethods) && empty($allowedHeaders)) {
             return $builder;
         }
-        
+
         $updated = $builder->allowOrigin($allowedDomains)
             ->allowMethods((array)$allowedMethods)
             ->allowHeaders((array)$allowedHeaders)
@@ -2458,7 +2458,6 @@ class Response implements ResponseInterface
      *   to a file, `APP` will be prepended to the path (this behavior is deprecated).
      * @param array $options Options See above.
      * @return void
-     * @throws \Cake\Http\Exception\NotFoundException
      */
     public function file($path, array $options = [])
     {
@@ -2597,7 +2596,7 @@ class Response implements ResponseInterface
      * Validate a file path is a valid response body.
      *
      * @param string $path The path to the file.
-     * @throws \Cake\Http\Exception\NotFoundException
+     * @throws \dFramework\core\exception\LoadException
      * @return \Cake\Filesystem\File
      */
     protected function validateFile($path)
@@ -2609,7 +2608,7 @@ class Response implements ResponseInterface
             $path = APP_DIR . $path;
         }
         if (!Folder::isAbsolute($path)) {
-            
+
         }
 
         $file = new File($path);

@@ -36,15 +36,15 @@ $data['encryption'] = [
     /**
      * KEY
      *  La cle de chiffrement des donnees de l'application (cookie, et donnees chiffrées avec la librairie Crypto)
-     * 
+     *
      * @var string
      */
-    'key'       => 't568hujkjdfghjudv45rt6y7u3edf3eq',
+    'key'       => env('app.encryptionKey', 't568hujkjdfghjudv45rt6y7u3edf3eq'),
 
     /**
      * ALGO
      *  Specifie l'algorithme à utiliser pour le chiffrement des donnees
-     * 
+     *
      * @var string
      */
     'algo'      => 'CAST5-CBC',
@@ -52,7 +52,7 @@ $data['encryption'] = [
     /**
      * ADD_HMAC
      *  Specifie si on doit ajouter un hmac a la fin d'un chiffrement (utilisé dans la librairie Crypto)
-     * 
+     *
      * @var bool
      */
     'add_hmac'  => true,
@@ -60,7 +60,7 @@ $data['encryption'] = [
     /**
      * SALT
      *  Definit la cle a utiliser comme salt dans le processus d'haschage de mot de passe
-     * 
+     *
      * @var string
      */
     'salt'      => '',
@@ -75,14 +75,14 @@ $data['encryption'] = [
 */
 $data['session'] = [
     /**
-     * CACHE_LIMITER 
+     * CACHE_LIMITER
      */
     'cache_limiter' => 'private',
 
     /**
      * LIFETIME
      *  Temps d'expirara du cache de session en minute
-     * 
+     *
      * @var int
      */
     'lifetime' => 60,
@@ -91,7 +91,7 @@ $data['session'] = [
      * EXPIRE
      *  The number of SECONDS you want the session to last.
      *  Setting to 0 (zero) means expire when the browser is closed.
-     * 
+     *
      * @var int
      */
     'expire' => 7200,
@@ -107,40 +107,40 @@ $data['cookies'] = [
     /**
      * PREFIX
      *  Set a cookie name prefix if you need to avoid collisions
-     * 
+     *
      * @var string
      */
-    'prefix'   => '',
+    'prefix'   => env('app.cookie.prefix', ''),
     /**
      * DOMAIN
      *  Set to .your-domain.com for site-wide cookies
-     * 
+     *
      * @var string
      */
-    'domain'   => '',
+    'domain'   => env('app.cookie.domain', ''),
     /**
      * PATH
      *  Typically will be a forward slash
-     * 
+     *
      * @var string
      */
-    'path'     => '/',
+    'path'     => env('app.cookie.path', '/'),
     /**
      * SECURE
      *  Cookie will only be set if a secure HTTPS connection exists.
      *  Whether to only transfer cookies via SSL
-     * 
+     *
      * @var bool
      */
-    'secure'   => false,
+    'secure'   => env('app.cookie.secure', false),
     /**
      * HTTPONLY
      *  Cookie will only be accessible via HTTP(S) (no javascript)
      *  Whether to only makes the cookie accessible via HTTP (no javascript)
-     * 
+     *
      * @var bool
      */
-    'httponly' => true,
+    'httponly' => env('app.cookie.HTTPOnly', true),
 ];
 
 
@@ -155,50 +155,50 @@ $data['cookies'] = [
 $data['csrf'] = [
     /**
      * PROTECTION
-     * 
+     *
      * @var bool
      */
-    'protection'    => false,
+    'protection'    => env('app.CSRF.protection', false),
 
     /**
      * TOKEN_NAME
      *  The token name
-     * 
+     *
      * @var string
      */
-    'token_name'    => 'csrf_test_name',
+    'token_name'    => env('app.CSRF.tokenName', 'csrf_test_name'),
 
     /**
      * COOKIE_NAME
      *  The cookie name
-     * 
+     *
      * @var string
      */
-    'cookie_name'   => 'csrf_cookie_name',
+    'cookie_name'   => env('app.CSRF.cookieName', 'csrf_cookie_name'),
 
     /**
      * EXPIRE
      *  The number in seconds the token should expire.
-     * 
+     *
      * @var int
      */
-    'expire'        => 7200,
-    
+    'expire'        => env('app.CSRF.expire', 7200),
+
     /**
      * REGENERATE
      *  Regenerate token on every submission
-     * 
+     *
      * @var bool
      */
-    'regenerate'    => true,
+    'regenerate'    => env('app.CSRF.regenerate', true),
 
     /**
      * EXCLUDE_URIS
      *  Array of URIs which ignore CSRF checks
-     * 
+     *
      * @var array
      */
-    'exclude_uris'  => []
+    'exclude_uris'  => env('app.CSRF.excludeURIs', [])
 ];
 
 
@@ -213,7 +213,7 @@ $data['hydrator'] = [
      * CASE
      *  Specifie si le nom des colones issues de la bd doivent etre convertie
      *  Les valeurs admissible sont camel (camelcase), pascal(pascalcase), null (rien)
-     * 
+     *
      * @var string|null
      */
     'case'    => 'camel'

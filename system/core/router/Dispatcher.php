@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -17,16 +17,16 @@
 
 namespace dFramework\core\router;
 
-use ReflectionClass;
-use ReflectionMethod;
-use dFramework\core\loader\Service;
+use dFramework\components\rest\Controller;
+use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
+use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
-use dFramework\components\rest\Controller;
 use Psr\Http\Message\ServerRequestInterface;
-use dFramework\core\exception\RouterException;
+use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Dispatcher
@@ -42,7 +42,7 @@ use dFramework\core\exception\RouterException;
  * @since       1.0
  * @file        /system/core/router/Dispatcher.php
  */
-class Dispatcher 
+class Dispatcher
 {
     /**
      * @var \dFramework\core\http\ServerRequest
@@ -61,7 +61,7 @@ class Dispatcher
 	 */
 	private $middleware;
 	/**
-	 * @var \dFramework\core\utilities\Timer
+	 * @var \dFramework\core\debug\Timer
 	 */
 	private $timer;
 
@@ -104,10 +104,10 @@ class Dispatcher
 
 
 	private static $_instance = null;
-	
+
 	private $output = '';
 
-	
+
     /**
      * Renvoi une instance unique de la classe
      *
@@ -115,17 +115,36 @@ class Dispatcher
      */
     public static function instance() : self
     {
-        if (null === self::$_instance) 
+        if (null === self::$_instance)
         {
             self::$_instance = new self;
         }
         return self::$_instance;
     }
+
+	/**
+	 * Constructor
+	 */
     private function __construct()
     {
 		$this->request = Service::request();
 		$this->response = Service::response();
+
 		$this->middleware = new Middleware($this->response);
+
+		$middlewaresFile = APP_DIR . 'config' . DS . 'middlewares.php';
+		if (file_exists($middlewaresFile) AND !in_array($middlewaresFile, get_included_files()))
+		{
+			$middleware = require $middlewaresFile;
+			if (is_callable($middleware))
+			{
+				$middlewareQueue = call_user_func($middleware, $this->middleware, $this->request);
+				if ($middlewareQueue instanceof Middleware)
+				{
+					$this->middleware = $middlewareQueue;
+				}
+			}
+		}
 	}
 
 
@@ -144,7 +163,7 @@ class Dispatcher
     public static function getClass() : ?string
     {
 		$controller = self::instance()->controller;
-		if (empty($controller) OR !is_string($controller)) 
+		if (empty($controller) OR !is_string($controller))
 		{
 			$controller = Service::routes()->defaultController();
 		}
@@ -158,7 +177,7 @@ class Dispatcher
     public static function getMethod() : ?string
     {
 		$method = self::instance()->method;
-		if (empty($method)) 
+		if (empty($method))
 		{
 			$method = Service::routes()->defaultMethod();
 		}
@@ -178,7 +197,7 @@ class Dispatcher
 
 	//--------------------------------------------------------------------
 
-	
+
 	private function run()
 	{
 		$this->startBenchmark();
@@ -194,36 +213,40 @@ class Dispatcher
 			require_once $events_file;
 		}
 		Service::event()->trigger('pre_system');
-		
-		require_once APP_DIR . 'config' . DS . 'routes.php';
+
+		$routesFile = APP_DIR . 'config' . DS . 'routes.php';
+		if (file_exists($routesFile))
+		{
+			require_once $routesFile;
+		}
 		if (empty($routes) OR ! $routes instanceof RouteCollection)
 		{
 			$routes = Service::routes();
 		}
-		
+
 		/**
 		 * Route middlewares
 		 */
-		$this->routeMiddlewares = (array) $this->dispatchRoutes($routes, $this->request); 
-	
+		$this->routeMiddlewares = (array) $this->dispatchRoutes($routes, $this->request);
+
 		/*
 		 * The bootstrapping in a middleware
 		 */
 		$this->middleware->append(function(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
 			$resp = null;
 
-			$resp = $this->startController();
+			$resp = $this->startController($request, $response);
 			// Closure controller has run in startController().
 			if (! is_callable($this->controller))
 			{
-				$controller = $this->createController();
-				
+				$controller = $this->createController($request, $response);
+
 				// Is there a "post_controller_constructor" event?
 				Service::event()->trigger('post_controller_constructor');
 
 				$resp = $this->runController($controller);
 			}
-			else 
+			else
 			{
 				$this->timer->stop('controller_constructor');
 				$this->timer->stop('controller');
@@ -231,23 +254,22 @@ class Dispatcher
 
 			Service::event()->trigger('post_system');
 
-			
-			if ($resp instanceof ResponseInterface) 
+			if ($resp instanceof ResponseInterface)
 			{
 				$response = $resp;
 			}
-			
+
 			return $response;
 		});
 
 		/**
 		 * Add routes middlewares
 		 */
-		foreach ($this->routeMiddlewares as $middleware) 
+		foreach ($this->routeMiddlewares as $middleware)
 		{
 			$this->middleware->prepend($middleware);
 		}
-				
+
 		// Save our current URI as the previous URI in the session
 		// for safer, more accurate use with `previous_url()` helper function.
 		$this->storePreviousURL((string)current_url(true));
@@ -262,7 +284,7 @@ class Dispatcher
 	 * Gathers the script output from the buffer, replaces some execution
 	 * time tag in the output and displays the debug toolbar, if required.
 	 *
-	 * @param null $returned
+	 * @param ResponseInterface|mixed $returned
 	 */
 	protected function emitResponse($returned = null)
 	{
@@ -293,14 +315,14 @@ class Dispatcher
 		 * @var \dFramework\core\http\Response
 		 */
 		$response = $this->response;
-		if (empty($response->body())) 
+		if (empty($response->body()))
 		{
 			$this->response = $this->response->withBody(to_stream($this->output));
 		}
 
 		$this->totalTime = $this->timer->getElapsedTime('total_execution');
-			
-		
+
+
 		Service::emitter()->emit(
 			Service::toolbar()->prepare($this, $this->request, $this->response)
 		);
@@ -323,7 +345,7 @@ class Dispatcher
 		$this->timer->start('total_execution', $this->startTime);
 		$this->timer->start('bootstrap');
 	}
-	
+
 	/**
 	 * Modifies the Request Object to use a different method if a POST
 	 * variable called _method is found.
@@ -357,34 +379,37 @@ class Dispatcher
 	private function dispatchRoutes(RouteCollection $routes, ServerRequest $request)
     {
 		$this->router = new Router($routes, $request);
-		
+
 		$this->timer->stop('bootstrap');
 		$this->timer->start('routing');
 		ob_start();
 
-		$this->controller     = $this->router->handle($request->url ?? null);	
+		$this->controller     = $this->router->handle($request->url ?? null);
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
 		$this->controllerFile = $this->router->controllerFile();
-		
+
 		// If a {locale} segment was matched in the final route,
 		// then we need to set the correct locale on our Request.
 		if ($this->router->hasLocale())
 		{
 			// $this->request->setLocale($this->router->getLocale());
-		}    
-		
+		}
+
 		$this->timer->stop('routing');
 
 		return $this->router->getMiddleware();
     }
-    
+
 	/**
 	 * Now that everything has been setup, this method attempts to run the
 	 * controller method and make the script go. If it's not able to, will
 	 * show the appropriate Page Not Found error.
+	 *
+	 * @param ServerRequestInterface $request
+	 * @param ResponseInterface $response
 	 */
-	private function startController()
+	private function startController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		$this->timer->start('controller');
 		$this->timer->start('controller_constructor');
@@ -402,10 +427,10 @@ class Dispatcher
 		if (is_object($this->controller) AND get_class($this->controller) === 'Closure')
 		{
 			$controller = $this->controller;
-			
-			return $controller(...$this->parameters);
+
+			return $controller($request, $response, ...$this->parameters);
 		}
-		
+
 		// Try to autoload the class
 		if (!class_exists($this->controller, true))
 		{
@@ -417,7 +442,7 @@ class Dispatcher
 			', 404);
 		}
 
-		$reflectedClass = new ReflectionClass($this->controller); 
+		$reflectedClass = new ReflectionClass($this->controller);
 
 		if (!method_exists($this->controller, $this->method))
 		{
@@ -425,12 +450,12 @@ class Dispatcher
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unknow_method')
 				])))->withStatus(Controller::HTTP_NOT_ACCEPTABLE);
-				
+
 				return;
 			}
 			RouterException::except(
 				'Method not found',
-				'&laquo;<b>'.$this->method.'</b> method &raquo; is not defined in '.$this->controller, 
+				'&laquo;<b>'.$this->method.'</b> method &raquo; is not defined in '.$this->controller,
 				404
 			);
 		}
@@ -443,7 +468,7 @@ class Dispatcher
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(Controller::HTTP_FORBIDDEN);
-				
+
 				return;
 			}
             RouterException::except(
@@ -458,12 +483,12 @@ class Dispatcher
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(Controller::HTTP_FORBIDDEN);
-				
+
 				return;
 			}
 			RouterException::except(
 				'Forbidden',
-				'Access to <b>'. $reflection->getName().'</b> method is denied in '.$this->controller, 
+				'Access to <b>'. $reflection->getName().'</b> method is denied in '.$this->controller,
 				403
 			);
         }
@@ -474,24 +499,24 @@ class Dispatcher
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(Controller::HTTP_FORBIDDEN);
-				
+
 				return;
 			}
 			RouterException::except(
 				'Forbidden',
-				'Access denied to <b>'.$reflection->getName().'</b> method', 
+				'Access denied to <b>'.$reflection->getName().'</b> method',
 				403
 			);
         }
-        
+
         if ($this->method !== '_remap')
         {
             $params = $reflection->getParameters();
 			$required_parameters = 0;
-			
+
             foreach ($params As $param)
             {
-				if (true !== $param->isOptional()) 
+				if (true !== $param->isOptional())
 				{
                     $required_parameters++;
                 }
@@ -504,26 +529,26 @@ class Dispatcher
 				RouterException::except(
 					'Parameters error',
                     'The method <b>'.$this->method . '</b> of class '.$this->controller.' require
-						<b>'.$required_parameters.'</b> parameters, '.count($this->parameters).' was send', 
+						<b>'.$required_parameters.'</b> parameters, '.count($this->parameters).' was send',
 					400
 				);
             }
 		}
     }
-    
+
     /**
 	 * Instantiates the controller class.
 	 *
 	 * @return mixed
 	 */
-	private function createController()
+	private function createController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		/**
 		 * @var \dFramework\core\Controller
 		 */
 		$class = new $this->controller();
 
-		$class->initialize($this->request, $this->response);
+		$class->initialize($request, $response);
 
 		return $class;
 	}
@@ -549,7 +574,7 @@ class Dispatcher
 		{
 			$output = $class->{$this->method}(...$params);
 		}
-		
+
 		return $output;
 	}
 
@@ -577,7 +602,7 @@ class Dispatcher
 
 				unset($override);
 
-				$controller = $this->createController();
+				$controller = $this->createController($this->request, $this->response);
 				$this->runController($controller);
 			}
 
@@ -617,7 +642,7 @@ class Dispatcher
 	 *
 	 * This helps provider safer, more reliable previous_url() detection.
 	 *
-	 * @param \CodeIgniter\HTTP\URI $uri
+	 * @param \dFramework\core\http\URI|string $uri
 	 */
 	public function storePreviousURL($uri)
 	{

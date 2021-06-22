@@ -53,7 +53,7 @@ class Arr
     {
         return is_array($value) OR $value instanceof ArrayAccess;
     }
-    
+
     /**
      * Add an element to an array using "dot" notation if it doesn't exist.
      *
@@ -64,7 +64,7 @@ class Arr
      */
     public static function add(array $array, string $key, $value) : array
     {
-        if (is_null(static::get($array, $key))) 
+        if (is_null(static::get($array, $key)))
         {
             static::set($array, $key, $value);
         }
@@ -88,7 +88,7 @@ class Arr
     public static function check(array $data, string $path) : bool
     {
         $results = self::extract($data, $path);
-        if (!is_array($results)) 
+        if (!is_array($results))
         {
             return false;
         }
@@ -105,13 +105,13 @@ class Arr
     {
         $results = [];
 
-        foreach ($array As $values) 
+        foreach ($array As $values)
         {
-            if ($values instanceof Collection) 
+            if ($values instanceof Collection)
             {
                 $values = $values->all();
-            } 
-            elseif (! is_array($values)) 
+            }
+            elseif (! is_array($values))
             {
                 continue;
             }
@@ -137,57 +137,57 @@ class Arr
      */
     public static function combine(array $data, string $keyPath, string $valuePath = null, string $groupPath = null)  : array
     {
-        if (empty($data)) 
+        if (empty($data))
         {
             return [];
         }
 
-        if (is_array($keyPath)) 
+        if (is_array($keyPath))
         {
             $format = array_shift($keyPath);
             $keys = self::format($data, $keyPath, $format);
-        } 
-        else 
+        }
+        else
         {
             $keys = self::extract($data, $keyPath);
         }
-        if (empty($keys)) 
+        if (empty($keys))
         {
             return [];
         }
 
-        if (!empty($valuePath) AND is_array($valuePath)) 
+        if (!empty($valuePath) AND is_array($valuePath))
         {
             $format = array_shift($valuePath);
             $vals = self::format($data, $valuePath, $format);
-        } 
-        elseif (!empty($valuePath)) 
+        }
+        elseif (!empty($valuePath))
         {
             $vals = self::extract($data, $valuePath);
         }
-        if (empty($vals)) 
+        if (empty($vals))
         {
             $vals = array_fill(0, count($keys), null);
         }
 
-        if (count($keys) !== count($vals)) 
+        if (count($keys) !== count($vals))
         {
             Exception::show('Tableau::combine() needs an equal number of keys + values.');
         }
 
-        if ($groupPath !== null) 
+        if ($groupPath !== null)
         {
             $group = self::extract($data, $groupPath);
-            if (!empty($group)) 
+            if (!empty($group))
             {
                 $c = count($keys);
-                for ($i = 0; $i < $c; $i++) 
+                for ($i = 0; $i < $c; $i++)
                 {
-                    if (!isset($group[$i])) 
+                    if (!isset($group[$i]))
                     {
                         $group[$i] = 0;
                     }
-                    if (!isset($out[$group[$i]])) 
+                    if (!isset($out[$group[$i]]))
                     {
                         $out[$group[$i]] = [];
                     }
@@ -196,7 +196,7 @@ class Arr
                 return $out;
             }
         }
-        if (empty($vals)) 
+        if (empty($vals))
         {
             return [];
         }
@@ -213,34 +213,34 @@ class Arr
      */
     public static function contains(array $data, array $needle) : bool
     {
-        if (empty($data) OR empty($needle)) 
+        if (empty($data) OR empty($needle))
         {
             return false;
         }
         $stack = array();
 
-        while (!empty($needle)) 
+        while (!empty($needle))
         {
             $key = key($needle);
             $val = $needle[$key];
             unset($needle[$key]);
 
-            if (array_key_exists($key, $data) AND is_array($val)) 
+            if (array_key_exists($key, $data) AND is_array($val))
             {
                 $next = $data[$key];
                 unset($data[$key]);
 
-                if (!empty($val)) 
+                if (!empty($val))
                 {
                     $stack[] = array($val, $next);
                 }
-            } 
-            elseif (!array_key_exists($key, $data) OR $data[$key] != $val) 
+            }
+            elseif (!array_key_exists($key, $data) OR $data[$key] != $val)
             {
                 return false;
             }
 
-            if (empty($needle) AND !empty($stack)) 
+            if (empty($needle) AND !empty($stack))
             {
                 list($needle, $data) = array_pop($stack);
             }
@@ -258,13 +258,13 @@ class Arr
     {
         $results = [[]];
 
-        foreach ($arrays As $index => $array) 
+        foreach ($arrays As $index => $array)
         {
             $append = [];
 
-            foreach ($results As $product) 
+            foreach ($results As $product)
             {
-                foreach ($array As $item) 
+                foreach ($array As $item)
                 {
                     $product[$index] = $item;
 
@@ -291,27 +291,27 @@ class Arr
      */
     public static function dimensions(array $data) : int
     {
-        if (empty($data)) 
+        if (empty($data))
         {
             return 0;
         }
         reset($data);
         $depth = 1;
-        while ($elem = array_shift($data)) 
+        while ($elem = array_shift($data))
         {
-            if (is_array($elem)) 
+            if (is_array($elem))
             {
                 $depth += 1;
                 $data =& $elem;
-            } 
-            else 
+            }
+            else
             {
                 break;
             }
         }
         return $depth;
     }
-    
+
     /**
      * Divide an array into two arrays. One with keys and the other with values.
      *
@@ -334,13 +334,13 @@ class Arr
     {
         $results = [];
 
-        foreach ($array as $key => $value) 
+        foreach ($array as $key => $value)
         {
-            if (is_array($value) AND ! empty($value)) 
+            if (is_array($value) AND ! empty($value))
             {
                 $results = array_merge($results, static::dot($value, $prepend.$key.'.'));
-            } 
-            else 
+            }
+            else
             {
                 $results[$prepend.$key] = $value;
             }
@@ -372,7 +372,7 @@ class Arr
      */
     public static function exists($array, $key) : bool
     {
-        if ($array instanceof ArrayAccess) 
+        if ($array instanceof ArrayAccess)
         {
             return $array->offsetExists($key);
         }
@@ -395,7 +395,7 @@ class Arr
 
         return [$value, $key];
     }
-    
+
     /**
      * Gets the values from an array matching the $path expression.
      * The path expression is a dot separated expression, that can contain a set
@@ -427,22 +427,22 @@ class Arr
      */
     public static function extract(array $data, string $path) : array
     {
-        if (empty($path)) 
+        if (empty($path))
         {
             return $data;
         }
 
         // Simple paths.
-        if (!preg_match('/[{\[]/', $path)) 
+        if (!preg_match('/[{\[]/', $path))
         {
             return (array)self::get($data, $path);
         }
 
-        if (strpos($path, '[') === false) 
+        if (strpos($path, '[') === false)
         {
             $tokens = explode('.', $path);
-        } 
-        else 
+        }
+        else
         {
             $tokens = Str::tokenize($path, '.', '[', ']');
         }
@@ -451,17 +451,17 @@ class Arr
 
         $context = array($_key => array($data));
 
-        foreach ($tokens As $token) 
+        foreach ($tokens As $token)
         {
             $next = array();
 
             list($token, $conditions) = self::_splitConditions($token);
 
-            foreach ($context[$_key] As $item) 
+            foreach ($context[$_key] As $item)
             {
-                foreach ((array)$item As $k => $v) 
+                foreach ((array)$item As $k => $v)
                 {
-                    if (self::_matchToken($k, $token)) 
+                    if (self::_matchToken($k, $token))
                     {
                         $next[] = $v;
                     }
@@ -469,12 +469,12 @@ class Arr
             }
 
             // Filter for attributes.
-            if ($conditions) 
+            if ($conditions)
             {
                 $filter = [];
-                foreach ($next As $item) 
+                foreach ($next As $item)
                 {
-                    if (is_array($item) AND self::_matches($item, $conditions)) 
+                    if (is_array($item) AND self::_matches($item, $conditions))
                     {
                         $filter[] = $item;
                     }
@@ -502,13 +502,13 @@ class Arr
     public static function expand(array $data, string $separator = '.') : array
     {
         $result = [];
-        foreach ($data As $flat => $value) 
+        foreach ($data As $flat => $value)
         {
             $keys = explode($separator, $flat);
             $keys = array_reverse($keys);
             $child = [$keys[0] => $value];
             array_shift($keys);
-            foreach ($keys As $k) 
+            foreach ($keys As $k)
             {
                 $child = [$k => $child];
             }
@@ -528,16 +528,16 @@ class Arr
      */
     public static function filter(array $data, $callback = ['self', '_filter']) : array
     {
-        foreach ($data As $k => $v) 
+        foreach ($data As $k => $v)
         {
-            if (is_array($v)) 
+            if (is_array($v))
             {
                 $data[$k] = self::filter($v, $callback);
             }
         }
         return array_filter($data, $callback);
     }
-    
+
     /**
      * Return the first element in an array passing a given truth test.
      *
@@ -548,22 +548,22 @@ class Arr
      */
     public static function first(array $array, ?callable $callback = null, $default = null)
     {
-        if (is_null($callback)) 
+        if (is_null($callback))
         {
-            if (empty($array)) 
+            if (empty($array))
             {
                 return $default;
             }
 
-            foreach ($array As $item) 
+            foreach ($array As $item)
             {
                 return $item;
             }
         }
 
-        foreach ($array As $key => $value) 
+        foreach ($array As $key => $value)
         {
-            if (call_user_func($callback, $value, $key)) 
+            if (call_user_func($callback, $value, $key))
             {
                 return $value;
             }
@@ -589,28 +589,28 @@ class Arr
         $path = null;
 
         reset($data);
-        while (!empty($data)) 
+        while (!empty($data))
         {
             $key = key($data);
             $element = $data[$key];
             unset($data[$key]);
 
-            if (is_array($element) AND !empty($element)) 
+            if (is_array($element) AND !empty($element))
             {
-                if (!empty($data)) 
+                if (!empty($data))
                 {
                     $stack[] = array($data, $path);
                 }
                 $data = $element;
                 reset($data);
                 $path .= $key . $separator;
-            } 
-            else 
+            }
+            else
             {
                 $result[$path . $key] = $element;
             }
 
-            if (empty($data) AND !empty($stack)) 
+            if (empty($data) AND !empty($stack))
             {
                 list($data, $path) = array_pop($stack);
                 reset($data);
@@ -632,15 +632,15 @@ class Arr
 
         $keys = (array) $keys;
 
-        if (count($keys) === 0) 
+        if (count($keys) === 0)
         {
             return;
         }
 
-        foreach ($keys As $key) 
+        foreach ($keys As $key)
         {
             // if the exact key exists in the top-level, remove it
-            if (static::exists($array, $key)) 
+            if (static::exists($array, $key))
             {
                 unset($array[$key]);
 
@@ -652,15 +652,15 @@ class Arr
             // clean up before each pass
             $array = &$original;
 
-            while (count($parts) > 1) 
+            while (count($parts) > 1)
             {
                 $part = array_shift($parts);
 
-                if (isset($array[$part]) AND is_array($array[$part])) 
+                if (isset($array[$part]) AND is_array($array[$part]))
                 {
                     $array = &$array[$part];
-                } 
-                else 
+                }
+                else
                 {
                     continue 2;
                 }
@@ -685,7 +685,7 @@ class Arr
      * @param array $data Source array from which to extract the data
      * @param array $paths An array containing one or more Hash::extract()-style key paths
      * @param string $format Format string into which values will be inserted, see sprintf()
-     * @return array An array of strings extracted from `$path` and formatted with `$format`
+     * @return array|null An array of strings extracted from `$path` and formatted with `$format`
      * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::format
      * @see sprintf()
      * @see Tableau::extract()
@@ -696,12 +696,12 @@ class Arr
         $extracted = [];
         $count = count($paths);
 
-        if (!$count) 
+        if (!$count)
         {
             return;
         }
 
-        for ($i = 0; $i < $count; $i++) 
+        for ($i = 0; $i < $count; $i++)
         {
             $extracted[] = self::extract($data, $paths[$i]);
         }
@@ -710,12 +710,12 @@ class Arr
         $count = count($data[0]);
 
         $countTwo = count($data);
-        for ($j = 0; $j < $count; $j++) 
+        for ($j = 0; $j < $count; $j++)
         {
             $args = array();
-            for ($i = 0; $i < $countTwo; $i++) 
+            for ($i = 0; $i < $countTwo; $i++)
             {
-                if (array_key_exists($j, $data[$i])) 
+                if (array_key_exists($j, $data[$i]))
                 {
                     $args[] = $data[$i][$j];
                 }
@@ -739,31 +739,31 @@ class Arr
      */
     public static function get($data, $path, $default = null)
     {
-        if (!static::accessible($data)) 
+        if (!static::accessible($data))
         {
             return $default;
         }
-        if (is_string($path) OR is_numeric($path)) 
+        if (is_string($path) OR is_numeric($path))
         {
             $parts = explode('.', $path);
-        } 
-        else 
+        }
+        else
         {
             $parts = $path;
         }
-        foreach ($parts as $key) 
+        foreach ($parts as $key)
         {
-            if (is_array($data) AND isset($data[$key])) 
+            if (is_array($data) AND isset($data[$key]))
             {
                 $data =& $data[$key];
-            } else 
+            } else
             {
                 return $default;
             }
         }
         return $data;
     }
-    
+
     /**
      * @param array|null $data
      * @param string|null $key
@@ -771,25 +771,25 @@ class Arr
      */
     public static function getRecursive(?array $data, ?string $key = null)
     {
-        if (empty($data)) 
+        if (empty($data))
         {
             return null;
         }
-        if (empty($key)) 
+        if (empty($key))
         {
             return $data;
         }
 
         $key = explode('.', $key);
         $count = count($key);
-        
-        if ($count == 1) 
+
+        if ($count == 1)
         {
             return $data[$key[0]] ?? null;
         }
-        
+
         $sub_key = $key[1];
-        for ($i = 2; $i < $count; $i++) 
+        for ($i = 2; $i < $count; $i++)
         {
             $sub_key .= '.' .$key[$i];
         }
@@ -808,27 +808,27 @@ class Arr
     {
         $keys = (array) $keys;
 
-        if (! $array OR $keys === []) 
+        if (! $array OR $keys === [])
         {
             return false;
         }
 
-        foreach ($keys As $key) 
+        foreach ($keys As $key)
         {
             $subKeyArray = $array;
 
-            if (static::exists($array, $key)) 
+            if (static::exists($array, $key))
             {
                 continue;
             }
 
-            foreach (explode('.', $key) As $segment) 
+            foreach (explode('.', $key) As $segment)
             {
-                if (static::accessible($subKeyArray) AND static::exists($subKeyArray, $segment)) 
+                if (static::accessible($subKeyArray) AND static::exists($subKeyArray, $segment))
                 {
                     $subKeyArray = $subKeyArray[$segment];
-                } 
-                else 
+                }
+                else
                 {
                     return false;
                 }
@@ -868,16 +868,16 @@ class Arr
 
         list($token, $conditions) = self::_splitConditions($token);
 
-        foreach ($data As $k => $v) 
+        foreach ($data As $k => $v)
         {
-            if (self::_matchToken($k, $token)) 
+            if (self::_matchToken($k, $token))
             {
-                if ($conditions AND self::_matches($v, $conditions)) 
+                if ($conditions AND self::_matches($v, $conditions))
                 {
                     $data[$k] = array_merge($v, $values);
                     continue;
                 }
-                if (!$conditions) 
+                if (!$conditions)
                 {
                     $data[$k] = self::insert($v, $nextPath, $values);
                 }
@@ -886,7 +886,7 @@ class Arr
 
         return $data;
     }
-    
+
     /**
      * Determines if an array is associative.
      *
@@ -901,7 +901,7 @@ class Arr
 
         return array_keys($keys) !== $keys;
     }
-    
+
     /**
      * Return the last element in an array passing a given truth test.
      *
@@ -912,7 +912,7 @@ class Arr
      */
     public static function last(array $array, ?callable $callback = null, $default = null)
     {
-        if (is_null($callback)) 
+        if (is_null($callback))
         {
             return empty($array) ? $default : end($array);
         }
@@ -931,9 +931,9 @@ class Arr
     public static function maxDimensions(array $data) : int
     {
         $depth = [];
-        if (is_array($data) AND reset($data) !== false) 
+        if (is_array($data) AND reset($data) !== false)
         {
-            foreach ($data As $value) 
+            foreach ($data As $value)
             {
                 $depth[] = self::dimensions((array) $value) + 1;
             }
@@ -990,7 +990,7 @@ class Arr
      */
     public static function numeric(array $data) : bool
     {
-        if (empty($data)) 
+        if (empty($data))
         {
             return false;
         }
@@ -1019,11 +1019,11 @@ class Arr
      */
     public static function prepend(array $array, $value, $key = null) : array
     {
-        if (is_null($key)) 
+        if (is_null($key))
         {
             array_unshift($array, $value);
-        } 
-        else 
+        }
+        else
         {
             $array = [$key => $value] + $array;
         }
@@ -1074,19 +1074,19 @@ class Arr
 
         $count = count($array);
 
-        if ($requested > $count) 
+        if ($requested > $count)
         {
             throw new InvalidArgumentException(
                 "You requested {$requested} items, but there are only {$count} items available."
             );
         }
 
-        if (is_null($number)) 
+        if (is_null($number))
         {
             return $array[array_rand($array)];
         }
 
-        if ((int) $number === 0) 
+        if ((int) $number === 0)
         {
             return [];
         }
@@ -1095,7 +1095,7 @@ class Arr
 
         $results = [];
 
-        foreach ((array) $keys As $key) 
+        foreach ((array) $keys As $key)
         {
             $results[] = $array[$key];
         }
@@ -1115,16 +1115,16 @@ class Arr
      */
     public static function remove(array $data, $path)
     {
-        if (strpos($path, '[') === false) 
+        if (strpos($path, '[') === false)
         {
             $tokens = explode('.', $path);
-        } 
-        else 
+        }
+        else
         {
             $tokens = Str::tokenize($path, '.', '[', ']');
         }
 
-        if (strpos($path, '{') === false AND strpos($path, '[') === false) 
+        if (strpos($path, '{') === false AND strpos($path, '[') === false)
         {
             return self::_simpleOp('remove', $data, $tokens);
         }
@@ -1134,7 +1134,7 @@ class Arr
 
         list($token, $conditions) = self::_splitConditions($token);
 
-        foreach ($data As $k => $v) 
+        foreach ($data As $k => $v)
         {
             $match = self::_matchToken($k, $token);
             if ($match && is_array($v)) {
@@ -1165,21 +1165,21 @@ class Arr
      */
     public static function set(array &$array, string $key, $value) : array
     {
-        if (is_null($key)) 
+        if (is_null($key))
         {
             return $array = $value;
         }
 
         $keys = explode('.', $key);
 
-        while (count($keys) > 1) 
+        while (count($keys) > 1)
         {
             $key = array_shift($keys);
 
             // If the key doesn't exist at this depth, we will just create an empty array
             // to hold the next value, allowing us to create the arrays to hold final
             // values at the correct depth. Then we'll keep digging into the array.
-            if (! isset($array[$key]) OR ! is_array($array[$key])) 
+            if (! isset($array[$key]) OR ! is_array($array[$key]))
             {
                 $array[$key] = [];
             }
@@ -1200,7 +1200,7 @@ class Arr
      */
     public static function setRecursive(array &$data, ?string $key = null, $value = null)
     {
-        if (empty($data) AND empty($key)) 
+        if (empty($data) AND empty($key))
         {
             return;
         }
@@ -1213,9 +1213,9 @@ class Arr
             $data[$key[0]] = $value;
             return;
         }
-        
+
         $sub_key = $key[1];
-        for ($i = 2; $i < $count; $i++) 
+        for ($i = 2; $i < $count; $i++)
         {
             $sub_key .= '.' .$key[$i];
         }
@@ -1224,7 +1224,7 @@ class Arr
         {
             $data[$key[0]] = [];
         }
-        
+
         self::setRecursive($data[$key[0]], $sub_key, $value);
     }
 
@@ -1237,11 +1237,11 @@ class Arr
      */
     public static function shuffle(array $array, ?int $seed = null) : array
     {
-        if (is_null($seed)) 
+        if (is_null($seed))
         {
             shuffle($array);
-        } 
-        else 
+        }
+        else
         {
             mt_srand($seed);
             shuffle($array);
@@ -1262,10 +1262,10 @@ class Arr
     {
         return Collection::make($array)->sortBy($callback)->all();
     }
-    
+
     /**
      * Sort an array in ASC/DESC order relativly to a specific position
-     * 
+     *
      * @param array $data Array to sort
      * @param string $field String to describe field position
      * @param int $direction Direction of sort based on class constants
@@ -1276,16 +1276,16 @@ class Arr
         usort($data, function($a, $b) use($field, $direction) {
             $cmp1 = self::_getSortField_($a, $field);
             $cmp2 = self::_getSortField_($b, $field);
-            
-            if ($cmp1 == $cmp2) 
+
+            if ($cmp1 == $cmp2)
             {
                 return 0;
             }
-            if ($direction == self::SORT_ASC) 
+            if ($direction == self::SORT_ASC)
             {
                 return ($cmp1 < $cmp2) ? -1 : 1;
-            } 
-            else 
+            }
+            else
             {
                 return ($cmp1 < $cmp2) ? 1 : -1;
             }
@@ -1296,18 +1296,18 @@ class Arr
     private static function _getSortField_($element, $field)
     {
         $field = explode('.', $field);
-            
-        foreach($field As $key) 
+
+        foreach($field As $key)
         {
-            if (is_object($element) AND isset($element->$key)) 
+            if (is_object($element) AND isset($element->$key))
             {
                 $element = $element->$key;
-            } 
-            elseif (isset($element[$key])) 
+            }
+            elseif (isset($element[$key]))
             {
                 $element = $element[$key];
-            } 
-            else 
+            }
+            else
             {
                 break;
             }
@@ -1323,19 +1323,19 @@ class Arr
      */
     public static function sortRecursive(array $array) : array
     {
-        foreach ($array As &$value) 
+        foreach ($array As &$value)
         {
-            if (is_array($value)) 
+            if (is_array($value))
             {
                 $value = static::sortRecursive($value);
             }
         }
 
-        if (static::isAssoc($array)) 
+        if (static::isAssoc($array))
         {
             ksort($array);
-        } 
-        else 
+        }
+        else
         {
             sort($array);
         }
@@ -1363,14 +1363,14 @@ class Arr
      */
     public static function wrap($value) : array
     {
-        if (is_null($value)) 
+        if (is_null($value))
         {
             return [];
         }
 
         return is_array($value) ? $value : [$value];
     }
-    
+
 
 
     /**
@@ -1381,7 +1381,7 @@ class Arr
      */
     protected static function _filter($var) : bool
     {
-        if ($var === 0 OR $var === '0' OR !empty($var)) 
+        if ($var === 0 OR $var === '0' OR !empty($var))
         {
             return true;
         }
@@ -1505,9 +1505,9 @@ class Arr
      * @param array $data The data to operate on.
      * @param array $path The path to work on.
      * @param mixed $values The values to insert when doing inserts.
-     * @return array data.
+     * @return array|void data.
      */
-    protected static function _simpleOp(string $op, array $data, array $path, $values = null) : array
+    protected static function _simpleOp(string $op, array $data, array $path, $values = null)
     {
         $_list =& $data;
 

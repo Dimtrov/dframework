@@ -34,7 +34,7 @@ use dFramework\core\exception\DatabaseException;
  * @since       3.2.2
  * @file		/system/core/db/query/Builder.php
  */
-class Builder 
+class Builder
 {
     protected $table = [];
     protected $fields = [];
@@ -61,7 +61,7 @@ class Builder
 
     protected $db_type;
     protected $class;
-    
+
     /**
      * @var Database Instance de la base de donnees courrante
      */
@@ -70,7 +70,7 @@ class Builder
      * @var array Parametres de configuration de la base de donnees
      */
     protected $db_config = [];
-    
+
     /**
      * @var self
      */
@@ -83,17 +83,30 @@ class Builder
      */
     public function __construct(?string $group = null)
     {
-        $this->db = Database::instance($group);  
-        $this->db_config = $this->db->config();  
+		$this->useConnection(empty($group) ? '' : $group, [], true);
     }
-    public static function instance(?string $group = null) : self 
+    public static function instance(?string $group = null) : self
     {
-        if (null === self::$_instance) 
+        if (null === self::$_instance)
         {
             self::$_instance = new self($group);
         }
         return self::$_instance;
     }
+
+	/**
+	 * Defini la configuration de la base de donnees a utiliser
+	 *
+	 * @param string $group
+	 * @param array $customConfig
+	 * @param boolean $shared
+	 * @return void
+	 */
+	public function useConnection(string $group, array $customConfig = [], bool $shared = false)
+	{
+		$this->db = true === $shared ? Database::instance($group) : new Database($group, $customConfig);
+        $this->db_config = $this->db->config();
+	}
 
     public function __clone()
     {
@@ -108,7 +121,7 @@ class Builder
         if (in_array($name, Database::allowedFacadeMethods))
         {
             return call_user_func_array([$this->db, $name], $arguments);
-        }    
+        }
     }
 
     /*************************** SQL Builder Methods ********************/
@@ -123,7 +136,7 @@ class Builder
     final public function from($tables, bool $reset = false) : self
     {
         $tables = (array) $tables;
-        foreach ($tables As $table) 
+        foreach ($tables As $table)
         {
             $this->table[] = $this->db_config['prefix'].$table;
         }
@@ -137,20 +150,20 @@ class Builder
      * @alias self::from()
      * @return self
      */
-    final public function table($tables) : self 
+    final public function table($tables) : self
     {
         return $this->from($tables);
     }
     /**
      * Sets the table
      *
-     * @param string|string[] $tables
+     * @param string $table
      * @alias self::from()
      * @return self
      */
-    final public function into($tables) : self 
+    final public function into(string $table) : self
     {
-        return $this->from($tables);
+        return $this->from($table);
     }
 
     /**
@@ -160,7 +173,7 @@ class Builder
      * @param array $fields Fields to join on
      * @param string $type Type of join
      * @return object Self reference
-     * @throws Exception For invalid join type
+     * @throws DatabaseException For invalid join type
      */
     final public function join($table, array $fields, $type = 'INNER') : self
     {
@@ -171,7 +184,7 @@ class Builder
             'LEFT',
             'RIGHT',
         ];
-        if (!in_array($type, $joins)) 
+        if (!in_array($type, $joins))
         {
             throw new DatabaseException('Invalid join type.');
         }
@@ -193,7 +206,7 @@ class Builder
     {
         return $this->join($table, $fields, 'LEFT');
     }
-    
+
     /**
      * Adds a right table join.
      *
@@ -201,7 +214,7 @@ class Builder
      * @param array $fields Fields to join on
      * @return object Self reference
      */
-    final public function rightJoin($table, array $fields) : self 
+    final public function rightJoin($table, array $fields) : self
     {
         return $this->join($table, $fields, 'RIGHT');
     }
@@ -227,13 +240,13 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
-    final public function orWhere($field, $value = null) : self 
+    final public function orWhere($field, $value = null) : self
     {
-        if (!is_array($field)) 
+        if (!is_array($field))
         {
             $field = [$field => $value];
         }
-        foreach ($field As $key => $value) 
+        foreach ($field As $key => $value)
         {
             $this->where('|' . $key, $value);
         }
@@ -242,7 +255,7 @@ class Builder
 
     /**
      * Définit une condition pour la sélection des données
-     * 
+     *
      * @param string $field
      * @param self|array|callable|string $param
      * @return self
@@ -253,20 +266,20 @@ class Builder
         {
             $param = call_user_func($param, clone $this);
         }
-        
-        if (is_array($param)) 
+
+        if (is_array($param))
         {
             $param = implode(',', $param);
         }
-        else if ($param instanceof self) 
+        else if ($param instanceof self)
         {
             $param = $param->sql();
         }
-        else if (is_string($param)) 
+        else if (is_string($param))
         {
             throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::in");
         }
-        
+
         return $this->where($field.' IN ('.$param.')');
     }
     /**
@@ -277,13 +290,13 @@ class Builder
      * @param self|array|string $param
      * @return self
      */
-    final public function whereIn(string $field, $param) : self 
+    final public function whereIn(string $field, $param) : self
     {
         return $this->in($field, $param);
     }
     /**
      * Définit une condition pour la sélection des données
-     * 
+     *
      * @param string $field
      * @param self|array|callable|string $param
      * @return self
@@ -294,25 +307,25 @@ class Builder
         {
             $param = call_user_func($param, clone $this);
         }
-        
-        if (is_array($param)) 
+
+        if (is_array($param))
         {
             $param = implode(',', $param);
         }
-        else if ($param instanceof self) 
+        else if ($param instanceof self)
         {
             $param = $param->sql();
         }
-        else if (!is_string($param)) 
+        else if (!is_string($param))
         {
             throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::orIn");
         }
-        
+
         return $this->where('|' . $field . ' IN ('.$param.')');
     }
     /**
      * Définit une condition pour la sélection des données
-     * 
+     *
      * @param string $field
      * @param self|array|callable|string $param
      * @return self
@@ -324,24 +337,24 @@ class Builder
             $param = call_user_func($param, clone $this);
         }
 
-        if (is_array($param)) 
+        if (is_array($param))
         {
             $param = implode(',', $param);
         }
-        else if ($param instanceof self) 
+        else if ($param instanceof self)
         {
             $param = $param->sql();
         }
-        else if (!is_string($param)) 
+        else if (!is_string($param))
         {
             throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::notIn");
         }
-        
+
         return $this->where($field.' NOT IN ('.$param.')');
     }
     /**
      * Définit une condition pour la sélection des données
-     * 
+     *
      * @param string $field
      * @param self|array|callable|string $param
      * @return self
@@ -352,26 +365,26 @@ class Builder
         {
             $param = call_user_func($param, clone $this);
         }
-        
-        if (is_array($param)) 
+
+        if (is_array($param))
         {
             $param = implode(',', $param);
         }
-        else if ($param instanceof self) 
+        else if ($param instanceof self)
         {
             $param = $param->sql();
         }
-        else if (!is_string($param)) 
+        else if (!is_string($param))
         {
             throw new DatabaseException("Mauvaise utilisation de la methode ".__CLASS__."::orNotIn");
         }
-        
+
         return $this->where('|' . $field . ' NOT IN ('.$param.')');
     }
 
      /**
      * Définit les parametres de la requete en cas d'utilisation de requete preparees classiques
-     * 
+     *
      * @param array $params
      * @return self
      */
@@ -388,13 +401,13 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
-    final public function like($field, $value = null) : self 
+    final public function like($field, $value = null) : self
     {
-        if (!is_array($field)) 
+        if (!is_array($field))
         {
             $field = [$field => $value];
         }
-        foreach ($field As $key => $value) 
+        foreach ($field As $key => $value)
         {
             $this->where($key . ' %', $value);
         }
@@ -407,13 +420,13 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
-    final public function notLike($field, $value = null) : self 
+    final public function notLike($field, $value = null) : self
     {
-        if (!is_array($field)) 
+        if (!is_array($field))
         {
             $field = [$field => $value];
         }
-        foreach ($field As $key => $value) 
+        foreach ($field As $key => $value)
         {
             $this->where($key . ' !%', $value);
         }
@@ -426,13 +439,13 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
-    final public function orLike($field, $value = null) : self 
+    final public function orLike($field, $value = null) : self
     {
-        if (!is_array($field)) 
+        if (!is_array($field))
         {
             $field = [$field => $value];
         }
-        foreach ($field As $key => $value) 
+        foreach ($field As $key => $value)
         {
             $this->where('|' . $key . ' %', $value);
         }
@@ -445,13 +458,13 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
-    final public function orNotLike($field, $value = null) : self 
+    final public function orNotLike($field, $value = null) : self
     {
-        if (!is_array($field)) 
+        if (!is_array($field))
         {
             $field = [$field => $value];
         }
-        foreach ($field As $key => $value) 
+        foreach ($field As $key => $value)
         {
             $this->where('|' . $key . ' !%', $value);
         }
@@ -468,19 +481,19 @@ class Builder
     final public function orderBy($field, $direction = 'ASC') : self
     {
         $this->crud = 'select';
-        
+
         $join = (empty($this->order)) ? 'ORDER BY' : ',';
 
-        if (is_array($field)) 
+        if (is_array($field))
         {
-            foreach ($field as $key => $value) 
+            foreach ($field as $key => $value)
             {
                 $field[$key] = $value.' '.$direction;
             }
         }
-        else 
+        else
         {
-            if ($field !== 'RAND()') 
+            if ($field !== 'RAND()')
             {
                 $field .= ' '.$direction;
             }
@@ -500,7 +513,7 @@ class Builder
      * @alias self::orderBy()
      * @return self
      */
-    final public function order($field, string $direction = 'ASC') : self 
+    final public function order($field, string $direction = 'ASC') : self
     {
         return $this->orderBy($field, $direction);
     }
@@ -510,7 +523,7 @@ class Builder
      *
      * @param string $field Field name
      * @return object Self reference
-     */ 
+     */
     final public function sortAsc($field) : self
     {
         return $this->orderBy($field, 'ASC');
@@ -521,18 +534,18 @@ class Builder
      *
      * @param string $field Field name
      * @return object Self reference
-     */ 
+     */
     final public function sortDesc($field) : self
     {
-        return $this->orderBy($field, 'DESC');        
+        return $this->orderBy($field, 'DESC');
     }
 
     /**
      * Adds an random sort for fields.
      *
      * @return object Self reference
-     */ 
-    final public function rand() : self 
+     */
+    final public function rand() : self
     {
         return $this->orderBy('RAND()');
     }
@@ -543,10 +556,10 @@ class Builder
      * @param string|array $field Field name or array of field names
      * @return self
      */
-    final public function groupBy($field) :self 
+    final public function groupBy($field) :self
     {
         $this->crud = 'select';
-        
+
         $join = (empty($this->groups)) ? 'GROUP BY' : ',';
         $fields = (is_array($field)) ? implode(',', $field) : $field;
 
@@ -561,7 +574,7 @@ class Builder
      * @alias self::orderBy()
      * @return self
      */
-    final public function group($field) : self 
+    final public function group($field) : self
     {
         return $this->groupBy($field);
     }
@@ -573,10 +586,10 @@ class Builder
      * @param string $value A field value to compare to
      * @return self
      */
-    final public function having($field, $value = null) : self 
+    final public function having($field, $value = null) : self
     {
         $this->crud = 'select';
-        
+
         $join = (empty($this->having)) ? 'HAVING' : '';
         $this->having .= $this->parseCondition($field, $value, $join);
 
@@ -590,11 +603,11 @@ class Builder
      * @param int $offset Number of rows to offset
      * @return self
      */
-    final public function limit($limit, $offset = null) : self 
+    final public function limit($limit, $offset = null) : self
     {
         $this->crud = 'select';
-        
-        if ($limit !== null) 
+
+        if ($limit !== null)
         {
             $this->limit = 'LIMIT '.$limit;
         }
@@ -604,7 +617,7 @@ class Builder
 
         return $this;
     }
-    
+
     /**
      * Adds an offset to the query.
      *
@@ -612,11 +625,11 @@ class Builder
      * @param int $limit Number of rows to limit
      * @return self
      */
-    final public function offset($offset, $limit = null) : self 
+    final public function offset($offset, $limit = null) : self
     {
         $this->crud = 'select';
-        
-        if ($offset !== null) 
+
+        if ($offset !== null)
         {
             $this->offset = 'OFFSET '.$offset;
         }
@@ -633,7 +646,7 @@ class Builder
      * @param boolean $value
      * @return self
      */
-    final public function distinct(bool $value = true) : self 
+    final public function distinct(bool $value = true) : self
     {
         $this->distinct = ($value) ? 'DISTINCT' : '';
 
@@ -666,13 +679,13 @@ class Builder
      * @param int $offset Offset condition
      * @return self
      */
-    final public function select($fields = '*', $limit = null, $offset = null) : self 
+    final public function select($fields = '*', $limit = null, $offset = null) : self
     {
         $this->crud = 'select';
-        
+
         $this->fields[] = is_array($fields) ? implode(',', $fields) : $fields;
         $this->limit($limit, $offset);
-        
+
         return $this;
     }
 
@@ -680,23 +693,23 @@ class Builder
      * Builds an insert query.
      *
      * @param array $data Array of key and values to insert
-     * @return mixed 
+     * @return mixed
      */
-    final public function insert(array $data, bool $execute = true)  
+    final public function insert(array $data, bool $execute = true)
     {
         $this->crud = 'insert';
-        
+
         $this->checkTable();
 
         if (empty($data))
         {
             return $this;
-        } 
-            
+        }
+
         $this->query_keys = array_keys($data);
         $this->query_values = array_values(array_map([$this->db, 'quote'], $data));
-        
-        if (true === $execute) 
+
+        if (true === $execute)
         {
             return $this->execute();
         }
@@ -710,31 +723,31 @@ class Builder
      * @param string|array $data Array of keys and values, or string literal
      * @return mixed
      */
-    final public function update($data, bool $execute = true) 
+    final public function update($data, bool $execute = true)
     {
         $this->crud = 'update';
-        
+
         $this->checkTable();
 
-        if (empty($data)) 
+        if (empty($data))
         {
             return $this;
         }
         $values = [];
 
-        if (is_array($data)) 
+        if (is_array($data))
         {
-            foreach ($data As $key => $value) 
+            foreach ($data As $key => $value)
             {
                 $values[] = (is_numeric($key)) ? $value : $key.'='.$this->db->quote($value);
             }
         }
-        else 
+        else
         {
             $values[] = (string)$data;
         }
         $this->query_values = $values;
-        
+
         if (true === $execute)
         {
             return $this->execute();
@@ -750,11 +763,11 @@ class Builder
      * @param array $where Where conditions
      * @return mixed
      */
-    final public function delete(bool $execute = true, ?array $where = null) 
+    final public function delete(bool $execute = true, ?array $where = null)
     {
         $this->crud = 'delete';
 
-        if ($where !== null) 
+        if ($where !== null)
         {
             $this->where($where);
         }
@@ -763,7 +776,7 @@ class Builder
         {
             return $this->execute();
         }
-        
+
         return $this;
     }
 
@@ -779,7 +792,7 @@ class Builder
      * @param string $key Cache key
      * @return mixed
      */
-    final public function min($field, $key = null, $expire = 0) 
+    final public function min($field, $key = null, $expire = 0)
     {
         $this->select('MIN('.$field.') min_value');
 
@@ -798,7 +811,7 @@ class Builder
      * @param string $key Cache key
      * @return mixed
      */
-    final public function max($field, $key = null, $expire = 0) 
+    final public function max($field, $key = null, $expire = 0)
     {
         $this->select('MAX('.$field.') max_value');
 
@@ -817,7 +830,7 @@ class Builder
      * @param string $key Cache key
      * @return mixed
      */
-    final public function sum($field, $key = null, $expire = 0) 
+    final public function sum($field, $key = null, $expire = 0)
     {
         $this->select('SUM('.$field.') sum_value');
 
@@ -827,7 +840,7 @@ class Builder
             $expire
         );
     }
-    
+
     /**
      * Gets the average value for a specified field.
      *
@@ -836,7 +849,7 @@ class Builder
      * @param string $key Cache key
      * @return mixed
      */
-    final public function avg($field, $key = null, $expire = 0) 
+    final public function avg($field, $key = null, $expire = 0)
     {
         $this->select('AVG('.$field.') avg_value');
 
@@ -844,9 +857,9 @@ class Builder
             'avg_value',
             $key,
             $expire
-        ); 
+        );
     }
-    
+
     /**
      * Gets a count of records for a table.
      *
@@ -855,7 +868,7 @@ class Builder
      * @param int $expire Expiration time in seconds
      * @return mixed
      */
-    final public function count($field = '*', ?string $key = null, int $expire = 0) 
+    final public function count($field = '*', ?string $key = null, int $expire = 0)
     {
         $this->select('COUNT('.$field.') num_rows');
 
@@ -865,7 +878,7 @@ class Builder
             $expire
         );
     }
-    
+
 
     /*************************** Fetch Data Methods ********************/
 
@@ -888,7 +901,7 @@ class Builder
      * @param int $expire Expiration time in seconds
      * @return Result
      */
-    final public function execute($key = null, $expire = 0) 
+    final public function execute($key = null, $expire = 0)
     {
         return $this->result = $this->query($this->sql(), $this->params);
     }
@@ -901,7 +914,7 @@ class Builder
      * @param int $expire Expiration time in seconds
      * @return array Rows
      */
-    final public function all($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0) : array 
+    final public function all($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0) : array
     {
         $this->execute($key, $expire);
         return $this->result->all($type);
@@ -913,7 +926,7 @@ class Builder
      * @param integer $expire
      * @return array
      */
-    final public function result($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0) : array 
+    final public function result($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0) : array
     {
         return $this->all($type, $key, $expire);
     }
@@ -921,26 +934,26 @@ class Builder
     /**
      * Fetch a single row from a select query.
      *
-     * @param int|string $type 
+     * @param int|string $type
      * @param string $key Cache key
      * @param int $expire Expiration time in seconds
      * @return mixed
      */
-    final public function first($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0) 
+    final public function first($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
     {
-        if (!empty($this->sql)) 
+        if (!empty($this->sql))
         {
             $this->limit(1);
         }
         $this->execute($key, $expire);
-        
+
         return $this->result->first($type);
     }
     /**
      * Recupere le premier resultat d'une requete en BD
      *
      * @alias self::first()
-     * @param int|string $type 
+     * @param int|string $type
      * @param string $key
      * @param int $expire
      * @return mixed
@@ -972,14 +985,14 @@ class Builder
      * @param int $expire Expiration time in seconds
      * @return mixed Row value
      */
-    final public function value($name, $key = null, $expire = 0) 
+    final public function value($name, $key = null, $expire = 0)
     {
         $row = $this->one(PDO::FETCH_OBJ, $key, $expire);
 
         return $row->{$name} ?? null;
     }
 
-    
+
 
     /*************************** SQL Statement Generator Methods ********************/
 
@@ -1021,7 +1034,7 @@ class Builder
         }
 
         if ($this->crud === 'delete')
-        {     
+        {
             $this->setSql([
                 'DELETE FROM',
                 $this->table[0],
@@ -1030,7 +1043,7 @@ class Builder
         }
 
         if ($this->crud === 'update')
-        {    
+        {
             $this->setSql([
                 'UPDATE',
                 $this->table[0],
@@ -1057,7 +1070,7 @@ class Builder
                 $this->offset
             ]);
         }
-        
+
         return $this;
     }
     /**
@@ -1070,7 +1083,7 @@ class Builder
     {
         $this->sql = $this->makeSql($sql);
     }
-    private function makeSql($sql) : string 
+    private function makeSql($sql) : string
     {
         return trim(
             is_array($sql) ? array_reduce($sql, [$this, 'build']) : $sql
@@ -1088,7 +1101,7 @@ class Builder
     {
         return (strlen($input) > 0) ? ($sql.' '.$input) : $sql;
     }
-    
+
 
     /*************************** SQL Statement Generator Methods ********************/
 
@@ -1096,31 +1109,31 @@ class Builder
     /**
      * Parses a condition statement.
      *
-     * @param string $field Database field
+     * @param string|string[] $field Database field
      * @param string $value Condition value
      * @param string $join Joining word
      * @param boolean $escape Escape values setting
      * @return string Condition as a string
      * @throws DatabaseException For invalid where condition
      */
-    final protected function parseCondition($field, $value = null, $join = '', $escape = true) 
+    final protected function parseCondition($field, $value = null, $join = '', $escape = true)
     {
-        if (is_string($field)) 
+        if (is_string($field))
         {
-            if ($value === null) 
+            if ($value === null)
             {
                 return $join.' '.trim($field);
             }
             $operator = '';
 
-            if (strpos($field, ' ') !== false) 
+            if (strpos($field, ' ') !== false)
             {
                 list($field, $operator) = explode(' ', $field);
             }
 
-            if (!empty($operator)) 
+            if (!empty($operator))
             {
-                switch ($operator) 
+                switch ($operator)
                 {
                     case '%':
                         $condition = ' LIKE ';
@@ -1142,42 +1155,42 @@ class Builder
                         $condition = $operator;
                 }
             }
-            else 
+            else
             {
                 $condition = '=';
             }
 
-            if (empty($join)) 
-            { 
+            if (empty($join))
+            {
                 $join = ($field[0] == '|') ? ' OR' : ' AND ';
             }
 
-            if (is_array($value)) 
+            if (is_array($value))
             {
-                if (strpos($operator, '@') === false) 
+                if (strpos($operator, '@') === false)
                 {
                     $condition = ' IN ';
                 }
-                if (is_array($value)) 
+                if (is_array($value))
                 {
                     $value = '('.implode(',', array_map([$this->db, 'quote'], $value)).')';
                 }
-                else if (is_string($value)) 
+                else if (is_string($value))
                 {
                     $value = '('.$value.')';
                 }
             }
-            else 
+            else
             {
                 $value = ($escape AND !is_numeric($value)) ? $this->db->quote($value) : $value;
             }
 
             return $join.' '.str_replace('|', '', $field).$condition.$value;
         }
-        else if (is_array($field)) 
+        else if (is_array($field))
         {
             $str = '';
-            foreach ($field as $key => $value) 
+            foreach ($field as $key => $value)
             {
                 if (!empty($value)) {
                     $str .= $this->parseCondition($key, $value, $join, $escape);
@@ -1186,16 +1199,16 @@ class Builder
             }
             return $str;
         }
-        else 
+        else
         {
             throw new DatabaseException('Invalid where condition.');
         }
     }
-    
+
     /**
      * Resets class properties.
      */
-    final public function reset() : self 
+    final public function reset() : self
     {
         $this->crud = 'select';
         $this->table = [];
@@ -1213,13 +1226,13 @@ class Builder
 
         return $this;
     }
-    
+
     /**
      * Checks whether the table property has been set.
      */
-    final protected function checkTable() 
+    final protected function checkTable()
     {
-        if (empty($this->table)) 
+        if (empty($this->table))
         {
             throw new DatabaseException('Table is not defined.');
         }
@@ -1227,9 +1240,9 @@ class Builder
     /**
      * Checks whether the class property has been set.
      */
-    final protected function checkClass() 
+    final protected function checkClass()
     {
-        if (!$this->class) 
+        if (!$this->class)
         {
             throw new DatabaseException('Class is not defined.');
         }

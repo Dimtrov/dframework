@@ -14,7 +14,7 @@
  * @homepage    https://dimtrov.hebfree.org/works/dframework
  * @version     3.3.0
  */
- 
+
 namespace dFramework\core\db\connection;
 
 use PDO;
@@ -58,20 +58,20 @@ class Pgsql extends BaseConnection
 	 * @var string
 	 */
 	public $escapeChar = '"';
-	
+
     /**
 	 * Connect to the database.
 	 *
 	 * @param boolean $persistent
 	 *
 	 * @return mixed
-	 * @throws \DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function connect(bool $persistent = false)
 	{
         $db = null;
-        
-        switch ($this->driver) 
+
+        switch ($this->driver)
         {
             case 'pgsql':
 				if (empty($this->dsn))
@@ -115,7 +115,7 @@ class Pgsql extends BaseConnection
                     $this->password
                 );
     			$db = new PDO($this->dsn);
-    
+
 				break;
             default:
                 # code...
@@ -127,7 +127,7 @@ class Pgsql extends BaseConnection
         }
 		$this->driver = 'postgre';
         $this->type = strpos($this->driver, 'pdo') !== false ? 'pdo' : $this->driver;
-	
+
 		return self::pushConnection('pgsql', $this, $db);
 	}
 
@@ -213,22 +213,22 @@ class Pgsql extends BaseConnection
        	if ($this->driver === 'pgsql')
         {
             $result = pg_query($this->conn, $sql);
-            if (!$result) 
+            if (!$result)
             {
                 $this->error['code'] = 0;
                 $this->error['message'] = $error = pg_last_error($this->conn);
             }
         }
-        else 
+        else
         {
             try {
                 $result = $this->conn->prepare($sql);
 
-                if (!$result) 
+                if (!$result)
                 {
                     $error = $this->conn->errorInfo();
                 }
-                else 
+                else
                 {
                     foreach ($params As $key => $value)
                     {
@@ -246,7 +246,7 @@ class Pgsql extends BaseConnection
                 $this->error['message'] = $error = $ex->getMessage();
             }
         }
-        if ($error !== null) 
+        if ($error !== null)
         {
             $error .= "\nSQL: ".$sql;
             throw new DatabaseException('Database error: '.$error);
@@ -258,10 +258,10 @@ class Pgsql extends BaseConnection
 			'duration'   => microtime(true) - $time,
         ];
         $this->stats['queries'][] = &$this->last_query;
-        
+
         return $result;
 	}
-    
+
     /**
 	 * Platform-dependant string escape
 	 *
@@ -359,7 +359,7 @@ class Pgsql extends BaseConnection
 
 		return $retVal;
 	}
-   
+
 	/**
 	 * Returns an array of objects with index data
 	 *
@@ -508,7 +508,7 @@ class Pgsql extends BaseConnection
 		}
 		else
 		{
-			return pg_last_oid($this->queryResult);
+			return (int) pg_last_oid($this->queryResult);
 		}
 
 		$query = $this->query($sql);
@@ -532,7 +532,7 @@ class Pgsql extends BaseConnection
      * Renvoi le nombre de ligne retourné par la requete
      *
      * @return integer
-	 */ 
+	 */
 	public function numRows(): int
 	{
 		if ($this->type === 'pdo')

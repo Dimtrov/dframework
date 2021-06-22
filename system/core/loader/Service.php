@@ -17,24 +17,25 @@
 
 namespace dFramework\core\loader;
 
-use dFramework\core\http\Uri;
-use dFramework\core\http\Input;
 use dFramework\core\db\Database;
-use dFramework\core\output\Cache;
-use dFramework\core\http\Response;
-use dFramework\core\router\Router;
-use dFramework\core\output\Language;
-use dFramework\core\debug\Timer;
 use dFramework\core\db\query\Builder;
+use dFramework\core\debug\Timer;
 use dFramework\core\debug\Toolbar;
-use dFramework\core\http\Redirection;
-use dFramework\core\utilities\Helpers;
 use dFramework\core\event\EventManager;
+use dFramework\core\exception\Logger;
+use dFramework\core\http\Input;
 use dFramework\core\http\Negotiator;
-use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Redirection;
+use dFramework\core\http\Response;
 use dFramework\core\http\ResponseEmitter;
+use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Uri;
+use dFramework\core\output\Cache;
+use dFramework\core\output\Language;
 use dFramework\core\output\View;
 use dFramework\core\router\RouteCollection;
+use dFramework\core\router\Router;
+use dFramework\core\utilities\Helpers;
 
 /**
  * Service
@@ -58,7 +59,7 @@ use dFramework\core\router\RouteCollection;
  * @since       3.2.1
  * @file        /system/core/loader/Service.php
  */
-class Service 
+class Service
 {
     /**
      * @return Injector
@@ -85,7 +86,7 @@ class Service
      */
     public static function builder(bool $shared = true, ?string $group = null)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Builder::class);
         }
@@ -101,14 +102,14 @@ class Service
      */
     public static function database(bool $shared = true, ?string $group = null)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Database::class)->setGroup($group);
         }
 
         return Injector::factory(Database::class, [$group]);
     }
-    
+
     /**
      * Response Emitter to the browser
      *
@@ -117,7 +118,7 @@ class Service
      */
     public static function emitter(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(ResponseEmitter::class);
         }
@@ -127,13 +128,13 @@ class Service
 
     /**
 	 * The general Input class models an HTTP request.
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\http\Input
      */
     public static function input(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Input::class);
         }
@@ -143,14 +144,14 @@ class Service
 
     /**
 	 * The general Input class models an HTTP request.
-     * 
+     *
      * @param ServerRequest $request
      * @param boolean $shared
      * @return \dFramework\core\http\Negotiator
      */
     public static function negotiator(ServerRequest $request = null, bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Negotiator::class)->setRequest($request);
         }
@@ -160,13 +161,13 @@ class Service
 
     /**
 	 * The Request class models an HTTP request.
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\http\ServerRequest
      */
     public static function request(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(ServerRequest::class);
         }
@@ -176,13 +177,13 @@ class Service
 
     /**
 	 * The Response class models an HTTP response.
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\http\Response
      */
     public static function response(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Response::class);
         }
@@ -192,13 +193,13 @@ class Service
 
     /**
 	 * The HTTP Redirection class.
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\http\Redirection
      */
     public static function redirection(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Redirection::class);
         }
@@ -208,30 +209,30 @@ class Service
 
     /**
 	 * The URI class provides a way to model and manipulate URIs.
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\http\Uri
      */
     public static function uri(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Uri::class);
         }
 
         return Injector::factory(Uri::class);
     }
-    
+
     /**
 	 * The cache class provides a simple way to store and retrieve
 	 * complex data for later
-     * 
+     *
      * @param boolean $shared
      * @return \dFramework\core\output\Cache
      */
     public static function cache(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Cache::class);
         }
@@ -263,7 +264,7 @@ class Service
      */
     public static function helpers(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Helpers::class);
         }
@@ -284,10 +285,10 @@ class Service
 		{
             return Injector::singleton(Language::class)->setLocale($locale);
         }
-        
+
         return Injector::factory(Language::class)->setLocale($locale);
     }
-    
+
     /**
 	 * The Routes service is a class that allows for easily building
 	 * a collection of routes.
@@ -297,7 +298,7 @@ class Service
 	 */
     public static function routes(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(RouteCollection::class);
         }
@@ -310,7 +311,7 @@ class Service
 	 *
 	 * @param \dFramework\core\router\RouteCollection $routes
 	 * @param \dFramework\core\http\ServerRequest                    $request
-	 * @param boolean                                      $getShared
+	 * @param boolean                                      $shared
 	 *
 	 * @return \dFramework\core\router\Router
 	 */
@@ -329,7 +330,7 @@ class Service
         return Injector::factory(Router::class, [$routes, $request]);
 	}
 
-    
+
     /**
      * Event Manager instance
      *
@@ -338,7 +339,7 @@ class Service
      */
     public static function event(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(EventManager::class);
         }
@@ -352,11 +353,11 @@ class Service
 	 *
 	 * @param boolean $shared
 	 *
-	 * @return \dFramework\core\utilities\Timer
+	 * @return \dFramework\core\debug\Timer
 	 */
     public static function timer(bool $shared = true)
     {
-        if (true === $shared) 
+        if (true === $shared)
         {
             return Injector::singleton(Timer::class);
         }
@@ -367,8 +368,7 @@ class Service
     /**
 	 * Return the debug toolbar.
 	 *
-	 * @param \Config\Toolbar $config
-	 * @param boolean         $getShared
+	 * @param boolean         $shared
 	 *
 	 * @return \dFramework\core\debug\Toolbar
 	 */
@@ -380,6 +380,23 @@ class Service
 		}
 
 		return Injector::factory(Toolbar::class);
+	}
+
+	/**
+	 * Return the logger class.
+	 *
+	 * @param boolean         $shared
+	 *
+	 * @return \dFramework\core\exception\Logger
+	 */
+	public static function logger(bool $shared = true)
+	{
+		if ($shared)
+		{
+            return Injector::singleton(Logger::class);
+		}
+
+		return Injector::factory(Logger::class);
 	}
 
 
@@ -401,9 +418,9 @@ class Service
 
 		return self::discoverServices($name, $arguments);
     }
-    
+
     /**
-	 * 
+	 *
 	 * @param string $name
 	 * @param array  $arguments
 	 * @return mixed
@@ -411,7 +428,7 @@ class Service
 	protected static function discoverServices(string $name, array $arguments)
 	{
         $shared = array_pop($arguments);
-        if ($shared !== true) 
+        if ($shared !== true)
         {
             return Injector::factory($name, $arguments);
         }

@@ -73,6 +73,10 @@ abstract class Entity
 	 * @var array Attributs rejectés
 	 */
 	protected $rejects = [];
+    /**
+     * @var array Attributs exposés
+     */
+	protected $exposes = '*';
 
 
 	/**
@@ -95,7 +99,7 @@ abstract class Entity
 	 *
 	 * @return array
 	 */
-	private function _accepts() : array 
+	private function _accepts() : array
 	{
 		return $this->accepts;
 	}
@@ -110,7 +114,7 @@ abstract class Entity
 		$attributes = (array) $attributes;
 		$isAccepts = true;
 
-		foreach ($attributes As $key => $value) 
+		foreach ($attributes As $key => $value)
 		{
 			if (!in_array($key, $this->accepts))
 			{
@@ -123,10 +127,10 @@ abstract class Entity
 
 	/**
 	 * Recuperes les attributs  rejetés
-	 * 
+	 *
 	 * @return array
 	 */
-	private function _rejects() : array 
+	private function _rejects() : array
 	{
 		return $this->rejects;
 	}
@@ -141,7 +145,7 @@ abstract class Entity
 		$attributes = (array) $attributes;
 		$isRejects = false;
 
-		foreach ($attributes As $key => $value) 
+		foreach ($attributes As $key => $value)
 		{
 			if (in_array($key, $this->rejects))
 			{
@@ -152,27 +156,63 @@ abstract class Entity
 		return $isRejects;
 	}
 
+    /**
+     * Recuperes les attributs  exposés
+     *
+     * @return array
+     */
+    private function _exposes() : array
+    {
+        return (array) ($this->exposes == '*' ? $this->columns : $this->exposes);
+    }
+    /**
+     * Verifie si un attributs est exposé
+     *
+     * @param string|array $attributes
+     * @return boolean
+     */
+    private function _isExposes($attributes) : bool
+    {
+        $attributes = (array) $attributes;
+        $isExposes = true;
+        $exposed = $this->_exposes();
+
+        foreach ($attributes As $key => $value)
+        {
+            if (!in_array($key, $exposed))
+            {
+                $isExposes = false;
+                break;
+            }
+        }
+        return $isExposes;
+    }
+
 	/**
 	 * Assigne les donnees a l'entite
 	 *
 	 * @param array $data
-	 * @return Model
+	 * @return void
 	 */
 	private function _assignData(array $data)
 	{
 		$columns = $this->_getColumns();
 		$attributes = [];
-		
-		foreach ($data As $key => $value) 
+
+		foreach ($data As $key => $value)
 		{
-			if (in_array($key, $columns)) 
+			if (in_array($key, $columns))
 			{
 				$attributes[$key] = $value;
 			}
-			else 
+			else
 			{
 				$this->{$key} = $value;
 			}
+		}
+		if (!empty($attributes[$this->_getPrimaryKey()]))
+		{
+			$this->orm->setExist(true);
 		}
 		$this->orm->setData($attributes);
 	}
@@ -181,7 +221,7 @@ abstract class Entity
 	 *
 	 * @return string|null
 	 */
-	private function _getGroup() : ?string 
+	private function _getGroup() : ?string
 	{
 		return $this->group;
 	}
@@ -191,7 +231,7 @@ abstract class Entity
 	 *
 	 * @return string
 	 */
-	private function _getTable() : string 
+	private function _getTable() : string
 	{
 		if (!empty($this->table))
 		{
@@ -199,7 +239,7 @@ abstract class Entity
 		}
 		$table = Str::toSnake(preg_replace('#Entity$#', '', get_called_class()));
 		helper('inflector');
-		
+
 		$table = Database::tableExist(plural($table)) ? plural($table) : $table;
 
 		return $this->table = $table;
@@ -209,7 +249,7 @@ abstract class Entity
 	 *
 	 * @return array
 	 */
-	private function _getColumns() : array 
+	private function _getColumns() : array
 	{
 		if (!empty($this->columns))
 		{
@@ -222,7 +262,7 @@ abstract class Entity
 	 *
 	 * @return string
 	 */
-	private function _getPrimaryKey() : string 
+	private function _getPrimaryKey() : string
 	{
 		if (!empty($this->primaryKey))
 		{
@@ -238,7 +278,7 @@ abstract class Entity
 	 *
 	 * @return integer
 	 */
-	private function _getPerPage() : int 
+	private function _getPerPage() : int
 	{
 		return $this->perPage;
 	}

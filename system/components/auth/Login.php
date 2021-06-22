@@ -15,10 +15,10 @@
  * @version     3.2.2
  */
 
- 
+
 namespace dFramework\components\auth;
 
-use dFramework\core\db\Query;
+use dFramework\core\db\query\Builder;
 use dFramework\core\security\Session;
 use dFramework\core\security\Csrf;
 use dFramework\core\utilities\Utils;
@@ -39,7 +39,7 @@ use dFramework\core\output\Language;
  * @file        /system/components/auth/Login.php
  */
 class Login
-{   
+{
     /**
      * @var array les parametres d'authentification
      */
@@ -115,7 +115,7 @@ class Login
 
     private $_antibrute_dir = RESOURCE_DIR . 'reserved'. DS .'antibruteforce'. DS;
 
-    
+
     /**
      * Constructeur de classe
      *
@@ -124,7 +124,7 @@ class Login
     public function __construct(string $locale = null)
     {
         $this->load_from_session();
-        
+
         $this->_locale = Language::searchLocale($locale);
     }
     /**
@@ -133,7 +133,7 @@ class Login
      * @param string:null $locale
      * @return self
      */
-    public static function instance(string $locale = null) 
+    public static function instance(string $locale = null)
     {
         if (null === self::$_instance)
         {
@@ -142,16 +142,16 @@ class Login
         return self::$_instance;
     }
     private static $_instance = null;
-    
+
 
     /**
      * Definit les parametres de connexion
-     * 
+     *
      * @param string|array $param
      * @param mixed $value
      * @return Login
      */
-    public function set($param, $value = null) : self 
+    public function set($param, $value = null) : self
     {
         if (is_string($param) AND null !== $value)
         {
@@ -166,7 +166,7 @@ class Login
 
     /**
      * Verifie si l'utilisateur est connecté
-     * 
+     *
      * @return bool
      */
     public function isConnect() : bool
@@ -176,7 +176,7 @@ class Login
 
     /**
      * Redirige un utilisateur si il est connecter
-     * 
+     *
      * @param string $url
      */
     public function checkin(string $url = '')
@@ -188,7 +188,7 @@ class Login
     }
     /**
      * Redirige un utilisateur si il n'est pas connecter
-     * 
+     *
      * @param string $url
      */
     public function checkout(string $url = '')
@@ -202,7 +202,7 @@ class Login
 
     /**
      * Tente de connecter un utilisateur a partir des donnees poster dans le formulaire
-     * 
+     *
      * @param array|null $datas
      */
     public function login(array $datas = []) : bool
@@ -214,7 +214,7 @@ class Login
         }
         if (empty($datas))
         {
-            $datas = Service::request()->data;
+            $datas = Service::request()->getParsedBody();
         }
         if (true === $this->_params['check_token'])
         {
@@ -232,17 +232,17 @@ class Login
         $login = explode(':', $this->_params['fields'][0] ?? 'login:login');
         $password = explode(':', $this->_params['fields'][1] ?? 'password:password');
 
-        $login_k = $login[0]; 
+        $login_k = $login[0];
         $login_v = ucfirst($login[1] ?? $login[0]);
-        $password_k = $password[0]; 
+        $password_k = $password[0];
         $password_v = ucfirst($password[1] ?? $password[0]);
 
         if (empty($datas[$login_k]) OR empty($datas[$password_k]))
         {
             $this->errMsg = lang('login.remplissez_tous_les_champs', null, $this->_locale);
-            
+
             if (empty($datas[$login_k]))
-            {      
+            {
                 $this->errors = [
                     $login_k    => lang('login.entrez_le_login_mdp', [
                         'entry' => $login_v
@@ -250,14 +250,14 @@ class Login
                 ];
             }
             if (empty($datas[$password_k]))
-            {      
+            {
                 $this->errors = [
                     $password_k => lang('login.entrez_le_login_mdp', [
                         'entry' => $password_v
                     ], $this->_locale),
                 ];
             }
-            
+
             $this->logout();
             return false;
         }
@@ -280,7 +280,7 @@ class Login
                     ], $this->_locale),
                 ];
             }
-            else 
+            else
             {
                 $this->errMsg = lang('login.utilisateur_innexistant', null, $this->_locale);
                 $this->errors = [
@@ -303,7 +303,7 @@ class Login
                     'password' => $password_v,
                     'nbr_fois' => $this->_params['failed_login_attempts'
                     ]
-                ], $this->_locale), 
+                ], $this->_locale),
             ];
             $this->logout();
             return false;
@@ -325,7 +325,7 @@ class Login
                     ], $this->_locale),
                 ];
             }
-            else 
+            else
             {
                 $this->errMsg = lang('login.mdp_incorrect', [
                     'password' => $password_v
@@ -353,7 +353,7 @@ class Login
 
     /**
      * Verifie si on n'essaie pas une attaque par brute force avec un login precis
-     * 
+     *
      * @param string $login
      * @return bool
      */
@@ -364,8 +364,8 @@ class Login
             return false;
         }
         list($existence_ft, $nbr_tentatives) = $this->getLoginTentatives($login);
-     
-        if (($nbr_tentatives + 1) >= $this->_params['failed_login_attempts']) 
+
+        if (($nbr_tentatives + 1) >= $this->_params['failed_login_attempts'])
         {
             return true;
         }
@@ -376,7 +376,7 @@ class Login
 
     /**
      * Deconnecte l'utilisateur
-     * 
+     *
      * @param callable|null $callback
      */
     public function logout(?callable $callback = null)
@@ -392,7 +392,7 @@ class Login
 
     /**
      * Recupere les information d'un utilisateur en base de donnees
-     * 
+     *
      * @param string $login
      */
     protected function load_user($login)
@@ -401,16 +401,12 @@ class Login
         $fields = array_map(function($value) {
 			return explode(':', $value)[0];
 		}, $this->_params['fields']);
-		
-        $query = new Query($table[0] ?? 'default');
-		
-        $request = $query
-            ->query('SELECT * FROM '.($query->db->config['prefix']).($table[1] ?? 'users').' WHERE '.($fields[0] ?? 'login').' = '.$login);
-        
-        $response = $request->fetch(\PDO::FETCH_ASSOC);
-        $request->closeCursor();
 
-        return $response;
+        return (new Builder($table[0] ?? 'default'))
+			->select()
+			->from($table[1] ?? 'users')
+			->where($fields[0] ?? 'login', $login)
+			->first();
     }
 
     /**
@@ -423,7 +419,7 @@ class Login
             {
                 Session::set('auth.expire_on', time() + (60 * $this->_params['inactivity_timeout']));
             }
-            if (empty($auth_session) OR !is_array($auth_session)) 
+            if (empty($auth_session) OR !is_array($auth_session))
             {
                 $auth_session = Session::get('auth');
             }
@@ -436,7 +432,7 @@ class Login
 
     /**
      * Sauvegarde les information de l'utilsateur courant en session
-     * 
+     *
      * @param string $login
      * @param string $password
      */
@@ -479,7 +475,7 @@ class Login
 
     /**
      * Verifie si le mot de passe est correct et met a jour le nombre d'essai restant
-     * 
+     *
      * @param string $pass
      * @param string $hash
      * @param mixed $remaining
@@ -489,7 +485,7 @@ class Login
     protected function checkPwd(string $pass, string $hash, &$remaining, string $login) : bool
     {
         $remaining = null;
-        
+
         if (!Utils::comparePass($pass, $hash))
         {
             if(true === $this->_params['show_remaining_attempts'] AND is_int($this->_params['failed_login_attempts']) AND 1 < $this->_params['failed_login_attempts'])
@@ -534,19 +530,21 @@ class Login
         {
             $this->logout();
         }
-        else 
+        else
         {
             call_user_func_array($callback, $auth_session);
-        }        
+        }
     }
 
     /**
+	 * Recupere les informations sur les tentatives d'un login
+	 *
      * @param string $login
-     * @return array 
+     * @return array
      */
     private function getLoginTentatives(string $login) : array
     {
-        $tentatives = 0; 
+        $tentatives = 0;
         $existence_ft = 0;
 
         $fichier = $this->_antibrute_dir . sha1($login) . '.df';
@@ -560,7 +558,7 @@ class Login
             {
                 $tentatives = $infos_tentatives[1];
             }
-            else 
+            else
             {
                 $existence_ft = 2;
             }
@@ -572,10 +570,19 @@ class Login
 
         return [$existence_ft, $tentatives];
     }
-    private function setLoginTentatives($login, $existence_ft, $nbr_tentatives)
+
+	/**
+	 * Modifie le nombre de tentatives d'un login
+	 *
+	 * @param string $login
+	 * @param int $existence_ft
+	 * @param int $nbr_tentatives
+	 * @return void
+	 */
+    private function setLoginTentatives(string $login, $existence_ft, int $nbr_tentatives)
     {
-        $fichier = $this->_antibrute_dir . sha1($login) . '.df';
-        if (file_exists($fichier)) 
+        $fichier = $this->getFileTentative($login);
+        if (file_exists($fichier))
         {
             unlink($fichier);
         }
@@ -584,13 +591,31 @@ class Login
         $fichier_tentatives = fopen($fichier, 'w+');
         fputs($fichier_tentatives, date('d/m/Y').';'.$nb);
         fclose($fichier_tentatives);
-        
-        return;
-    }
-    private function unlinkTentatives($login)
-    {
-        @unlink($this->_antibrute_dir . sha1($login) . '.df');
 
         return;
     }
+
+	/**
+	 * Supprime les tentatives d'un login
+	 *
+	 * @param string $login
+	 * @return void
+	 */
+    private function unlinkTentatives(string $login)
+    {
+        @unlink($this->getFileTentative($login));
+
+        return;
+    }
+
+	/**
+	 * Genere et renvoi le chemin approprié pour le fichier de tentatives
+	 *
+	 * @param string $login
+	 * @return string
+	 */
+	private function getFileTentative(string $login) : string
+	{
+		return $this->_antibrute_dir . sha1($login) . '.df';
+	}
 }

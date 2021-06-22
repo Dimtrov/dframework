@@ -1,5 +1,6 @@
 .git
 .idea
+.env
 vendor/
 app/resources/reserved/debugbar/
 Doxyfile

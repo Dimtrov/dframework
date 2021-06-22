@@ -38,7 +38,7 @@ $general['url_suffix'] = '';
 | Specifie l'environement de travail dans lequel vous etes
 |   - dev / prod
 */
-$general['environment']	= 'dev';
+$general['environment']	= env('ENVIRONMENT', 'dev');
 
 /*
 | Specifie si on doit afficher la debugbar ou pas

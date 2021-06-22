@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  dFramework
  *
@@ -21,7 +21,7 @@ use dFramework\core\Entity;
 
 /**
  * HasOne
- * 
+ *
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Orm
@@ -31,7 +31,7 @@ use dFramework\core\Entity;
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
  * @file		/system/core/db/orm/HasOne.php
  */
-class HasOne extends Relation 
+class HasOne extends Relation
 {
 	/**
 	 * @var string
@@ -75,7 +75,7 @@ class HasOne extends Relation
 			}
 		}
 	}
-	
+
 	/**
 	 * Recupere le resultat de la relation
 	 *
@@ -83,10 +83,15 @@ class HasOne extends Relation
 	 */
 	public function getResult() : ?Entity
 	{
-		if (empty($this->join)) 
+		if (empty($this->join))
 		{
 			$this->join = $this->setJoin();
 		}
-		return $this->join->first();
+		if (!empty($this->join) AND is_object($this->join) AND method_exists($this->join, 'first'))
+		{
+			return $this->join->first();
+		}
+
+		return null;
 	}
 }
