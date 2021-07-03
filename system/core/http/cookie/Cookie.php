@@ -1,22 +1,27 @@
 <?php
 /**
- * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * dFramework
  *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
+ * The simplest PHP framework for beginners
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
+ * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         3.5.0
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @package	    dFramework
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ * @homepage    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.3.0
  */
+
 namespace dFramework\core\http\cookie;
 
-use Cake\Chronos\Chronos;
 use DateTimeImmutable;
 use DateTimeZone;
+use dFramework\core\support\contracts\CookieInterface;
 use dFramework\core\utilities\Arr;
+use dFramework\core\utilities\Dates;
 use InvalidArgumentException;
 
 /**
@@ -40,10 +45,14 @@ use InvalidArgumentException;
  * $cookie = $cookie->withValue('0');
  * ```
  *
- * @link https://tools.ietf.org/html/rfc6265
- * @link https://en.wikipedia.org/wiki/HTTP_cookie
- * @see Cake\Http\Cookie\CookieCollection for working with collections of cookies.
- * @see Cake\Http\Response::getCookieCollection() for working with response cookies.
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Http\Cookie
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       3.2.2
+ * @credit      CakeRequest (CakePHP 3.2.8 http://cakephp.org CakePHP(tm) Project)
+ * @file        /system/core/http/cookie/Cookie.php
  */
 class Cookie implements CookieInterface
 {
@@ -144,7 +153,8 @@ class Cookie implements CookieInterface
 
         $this->validateBool($secure);
         $this->secure = $secure;
-        if ($expiresAt) {
+        if ($expiresAt)
+		{
             $expiresAt = $expiresAt->setTimezone(new DateTimeZone('GMT'));
         }
         $this->expiresAt = $expiresAt;
@@ -158,24 +168,30 @@ class Cookie implements CookieInterface
     public function toHeaderValue()
     {
         $value = $this->value;
-        if ($this->isExpanded) {
+        if ($this->isExpanded)
+		{
             $value = $this->_flatten($this->value);
         }
         $headerValue[] = sprintf('%s=%s', $this->name, rawurlencode($value));
 
-        if ($this->expiresAt) {
+        if ($this->expiresAt)
+		{
             $headerValue[] = sprintf('expires=%s', $this->getFormattedExpires());
         }
-        if ($this->path !== '') {
+        if ($this->path !== '')
+		{
             $headerValue[] = sprintf('path=%s', $this->path);
         }
-        if ($this->domain !== '') {
+        if ($this->domain !== '')
+		{
             $headerValue[] = sprintf('domain=%s', $this->domain);
         }
-        if ($this->secure) {
+        if ($this->secure)
+		{
             $headerValue[] = 'secure';
         }
-        if ($this->httpOnly) {
+        if ($this->httpOnly)
+		{
             $headerValue[] = 'httponly';
         }
 
@@ -220,13 +236,15 @@ class Cookie implements CookieInterface
      */
     protected function validateName($name)
     {
-        if (preg_match("/[=,;\t\r\n\013\014]/", $name)) {
+        if (preg_match("/[=,;\t\r\n\013\014]/", $name))
+		{
             throw new InvalidArgumentException(
                 sprintf('The cookie name `%s` contains invalid characters.', $name)
             );
         }
 
-        if (empty($name)) {
+        if (empty($name))
+		{
             throw new InvalidArgumentException('The cookie name cannot be empty.');
         }
     }
@@ -244,7 +262,8 @@ class Cookie implements CookieInterface
      */
     public function getStringValue()
     {
-        if ($this->isExpanded) {
+        if ($this->isExpanded)
+		{
             return $this->_flatten($this->value);
         }
 
@@ -323,7 +342,8 @@ class Cookie implements CookieInterface
      */
     protected function validateString($value)
     {
-        if (!is_string($value)) {
+        if (!is_string($value))
+		{
             throw new InvalidArgumentException(sprintf(
                 'The provided arg must be of type `string` but `%s` given',
                 gettype($value)
@@ -372,7 +392,8 @@ class Cookie implements CookieInterface
      */
     protected function validateBool($value)
     {
-        if (!is_bool($value)) {
+        if (!is_bool($value))
+		{
             throw new InvalidArgumentException(sprintf(
                 'The provided arg must be of type `bool` but `%s` given',
                 gettype($value)
@@ -412,7 +433,8 @@ class Cookie implements CookieInterface
      */
     public function getExpiresTimestamp()
     {
-        if (!$this->expiresAt) {
+        if (!$this->expiresAt)
+		{
             return null;
         }
 
@@ -424,7 +446,8 @@ class Cookie implements CookieInterface
      */
     public function getFormattedExpires()
     {
-        if (!$this->expiresAt) {
+        if (!$this->expiresAt)
+		{
             return '';
         }
 
@@ -437,7 +460,8 @@ class Cookie implements CookieInterface
     public function isExpired($time = null)
     {
         $time = $time ?: new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        if (!$this->expiresAt) {
+        if (!$this->expiresAt)
+		{
             return false;
         }
 
@@ -450,7 +474,7 @@ class Cookie implements CookieInterface
     public function withNeverExpire()
     {
         $new = clone $this;
-        $new->expiresAt = Chronos::createFromDate(2038, 1, 1);
+        $new->expiresAt = Dates::makeDate(1, 1, 2100);
 
         return $new;
     }
@@ -461,7 +485,7 @@ class Cookie implements CookieInterface
     public function withExpired()
     {
         $new = clone $this;
-        $new->expiresAt = Chronos::createFromTimestamp(1);
+        $new->expiresAt = Dates::now()->setTimestamp(1);
 
         return $new;
     }
@@ -477,7 +501,8 @@ class Cookie implements CookieInterface
      */
     public function check($path) : bool
     {
-        if ($this->isExpanded === false) {
+        if ($this->isExpanded === false)
+		{
             $this->value = $this->_expand($this->value);
         }
 
@@ -494,7 +519,8 @@ class Cookie implements CookieInterface
     public function withAddedValue($path, $value)
     {
         $new = clone $this;
-        if ($new->isExpanded === false) {
+        if ($new->isExpanded === false)
+		{
             $new->value = $new->_expand($new->value);
         }
         $new->value = Arr::insert($new->value, $path, $value);
@@ -511,7 +537,8 @@ class Cookie implements CookieInterface
     public function withoutAddedValue($path)
     {
         $new = clone $this;
-        if ($new->isExpanded === false) {
+        if ($new->isExpanded === false)
+		{
             $new->value = $new->_expand($new->value);
         }
         $new->value = Arr::remove($new->value, $path);
@@ -530,11 +557,13 @@ class Cookie implements CookieInterface
      */
     public function read($path = null)
     {
-        if ($this->isExpanded === false) {
+        if ($this->isExpanded === false)
+		{
             $this->value = $this->_expand($this->value);
         }
 
-        if ($path === null) {
+        if ($path === null)
+		{
             return $this->value;
         }
 
@@ -573,16 +602,19 @@ class Cookie implements CookieInterface
     {
         $this->isExpanded = true;
         $first = substr($string, 0, 1);
-        if ($first === '{' || $first === '[') {
+        if ($first === '{' OR $first === '[')
+		{
             $ret = json_decode($string, true);
 
             return ($ret !== null) ? $ret : $string;
         }
 
         $array = [];
-        foreach (explode(',', $string) as $pair) {
+        foreach (explode(',', $string) As $pair)
+		{
             $key = explode('|', $pair);
-            if (!isset($key[1])) {
+            if (!isset($key[1]))
+			{
                 return $key[0];
             }
             $array[$key[0]] = $key[1];
