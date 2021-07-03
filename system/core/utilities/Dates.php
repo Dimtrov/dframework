@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -28,7 +28,7 @@ use DateTimeZone;
  * @package		dFramework
  * @subpackage	Core
  * @category    Utilities
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.3.0
  * @file        /system/core/utilities/Dates.php
@@ -225,6 +225,102 @@ class Dates
 	 */
 	public static function addYears($date, int $years) : DateTime
     {
+		return self::modifyDateInterval($date, intval($years), 'Y', false);
+	}
+
+	/**
+	 * Remove days to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $days The number of days to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subDays($date, int $days) : DateTime
+    {
+		if ($days > 0)
+		{
+			$days = 0 - $days;
+		}
+		return self::modifyDateInterval($date, intval($days), 'D', false);
+	}
+
+	/**
+	 * Remove hours to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $hours The number of hours to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subHours($date, int $hours) : DateTime
+    {
+		if ($hours > 0)
+		{
+			$hours = 0 - $hours;
+		}
+		return self::modifyDateInterval($date, intval($hours), 'H', true);
+	}
+
+	/**
+	 * Remove minutes to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $minutes The number of minutes to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subMinutes($date, int $minutes)
+    {
+		if ($minutes > 0)
+		{
+			$minutes = 0 - $minutes;
+		}
+		return self::modifyDateInterval($date, intval($minutes), 'M', true);
+	}
+
+	/**
+	 * Remove months to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $months The number of months to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subMonths($date, int $months) : DateTime
+    {
+		if ($months > 0)
+		{
+			$months = 0 - $months;
+		}
+		return self::modifyDateInterval($date, intval($months), 'M', false);
+	}
+
+	/**
+	 * Remove seconds to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $seconds The number of seconds to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subSeconds($date, int $seconds) : DateTime
+    {
+		if ($seconds > 0)
+		{
+			$seconds = 0 - $seconds;
+		}
+		return self::modifyDateInterval($date, intval($seconds), 'S', true);
+	}
+
+	/**
+	 * Remove years to a date
+	 *
+	 * @param DateTime|string $date1 Date to be modified
+	 * @param int $years The number of years to add (negative subtracts)
+	 * @return DateTime Returns the new date
+	 */
+	public static function subYears($date, int $years) : DateTime
+    {
+		if ($years > 0)
+		{
+			$years = 0 - $years;
+		}
 		return self::modifyDateInterval($date, intval($years), 'Y', false);
 	}
 
@@ -524,6 +620,10 @@ class Dates
 				$year =  $date_parts[2];
 			}
 		}
+
+		$day = (is_int($day) AND $day < 10) ? '0'.$day : $day;
+		$month = (is_int($month) AND $month < 10) ? '0'.$month : $month;
+
 		return self::convertToDate($year . '/' . $month . '/' . $day);
 	}
 
@@ -564,5 +664,43 @@ class Dates
 			return $today->format($format);
 		}
         return $today;
+	}
+
+	/**
+	 * Returns the date (not time) of tomorrow as a DateTime object or formatted string
+	 *
+	 * @param string $format [OPTIONAL] If specified, will format the date as a string
+	 *                       If not specified, returns a DateTime object
+	 *	                     (example: 'Y-m-d')
+	 * @param string $timezone [OPTIONAL] Default timezone
+	 * @return DateTime|string The DateTime object or a formatted string
+	 */
+	public static function tomorrow($format = false, $timezone = self::DEFAULT_TIMEZONE)
+	{
+		$tomorrow = self::addDays(self::today(false, $timezone), 1);
+		if ($format)
+		{
+			return $tomorrow->format($format);
+		}
+		return $tomorrow;
+	}
+
+	/**
+	 * Returns the date (not time) of yesterday as a DateTime object or formatted string
+	 *
+	 * @param string $format [OPTIONAL] If specified, will format the date as a string
+	 *                       If not specified, returns a DateTime object
+	 *	                     (example: 'Y-m-d')
+	 * @param string $timezone [OPTIONAL] Default timezone
+	 * @return DateTime|string The DateTime object or a formatted string
+	 */
+	public static function yesterday($format = false, $timezone = self::DEFAULT_TIMEZONE)
+	{
+		$tomorrow = self::subDays(self::today(false, $timezone), 1);
+		if ($format)
+		{
+			return $tomorrow->format($format);
+		}
+		return $tomorrow;
 	}
 }
