@@ -137,7 +137,7 @@ class Zipper
             $zipName .= '.zip';
         }
         $fd = fopen($zipName, "wb");
-        fwrite($fd, $createZipFile->getZippedfile());
+        fwrite($fd, (string) $createZipFile->getZippedfile());
         fclose($fd);
         $createZipFile->forceDownload($zipName);
     }

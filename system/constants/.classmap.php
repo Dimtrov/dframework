@@ -413,7 +413,7 @@ return array (
   'Kahlan\\Box\\Wrapper' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Box\\Wrapper.php',
   'Kahlan\\Cli\\Cli' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Cli\\Cli.php',
   'Kahlan\\Cli\\CommandLine' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Cli\\CommandLine.php',
-  'Kahlan\\CliKahlan\\Jit\\Patcher\\FinalClass\\Kahlan' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Cli\\Kahlan.php',
+  'Kahlan\\Cli\\Kahlan' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Cli\\Kahlan.php',
   'Kahlan\\Code\\Code' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Code\\Code.php',
   'Kahlan\\Code\\TimeoutException' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Code\\TimeoutException.php',
   'Kahlan\\Dir\\Dir' => '{SYST_DIR}dependencies\\kahlan\\kahlan\\src\\Dir\\Dir.php',

@@ -443,7 +443,7 @@ function scl_date($date, $format = 'D, d M Y', $interval = true, $fuseau = 'Euro
  * @return string
  *
  * @param string $date la date à traduire
- * @param string> [$lang] la langue de sortie
+ * @param string [$lang] la langue de sortie
  */
 function scl_translate_date($date, $lang = 'en')
 {
@@ -1036,7 +1036,7 @@ function scl_splitInt($nbr, $pas = 3, $separateur = ' ')
  * @param string $content le contenu à partir duquel on va generer les mots clés.
  * @param int [$nb_tags]  le nombre de mots clés à generer.
  * @param bool [$relief] specifie si les mots clés renvoyés doivent avoir une taille proportionnelle à leur frequence d'apparition (true) ou pas (false).
- * @param null|file|array [$mots_a_banir] specifie une liste de mot a banir dans la recherche
+ * @param null|string|array [$mots_a_banir] specifie une liste de mot a banir dans la recherche
  */
 function scl_getTags($content, $nb_tags = 10, $relief = false, $mots_a_bannir = null)
 {
