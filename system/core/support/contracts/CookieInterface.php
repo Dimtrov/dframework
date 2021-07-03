@@ -1,20 +1,33 @@
 <?php
 /**
- * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *  dFramework
  *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         3.5.0
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @homepage	https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.3.0
  */
-namespace dFramework\core\http\cookie;
+
+namespace dFramework\core\support\contracts;
 
 /**
  * Cookie Interface
+ *
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Support\Contracts
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       3.2.2
+ * @credit      CakeRequest (CakePHP 3.2.8 http://cakephp.org CakePHP(tm) Project)
+ * @file        /system/core/support/contracts/CookieInterface.php
  */
 interface CookieInterface
 {
