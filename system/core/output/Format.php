@@ -7,19 +7,17 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.2
  */
 
 namespace dFramework\core\output;
 
 use dFramework\core\exception\Exception;
-use dFramework\core\loader\Load;
-use dFramework\core\http\Input;
 
 /**
  * Format class
@@ -28,7 +26,7 @@ use dFramework\core\http\Input;
  * @package		dFramework
  * @subpackage	Core
  * @category    Output
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.1
  * @credit      CI Rest Server - by Chris Kacerguis <chriskacerguis@gmail.com> - https://github.com/chriskacerguis/ci-restserver
@@ -96,16 +94,16 @@ class Format
     public function __construct($data = null, $from_type = null)
     {
         // Load the inflector helper
-        Load::helper('inflector');
+        helper('inflector');
 
         // If the provided data is already formatted we should probably convert it to an array
-        if ($from_type !== null) 
+        if ($from_type !== null)
         {
-            if (method_exists($this, '_from_'.$from_type)) 
+            if (method_exists($this, '_from_'.$from_type))
             {
                 $data = call_user_func([$this, '_from_'.$from_type], $data);
-            } 
-            else 
+            }
+            else
             {
                 throw new Exception('Format class does not support conversion from "'.$from_type.'".');
             }
@@ -142,37 +140,37 @@ class Format
      *
      * @return array Data parsed as an array; otherwise, an empty array
      */
-    public function to_array($data = null) : array
+    public function toArray($data = null) : array
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
-        if ($data === null AND func_num_args() === 0) 
+        if ($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
         // Cast as an array if not already
-        if (is_array($data) === false) 
+        if (is_array($data) === false)
         {
             $data = (array) $data;
         }
 
         $array = [];
-        foreach ((array) $data as $key => $value) 
+        foreach ((array) $data As $key => $value)
         {
-            if (true === is_object($value) OR true === is_array($value)) 
+            if (true === is_object($value) OR true === is_array($value))
             {
-                $array[$key] = $this->to_array($value);
-            } 
-            else 
+                $array[$key] = $this->toArray($value);
+            }
+            else
             {
                 $array[$key] = $value;
             }
         }
         return $array;
     }
-    public function toArray($data = null) : array
+    public function to_array($data = null) : array
     {
-        return $this->to_array($data);
+        return $this->toArray($data);
     }
 
     /**
@@ -185,31 +183,31 @@ class Format
      *
      * @return mixed
      */
-    public function to_xml($data = null, $structure = null, $basenode = 'xml')
+    public function toXml($data = null, $structure = null, $basenode = 'xml')
     {
         if($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
-        if($structure === null) 
+        if($structure === null)
         {
             $structure = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><$basenode />");
         }
 
         // Force it to be something useful
-        if (is_array($data) === false AND is_object($data) === false) 
+        if (is_array($data) === false AND is_object($data) === false)
         {
             $data = (array) $data;
         }
-        foreach ($data as $key => $value) 
+        foreach ($data As $key => $value)
         {
             //change false/true to 0/1
-            if(is_bool($value))
+            if (is_bool($value))
             {
                 $value = (int) $value;
             }
             // no numeric keys in our xml please!
-            if(is_numeric($key)) 
+            if (is_numeric($key))
             {
                 // make string key...
                 $key = (singular($basenode) != $basenode) ? singular($basenode) : 'item';
@@ -218,27 +216,27 @@ class Format
             // replace anything not alpha numeric
             $key = preg_replace('/[^a-z_\-0-9]/i', '', $key);
 
-            if ($key === '_attributes' AND (is_array($value) OR is_object($value))) 
+            if ($key === '_attributes' AND (is_array($value) OR is_object($value)))
             {
                 $attributes = $value;
-                if (is_object($attributes)) 
+                if (is_object($attributes))
                 {
                     $attributes = get_object_vars($attributes);
                 }
-                foreach ($attributes as $attribute_name => $attribute_value) 
+                foreach ($attributes As $attribute_name => $attribute_value)
                 {
                     $structure->addAttribute($attribute_name, $attribute_value);
                 }
             }
             // if there is another array found recursively call this function
-            elseif (is_array($value) || is_object($value)) 
+            elseif (is_array($value) OR is_object($value))
             {
                 $node = $structure->addChild($key);
 
                 // recursive call.
-                $this->to_xml($value, $node, $key);
-            } 
-            else 
+                $this->toXml($value, $node, $key);
+            }
+            else
             {
                 // add single node.
                 $value = htmlspecialchars(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
@@ -249,9 +247,9 @@ class Format
 
         return $structure->asXML();
     }
-    public function toXml($data = null, $structure = null, $basenode = 'xml')
+    public function to_xml($data = null, $structure = null, $basenode = 'xml')
     {
-        return $this->to_xml($data, $structure, $basenode);
+        return $this->toXml($data, $structure, $basenode);
     }
 
     /**
@@ -266,44 +264,44 @@ class Format
      *
      * @return string A csv string
      */
-    public function to_csv($data = null, $delimiter = ',', $enclosure = '"') : ?string
+    public function toCsv($data = null, $delimiter = ',', $enclosure = '"') : ?string
     {
         // Use a threshold of 1 MB (1024 * 1024)
         $handle = fopen('php://temp/maxmemory:1048576', 'w');
-        if ($handle === false) 
+        if ($handle === false)
         {
             return null;
         }
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
-        if ($data === null AND func_num_args() === 0) 
+        if ($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
         // If NULL, then set as the default delimiter
-        if ($delimiter === null) 
+        if ($delimiter === null)
         {
             $delimiter = ',';
         }
         // If NULL, then set as the default enclosure
-        if ($enclosure === null) 
+        if ($enclosure === null)
         {
             $enclosure = '"';
         }
-        
+
         // Cast as an array if not already
-        if (is_array($data) === false) 
+        if (is_array($data) === false)
         {
             $data = (array) $data;
         }
 
         // Check if it's a multi-dimensional array
-        if (isset($data[0]) && count($data) !== count($data, COUNT_RECURSIVE))
+        if (isset($data[0]) AND count($data) !== count($data, COUNT_RECURSIVE))
         {
             // Multi-dimensional array
             $headings = array_keys($data[0]);
-        } 
-        else 
+        }
+        else
         {
             // Single array
             $headings = array_keys($data);
@@ -313,7 +311,7 @@ class Format
         // Apply the headings
         fputcsv($handle, $headings, $delimiter, $enclosure);
 
-        foreach ($data As $record) 
+        foreach ($data As $record)
         {
             // If the record is not an array, then break. This is because the 2nd param of
             // fputcsv() should be an array
@@ -344,9 +342,9 @@ class Format
 
         return $csv;
     }
-    public function toCsv($data = null, $delimiter = ',', $enclosure = '"') : ?string
+    public function to_csv($data = null, $delimiter = ',', $enclosure = '"') : ?string
     {
-        return $this->to_csv($data, $delimiter, $enclosure);
+        return $this->toCsv($data, $delimiter, $enclosure);
     }
 
     /**
@@ -357,18 +355,18 @@ class Format
      *
      * @return string Json representation of a value
      */
-    public function to_json($data = null) : string
+    public function toJson($data = null) : string
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
-        if ($data === null AND func_num_args() === 0) 
+        if ($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
         // Get the callback parameter (if set)
-        $callback = Input::instance()->get('callback');
+        $callback = get('callback');
 
-        if (empty($callback) === true) 
+        if (empty($callback) === true)
         {
             return json_encode($data, JSON_UNESCAPED_UNICODE);
         }
@@ -385,9 +383,9 @@ class Format
 
         return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
-    public function toJson($data = null) : string 
+    public function to_json($data = null) : string
     {
-        return $this->to_json($data);
+        return $this->toJson($data);
     }
 
     /**
@@ -398,20 +396,20 @@ class Format
      *
      * @return string Serialized data
      */
-    public function to_serialized($data = null) : string
+    public function toSerialized($data = null) : string
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
-        if ($data === null AND func_num_args() === 0) 
+        if ($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
 
         return serialize($data);
     }
-    public function toSerialized($data = null) : string
+    public function to_serialized($data = null) : string
     {
-        return $this->to_serialized($data);
+        return $this->toSerialized($data);
     }
 
     /**
@@ -422,21 +420,21 @@ class Format
      *
      * @return mixed String representation of a variable
      */
-    public function to_php($data = null)
+    public function toPhp($data = null)
     {
         // If no data is passed as a parameter, then use the data passed
         // via the constructor
-        if ($data === null AND func_num_args() === 0) 
+        if ($data === null AND func_num_args() === 0)
         {
             $data = $this->_data;
         }
 
         return var_export($data, true);
     }
-    public function toPhp($data = null)
+    public function to_php($data = null)
     {
-        return $this->to_php($data);
-    } 
+        return $this->toPhp($data);
+    }
 
 
 
