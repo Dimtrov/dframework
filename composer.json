@@ -4,13 +4,13 @@
     "type": "project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
     "homepage": "http://dframework.com",
-    "version": "3.3",
+    "version": "3.3.2",
     "license": "MPL-2.0",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "authors": [{
         "name": "Dimitric Sitchet Tomkeu",
-        "email": "dimitrisitchet@gmail.com",
+        "email": "devcode.dst@gmail.com",
         "role": "Developer, CEO",
         "homepage": "http://dst.totalh.net"
     }],
