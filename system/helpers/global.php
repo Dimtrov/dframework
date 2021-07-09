@@ -42,6 +42,7 @@ use function GuzzleHttp\Psr7\stream_for;
 
 // ================================= FONCTIONS D'ACCESSIBILITE ================================= //
 
+
 if (!function_exists('env'))
 {
 
@@ -57,22 +58,6 @@ if (!function_exists('env'))
     {
         return Helpers::env($key, $default);
     }
-}
-
-if (!function_exists('esc'))
-{
-	/**
-	 * Performs simple auto-escaping of data for security reasons.
-	 *
-	 * @param string|array $data
-	 * @param string       $context
-	 * @param string       $encoding
-	 * @return string|array
-	 */
-    function esc($data, ?string $context = 'html', ?string $encoding = null)
-	{
-        return Service::helpers()->esc($data, $context, $encoding);
-	}
 }
 
 if (!function_exists('helper'))
@@ -176,6 +161,7 @@ if (! function_exists('config'))
 
 
 // ================================= FONCTIONS DES MANIPULATION DE DONNEES ================================= //
+
 
 if (!function_exists('cookie'))
 {
@@ -539,6 +525,94 @@ if (!function_exists('clean_url'))
 }
 
 
+// =========================== FONCTIONS DE PREVENTION D'ATTAQUE =========================== //
+
+
+if (!function_exists('esc'))
+{
+	/**
+	 * Performs simple auto-escaping of data for security reasons.
+	 *
+	 * @param string|array $data
+	 * @param string       $context
+	 * @param string       $encoding
+	 * @return string|array
+	 */
+    function esc($data, ?string $context = 'html', ?string $encoding = null)
+	{
+        return Service::helpers()->esc($data, $context, $encoding);
+	}
+}
+
+if (!function_exists('h')) {
+    /**
+     * Convenience method for htmlspecialchars.
+     *
+     * @param mixed $text Text to wrap through htmlspecialchars. Also works with arrays, and objects.
+     *    Arrays will be mapped and have all their elements escaped. Objects will be string cast if they
+     *    implement a `__toString` method. Otherwise the class name will be used.
+     *    Other scalar types will be returned unchanged.
+     * @param bool $double Encode existing html entities.
+     * @param string|null $charset Character set to use when escaping. Defaults to config value in `mb_internal_encoding()`
+     * or 'UTF-8'.
+     * @return mixed Wrapped text.
+     */
+    function h($text, bool $double = true, ?string $charset = null)
+    {
+		return Service::helpers()->h($text, $double, $charset);
+    }
+}
+
+if (!function_exists('purify'))
+{
+	/**
+     * Purify input using the HTMLPurifier standalone class.
+     * Easily use multiple purifier configurations.
+     *
+     * @param string|string[]
+     * @param string|false
+     * @return string|string[]
+     */
+    function purify($dirty_html, $config = false)
+    {
+        return Service::helpers()->purify($dirty_html, $config);
+	}
+}
+
+if (!function_exists('remove_invisible_characters'))
+{
+	/**
+	 * Remove Invisible Characters
+	 *
+	 * This prevents sandwiching null characters
+	 * between ascii characters, like Java\0script.
+	 *
+	 * @param	string
+	 * @param	bool
+	 * @return	string
+	 */
+	function remove_invisible_characters(string $str, bool $url_encoded = true)
+	{
+		return Service::helpers()->remove_invisible_characters($str, $url_encoded);
+	}
+}
+
+if (!function_exists('stringify_attributes'))
+{
+	/**
+	 * Stringify attributes for use in HTML tags.
+	 *
+	 * @param mixed   $attributes string, array, object
+	 * @param bool $js
+	 * @return string
+	 */
+	function stringify_attributes($attributes, bool $js = false)
+	{
+        return Service::helpers()->stringify_attributes($attributes, $js);
+	}
+}
+
+
 // ================================= FONCTIONS DE DEBOGAGE ================================= //
 
 
@@ -557,6 +631,150 @@ if (!function_exists('dd'))
 		Kint::dump(...$vars);
 		exit;
 	}
+}
+
+if (!function_exists('deprecationWarning'))
+{
+    /**
+     * Helper method for outputting deprecation warnings
+     *
+     * @param string $message The message to output as a deprecation warning.
+     * @param int $stackFrame The stack frame to include in the error. Defaults to 1
+     *   as that should point to application/plugin code.
+     * @return void
+     */
+    function deprecationWarning(string $message, int $stackFrame = 1)
+    {
+        if (!(error_reporting() & E_USER_DEPRECATED))
+		{
+            return;
+        }
+
+        $trace = debug_backtrace();
+        if (isset($trace[$stackFrame]))
+		{
+            $frame = $trace[$stackFrame];
+            $frame += ['file' => '[internal]', 'line' => '??'];
+
+            $message = sprintf(
+                '%s - %s, line: %s' . "\n" .
+                ' You can disable deprecation warnings by setting `Error.errorLevel` to' .
+                ' `E_ALL & ~E_USER_DEPRECATED` in your config/app.php.',
+                $message,
+                $frame['file'],
+                $frame['line']
+            );
+        }
+
+        trigger_error($message, E_USER_DEPRECATED);
+    }
+}
+
+if (!function_exists('logger'))
+{
+	/**
+	 * A convenience/compatibility method for logging events through
+	 * the Log system.
+	 *
+	 * Allowed log levels are:
+	 *  - emergency
+	 *  - alert
+	 *  - critical
+	 *  - error
+	 *  - warning
+	 *  - notice
+	 *  - info
+	 *  - debug
+	 *
+	 * @param string|int $level
+	 * @param string     $message
+	 * @param array|null $context
+	 *
+	 * @return \dFramework\core\exception\Logger|mixed
+	 */
+	function logger($level = null, ?string $message = null, ?string $file = null, ?int $line = null)
+	{
+		$logger = Service::logger();
+
+		if (!empty($level) AND !empty($message))
+		{
+			return $logger->write($level, $message, $file, $line);
+		}
+
+		return $logger;
+	}
+}
+
+if (!function_exists('pr'))
+{
+    /**
+     * print_r() convenience function.
+     *
+     * In terminals this will act similar to using print_r() directly, when not run on cli
+     * print_r() will also wrap <pre> tags around the output of given variable. Similar to debug().
+     *
+     * This function returns the same variable that was passed.
+     *
+     * @param mixed $var Variable to print out.
+     * @return mixed the same $var that was passed to this function
+     */
+    function pr($var)
+    {
+        $template = (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') ? '<pre class="pr">%s</pre>' : "\n%s\n\n";
+        printf($template, trim(print_r($var, true)));
+
+        return $var;
+    }
+}
+
+if (!function_exists('pj'))
+{
+    /**
+     * json pretty print convenience function.
+     *
+     * In terminals this will act similar to using json_encode() with JSON_PRETTY_PRINT directly, when not run on cli
+     * will also wrap <pre> tags around the output of given variable. Similar to pr().
+     *
+     * This function returns the same variable that was passed.
+     *
+     * @param mixed $var Variable to print out.
+     * @return mixed the same $var that was passed to this function
+     * @see pr()
+     */
+    function pj($var)
+    {
+        $template = (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') ? '<pre class="pj">%s</pre>' : "\n%s\n\n";
+        printf($template, trim(json_encode($var, JSON_PRETTY_PRINT)));
+
+        return $var;
+    }
+}
+
+if (!function_exists('triggerWarning'))
+{
+    /**
+     * Triggers an E_USER_WARNING.
+     *
+     * @param string $message The warning message.
+     * @return void
+     */
+    function triggerWarning(string $message)
+    {
+        $stackFrame = 1;
+        $trace = debug_backtrace();
+        if (isset($trace[$stackFrame]))
+		{
+            $frame = $trace[$stackFrame];
+            $frame += ['file' => '[internal]', 'line' => '??'];
+            $message = sprintf(
+                '%s - %s, line: %s',
+                $message,
+                $frame['file'],
+                $frame['line']
+            );
+        }
+        trigger_error($message, E_USER_WARNING);
+    }
 }
 
 if (!function_exists('vd'))
@@ -646,9 +864,9 @@ if (! function_exists('force_https'))
 		$uri = Uri::createURIString(
             'https',
             $baseURL,
-            $request->uri()->getPath(), // Absolute URIs should use a "/" for an empty path
-            $request->uri()->getQuery(),
-            $request->uri()->getFragment()
+            $request->getUri()->getPath(), // Absolute URIs should use a "/" for an empty path
+            $request->getUri()->getQuery(),
+            $request->getUri()->getFragment()
 		);
 
 		// Set an HSTS header
@@ -656,6 +874,20 @@ if (! function_exists('force_https'))
 		$response->redirect($uri);
 		exit(1);
 	}
+}
+
+if (!function_exists('getTypeName'))
+{
+    /**
+     * Returns the objects class or var type of it's not an object
+     *
+     * @param mixed $var Variable to check
+     * @return string Returns the class name or variable type
+     */
+    function getTypeName($var) : string
+    {
+        return is_object($var) ? get_class($var) : gettype($var);
+    }
 }
 
 if (!function_exists('ip_address'))
@@ -703,88 +935,27 @@ if (!function_exists('lang'))
 	}
 }
 
-if (!function_exists('logger'))
+if (!function_exists('namespaceSplit'))
 {
-	/**
-	 * A convenience/compatibility method for logging events through
-	 * the Log system.
-	 *
-	 * Allowed log levels are:
-	 *  - emergency
-	 *  - alert
-	 *  - critical
-	 *  - error
-	 *  - warning
-	 *  - notice
-	 *  - info
-	 *  - debug
-	 *
-	 * @param string|int $level
-	 * @param string     $message
-	 * @param array|null $context
-	 *
-	 * @return \dFramework\core\exception\Logger|mixed
-	 */
-	function logger($level = null, ?string $message = null, ?string $file = null, ?int $line = null)
-	{
-		$logger = Service::logger();
-
-		if (!empty($level) AND !empty($message))
-		{
-			return $logger->write($level, $message, $file, $line);
-		}
-
-		return $logger;
-	}
-}
-
-if (!function_exists('remove_invisible_characters'))
-{
-	/**
-	 * Remove Invisible Characters
-	 *
-	 * This prevents sandwiching null characters
-	 * between ascii characters, like Java\0script.
-	 *
-	 * @param	string
-	 * @param	bool
-	 * @return	string
-	 */
-	function remove_invisible_characters(string $str, bool $url_encoded = true)
-	{
-		return Service::helpers()->remove_invisible_characters($str, $url_encoded);
-	}
-}
-
-if (!function_exists('purify'))
-{
-	/**
-     * Purify input using the HTMLPurifier standalone class.
-     * Easily use multiple purifier configurations.
+    /**
+     * Split the namespace from the classname.
      *
-     * @param string|string[]
-     * @param string|false
-     * @return string|string[]
+     * Commonly used like `list($namespace, $className) = namespaceSplit($class);`.
+     *
+     * @param string $class The full class name, ie `Cake\Core\App`.
+     * @return array Array with 2 indexes. 0 => namespace, 1 => classname.
      */
-    function purify($dirty_html, $config = false)
+    function namespaceSplit(string $class) : array
     {
-        return Service::helpers()->purify($dirty_html, $config);
-	}
-}
+        $pos = strrpos($class, '\\');
+        if ($pos === false)
+		{
+            return ['', $class];
+        }
 
-if (!function_exists('stringify_attributes'))
-{
-	/**
-	 * Stringify attributes for use in HTML tags.
-	 *
-	 * @param mixed   $attributes string, array, object
-	 * @param bool $js
-	 * @return string
-	 */
-	function stringify_attributes($attributes, bool $js = false)
-	{
-        return Service::helpers()->stringify_attributes($attributes, $js);
-	}
+        return [substr($class, 0, $pos), substr($class, $pos + 1)];
+    }
+
 }
 
 if (!function_exists('view_exist'))

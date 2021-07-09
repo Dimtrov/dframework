@@ -451,7 +451,7 @@ class Helpers
 	{
 		if (is_array($data))
 		{
-			foreach ($data as $key => &$value)
+			foreach ($data As $key => &$value)
 			{
 				$value = $this->esc($value, $context);
 			}
@@ -464,7 +464,7 @@ class Helpers
 			// Provide a way to NOT escape data since
 			// this could be called automatically by
 			// the View library.
-			if (empty($context) || $context === 'raw')
+			if (empty($context) OR $context === 'raw')
 			{
 				return $data;
 			}
@@ -499,6 +499,73 @@ class Helpers
 
 		return $data;
     }
+
+	/**
+	 * Convenience method for htmlspecialchars.
+	 *
+	 * @param mixed $text Text to wrap through htmlspecialchars. Also works with arrays, and objects.
+	 *    Arrays will be mapped and have all their elements escaped. Objects will be string cast if they
+	 *    implement a `__toString` method. Otherwise the class name will be used.
+	 *    Other scalar types will be returned unchanged.
+	 * @param bool $double Encode existing html entities.
+	 * @param string|null $charset Character set to use when escaping. Defaults to config value in `mb_internal_encoding()`
+	 * or 'UTF-8'.
+	 * @return mixed Wrapped text.
+	 * @credit CackePHP (https://cakephp.org)
+	 */
+	public static function h($text, bool $double = true, ?string $charset = null)
+	{
+		if (is_string($text))
+		{
+			//optimize for strings
+		}
+		elseif (is_array($text))
+		{
+			$texts = [];
+			foreach ($text As $k => $t)
+			{
+				$texts[$k] = self::h($t, $double, $charset);
+			}
+
+			return $texts;
+		}
+		elseif (is_object($text))
+		{
+			if (method_exists($text, '__toString'))
+			{
+				$text = (string)$text;
+			}
+			else
+			{
+				$text = '(object)' . get_class($text);
+			}
+		}
+		elseif ($text === null OR is_scalar($text))
+		{
+			return $text;
+		}
+
+		static $defaultCharset = false;
+		if ($defaultCharset === false)
+		{
+			$defaultCharset = mb_internal_encoding();
+			if ($defaultCharset === null)
+			{
+				$defaultCharset = 'UTF-8';
+			}
+		}
+		if (is_string($double))
+		{
+			deprecationWarning(
+				'Passing charset string for 2nd argument is deprecated. ' .
+				'Use the 3rd argument instead.'
+			);
+			$charset = $double;
+			$double = true;
+		}
+
+		return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, $charset ?: $defaultCharset, $double);
+	}
 
     /**
      * Purify input using the HTMLPurifier standalone class.

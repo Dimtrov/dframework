@@ -107,14 +107,14 @@ class Toolbar
 	public function __construct(array $config = [])
 	{
 		$this->config = array_merge($this->config, $config);
-		
+
 		foreach ($this->config['collectors'] As $collector)
 		{
 			if (! class_exists($collector))
 			{
 				continue;
 			}
-			
+
 			$this->collectors[] = new $collector();
 		}
     }
@@ -123,7 +123,7 @@ class Toolbar
 	 *
 	 * @return array
 	 */
-	public function getConfig() : array 
+	public function getConfig() : array
 	{
 		return $this->config;
 	}
@@ -139,12 +139,12 @@ class Toolbar
 	{
 		$config = (object) Config::get('general');
 
-		if (preg_match('#prod#', $config->environment) OR true !== $config->show_debugbar) 
+		if (preg_match('#prod#', $config->environment) OR true !== $config->show_debugbar)
 		{
 			return $response;
 		}
 		$format = $response->getHeaderLine('content-type');
-		
+
 		// Non-HTML formats should not include the debugbar
 		// then we send headers saying where to find the debug data
 		// for this response
@@ -172,7 +172,7 @@ class Toolbar
 
 		$this->writeFile($this->debug_path . '/debugbar_' . $time . '.json', $data, 'w+');
 
-		
+
 		$_SESSION['_df_debugbar_'] = array_merge($_SESSION['_df_debugbar_'] ?? [], compact('time'));
 
 		$debug_renderer = $this->respond();
@@ -188,11 +188,11 @@ class Toolbar
 		$debug_renderer = str_replace($script, '', $debug_renderer);
 
 		$response_body = $response->body();
-		$response_body = str_replace(['<head>', '</body>'], 
+		$response_body = str_replace(['<head>', '</body>'],
 			[
-				'<head>'.$style, 
+				'<head>'.$style,
 				'<div id="toolbarContainer">'.trim(preg_replace('/\s+/', ' ', $debug_renderer)).'</div>'.$script.'<script>ciDebugBar.init();</script></body>'
-			], 
+			],
 			$response_body);
 
 		return $response->withBody(to_stream($response_body));
@@ -319,12 +319,16 @@ class Toolbar
 				continue;
 			}
 
-			$data = array_merge($data, $collector->getVarData());
+			$dataCollected = $collector->getVarData();
+			if (is_array($dataCollected))
+			{
+				$data = array_merge($data, $dataCollected);
+			}
 		}
 
 		return $data;
 	}
-	
+
 	/**
 	 * Rounds a number to the nearest incremental value.
 	 *
@@ -390,7 +394,7 @@ class Toolbar
 	protected function format(int $debugbar_time, string $data, string $format = 'html'): string
 	{
 		$data = json_decode($data, true);
-		
+
 		if ($this->config['max_history'] !== 0)
 		{
 			$history = new History();

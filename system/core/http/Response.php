@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.2.3
+ * @version     3.3.0
  */
 
 namespace dFramework\core\http;
@@ -26,7 +26,7 @@ use dFramework\core\Config;
 use dFramework\core\exception\LoadException;
 use dFramework\core\http\cookie\Cookie;
 use dFramework\core\http\cookie\CookieCollection;
-use dFramework\core\http\cookie\CookieInterface;
+use dFramework\core\support\contracts\CookieInterface;
 use GuzzleHttp\Psr7\CachingStream;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Psr7\MessageTrait;
@@ -2256,7 +2256,7 @@ class Response implements ResponseInterface
      * $response = $response->withExpiredCookie(new Cookie('remember_me'));
      * ```
      *
-     * @param string|\dFramework\core\http\cookie\CookieInterface $name The name of the cookie to expire, or a cookie object
+     * @param string|\dFramework\core\support\contracts\CookieInterface $name The name of the cookie to expire, or a cookie object
      * @param array $options An array of cookie options.
      * @return static
      */
@@ -2329,22 +2329,19 @@ class Response implements ResponseInterface
     /**
      * Convert the cookie into an array of its properties.
      *
-     * This method is compatible with the historical behavior of Cake\Http\Response,
-     * where `httponly` is `httpOnly` and `expires` is `expire`
-     *
-     * @param \dFramework\core\http\cookie\CookieInterface $cookie Cookie object.
+     * @param \dFramework\core\support\contracts\CookieInterface $cookie Cookie object.
      * @return array
      */
     protected function convertCookieToArray(CookieInterface $cookie)
     {
         return [
-            'name' => $cookie->getName(),
-            'value' => $cookie->getStringValue(),
-            'path' => $cookie->getPath(),
-            'domain' => $cookie->getDomain(),
-            'secure' => $cookie->isSecure(),
+            'name'     => $cookie->getName(),
+            'value'    => $cookie->getStringValue(),
+            'path'     => $cookie->getPath(),
+            'domain'   => $cookie->getDomain(),
+            'secure'   => $cookie->isSecure(),
             'httpOnly' => $cookie->isHttpOnly(),
-            'expire' => $cookie->getExpiresTimestamp(),
+            'expire'   => $cookie->getExpiresTimestamp(),
         ];
     }
 

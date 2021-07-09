@@ -7,17 +7,16 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.3
+ *  @version    3.3.2
  */
 
 namespace dFramework\core\utilities;
 
-use dFramework\core\Config;
 use Josantonius\Json\Json;
 
 /**
@@ -28,7 +27,7 @@ use Josantonius\Json\Json;
  * @package		dFramework
  * @subpackage	Core
  * @category    Utilities
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       2.1
  * @file        /system/core/utilities/Utils.php
@@ -61,7 +60,7 @@ class Utils
 
     /**
      * Recupere le contenu d'un fichier JSON et le renvoie sous forme de tableau
-     * 
+     *
      * @since 3.0
      * @param string $filename Chemin vers le fichier json a recuperer
      * @return array|false
@@ -72,8 +71,8 @@ class Utils
     }
 
     /**
-     * Enregistre le contenu d'un tableau au format JSON dans un fichier 
-     * 
+     * Enregistre le contenu d'un tableau au format JSON dans un fichier
+     *
      * @since 3.0
      * @param array $array Tableau a sauvegarder
      * @param string $filename Chemin vers le fichier json de sauvegarde
@@ -86,23 +85,14 @@ class Utils
 
     /**
      * Hash user's password with SHA512, base64_encode, ROT13 and salts !
-     * 
+     *
      * @since 3.0
      * @param string $password
-     * @return string 
+     * @return string
      */
-    public static function hashPass(string $password) : string 
+    public static function hashPass(string $password) : string
     {
-        $salt = (string) Config::get('data.encryption.salt');
-        return hash('SHA512', 
-            base64_encode(
-                str_rot13(
-                    hash('SHA256', 
-                        str_rot13('df' . $salt . $password . 'df' . $salt)
-                    )
-                )
-            )
-        );
+        return Password::hash($password);
     }
 
     /**
@@ -115,9 +105,9 @@ class Utils
      */
     public static function comparePass(string $pass, string $hash) : bool
     {
-        return ($hash === self::hashPass($pass));
+        return Password::compare($pass, $hash);
     }
-    
+
     /**
      * Genere un mot de passe aleatoire d'une longueur specifiee
      *
@@ -127,15 +117,6 @@ class Utils
      */
     public static function randomPass(int $lenght = 8) : string
     {
-        $lenght = (empty($lenght) OR !is_int($lenght)) ? 8 : $lenght;
-        $characters = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
-        shuffle($characters);
-        $nbr_char = count($characters) - 1;
-        $password = '';
-        for ($i = 0; $i < $lenght; $i++) 
-        {
-            $password .= $characters[rand(0, $nbr_char)];
-        }
-        return (string) $password;
+		return Password::random($lenght);
     }
 }
