@@ -7,15 +7,15 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.2
  */
 
-namespace dFramework\core\db\orm\Relations;
+namespace dFramework\core\db\orm\relations;
 
 use Countable;
 use IteratorAggregate;
@@ -26,17 +26,17 @@ use dFramework\core\Entity;
 
 /**
  * Relation
- * 
+ *
  * @package		dFramework
  * @subpackage	Core
  * @category 	Db/Orm
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.2.3
  * @credit		rabbit-orm <https://github.com/fabiocmazzo/rabbit-orm>
- * @file		/system/core/db/orm/Relation.php
+ * @file		/system/core/db/orm/relations/Relation.php
  */
-abstract class Relation implements Countable, IteratorAggregate 
+abstract class Relation implements Countable, IteratorAggregate
 {
 	/**
 	 * @var Entity
@@ -69,7 +69,7 @@ abstract class Relation implements Countable, IteratorAggregate
 	 *
 	 * @return Entity[]|Entity|null
 	 */
-	public function result() 
+	public function result()
 	{
 		return $this->getResult();
 	}
@@ -111,7 +111,7 @@ abstract class Relation implements Countable, IteratorAggregate
 			if (empty($this->join))
 			{
 				$this->join = $this->setJoin();
-			} 
+			}
 
 			$this->eagerResults = $this->join->get();
 		}
@@ -155,13 +155,13 @@ abstract class Relation implements Countable, IteratorAggregate
 					$this->join = $this->related;
 				}
 			}
-			
+
 			$return = call_user_func_array([$this->join, $name], $param);
 
 			if ($return instanceof Result)
 			{
 				return $return;
-			} 
+			}
 			else if ($name == 'get')
 			{
 				return new EmptyIterator;
