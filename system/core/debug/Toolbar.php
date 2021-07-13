@@ -1,14 +1,31 @@
 <?php
+/**
+ *  dFramework
+ *
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.3.2
+ */
+
 namespace dFramework\core\debug;
 
 use dFramework\core\Config;
-use dFramework\core\output\Parser;
+use dFramework\core\debug\toolbar\collectors\History;
+use dFramework\core\http\Response;
+use dFramework\core\http\ServerRequest;
 use dFramework\core\loader\Service;
+use dFramework\core\output\Format;
+use dFramework\core\output\Parser;
 use dFramework\core\router\Dispatcher;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use dFramework\core\debug\toolbar\collectors\History;
-use dFramework\core\output\Format;
 
 /**
  * Debug Toolbar
@@ -17,7 +34,13 @@ use dFramework\core\output\Format;
  *
  * Inspiration: http://prophiler.fabfuel.de
  *
- * @package CodeIgniter\Debug
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Debug
+ * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @since       3.3.0
+ * @credit      CodeIgniter 4.0 (CodeIgniter\Debug\Toolbar)
+ * @file        /system/core/debug/Toolbar.php
  */
 class Toolbar
 {
@@ -131,11 +154,11 @@ class Toolbar
 	/**
 	 * Prepare for debugging..
 	 *
-	 * @param  ServerRequestInterface  $request
-	 * @param  ResponseInterface $response
+	 * @param  ServerRequest  $request
+	 * @param  Response $response
 	 * @return ResponseInterface
 	 */
-	public function prepare(Dispatcher $dispatcher, ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
+	public function prepare(Dispatcher $dispatcher, ServerRequest $request, Response $response) : ResponseInterface
 	{
 		$config = (object) Config::get('general');
 
@@ -187,7 +210,7 @@ class Toolbar
 		$script = $matches[0] ?? '';
 		$debug_renderer = str_replace($script, '', $debug_renderer);
 
-		$response_body = $response->body();
+		$response_body = $response->getBody()->getContents();
 		$response_body = str_replace(['<head>', '</body>'],
 			[
 				'<head>'.$style,
@@ -203,12 +226,12 @@ class Toolbar
 	 *
 	 * @param float                               $startTime App start time
 	 * @param float                               $totalTime
-	 * @param ServerRequestInterface  $request
-	 * @param ResponseInterface $response
+	 * @param ServerRequest  $request
+	 * @param Response $response
 	 *
 	 * @return string data
 	 */
-	public function run(float $startTime, float $totalTime, ServerRequestInterface $request, ResponseInterface $response): string
+	public function run(float $startTime, float $totalTime, ServerRequest $request, Response $response): string
 	{
 		// Data items used within the view.
 		$data['url']             = current_url();
@@ -222,7 +245,7 @@ class Toolbar
 		$data['dF_VERSION']      = \dFramework\core\dFramework::VERSION;
 		$data['collectors']      = [];
 
-		foreach ($this->collectors as $collector)
+		foreach ($this->collectors As $collector)
 		{
 			$data['collectors'][] = $collector->getAsArray();
 		}

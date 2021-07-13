@@ -12,14 +12,13 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.2
  */
 
 namespace dFramework\core\http;
 
 use dFramework\core\exception\Logger;
 use GuzzleHttp\Psr7\LimitStream;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * Response Emitter
@@ -29,7 +28,6 @@ use Psr\Http\Message\ResponseInterface;
  * This emitter offers a few changes from the emitters offered by
  * diactoros:
  *
- * - It logs headers sent using CakePHP's logging tools.
  * - Cookies are emitted using setcookie() to not conflict with ext/session
  * - For fastcgi servers with PHP-FPM session_write_close() is called just
  *   before fastcgi_finish_request() to make sure session data is saved
@@ -49,10 +47,10 @@ class ResponseEmitter
     /**
      * {@inheritDoc}
      *
-     * @param \Psr\Http\Message\ResponseInterface $response Response
+     * @param Response $response Response
      * @param int $maxBufferLength Max buffer length
      */
-    public function emit(ResponseInterface $response, int $maxBufferLength = 8192)
+    public function emit(Response $response, int $maxBufferLength = 8192)
     {
         $file = $line = null;
         if (headers_sent($file, $line))
@@ -92,11 +90,11 @@ class ResponseEmitter
     /**
      * Emit the message body.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response to emit
+     * @param Response $response The response to emit
      * @param int $maxBufferLength The chunk size to emit
      * @return void
      */
-    protected function emitBody(ResponseInterface $response, int $maxBufferLength)
+    protected function emitBody(Response $response, int $maxBufferLength)
     {
         if (in_array($response->getStatusCode(), [204, 304]))
         {
@@ -122,11 +120,11 @@ class ResponseEmitter
      * Emit a range of the message body.
      *
      * @param array $range The range data to emit
-     * @param \Psr\Http\Message\ResponseInterface $response The response to emit
+     * @param Response $response The response to emit
      * @param int $maxBufferLength The chunk size to emit
      * @return void
      */
-    protected function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength)
+    protected function emitBodyRange(array $range, Response $response, int $maxBufferLength)
     {
         list($unit, $first, $last, $length) = $range;
 
@@ -144,7 +142,7 @@ class ResponseEmitter
         $body->rewind();
         $pos = 0;
         $length = $last - $first + 1;
-        while (!$body->eof() && $pos < $length)
+        while (!$body->eof() AND $pos < $length)
         {
             if (($pos + $maxBufferLength) > $length)
             {
@@ -163,10 +161,10 @@ class ResponseEmitter
      * Emits the status line using the protocol version and status code from
      * the response; if a reason phrase is available, it, too, is emitted.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response to emit
+     * @param Response $response The response to emit
      * @return void
      */
-    protected function emitStatusLine(ResponseInterface $response)
+    protected function emitStatusLine(Response $response)
     {
         $reasonPhrase = $response->getReasonPhrase();
         header(sprintf(
@@ -185,17 +183,18 @@ class ResponseEmitter
      * in such a way as to create aggregate headers (instead of replace
      * the previous).
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response to emit
+     * @param Response $response The response to emit
      * @return void
      */
-    protected function emitHeaders(ResponseInterface $response)
+    protected function emitHeaders(Response $response)
     {
         $cookies = [];
-        if (method_exists($response, 'getCookies')) {
-            $cookies = $response->getCookies();
+        if (method_exists($response, 'getCookies'))
+		{
+			$cookies = $response->getCookies();
         }
 
-        foreach ($response->getHeaders() as $name => $values)
+        foreach ($response->getHeaders() As $name => $values)
         {
             if (strtolower($name) === 'set-cookie')
             {
@@ -203,7 +202,7 @@ class ResponseEmitter
                 continue;
             }
             $first = true;
-            foreach ($values as $value)
+            foreach ($values As $value)
             {
                 header(sprintf(
                     '%s: %s',
@@ -225,9 +224,10 @@ class ResponseEmitter
      */
     protected function emitCookies(array $cookies)
     {
-        foreach ($cookies as $cookie)
+        foreach ($cookies As $cookie)
         {
-            if (is_array($cookie)) {
+            if (is_array($cookie))
+			{
                 setcookie(
                     $cookie['name'],
                     $cookie['value'],
@@ -261,7 +261,7 @@ class ResponseEmitter
                 'httponly' => false,
             ];
 
-            foreach ($parts as $part)
+            foreach ($parts As $part)
             {
                 if (strpos($part, '=') !== false)
                 {
