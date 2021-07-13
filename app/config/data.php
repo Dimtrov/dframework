@@ -154,49 +154,37 @@ $data['cookies'] = [
 */
 $data['csrf'] = [
     /**
-     * PROTECTION
-     *
      * @var bool
      */
     'protection'    => env('app.CSRF.protection', false),
 
     /**
-     * TOKEN_NAME
-     *  The token name
-     *
-     * @var string
+     * @var string The token name
      */
-    'token_name'    => env('app.CSRF.tokenName', 'csrf_test_name'),
+    'token_name'    => env('app.CSRF.tokenName', '_csrfToken'),
 
     /**
-     * COOKIE_NAME
-     *  The cookie name
-     *
-     * @var string
+     * @var string The cookie name
      */
-    'cookie_name'   => env('app.CSRF.cookieName', 'csrf_cookie_name'),
+    'cookie_name'   => env('app.CSRF.cookieName', 'csrfToken'),
 
     /**
-     * EXPIRE
-     *  The number in seconds the token should expire.
-     *
-     * @var int
+     * @var int The number in seconds the token should expire.
      */
     'expire'        => env('app.CSRF.expire', 7200),
 
     /**
-     * REGENERATE
-     *  Regenerate token on every submission
-     *
      * @var bool
      */
-    'regenerate'    => env('app.CSRF.regenerate', true),
+    'samesite'       => env('app.CSRF.samesite', null),
 
     /**
-     * EXCLUDE_URIS
-     *  Array of URIs which ignore CSRF checks
-     *
-     * @var array
+     * @var bool Regenerate token on every submission
+     */
+    'regenerate'    => env('app.CSRF.regenerate', false),
+
+    /**
+     * @var array Array of URIs which ignore CSRF checks
      */
     'exclude_uris'  => env('app.CSRF.excludeURIs', [])
 ];

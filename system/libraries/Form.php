@@ -12,15 +12,15 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.2
  */
 
 namespace dFramework\libraries;
 
 use dFramework\core\loader\Service;
-use dFramework\core\security\Csrf;
-use dFramework\core\utilities\Str;
 use dFramework\core\utilities\Arr;
+use dFramework\core\utilities\Str;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Form
@@ -56,16 +56,26 @@ class Form
     protected $attach_errors = true;
 
     /**
+	 * @var ServerRequestInterface
+	 */
+	private $request;
+
+
+	/**
      * Initailise les donnees et les erreurs du formulaire
      *
+	 * @param ServerRequestInterface $request
      * @param array|null $datas
      * @param array|null $errors
-     * @return void
+     * @return self
      */
-    public function init(?array $datas = [], ?array $errors = []) : void
+    public function init(ServerRequestInterface $request, ?array $datas = [], ?array $errors = []) : self
     {
-        $this->datas = $datas;
-        $this->errors = $errors;
+        $this->datas = !empty($datas) ? $datas : [];
+        $this->errors = !empty($errors) ? $errors : [];
+        $this->request = $request;
+
+        return $this;
     }
     /**
      * Specifie si les erreurs doivent etre join au formulaire
@@ -190,36 +200,77 @@ class Form
     }
 
 
-    /**
-     * Ouvre un formulaire en inserant une cle de securite
-     *
-     * @param string $action
-     * @param string|null $method
-     * @param int|false $token_time
-     * @param string|null $key
-     * @param string|null $enctype
-     * @param array|null $attributes
-     * @return string
-     */
-    public function open(string $action, ?string $method = 'post', $token_time = 5, ?string $key = null, ?string $enctype = null, ?array $attributes = []) : string
+	/**
+	 * Ouvre un formulaire en inserant une cle de securite
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+    public function open(array $options = []) : string
     {
-        $method     = empty($method) ? 'post' : strtolower($method);
-        $token_time = empty($token_time) ? 5 : (int) $token_time;
+    	$options = array_merge([
+    		'action'     => $this->request->getRequestTarget(),
+    		'type'       => 'post',
+    		'enctype'    => null,
+    		'attributes' => []
+		], $options);
 
-        $key = (!empty($key)) ? $key : 'form'.uniqid();
-        $enctype = (!empty($enctype)) ? 'enctype="'.$enctype.'"' : '';
+    	$formAttributes = [];
+    	$append = '';
+
+    	switch (strtolower($options['type']))
+		{
+			case 'get':
+				$formAttributes['method'] = 'get';
+				break;
+			case 'file':
+				$formAttributes['enctype'] = 'multipart/form-data';
+				$options['type'] = empty($this->datas) ? 'post' : 'put';
+			// Move on
+			case 'post':
+				// Move on
+			case 'put':
+				// Move on
+			case 'delete':
+				// Set patch method
+			case 'patch':
+				$append .= $this->hidden('_method', [
+					'name' => '_method',
+					'secure' => 'skip',
+					'value' => strtoupper($options['type'])
+				]);
+			// Default to post method
+			default:
+				$formAttributes['method'] = 'post';
+		}
+		if (isset($options['method']))
+		{
+			$formAttributes['method'] = strtolower($options['method']);
+		}
+		if (isset($options['enctype']))
+		{
+			$formAttributes['enctype'] = strtolower($options['enctype']);
+		}
+		if (!empty($options['encoding']))
+		{
+			$formAttributes['accept-charset'] = $options['encoding'];
+		}
+
+		if ('get' !== strtolower($options['type']))
+		{
+			$append .= $this->csrfField();
+		}
+		$options = array_merge($options, $formAttributes);
+
+        $key = !empty($options['key']) ? $options['key'] : 'form'.uniqid();
+        $enctype = !empty($options['enctype']) ? 'enctype="'.$options['enctype'].'"' : '';
+        $attributes = $options['attributes'];
+
         $class = preg_replace('#form-control#i', 'form', $this->getInputClass($key, $attributes['class'] ?? null));
 
-        $token = '';
-        if (is_int($token_time))
-        {
-            $token = Csrf::instance()->generateToken($token_time, 20);
-            $token = '<input type="hidden" name="formcsrftoken" value="'.$token.'" />';
-        }
-
         return <<<HTML
-            <form method="{$method}" action="{$action}" {$enctype} id="{$key}" class="{$class}" role="form" {$this->getAttributes($attributes)}>
-                {$token}
+            <form method="{$options['method']}" action="{$options['action']}" {$enctype} id="{$key}" class="{$class}" role="form" {$this->getAttributes($attributes)}>
+                {$append}
 HTML;
     }
 
@@ -250,16 +301,17 @@ HTML;
         return $this->input('text', $key, $label, $attributes);
     }
 
-    /**
-     * Cree un input de type hidden
-     *
-     * @param string $key Nom du champ
-     * @return string
-     */
-    public function hidden(string $key) : string
+	/**
+	 * Cree un input de type hidden
+	 *
+	 * @param string $key Nom du champ
+	 * @param array|null $attributes
+	 * @return string
+	 */
+    public function hidden(string $key, ?array $attributes = []) : string
     {
         $this->surround(false);
-        $r = $this->input('hidden', $key, false);
+        $r = $this->input('hidden', $key, false, $attributes);
         $this->surround(null);
         return $r;
     }
@@ -471,13 +523,14 @@ HTML;
     public function input(string $type, string $key, $label = null, ?array $attributes = []) : string
     {
         $key = $this->makeKey($key);
-        $type = strtolower(($type));
-        $value = ($type == 'password') ? null : 'value="'.$this->getValue($key).'"';
+        $type = strtolower($type);
+        $name = $attributes['name'] ?? $key;
+        $value = ($type == 'password') ? null : 'value="'.($attributes['value'] ?? $this->getValue($key)).'"';
 
 		return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
-                <input type="{$type}" name="{$key}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
+                <input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
                 {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
@@ -772,6 +825,33 @@ HTML;
 
 
 
+	/**
+	 * Return a CSRF input if the request data is present.
+	 * Used to secure forms in conjunction with CsrfComponent &
+	 * SecurityComponent
+	 *
+	 * @return string
+	 */
+	protected function csrfField() : string
+	{
+		$options = config('data.csrf');
+		$config = [
+			'cookieName' => $options['cookie_name'] ?? 'csrfToken',
+			'field'      => $options['token_name'] ?? '_csrfToken',
+		];
+
+		$token = $this->request->getAttribute($config['cookieName']);
+		if (empty($token))
+		{
+			return '';
+		}
+
+		return $this->hidden($config['field'], [
+			'value'        => $token,
+			'secure'       => 'skip',
+			'autocomplete' => 'off',
+		]);
+	}
 
     /**
      * Renvoie l'erreur relatif a un champ
@@ -858,14 +938,14 @@ HTML;
         {
             return '';
         }
-        $reserved_attributes = ['type', 'name', 'class', 'id', 'value'];
 
+        $reserved_attributes = ['type', 'name', 'class', 'id', 'value'];
         foreach ($reserved_attributes As $value)
         {
             $attributes = Arr::remove($attributes, $value);
         }
-        $return = '';
 
+        $return = '';
         foreach ($attributes As $key => $value)
         {
             if (is_string($key))
