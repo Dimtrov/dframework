@@ -17,6 +17,7 @@
 
 namespace dFramework\core\utilities;
 
+use dFramework\core\security\Password;
 use Josantonius\Json\Json;
 
 /**
