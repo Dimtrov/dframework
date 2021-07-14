@@ -1,16 +1,20 @@
 <p class="debug-bar-alignRight">
-	<a href="https://dimtrov.github.io/dFramework/index.html" target="_blank" >Read the dFramework docs...</a>
+	<a href="http://dframework.totalh.net/" target="_blank" >Read the dFramework docs...</a>
 </p>
 
 <table>
 	<tbody>
 		<tr>
 			<td>dFramework Version:</td>
-			<td>{ dFVersion }</td>
+			<td>{ dFrameworkVersion }</td>
 		</tr>
 		<tr>
 			<td>PHP Version:</td>
 			<td>{ phpVersion }</td>
+		</tr>
+		<tr>
+			<td>Server Version:</td>
+			<td>{ serverVersion }</td>
 		</tr>
 		<tr>
 			<td>OS:</td>
@@ -35,6 +39,10 @@
 					{ baseURL }
 				{ endif }
 			</td>
+		</tr>
+		<tr>
+			<td>Document Root:</td>
+			<td>{ documentRoot }</td>
 		</tr>
 		<tr>
 			<td>TimeZone:</td>

@@ -22,7 +22,7 @@ use dFramework\core\Config as CoreConfig;
 
 /**
  * Config
- * 
+ *
  * Debug toolbar configuration
  *
  * @package		dFramework
@@ -46,13 +46,15 @@ class Config
 		$config = (object) CoreConfig::get('general');
 
 		return [
-			'dFVersion'   => dFramework::VERSION,
-			'phpVersion'  => phpversion(),
-			'os'  => PHP_OS_FAMILY,
-			'phpSAPI'     => php_sapi_name(),
-			'environment' => $config->environment ?? 'dev',
-			'baseURL'     => $config->base_url ?? '',
-			'locale'      => $config->language ?? 'en',
+			'dFrameworkVersion' => dFramework::VERSION,
+			'serverVersion'     => $_SERVER['SERVER_SOFTWARE'] ?? '',
+			'phpVersion'        => phpversion(),
+			'os'                => PHP_OS_FAMILY,
+			'phpSAPI'           => php_sapi_name(),
+			'environment'       => $config->environment ?? 'dev',
+			'baseURL'           => $config->base_url ?? '',
+			'documentRoot'      => $_SERVER['DOCUMENT_ROOT'] ?? WEBROOT,
+			'locale'            => $config->language ?? 'en',
 		];
 	}
 }
