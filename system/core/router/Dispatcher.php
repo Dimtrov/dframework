@@ -304,24 +304,14 @@ class Dispatcher
 		if ($returned instanceof ResponseInterface)
 		{
 			$this->response = $returned;
-			$returned       = $returned->getBody();
+			$returned       = $returned->getBody()->getContents();
 		}
-		if (is_string($returned))
-		{
-			$this->output .= $returned;
-			$this->output = $this->displayPerformanceMetrics($this->output);
-		}
-		/**
-		 * @var \dFramework\core\http\Response
-		 */
-		$response = $this->response;
-		if (empty($response->body()))
-		{
-			$this->response = $this->response->withBody(to_stream($this->output));
-		}
+
+		$this->output .= $returned;
+		$this->output = $this->displayPerformanceMetrics($this->output);
+		$this->response = $this->response->withBody(to_stream($this->output));
 
 		$this->totalTime = $this->timer->getElapsedTime('total_execution');
-
 
 		Service::emitter()->emit(
 			Service::toolbar()->prepare($this, $this->request, $this->response)
