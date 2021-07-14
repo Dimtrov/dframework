@@ -17,9 +17,11 @@
 
 namespace dFramework\middlewares;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use InvalidArgumentException;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * SecurityHeaders
@@ -34,73 +36,73 @@ use InvalidArgumentException;
  * @credit		CakePHP (Cake\Http\Middleware\SecurityHeadersMiddleware - https://cakephp.org)
  * @file        /system/middlewares/SecurityHeaders.php
  */
-class SecurityHeaders
+class SecurityHeaders implements MiddlewareInterface
 {
     /** @var string X-Content-Type-Option nosniff */
-    const NOSNIFF = 'nosniff';
+    public const NOSNIFF = 'nosniff';
 
     /** @var string X-Download-Option noopen */
-    const NOOPEN = 'noopen';
+    public const NOOPEN = 'noopen';
 
     /** @var string Referrer-Policy no-referrer */
-    const NO_REFERRER = 'no-referrer';
+    public const NO_REFERRER = 'no-referrer';
 
     /** @var string Referrer-Policy no-referrer-when-downgrade */
-    const NO_REFERRER_WHEN_DOWNGRADE = 'no-referrer-when-downgrade';
+    public const NO_REFERRER_WHEN_DOWNGRADE = 'no-referrer-when-downgrade';
 
     /** @var string Referrer-Policy origin */
-    const ORIGIN = 'origin';
+    public const ORIGIN = 'origin';
 
     /** @var string Referrer-Policy origin-when-cross-origin */
-    const ORIGIN_WHEN_CROSS_ORIGIN = 'origin-when-cross-origin';
+    public const ORIGIN_WHEN_CROSS_ORIGIN = 'origin-when-cross-origin';
 
     /** @var string Referrer-Policy same-origin */
-    const SAME_ORIGIN = 'same-origin';
+    public const SAME_ORIGIN = 'same-origin';
 
     /** @var string Referrer-Policy strict-origin */
-    const STRICT_ORIGIN = 'strict-origin';
+    public const STRICT_ORIGIN = 'strict-origin';
 
     /** @var string Referrer-Policy strict-origin-when-cross-origin */
-    const STRICT_ORIGIN_WHEN_CROSS_ORIGIN = 'strict-origin-when-cross-origin';
+    public const STRICT_ORIGIN_WHEN_CROSS_ORIGIN = 'strict-origin-when-cross-origin';
 
     /** @var string Referrer-Policy unsafe-url */
-    const UNSAFE_URL = 'unsafe-url';
+    public const UNSAFE_URL = 'unsafe-url';
 
     /** @var string X-Frame-Option deny */
-    const DENY = 'deny';
+    public const DENY = 'deny';
 
     /** @var string X-Frame-Option sameorigin */
-    const SAMEORIGIN = 'sameorigin';
+    public const SAMEORIGIN = 'sameorigin';
 
     /** @var string X-Frame-Option allow-from */
-    const ALLOW_FROM = 'allow-from';
+    public const ALLOW_FROM = 'allow-from';
 
     /** @var string X-XSS-Protection block, sets enabled with block */
-    const XSS_BLOCK = 'block';
+    public const XSS_BLOCK = 'block';
 
     /** @var string X-XSS-Protection enabled with block */
-    const XSS_ENABLED_BLOCK = '1; mode=block';
+    public const XSS_ENABLED_BLOCK = '1; mode=block';
 
     /** @var string X-XSS-Protection enabled */
-    const XSS_ENABLED = '1';
+    public const XSS_ENABLED = '1';
 
     /** @var string X-XSS-Protection disabled */
-    const XSS_DISABLED = '0';
+    public const XSS_DISABLED = '0';
 
     /** @var string X-Permitted-Cross-Domain-Policy all */
-    const ALL = 'all';
+    public const ALL = 'all';
 
     /** @var string X-Permitted-Cross-Domain-Policy none */
-    const NONE = 'none';
+    public const NONE = 'none';
 
     /** @var string X-Permitted-Cross-Domain-Policy master-only */
-    const MASTER_ONLY = 'master-only';
+    public const MASTER_ONLY = 'master-only';
 
     /** @var string X-Permitted-Cross-Domain-Policy by-content-type */
-    const BY_CONTENT_TYPE = 'by-content-type';
+    public const BY_CONTENT_TYPE = 'by-content-type';
 
     /** @var string X-Permitted-Cross-Domain-Policy by-ftp-filename */
-    const BY_FTP_FILENAME = 'by-ftp-filename';
+    public const BY_FTP_FILENAME = 'by-ftp-filename';
 
     /**
      * Security related headers to set
@@ -174,7 +176,7 @@ class SecurityHeaders
      * @param string $url URL if mode is `allow-from`
      * @return self
      */
-    public function setXFrameOptions(string $option = self::SAMEORIGIN, string $url = null) : self
+    public function setXFrameOptions(string $option = self::SAMEORIGIN, ?string $url = null) : self
     {
         $this->checkValues($option, [self::DENY, self::SAMEORIGIN, self::ALLOW_FROM]);
 
@@ -201,7 +203,7 @@ class SecurityHeaders
      */
     public function setXssProtection(string $mode = self::XSS_BLOCK) : self
     {
-        $mode = (string)$mode;
+        $mode = $mode;
 
         if ($mode === self::XSS_BLOCK)
 		{
@@ -218,7 +220,8 @@ class SecurityHeaders
      * X-Permitted-Cross-Domain-Policies
      *
      * @link https://www.adobe.com/devnet/adobe-media-server/articles/cross-domain-xml-for-streaming.html
-     * @param string $policy Policy value. Available Values: 'all', 'none', 'master-only', 'by-content-type', 'by-ftp-filename'
+     * @param string $policy Policy value. Available Values: 'all', 'none', 'master-only', 'by-content-type',
+     *     'by-ftp-filename'
      * @return self
      */
     public function setCrossDomainPolicy(string $policy = self::ALL) : self
@@ -243,14 +246,12 @@ class SecurityHeaders
      * @param string[] $allowed List of allowed values
      * @return void
      */
-    protected function checkValues(string $value, array $allowed)
+    protected function checkValues(string $value, array $allowed) : void
     {
-        if (!in_array($value, $allowed))
+        if (!in_array($value, $allowed, true))
 		{
             throw new InvalidArgumentException(sprintf(
-                'Invalid arg `%s`, use one of these: %s',
-                $value,
-                implode(', ', $allowed)
+                'Invalid arg `%s`, use one of these: %s', $value, implode(', ', $allowed)
             ));
         }
     }
@@ -258,14 +259,13 @@ class SecurityHeaders
     /**
      * Serve assets if the path matches one.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface $request The request.
-     * @param \Psr\Http\Message\ResponseInterface $response The response.
-     * @param callable $next Callback to invoke the next middleware.
-     * @return \Psr\Http\Message\ResponseInterface A response
+     * @param ServerRequestInterface $request The request.
+     * @param RequestHandlerInterface $handler The request handler.
+     * @return ResponseInterface A response.
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        $response = $next($request, $response);
+        $response = $handler->handle($request);
         foreach ($this->headers As $header => $value)
 		{
             $response = $response->withHeader($header, $value);
