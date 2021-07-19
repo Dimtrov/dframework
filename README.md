@@ -1,6 +1,6 @@
 [![Latest Stable Version](http://poser.pugx.org/dimtrov/dframework/v)](https://packagist.org/packages/dimtrov/dframework) [![Total Downloads](http://poser.pugx.org/dimtrov/dframework/downloads)](https://packagist.org/packages/dimtrov/dframework) [![Latest Unstable Version](http://poser.pugx.org/dimtrov/dframework/v/unstable)](https://packagist.org/packages/dimtrov/dframework) [![License](http://poser.pugx.org/dimtrov/dframework/license)](https://packagist.org/packages/dimtrov/dframework)
 
-# dFramework : v3.3.2
+# dFramework : v3.3.3
 
 ### The simplest PHP framework for beginners
 
@@ -30,13 +30,13 @@ Télécharger la dernière version https://github.com/Dimtrov/dframework/release
 Vous pouvez également l'installer via Composer
 
 ```
-composer create-project dimtrov/dframework:3.3.2 project-name
+composer create-project dimtrov/dframework project-name
 ```
 
 Si vous avez un projet existant, ajoutez dFramework à ce dernier via la commande
 
 ```
-composer require dimtrov/dframework:3.3.2
+composer require dimtrov/dframework
 ```
 
 Cependant, vous devez faire quelques manipulations pour que dFramework soit integré à votre projet.
@@ -52,4 +52,4 @@ php dbot serve
 
 ## Documentation
 
-Le projet est encore en cours de développement et la documentatio n'est pas terminée. Vous pouvez tout de même l'avoir sur http://dframework.totalh.net/dFramework.html
+Le projet est encore en cours de développement et la documentatio n'est pas terminée. Vous pouvez tout de même l'avoir sur http://dframework.totalh.net
