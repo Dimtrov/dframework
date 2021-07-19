@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.2
  */
 
 namespace dFramework\core\http;
@@ -42,7 +42,7 @@ use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
  * @package		dFramework
  * @subpackage	Core
  * @category    Http
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.2.2
  * @credit      CakeRequest (http://cakephp.org CakePHP(tm) Project)
@@ -139,19 +139,19 @@ class ServerRequest implements ServerRequestInterface
      * @var array
      */
     protected static $_detectors = [
-        'get' => ['env' => 'REQUEST_METHOD', 'value' => 'GET'],
-        'post' => ['env' => 'REQUEST_METHOD', 'value' => 'POST'],
-        'put' => ['env' => 'REQUEST_METHOD', 'value' => 'PUT'],
-        'patch' => ['env' => 'REQUEST_METHOD', 'value' => 'PATCH'],
-        'delete' => ['env' => 'REQUEST_METHOD', 'value' => 'DELETE'],
-        'head' => ['env' => 'REQUEST_METHOD', 'value' => 'HEAD'],
-        'options' => ['env' => 'REQUEST_METHOD', 'value' => 'OPTIONS'],
-        'ssl' => ['env' => 'HTTPS', 'options' => [1, 'on']],
-        'ajax' => ['env' => 'HTTP_X_REQUESTED_WITH', 'value' => 'XMLHttpRequest'],
-        'flash' => ['env' => 'HTTP_USER_AGENT', 'pattern' => '/^(Shockwave|Adobe) Flash/'],
+        'get'       => ['env' => 'REQUEST_METHOD', 'value' => 'GET'],
+        'post'      => ['env' => 'REQUEST_METHOD', 'value' => 'POST'],
+        'put'       => ['env' => 'REQUEST_METHOD', 'value' => 'PUT'],
+        'patch'     => ['env' => 'REQUEST_METHOD', 'value' => 'PATCH'],
+        'delete'    => ['env' => 'REQUEST_METHOD', 'value' => 'DELETE'],
+        'head'      => ['env' => 'REQUEST_METHOD', 'value' => 'HEAD'],
+        'options'   => ['env' => 'REQUEST_METHOD', 'value' => 'OPTIONS'],
+        'ssl'       => ['env' => 'HTTPS', 'options' => [1, 'on']],
+        'ajax'      => ['env' => 'HTTP_X_REQUESTED_WITH', 'value' => 'XMLHttpRequest'],
+        'flash'     => ['env' => 'HTTP_USER_AGENT', 'pattern' => '/^(Shockwave|Adobe) Flash/'],
         'requested' => ['param' => 'requested', 'value' => 1],
-        'json' => ['accept' => ['application/json'], 'param' => '_ext', 'value' => 'json'],
-        'xml' => ['accept' => ['application/xml', 'text/xml'], 'param' => '_ext', 'value' => 'xml'],
+        'json'      => ['accept' => ['application/json'], 'param' => '_ext', 'value' => 'json'],
+        'xml'       => ['accept' => ['application/xml', 'text/xml'], 'param' => '_ext', 'value' => 'xml'],
     ];
 
     /**
@@ -265,17 +265,17 @@ class ServerRequest implements ServerRequestInterface
             $config = ['url' => $config];
         }
         $config += [
-            'params' => $this->params,
-            'query' => $_GET,
-            'post' => $_POST,
-            'files' => $_FILES,
-            'cookies' => $_COOKIE,
+            'params'      => $this->params,
+            'query'       => $_GET,
+            'post'        => $_POST,
+            'files'       => $_FILES,
+            'cookies'     => $_COOKIE,
             'environment' => [],
-            'url' => '',
-            'uri' => new Uri($_SERVER['REQUEST_URI']),
-            'base' => '',
-            'webroot' => '',
-            'input' => null,
+            'url'         => '',
+            'uri'         => new Uri($_SERVER['REQUEST_URI']),
+            'base'        => '',
+            'webroot'     => '',
+            'input'       => null,
         ];
 
         $this->_setConfig($config);
@@ -2340,7 +2340,11 @@ class ServerRequest implements ServerRequestInterface
         {
             $uri = '/';
         }
-        return $uri;
+
+		$lastPath = explode('/', $base);
+		$lastPath = end($lastPath);
+
+        return preg_replace('#'.$lastPath.'/?$#i', '', $uri);
     }
 
     /**
