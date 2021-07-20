@@ -418,7 +418,8 @@ class Dispatcher
 		{
 			$controller = $this->controller;
 
-			return $controller($request, $response, ...$this->parameters);
+			$sendParameters = array_reverse([$request, $response, ...$this->parameters]);
+			return $controller(...$sendParameters);
 		}
 
 		// Try to autoload the class
