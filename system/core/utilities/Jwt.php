@@ -169,7 +169,7 @@ class Jwt
 	 * @throws Exception
      * @return object
      */
-    protected static function decode(string $token, array $config = []) : object
+    public static function decode(string $token, array $config = []) : object
     {
 		$conf = self::config($config);
 
@@ -186,7 +186,7 @@ class Jwt
 	 *
 	 * @return string|null
      */
-    private static function getToken() : ?string
+    public static function getToken() : ?string
     {
         $authorization = self::getAuthorization();
 
@@ -203,7 +203,7 @@ class Jwt
 	 *
 	 * @return string|null
 	 */
-	private static function getAuthorization() : ?string
+	public static function getAuthorization() : ?string
     {
         $header = null;
 
