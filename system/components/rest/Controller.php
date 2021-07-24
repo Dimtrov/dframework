@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019 - 2021, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019 - 2021, Dimtrov Sarl. (https://dimtrov.hebfree.org)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.3
  */
 
 namespace dFramework\components\rest;
@@ -27,6 +27,7 @@ use dFramework\core\utilities\Arr;
 use dFramework\core\utilities\Str;
 use dFramework\core\utilities\Jwt;
 use dFramework\middlewares\Cors;
+use Psr\Http\Message\ResponseInterface;
 use ReflectionAnnotatedClass;
 use ReflectionAnnotatedMethod;
 use Throwable;
@@ -39,7 +40,7 @@ use Throwable;
  * @package		dFramework
  * @subpackage	Components
  * @category    Rest
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.1
  * @credit      CI Rest Server - by Chris Kacerguis <chriskacerguis@gmail.com> - https://github.com/chriskacerguis/ci-restserver
@@ -287,30 +288,37 @@ class Controller extends CoreController
 		if (is_array($result))
         {
             $result = array_map(function($element) {
-                if ($element instanceof Entity)
-                {
-					if (method_exists($element, 'format'))
-					{
-						$element = $element->format();
-					}
-					else
-					{
-						$element = $element->toArray();
-					}
-                }
-
-                return $element;
+                return $this->formatEntity($element);
             }, $result);
         }
 
-        if ($result instanceof Entity)
-        {
-            $result = $result->toArray();
-        }
-		$response[$this->_config['result_field_name']] = $result;
+		$response[$this->_config['result_field_name']] = $this->formatEntity($result);
 
 		return $this->response($response, $code);
     }
+
+	/**
+	 * Formatte les données à renvoyer lorsqu'il s'agit des objets de la classe Entity
+	 *
+	 * @param mixed $element
+	 * @return mixed
+	 */
+	protected function formatEntity($element)
+	{
+		if ($element instanceof Entity)
+		{
+			if (method_exists($element, 'format'))
+			{
+				$element = $element->format();
+			}
+			else
+			{
+				$element = $element->toArray();
+			}
+		}
+
+		return $element;
+	}
 
 
     /**
@@ -548,7 +556,7 @@ class Controller extends CoreController
      * Definit les methodes authorisees par le web service
      *
      * @param string ...$methods
-     * @return Controller
+     * @return self
      */
     final protected function allowedMethods(string ...$methods) : self
     {
@@ -562,7 +570,7 @@ class Controller extends CoreController
      * Definit le format de donnees a renvoyer au client
      *
      * @param string $format
-     * @return Controller
+     * @return self
      */
     final protected function returnFormat(string $format) : self
     {
@@ -573,7 +581,7 @@ class Controller extends CoreController
     /**
      * N'autorise que les acces pas https
      *
-     * @return Controller
+     * @return self
      */
     final protected function forceHttps() : self
     {
@@ -585,7 +593,7 @@ class Controller extends CoreController
      * auth
      *
      * @param  string|false $type
-     * @return Controller
+     * @return self
      */
     final protected function auth($type) : self
     {
@@ -599,7 +607,7 @@ class Controller extends CoreController
      * Les autres arguments sont des IP a bannir. Si le premier argument vaut "false", la suite ne sert plus a rien
      *
      * @param  mixed $params
-     * @return Controller
+     * @return self
      */
     final protected function ipBlacklist(...$params) : self
     {
@@ -674,13 +682,14 @@ class Controller extends CoreController
     private function _parseResponse($data)
     {
         $format = strtolower($this->_config['return_format']);
+        $formatter = 'to'.ucfirst($format);
 
         // If the format method exists, call and return the output in that format
-        if (method_exists(Format::class, 'to_'.$format))
+        if (method_exists(Format::class, $formatter))
         {
             // CORB protection
             // First, get the output content.
-            $output = Format::factory($data)->{'to_'.$format}();
+            $output = Format::factory($data)->{$formatter}();
 
             // Set the format header
             // Then, check if the client asked for a callback, and if the output contains this callback :
@@ -697,7 +706,7 @@ class Controller extends CoreController
             // Json is the most appropriate form for such a data type
             if ($format === 'array')
             {
-                $output = Format::factory($output)->{'to_json'}();
+                $output = Format::factory($output)->{'toJson'}();
             }
         }
         else
@@ -705,7 +714,7 @@ class Controller extends CoreController
             // If an array or object, then parse as a json, so as to be a 'string'
             if (is_array($data) OR is_object($data))
             {
-                $data = Format::factory($data)->{'to_json'}();
+                $data = Format::factory($data)->{'toJson'}();
             }
             // Format is not supported, so output the raw data as a string
             $output = $data;
@@ -738,24 +747,33 @@ class Controller extends CoreController
         // Verifie si la requete est en ajax
         if (true !== $this->request->is('ajax') AND true === $this->_config['ajax_only'])
         {
-            $this->notAcceptable(lang('rest.ajax_only', null, $this->_locale));
-
+            $response = $this->notAcceptable(lang('rest.ajax_only', null, $this->_locale));
+            if ($response instanceof ResponseInterface)
+            {
+                $this->response = $response;
+            }
             return false;
         }
 
         // Verifie si la requete est en https
         if (true !== $this->request->is('https') AND true === $this->_config['force_https'])
         {
-            $this->forbidden(lang('rest.unsupported', null, $this->_locale));
-
+            $response = $this->forbidden(lang('rest.unsupported', null, $this->_locale));
+            if ($response instanceof ResponseInterface)
+            {
+                $this->response = $response;
+            }
             return false;
         }
 
         // Verifie si la methode utilisee pour la requete est autorisee
         if (true !== in_array(strtoupper($this->request->getMethod()), $this->_config['allowed_methods']))
         {
-            $this->notAcceptable(lang('rest.unknown_method', null,$this->_locale));
-
+            $response = $this->notAcceptable(lang('rest.unknown_method', null,$this->_locale));
+            if ($response instanceof ResponseInterface)
+            {
+                $this->response = $response;
+            }
             return false;
         }
 
@@ -770,8 +788,11 @@ class Controller extends CoreController
             // Returns 1, 0 or FALSE (on error only). Therefore implicitly convert 1 to TRUE
             if (preg_match($pattern, $this->_config['ip_blacklist']))
             {
-                $this->unauthorized(lang('rest.ip_denied', null, $this->_locale));
-
+                $response = $this->unauthorized(lang('rest.ip_denied', null, $this->_locale));
+                if ($response instanceof ResponseInterface)
+                {
+                    $this->response = $response;
+                }
                 return false;
             }
         }
@@ -791,8 +812,11 @@ class Controller extends CoreController
 
             if (true !== in_array($this->request->clientIp(), $whitelist))
             {
-                $this->unauthorized(lang('rest.ip_unauthorized', null, $this->_locale));
-
+                $response = $this->unauthorized(lang('rest.ip_unauthorized', null, $this->_locale));
+                if ($response instanceof ResponseInterface)
+                {
+                    $this->response = $response;
+                }
                 return false;
             }
         }
@@ -806,8 +830,11 @@ class Controller extends CoreController
 
                 if ($payload instanceof Throwable)
                 {
-					$this->invalidToken($payload->getMessage());
-
+					$response = $this->invalidToken($payload->getMessage());
+                    if ($response instanceof ResponseInterface)
+                    {
+                        $this->response = $response;
+                    }
                     return false;
                 }
                 $this->payload = $payload;
