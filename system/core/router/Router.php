@@ -694,7 +694,7 @@ class Router
 
 		if (preg_match('#json#i', $this->request->getHeaderLine('CONTENT-TYPE')))
 		{
-			$output = Format::factory(compact('code', 'error', 'details'))->to_json();
+			$output = Format::factory(compact('code', 'error', 'details'))->toJson();
 
         	$this->response = $this->response->withStringBody($output);
 			$this->response = $this->response->withCharset(strtolower(config('general.charset') ?? 'utf-8'));
