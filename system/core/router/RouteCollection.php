@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.3
  */
 
 namespace dFramework\core\router;
@@ -28,7 +28,7 @@ use dFramework\core\exception\RouterException;
  * @package		dFramework
  * @subpackage	Core
  * @category    Router
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       2.0
  * @credit		CodeIgniter 4.0 (CodeIgniter\Router\RouteCollection)
@@ -369,7 +369,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function head(string $path, $to, array $options) : self
+    public function head(string $path, $to, ?array $options = null) : self
     {
         $this->create('head', $path, $to, $options);
 
@@ -383,7 +383,7 @@ class RouteCollection
      * @param array $options
      * @return self
      */
-    public function options(string $path, $to, array $options) : self
+    public function options(string $path, $to, ?array $options = null) : self
     {
         $this->create('options', $path, $to, $options);
 
@@ -428,7 +428,7 @@ class RouteCollection
 	 *
 	 * @return self
 	 */
-	public function map(array $routes = [], array $options = null) : self
+	public function map(array $routes = [], ?array $options = null) : self
 	{
 		foreach ($routes As $path => $to)
 		{
@@ -450,7 +450,7 @@ class RouteCollection
 	 *
 	 * @return self
 	 */
-	public function match($verbs, string $path, $to, array $options = null) : self
+	public function match($verbs, string $path, $to, ?array $options = null) : self
 	{
         if (is_string($verbs))
         {
@@ -597,7 +597,7 @@ class RouteCollection
 	 *
 	 * @return self
 	 */
-	public function resource(string $name, array $options = null) : self
+	public function resource(string $name, ?array $options = null) : self
 	{
 		// In order to allow customization of the route the
 		// resources are sent to, we need to have a new name
@@ -713,7 +713,7 @@ class RouteCollection
 	 *
 	 * @return self
 	 */
-	public function presenter(string $name, array $options = null) : self
+	public function presenter(string $name, ?array $options = null) : self
 	{
 		// In order to allow customization of the route the
 		// resources are sent to, we need to have a new name
@@ -894,6 +894,7 @@ class RouteCollection
 	 * Returns the raw array of available routes.
 	 *
 	 * @param mixed $verb
+	 * @param bool $with_name
 	 * @return array
 	 */
 	public function getRoutes($verb = null, bool $with_name = false) : array
@@ -1029,7 +1030,7 @@ class RouteCollection
 	 * @param string|array $to
 	 * @param array        $options
 	 */
-	protected function create(string $verb, string $from, $to, array $options = null)
+	protected function create(string $verb, string $from, $to, ?array $options = null)
 	{
 		$prefix    = (is_null($this->group) ? '' : $this->group) . '/';
 
@@ -1101,7 +1102,7 @@ class RouteCollection
 	 *
 	 * @return string
 	 */
-	protected function fillRouteParams(string $from, array $params = null): string
+	protected function fillRouteParams(string $from, ?array $params = null) : string
 	{
 		// Find all of our back-references in the original route
 		preg_match_all('/\(([^)]+)\)/', $from, $matches);
@@ -1134,7 +1135,6 @@ class RouteCollection
 			{
 				$from = substr_replace($from, '', $pos, strlen($pattern));
 			}
-
 		}
 
 		return '/' . ltrim($from, '/');
