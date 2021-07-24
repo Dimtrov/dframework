@@ -37,6 +37,7 @@ $general['url_suffix'] = '';
 /*
 | Specifie l'environement de travail dans lequel vous etes
 |   - dev / prod
+|	- auto : utilisera prod ou dev selon que le site soit en ligne ou pas. (la fonction is_online() est utiliser pour determiner la valeur à choisir)
 */
 $general['environment']	= env('ENVIRONMENT', 'dev');
 

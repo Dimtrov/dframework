@@ -44,7 +44,7 @@ class Config
         'database'      => APP_DIR.'config'.DS.'database.php',
         'general'       => APP_DIR.'config'.DS.'general.php',
         'layout'        => APP_DIR.'config'.DS.'layout.php',
-        
+
         'email'         => APP_DIR.'config'.DS.'email.php',
         'rest'          => APP_DIR.'config'.DS.'rest.php',
     ];
@@ -79,7 +79,7 @@ class Config
         {
             return self::$_config;
         }
-        
+
         $config = explode('.', $config);
         $conf = array_shift($config);
 
@@ -123,7 +123,7 @@ class Config
 
     /**
      * Load the specific configuration in the scoope
-     * 
+     *
      * @param string|string[] $config
      * @param string|null $config_file
      */
@@ -142,7 +142,7 @@ class Config
                     $config_file = $value;
                     $conf = $key;
                 }
-                else 
+                else
                 {
                     $config_file = null;
                     $conf = $value;
@@ -158,7 +158,7 @@ class Config
                 {
                     $config_file = self::$_config_file[$config];
                 }
-                else 
+                else
                 {
                     $config_file = APP_DIR . 'config' . DS . $config . '.php';
                 }
@@ -166,8 +166,8 @@ class Config
             if (! file_exists($config_file))
             {
                 ConfigException::except('
-                    Unable to loader the <b>'.$config.'</br> configuration 
-                    <br> 
+                    Unable to loader the <b>'.$config.'</br> configuration
+                    <br>
                     The &laquo; '.$config_file.' &raquo; file does not exist
                 ', 404);
             }
@@ -176,7 +176,7 @@ class Config
                 self::$_config = array_merge(self::$_config, require($config_file));
             }
         }
-        else 
+        else
         {
             return false;
         }
@@ -195,7 +195,7 @@ class Config
                 if (empty(self::get($key.'.'.$item)))
                 {
                     ConfigException::except('
-                        The <b>'.$key.'['.$item.']</b> configuration is required. 
+                        The <b>'.$key.'['.$item.']</b> configuration is required.
                         <br>
                         Please edit &laquo; '.self::$_config_file[$key].' &raquo; file to correct it
                     ');
@@ -235,7 +235,7 @@ class Config
             }
             self::set('general.base_url', rtrim(str_replace('\\', '/', $base_url), '/'));
         }
-        
+
         if (null === self::get('general.use_template_engine'))
         {
             self::set('general.use_template_engine', true);
@@ -249,6 +249,10 @@ class Config
      */
     private static function initialize()
     {
+		if (self::$_config['general']['environment'] == 'auto')
+		{
+			self::$_config['general']['environment'] = is_online() ? 'prod' : 'dev';
+		}
         switch (self::$_config['general']['environment'])
         {
             case 'dev':
@@ -262,7 +266,7 @@ class Config
                 break;
             default:
                 ConfigException::except('
-                    The <b>general[environment]</b> configuration is not set correctly (Accept values: dev/prod/test). 
+                    The <b>general[environment]</b> configuration is not set correctly (Accept values: dev/prod/test/auto).
                     <br>
                     Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
                 ');
@@ -274,17 +278,16 @@ class Config
         if (!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
         {
             ConfigException::except('
-                The <b>general[compress_output]</b> configuration is not set correctly (Accept values: auto/true/false). 
+                The <b>general[compress_output]</b> configuration is not set correctly (Accept values: auto/true/false).
                 <br>
                 Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
             ');
         }
-        
 
         /* ----------------
             Parametres de session
         ------------------- */
-        
+
         if (!empty(self::get('data.session.cache_limiter')))
         {
             $autorize = ['public', 'private', 'nocache', 'private_no_expire'];
@@ -292,7 +295,7 @@ class Config
             if (!in_array($config, $autorize))
             {
                 ConfigException::except('
-                    The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).'). 
+                    The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).').
                     <br>
                     Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
                 ');
@@ -302,7 +305,7 @@ class Config
         if (isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
         {
             ConfigException::except('
-                The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values. 
+                The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values.
                 <br>
                 Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
             ');
