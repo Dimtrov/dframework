@@ -128,7 +128,7 @@ class JwtAuthMiddleware implements MiddlewareInterface
 			$this->config['status_field_name']  => false,
 			$this->config['message_field_name'] => $message,
 			$this->config['code_field_name']    => 498
-		])->{'to_'.$format}();
+		])->{'to'.ucfirst($format)}();
 
         $this->response = $this->response->withStringBody($output);
 		$this->response = $this->response->withCharset(strtolower(config('general.charset') ?? 'utf-8'));
