@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 namespace dFramework\core\loader;
@@ -54,7 +54,7 @@ use dFramework\core\utilities\Helpers;
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.2.1
  * @file        /system/core/loader/Service.php
@@ -145,12 +145,16 @@ class Service
     /**
 	 * The general Input class models an HTTP request.
      *
-     * @param ServerRequest $request
-     * @param boolean $shared
+     * @param ServerRequest|null $request
+     * @param bool $shared
      * @return \dFramework\core\http\Negotiator
      */
-    public static function negotiator(ServerRequest $request = null, bool $shared = true)
+    public static function negotiator(?ServerRequest $request = null, bool $shared = true)
     {
+		if (empty($request))
+		{
+			$request = static::request(true);
+		}
         if (true === $shared)
         {
             return Injector::singleton(Negotiator::class)->setRequest($request);
@@ -320,7 +324,6 @@ class Service
 		if (true === $shared)
 		{
             return Injector::singleton(Router::class);
-			// return static::getSharedInstance('router', $routes, $request);
 		}
 
 		if (empty($routes))

@@ -1,18 +1,40 @@
 <?php
+/**
+ *  dFramework
+ *
+ *  The simplest PHP framework for beginners
+ *  Copyright (c) 2019 - 2021, Dimtrov Lab's
+ *  This content is released under the Mozilla Public License 2 (MPL-2.0)
+ *
+ *  @package	dFramework
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
+ *  @link	    https://dimtrov.hebfree.org/works/dframework
+ *  @version    3.3.4
+ */
 
 namespace dFramework\core\http;
 
 use dFramework\core\exception\HttpException;
 
 /**
- * Class Negotiate
+ * Negotiator
  *
  * Provides methods to negotiate with the HTTP headers to determine the best
  * type match between what the application supports and what the requesting
  * getServer wants.
  *
- * @see     http://tools.ietf.org/html/rfc7231#section-5.3
- * @credit  CodeIgniter\HTTP
+ * @package		dFramework
+ * @subpackage	Core
+ * @category    Http
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @link		https://dimtrov.hebfree.org/docs/dframework/api/
+ * @since       3.2.2
+ * @see     	http://tools.ietf.org/html/rfc7231#section-5.3
+ * @credit      CodeIgniter\HTTP (https://codeigniter.com)
+ * @file        /system/core/http/Negotiator.php
  */
 class Negotiator
 {
@@ -39,8 +61,6 @@ class Negotiator
 		}
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Stores the request instance to grab the headers from.
 	 *
@@ -54,8 +74,6 @@ class Negotiator
 
 		return $this;
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Determines the best content-type to use based on the $supported
@@ -75,8 +93,6 @@ class Negotiator
 	{
 		return $this->getBestMatch($supported, $this->request->getHeaderLine('accept'), true, $strictMatch);
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Determines the best charset to use based on the $supported
@@ -104,8 +120,6 @@ class Negotiator
 		return $match;
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Determines the best encoding type to use based on the $supported
 	 * types the application says it supports, and the types requested
@@ -125,8 +139,6 @@ class Negotiator
 		return $this->getBestMatch($supported, $this->request->getHeaderLine('accept-encoding'));
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Determines the best language to use based on the $supported
 	 * types the application says it supports, and the types requested
@@ -144,7 +156,6 @@ class Negotiator
 		return $this->getBestMatch($supported, $this->request->getHeaderLine('accept-language'));
 	}
 
-	//--------------------------------------------------------------------
 	//--------------------------------------------------------------------
 	// Utility Methods
 	//--------------------------------------------------------------------
@@ -177,7 +188,7 @@ class Negotiator
 
 		$acceptable = $this->parseHeader($header);
 
-		foreach ($acceptable as $accept)
+		foreach ($acceptable As $accept)
 		{
 			// if acceptable quality is zero, skip it.
 			if ($accept['q'] === 0.0)
@@ -186,13 +197,13 @@ class Negotiator
 			}
 
 			// if acceptable value is "anything", return the first available
-			if ($accept['value'] === '*' || $accept['value'] === '*/*')
+			if ($accept['value'] === '*' OR $accept['value'] === '*/*')
 			{
 				return $supported[0];
 			}
 
 			// If an acceptable value is supported, return it
-			foreach ($supported as $available)
+			foreach ($supported As $available)
 			{
 				if ($this->match($accept, $available, $enforceTypes))
 				{
@@ -204,8 +215,6 @@ class Negotiator
 		// No matches? Return the first supported element.
 		return $strictMatch ? '' : $supported[0];
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Parses an Accept* header into it's multiple values.
@@ -221,7 +230,7 @@ class Negotiator
 		$results    = [];
 		$acceptable = explode(',', $header);
 
-		foreach ($acceptable as $value)
+		foreach ($acceptable As $value)
 		{
 			$pairs = explode(';', $value);
 
@@ -231,7 +240,7 @@ class Negotiator
 
 			$parameters = [];
 
-			foreach ($pairs as $pair)
+			foreach ($pairs As $pair)
 			{
 				$param = [];
 				preg_match(
@@ -294,8 +303,6 @@ class Negotiator
 		return $results;
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Match-maker
 	 *
@@ -307,7 +314,7 @@ class Negotiator
 	protected function match(array $acceptable, string $supported, bool $enforceTypes = false): bool
 	{
 		$supported = $this->parseHeader($supported);
-		if (is_array($supported) && count($supported) === 1)
+		if (is_array($supported) AND count($supported) === 1)
 		{
 			$supported = $supported[0];
 		}
@@ -328,8 +335,6 @@ class Negotiator
 		return false;
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
 	 * Checks two Accept values with matching 'values' to see if their
 	 * 'params' are the same.
@@ -346,10 +351,9 @@ class Negotiator
 			return false;
 		}
 
-		foreach ($supported['params'] as $label => $value)
+		foreach ($supported['params'] As $label => $value)
 		{
-			if (! isset($acceptable['params'][$label]) ||
-					$acceptable['params'][$label] !== $value)
+			if (! isset($acceptable['params'][$label]) OR $acceptable['params'][$label] !== $value)
 			{
 				return false;
 			}
@@ -357,8 +361,6 @@ class Negotiator
 
 		return true;
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Compares the types/subtypes of an acceptable Media type and
@@ -389,6 +391,4 @@ class Negotiator
 		// Otherwise, subtypes must match also.
 		return $aSubType === $sSubType;
 	}
-
-	//--------------------------------------------------------------------
 }
