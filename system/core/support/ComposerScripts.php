@@ -7,7 +7,7 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
@@ -32,7 +32,7 @@ use Composer\Script\Event;
  * @package		dFramework
  * @subpackage	Core
  * @category    Support
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Controller.html
  * @since       3.3.0
  * @file		/system/core/support/ComposerScripts.php
@@ -55,7 +55,7 @@ class ComposerScripts
 	 *
 	 * @throws \ReflectionException
 	 */
-	
+
 	/**
      * @param Event $event
      */
@@ -74,20 +74,20 @@ class ComposerScripts
 	private static function run(Event $event)
 	{
 		$autoload_classmap_file = $event->getComposer()->getConfig()->get('vendor-dir').'/autoload_classmap.php';
-		if (file_exists($autoload_classmap_file) AND !in_array($autoload_classmap_file, \get_included_files())) 
+		if (file_exists($autoload_classmap_file) AND !in_array($autoload_classmap_file, \get_included_files()))
 		{
 			self::$composer_files = require $autoload_classmap_file;
 		}
 
         $autoload_classmap_file = dirname(__DIR__, 2).'/constants/.classmap.php';
-		if (file_exists($autoload_classmap_file) AND !in_array($autoload_classmap_file, \get_included_files())) 
+		if (file_exists($autoload_classmap_file) AND !in_array($autoload_classmap_file, \get_included_files()))
 		{
 			self::$dframework_files = require $autoload_classmap_file;
 		}
 
-		foreach ($composer_files as $class => $path) 
+		foreach (self::$composer_files as $class => $path)
 		{
-			if (array_key_exists($class, self::$dframework_files) AND strpos($class, 'dFramework\\') == false) 
+			if (array_key_exists($class, self::$dframework_files) AND strpos($class, 'dFramework\\') == false)
 			{
 				self::moveFile($path, self::$dframework_files[$class]);
 			}
