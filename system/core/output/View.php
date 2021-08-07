@@ -7,20 +7,18 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.3
+ *  @version    3.3.4
  */
- 
+
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
-use dFramework\core\debug\Toolbar;
 use dFramework\core\exception\LoadException;
-use dFramework\core\http\Response;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dframework\core\router\Dispatcher;
@@ -35,7 +33,7 @@ use Psr\Http\Message\ResponseInterface;
  * @package		dFramework
  * @subpackage	Core
  * @category    Output
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       1.0
  * @file		/system/core/output/View.php
@@ -139,20 +137,20 @@ class View
     protected $_lib_scripts = [];
 
     protected $_page_vars = [];
-    
+
     /**
-     * @var Response
+     * @var ResponseInterface
      */
     private $response;
 
-    
+
     /**
      * Constructeur
      *
      * @param array|null $data
      * @param string|null $controller
      * @param array|null $options
-     * @param Response|null $response
+     * @param ResponseInterface|null $response
      */
     public function __construct(?array $data = [], ?string $controller= '', ?array $options = [], ?array $config = [], $response = null)
     {
@@ -160,12 +158,12 @@ class View
         $this->controller = strtolower(trim($controller, DS));
         $this->addConfig($config)->setOptions($options);
 
-        $this->response = ($response instanceof Response OR $response instanceof ResponseInterface) ? $response : Service::response();
-        
+        $this->response = $response instanceof ResponseInterface ? $response : Service::response();
+
         Load::helper('assets');
         $class = Dispatcher::getClass();
         $method = Dispatcher::getMethod();
-		
+
 		$this->title(ucfirst($method) . ' - ' . ucfirst($class));
 
         $this->debug = true;
@@ -184,19 +182,20 @@ class View
 
         return $this;
     }
+
     /**
      * Modify view options
      *
      * @param array|null $options
      * @return self
      */
-    public function setOptions(?array $options = []) : self 
+    public function setOptions(?array $options = []) : self
     {
         $this->options = (array) $options;
 
         return $this;
     }
-    
+
 
     /**
 	 * Sets several pieces of view data at once.
@@ -210,6 +209,7 @@ class View
 
 		return $this;
 	}
+
 	/**
 	 * Sets a single piece of view data.
 	 *
@@ -223,6 +223,20 @@ class View
 
 		return $this;
 	}
+
+	/**
+	 * Replace all view data by new data
+	 *
+	 * @param array  $data
+	 * @return self
+	 */
+	public function setData(array $data) : self
+	{
+		$this->data = $data;
+
+		return $this;
+	}
+
     /**
 	 * Removes all of the view data from the system.
 	 *
@@ -234,6 +248,7 @@ class View
 
 		return $this;
 	}
+
 	/**
 	 * Returns the current data that will be displayed in the view.
 	 *
@@ -243,18 +258,18 @@ class View
 	{
 		return $this->data;
     }
-    
+
 
     /**
-     * set displaying view 
+     * set displaying view
      *
      * @param string $view
      * @return self
      */
-    public function display(string $view) : self 
+    public function display(string $view) : self
     {
         $this->view = $view;
-        
+
         return $this;
     }
 
@@ -264,7 +279,7 @@ class View
 
         if ($name == 'form')
         {
-            if (empty($this->form)) 
+            if (empty($this->form))
             {
                 $this->form = Load::library('Form');
             }
@@ -283,21 +298,23 @@ class View
      * @param bool|string $compress
      * @return string
      */
-    public function get($compress = 'auto') : string 
-    {    
+    public function get($compress = 'auto') : string
+    {
         $this->create();
-        return $this->compressView($this->output, $compress);
+
+		return $this->compressView($this->output, $compress);
     }
-    /**
+
+	/**
      * Affiche la vue generee au navigateur
-     * 
+     *
      * @return void
      */
     public function render()
     {
         echo $this->get(Config::get('general.compress_output'));
     }
-    
+
 	/**
 	 * Used within layout views to include additional views.
 	 *
@@ -310,9 +327,9 @@ class View
 	{
         $view = preg_replace('#\.php$#i', '', $view).'.php';
         $view = str_replace(' ', '', $view);
-        if ($view[0] !== '/' AND !file_exists(rtrim(VIEW_DIR.$this->controller.DS, DS).DS.$view)) 
+        if ($view[0] !== '/' AND !file_exists(rtrim(VIEW_DIR.$this->controller.DS, DS).DS.$view))
         {
-            if (file_exists(VIEW_DIR.'partials'.DS.$view)) 
+            if (file_exists(VIEW_DIR.'partials'.DS.$view))
             {
                 $view = '/partials/'.$view;
             }
@@ -320,15 +337,17 @@ class View
                 $view = '/'.trim(dirname($this->view), '/\\').'/'.$view;
             }
         }
-        return $this->addData($data)->compressView(
-            $this->makeView($view, $options), 
+
+		return $this->addData($data)->compressView(
+            $this->makeView($view, $options),
             Config::get('general.compress_output')
         );
 	}
-    /**
+
+	/**
 	 * Specifies that the current view should extend an existing layout.
 	 *
-	 * @param string $layout
+	 * @param string|null $layout
 	 * @return self
 	 */
 	public function layout(?string $layout) : self
@@ -337,6 +356,17 @@ class View
 
         return $this;
     }
+	/**
+	 * Specifies that the current view should extend an existing layout.
+	 *
+	 * @param string $layout
+	 * @alias self::layout
+	 * @return self
+	 */
+	public function extend(string $layout) : self
+	{
+		return $this->layout($layout);
+	}
 
     /**
 	 * Starts holds content for a section within the layout.
@@ -349,6 +379,7 @@ class View
 
 		ob_start();
 	}
+
 	/**
 	 *
 	 *
@@ -372,7 +403,7 @@ class View
 
 		$this->currentSection = null;
     }
-    
+
     /**
 	 * Renders a section's contents.
 	 *
@@ -420,10 +451,10 @@ class View
     }
 
 	/**
-	 * Get or Set page title 
+	 * Get or Set page title
 	 *
-	 * @param string|null $title 
-	 * @return string|self 
+	 * @param string|null $title
+	 * @return string|self
 	 */
 	public function title(?string $title = null)
 	{
@@ -431,32 +462,32 @@ class View
 		{
 			return $this->_page_vars['title'] ?? '';
 		}
-		
+
 		$this->_page_vars['title'] = esc($title);
 
         return $this;
 	}
-	
+
 	/**
-	 * Get or Set page meta tags 
+	 * Get or Set page meta tags
 	 *
-	 * @param string $key 
-	 * @param string|null $value 
-	 * @return string|self 
+	 * @param string $key
+	 * @param string|null $value
+	 * @return string|self
 	 */
 	public function meta(string $key, ?string $value = null)
 	{
-		if (empty($value)) 
+		if (empty($value))
 		{
 			return $this->_page_vars['meta'][$key] ?? '';
 		}
-		
+
 		$this->_page_vars['meta'][$key] = esc($value);
 
         return $this;
 	}
-	
-    	/**
+
+    /**
 	 * Extract first bit of a long string and add ellipsis
 	 *
 	 * @param  string  $string
@@ -481,7 +512,7 @@ class View
 
     /**
      * Ajoute un fichier css de librairie a la vue
-     * 
+     *
      * @param string ...$src
      * @return self
      */
@@ -497,9 +528,10 @@ class View
 
         return $this;
     }
+
     /**
      * Ajoute un fichier css a la vue
-     * 
+     *
      * @param string ...$src
      * @return self
      */
@@ -515,6 +547,7 @@ class View
 
         return $this;
     }
+
     /**
      * Compile les fichiers de style de l'instance et genere les link:href vers ceux-ci
      *
@@ -530,12 +563,12 @@ class View
         {
             $lib_styles = array_merge(
                 $lib_styles,
-                (array) Config::get('layout.'.$group.'.lib_styles'), 
+                (array) Config::get('layout.'.$group.'.lib_styles'),
                 $this->_lib_styles ?? []
             );
             $styles = array_merge(
                 $styles,
-                (array) Config::get('layout.'.$group.'.styles'), 
+                (array) Config::get('layout.'.$group.'.styles'),
                 $this->_styles ?? []
             );
         }
@@ -554,7 +587,7 @@ class View
 
     /**
      * Ajoute un fichier js de librairie a la vue
-     * 
+     *
      * @param string ...$src
      * @return self
      */
@@ -570,9 +603,10 @@ class View
 
         return $this;
     }
+
     /**
      * Ajoute un fichier js a la vue
-     * 
+     *
      * @param string ...$src
      * @return self
      */
@@ -588,6 +622,7 @@ class View
 
         return $this;
     }
+
     /**
      * Compile les fichiers de script de l'instance et genere les link:href vers ceux-ci
      *
@@ -603,12 +638,12 @@ class View
         {
             $lib_scripts = array_merge(
                 $lib_scripts,
-                (array) Config::get('layout.'.$group.'.lib_scripts'), 
+                (array) Config::get('layout.'.$group.'.lib_scripts'),
                 $this->_lib_scripts ?? []
             );
             $scripts = array_merge(
                 $scripts,
-                (array) Config::get('layout.'.$group.'.scripts'), 
+                (array) Config::get('layout.'.$group.'.scripts'),
                 $this->_scripts ?? []
             );
         }
@@ -627,7 +662,7 @@ class View
 
 
     //--------------------------------------------------------------------
-    
+
     /**
 	 * Logs performance data for rendering a view.
 	 *
@@ -643,16 +678,16 @@ class View
 			'view'  => $view,
 		];
 	}
-    
+
     /**
-     * Permet de lancer la creation de la vue 
+     * Permet de lancer la creation de la vue
      *
      * @return void
      */
     private function create()
     {
-        $this->output = $this->makeView($this->view, $this->options); 
-    } 
+        $this->output = $this->makeView($this->view, $this->options);
+    }
     /**
      * Cree une vue demandee et retourne son code html
      *
@@ -673,7 +708,7 @@ class View
         $this->renderVars['view']    = $view;
 		$this->renderVars['options'] = $options;
 
-        $this->renderVars['file'] = $viewPath.str_replace(' ', '', trim($view, '/'));            
+        $this->renderVars['file'] = $viewPath.str_replace(' ', '', trim($view, '/'));
         if ($viewPath === VIEW_DIR AND stripos($view, '/') !== 0)
         {
             $this->renderVars['file'] = rtrim($viewPath.$this->controller.DS, DS).DS.str_replace(' ', '', $view);
@@ -681,9 +716,9 @@ class View
         $this->renderVars['file'] = str_replace('/', DS, $this->renderVars['file']);
 
         $ext = 'php';
-        foreach (['php', 'tpl', 'html'] As $value) 
+        foreach (['php', 'tpl', 'html'] As $value)
         {
-            if (view_exist($this->renderVars['file'], $value)) 
+            if (view_exist($this->renderVars['file'], $value))
             {
                 $ext = $value;
                 break;
@@ -693,9 +728,9 @@ class View
         {
             return $this->smarty(str_replace($viewPath, '', $this->renderVars['file']), $ext);
         }
-        
+
         $this->renderVars['file'] .= '.php';
-        
+
         // Was it cached?
 		if (isset($this->renderVars['options']['cache_name']))
 		{
@@ -706,12 +741,12 @@ class View
 			}
 		}
 
-        
+
         if (! is_file($this->renderVars['file']))
         {
             throw new LoadException('Le fichier "'.$this->renderVars['file'].'" n\'exite pas', 404);
-        }    
-                
+        }
+
         // Make our view data available to the view.
         extract($this->data);
 
@@ -719,8 +754,8 @@ class View
         include_once($this->renderVars['file']); // PHP will be processed
         $output = ob_get_contents();
         @ob_end_clean();
-        
-        if (!empty($this->renderVars['options']['layout'])) 
+
+        if (!empty($this->renderVars['options']['layout']))
         {
             $this->layout = $this->renderVars['options']['layout'];
         }
@@ -729,8 +764,8 @@ class View
 			$layoutView   = $this->layout;
 			$this->layout = null;
 			$output       = $this->makeView(
-                trim($layoutView, '/'), 
-                $options, 
+                trim($layoutView, '/'),
+                $options,
                 LAYOUT_DIR
             );
 		}
@@ -759,13 +794,13 @@ class View
                 . $output . PHP_EOL
                 . '<!-- DEBUG-VIEW ENDED ' . $this->renderVars['file'] . ' -->' . PHP_EOL;
 		}
-        
+
         // Should we cache?
 		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
 		{
             Service::cache()->write(
-                $this->renderVars['options']['cache_name'], 
-                $output, 
+                $this->renderVars['options']['cache_name'],
+                $output,
                 (int) $this->renderVars['options']['cache_time']
             );
 		}
@@ -779,7 +814,7 @@ class View
      * @param bool|string $compress
      * @return string
      */
-    private function compressView(string $output, $compress = 'auto') : string 
+    private function compressView(string $output, $compress = 'auto') : string
     {
         if (!in_array($compress, [true, false, 'true', 'false'], true)) {
             $compress = Config::get('general.environment') !== 'dev';
@@ -792,12 +827,12 @@ class View
      * @param string $file
      * @return string
      */
-    private function smarty(string $file, string $ext = '.tpl') : string 
+    private function smarty(string $file, string $ext = '.tpl') : string
     {
         $smarty = new Smarty();
         $smarty->assign($this->getData());
         $smarty->display($file.'.'.str_replace('.', '', $ext));
-           
+
         return '';
     }
 }
