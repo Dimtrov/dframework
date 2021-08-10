@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 namespace dFramework\core\loader;
@@ -29,7 +29,7 @@ use InvalidArgumentException;
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       1.0
  * @file        /system/core/loader/Load.php
@@ -46,7 +46,7 @@ class Load
         'libraries' => [],
         'models' => []
     ];
-    
+
     /**
      * @throws LoadException
      * @throws \ReflectionException
@@ -81,7 +81,7 @@ class Load
 
     /**
      * Charge un fichier d'aide
-     * 
+     *
      * @param string|array $helpers
      * @return void
      * @throws LoadException
@@ -97,7 +97,7 @@ class Load
         {
             throw new InvalidArgumentException('Type de parametre incorrect pour la methode "helper"');
         }
-        
+
         $helpers = (array) $helpers;
         foreach ($helpers As $helper)
         {
@@ -107,7 +107,7 @@ class Load
 
     /**
      * Charge un modele a un controleur donné
-     * 
+     *
      * @param string|array $model
      * @return object|object[]
      * @throws LoadException
@@ -146,7 +146,7 @@ class Load
 
     /**
      * Charge un autre controleur dans un controleur donné
-     * 
+     *
      * @param string|array $controller
      * @return object|object[]
      * @since 3.0.2
@@ -186,7 +186,7 @@ class Load
 
     /**
      * Charge une librairie dans un controlleur donné
-     * 
+     *
      * @param string|array $library
      * @return object|object[]
      * @throws LoadException
@@ -222,12 +222,12 @@ class Load
 
         return self::get_loaded('librairies', $library);
     }
-    
+
     /**
      * Charge un fichier de gestion de langue
-     * 
+     *
      * @param string $file
-     * @param mixed $var 
+     * @param mixed $var
      * @param string|null $locale
      * @param bool $app
      * @since 3.0
@@ -239,23 +239,23 @@ class Load
             $locale = Config::get('general.language');
         }
         $file = preg_replace('#\.json$#i', '', $file);
-        $filename = (true === $app) 
+        $filename = (true === $app)
             ? RESOURCE_DIR . 'reserved'.DS.'lang' . DS . $locale . DS . $file . '.json'
             : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
         if (true !== file_exists($filename))
         {
             LoadException::except('
-                Impossible de charger le fichier de langue <b>'.$file.'</b>. 
-                <br> 
+                Impossible de charger le fichier de langue <b>'.$file.'</b>.
+                <br>
                 Le fichier &laquo; '.$filename.' &raquo; n\'existe pas.
             ');
         }
         if (false === ($lang = file_get_contents($filename)))
         {
             LoadException::except('
-                Impossible de charger le fichier de langue <b>'.$file.'</b>. 
-                <br> 
+                Impossible de charger le fichier de langue <b>'.$file.'</b>.
+                <br>
                 Le fichier &laquo; '.$filename.' &raquo; est innaccessible en lecture.
             ');
         }
@@ -276,31 +276,31 @@ class Load
         if (!file_exists($filename))
         {
             LoadException::except('
-                Impossible de charger le fichier de definition des services du systeme. 
-                <br> 
+                Impossible de charger le fichier de definition des services du systeme.
+                <br>
                 Le fichier &laquo; '.$filename.' &raquo; n\'existe pas ou est innaccessible en lecture.
             ');
 
         }
-        else 
+        else if (!in_array($filename, get_included_files()))
         {
-            $providers = array_merge($providers, require_once $filename);
+            $providers = array_merge($providers, require $filename);
         }
-        
+
         // App services
         $filename = APP_DIR . 'config' . DS . 'providers.php';
-        if (file_exists($filename))
+        if (file_exists($filename) AND !in_array($filename, get_included_files()))
         {
-            $providers = array_merge($providers, require_once $filename);
+            $providers = array_merge($providers, require $filename);
         }
-        
+
         return $providers;
     }
-    
-    
+
+
     /**
      * Verifie si un element est chargé dans la liste des modules
-     * 
+     *
      * @param string $module
      * @param $element
      * @return bool
@@ -315,16 +315,16 @@ class Load
     }
     /**
      * Ajoute un element aux elements chargés
-     * 
+     *
      * @param string $module
      * @param string $element
      * @param mixed|null $value
      * @return void
      */
-    private static function loaded(string $module, $element, $value = null) : void 
+    private static function loaded(string $module, $element, $value = null) : void
     {
         self::$loads[$module][$element] = $value;
-    }    
+    }
     /**
      * Renvoie un element chargé
      *

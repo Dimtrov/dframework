@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 namespace dFramework\core\router;
@@ -22,6 +22,7 @@ use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
+use dFramework\core\loader\Injector;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,7 +38,7 @@ use ReflectionMethod;
  * @package		dFramework
  * @subpackage	Core
  * @category    Router
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       1.0
  * @file        /system/core/router/Dispatcher.php
@@ -244,7 +245,7 @@ class Dispatcher
 				// Is there a "post_controller_constructor" event?
 				Service::event()->trigger('post_controller_constructor');
 
-				$resp = $this->runController($controller);
+				$resp = $this->runController($controller, $request, $response);
 			}
 			else
 			{
@@ -418,8 +419,11 @@ class Dispatcher
 		{
 			$controller = $this->controller;
 
-			$sendParameters = array_reverse([$request, $response, ...$this->parameters]);
-			return $controller(...$sendParameters);
+			$sendParameters = [...$this->parameters];
+			array_push($sendParameters, $request, $response);
+
+			// return $controller(...$sendParameters);
+			return Injector::call($controller, $sendParameters);
 		}
 
 		// Try to autoload the class
@@ -499,47 +503,24 @@ class Dispatcher
 				403
 			);
         }
-
-        if ($this->method !== '_remap')
-        {
-            $params = $reflection->getParameters();
-			$required_parameters = 0;
-
-            foreach ($params As $param)
-            {
-				if (true !== $param->isOptional())
-				{
-                    $required_parameters++;
-                }
-            }
-            if ($required_parameters > count($this->parameters))
-            {
-                if ($reflectedClass->isSubclassOf(Controller::class)) {
-					return;
-				}
-				RouterException::except(
-					'Parameters error',
-                    'The method <b>'.$this->method . '</b> of class '.$this->controller.' require
-						<b>'.$required_parameters.'</b> parameters, '.count($this->parameters).' was send',
-					400
-				);
-            }
-		}
     }
 
     /**
 	 * Instantiates the controller class.
 	 *
-	 * @return mixed
+	 * @return \dFramework\core\Controller|mixed
 	 */
 	private function createController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		/**
 		 * @var \dFramework\core\Controller
 		 */
-		$class = new $this->controller();
+		$class = Injector::singleton($this->controller);
 
-		$class->initialize($request, $response);
+		if (method_exists($class, 'initialize'))
+		{
+			$class->initialize($request, $response);
+		}
 
 		return $class;
 	}
@@ -548,25 +529,21 @@ class Dispatcher
 	 * Runs the controller, allowing for _remap methods to function.
 	 *
 	 * @param mixed $class
+	 * @param ServerRequestInterface $request
+	 * @param ResponseInterface $response
 	 *
 	 * @return mixed
 	 */
-	private function runController($class)
+	private function runController($class, ServerRequestInterface $request, ResponseInterface $response)
 	{
 		// If this is a console request then use the input segments as parameters
 		// $params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
-		$params = $this->parameters;
+		$params = [...$this->parameters];
+		array_push($params, $request, $response);
 
-		if (method_exists($class, '_remap'))
-		{
-			$output = $class->_remap($this->method, (array) $params);
-		}
-		else
-		{
-			$output = $class->{$this->method}(...$params);
-		}
+		$method = method_exists($class, '_remap') ? '_remap' : $this->method;
 
-		return $output;
+		return Injector::call([$class, $method], $params);
 	}
 
 	//--------------------------------------------------------------------
@@ -594,7 +571,7 @@ class Dispatcher
 				unset($override);
 
 				$controller = $this->createController($this->request, $this->response);
-				$this->runController($controller);
+				$this->runController($controller, $this->request, $this->response);
 			}
 
 			return;
@@ -643,7 +620,7 @@ class Dispatcher
 			return;
 		}
 		// Ignore AJAX requests
-		if (method_exists($this->request, 'isAJAX') AND $this->request->isAJAX())
+		if ($this->request->isAJAX())
 		{
 			return;
 		}
