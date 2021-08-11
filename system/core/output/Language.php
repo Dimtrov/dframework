@@ -7,14 +7,14 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.4
  */
- 
+
 namespace dFramework\core\output;
 
 use dFramework\core\Config;
@@ -23,14 +23,14 @@ use dFramework\core\utilities\Arr;
 
 /**
  * Language
- * 
+ *
  * Handle system messages and localization.
  * Locale-based, built on top of PHP internationalization.
  *
  * @package		dFramework
  * @subpackage	Core
  * @category    Output
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.2.1
  * @file		/system/core/output/Language.php
@@ -82,11 +82,10 @@ class Language
 	/**
 	 * Sets the current locale to use when performing string lookups.
 	 *
-	 * @param string $locale
-	 *
-	 * @return $this
+	 * @param string|null $locale
+	 * @return self
 	 */
-	public function setLocale(string $locale = null)
+	public function setLocale(?string $locale = null) : self
 	{
 		$this->findLocale($locale);
 
@@ -125,7 +124,7 @@ class Language
 		{
 			$args = [];
 		}
-		
+
 		// Parse out the file name and the actual alias.
 		// Will load the language file and strings.
         [
@@ -134,7 +133,7 @@ class Language
 		] = $this->parseLine($line, $this->locale);
 
 		$output = Arr::getRecursive($this->language[$this->locale][$file], $parsedLine);
-		
+
 		if ($output === null AND strpos($this->locale, '-'))
 		{
 			[$locale] = explode('-', $this->locale, 2);
@@ -151,7 +150,7 @@ class Language
 		if (empty($output))
 		{
 			$this->parseLine($line, 'en');
-		
+
 			$output = Arr::getRecursive($this->language[$this->locale][$file], $parsedLine);
 			//$output = $this->language['en'][$file][$parsedLine] ?? null;
 		}
@@ -258,7 +257,7 @@ class Language
 		}
 
 		$lang = FileLocator::lang($file, $locale);
-		
+
 		if ($return)
 		{
 			return $lang;
@@ -278,18 +277,12 @@ class Language
 	 */
 	public static function searchLocale(?string $locale = null) : string
 	{
-		if (!empty($locale))
+		if (empty($locale))
 		{
-			return self::normalizeLocale($locale);
-		}
-		$locale = Config::get('general.language');
-		
-		if (empty($locale)) 
-		{
-			$locale = 'en';
+			$locale = Config::get('general.language');
 		}
 
-		return $locale;
+		return self::normalizeLocale(empty($locale) ? 'en' : $locale);
 	}
 
 	private function findLocale(?string $locale = null)
