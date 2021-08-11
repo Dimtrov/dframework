@@ -272,7 +272,7 @@ class ServerRequest implements ServerRequestInterface
             'cookies'     => $_COOKIE,
             'environment' => [],
             'url'         => '',
-            'uri'         => new Uri($_SERVER['REQUEST_URI']),
+            'uri'         => new Uri($_SERVER['REQUEST_URI'] ?? null),
             'base'        => '',
             'webroot'     => '',
             'input'       => null,
