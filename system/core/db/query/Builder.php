@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.3
+ * @version     3.3.4
  */
 
 namespace dFramework\core\db\query;
@@ -20,6 +20,7 @@ namespace dFramework\core\db\query;
 use PDO;
 use dFramework\core\db\Database;
 use dFramework\core\exception\DatabaseException;
+use dFramework\core\utilities\Str;
 
 /**
  * Builder
@@ -121,6 +122,10 @@ class Builder
         if (in_array($name, Database::allowedFacadeMethods))
         {
             return call_user_func_array([$this->db, $name], $arguments);
+        }
+		if (Str::startsWith($name, 'where'))
+		{
+            return $this->dynamicWhere($name, $arguments);
         }
     }
 
@@ -600,20 +605,18 @@ class Builder
      * Adds a limit to the query.
      *
      * @param int $limit Number of rows to limit
-     * @param int $offset Number of rows to offset
+     * @param int|null $offset Number of rows to offset
      * @return self
      */
-    final public function limit($limit, $offset = null) : self
+    final public function limit(int $limit, ?int $offset = null) : self
     {
         $this->crud = 'select';
 
-        if ($limit !== null)
-        {
-            $this->limit = 'LIMIT '.$limit;
+        if ($offset !== null)
+		{
+			$this->offset($offset);
         }
-        if ($offset !== null) {
-            $this->offset($offset);
-        }
+		$this->limit = 'LIMIT '.$limit;
 
         return $this;
     }
@@ -622,20 +625,18 @@ class Builder
      * Adds an offset to the query.
      *
      * @param int $offset Number of rows to offset
-     * @param int $limit Number of rows to limit
+     * @param int|null $limit Number of rows to limit
      * @return self
      */
-    final public function offset($offset, $limit = null) : self
+    final public function offset(int $offset, ?int $limit = null) : self
     {
         $this->crud = 'select';
 
-        if ($offset !== null)
-        {
-            $this->offset = 'OFFSET '.$offset;
+        if ($limit !== null)
+		{
+			$this->limit($limit);
         }
-        if ($limit !== null) {
-            $this->limit($limit);
-        }
+		$this->offset = 'OFFSET '.$offset;
 
         return $this;
     }
@@ -675,16 +676,19 @@ class Builder
      * Builds a select query.
      *
      * @param array|string $fields Array of field names to select
-     * @param int $limit Limit condition
-     * @param int $offset Offset condition
+     * @param int|null $limit Limit condition
+     * @param int|null $offset Offset condition
      * @return self
      */
-    final public function select($fields = '*', $limit = null, $offset = null) : self
+    final public function select($fields = '*', ?int $limit = null, ?int $offset = null) : self
     {
         $this->crud = 'select';
 
         $this->fields[] = is_array($fields) ? implode(',', $fields) : $fields;
-        $this->limit($limit, $offset);
+		if ($limit !== null)
+		{
+			$this->limit($limit, $offset);
+		}
 
         return $this;
     }
@@ -939,12 +943,9 @@ class Builder
      * @param int $expire Expiration time in seconds
      * @return mixed
      */
-    final public function first($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
+    final public function one($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
     {
-        if (!empty($this->sql))
-        {
-            $this->limit(1);
-        }
+		$this->limit(1);
         $this->execute($key, $expire);
 
         return $this->result->first($type);
@@ -952,15 +953,15 @@ class Builder
     /**
      * Recupere le premier resultat d'une requete en BD
      *
-     * @alias self::first()
+     * @alias self::one()
      * @param int|string $type
      * @param string $key
      * @param int $expire
      * @return mixed
      */
-    final public function one($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
+    final public function first($type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
     {
-        return $this->first($type, $key, $expire);
+        return $this->one($type, $key, $expire);
     }
 
     /**
@@ -993,6 +994,136 @@ class Builder
     }
 
 
+	/*************************** Advanced finders methods ********************/
+
+
+	/**
+	 * Find all elements in database
+	 *
+	 * @param array|string $fields Array of field names to select
+	 * @param array $options Array of selecting options
+	 * 					- @var int limit
+	 * 					- @var int offset
+	 * 					- @var array where
+	 * @param int|string $type
+	 * @return array
+	 */
+	final public function findAll($fields = '*', array $options = [], $type = PDO::FETCH_OBJ) : array
+	{
+		$this->select($fields);
+		if (isset($options['limit']))
+		{
+			$this->limit($options['limit']);
+		}
+		if (isset($options['offset']))
+		{
+			$this->offset($options['offset']);
+		}
+		if (isset($options['where']) AND is_array($options['where']))
+		{
+			$this->where($options['where']);
+		}
+
+		return $this->all($type);
+	}
+
+	/**
+	 * Find one element in database
+	 *
+	 * @param array|string $fields Array of field names to select
+	 * @param array $options Array of selecting options
+	 * 					- @var int offset
+	 * 					- @var array where
+	 * @param int|string $type
+	 * @return mixed
+	 */
+	final public function findOne($fields = '*', array $options = [], $type = PDO::FETCH_OBJ)
+	{
+		$this->select($fields);
+		if (isset($options['offset']))
+		{
+			$this->offset($options['offset']);
+		}
+		if (isset($options['where']) AND is_array($options['where']))
+		{
+			$this->where($options['where']);
+		}
+
+		return $this->one($type);
+	}
+
+	/**
+     * Handles dynamic "where" clauses to the query.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return self
+     */
+    public function dynamicWhere(string $method, array $parameters) : self
+    {
+        $finder = substr($method, 5);
+
+        $segments = preg_split(
+            '/(And|Or)(?=[A-Z])/', $finder, -1, PREG_SPLIT_DELIM_CAPTURE
+        );
+
+        // The connector variable will determine which connector will be used for the
+        // query condition. We will change it as we come across new boolean values
+        // in the dynamic method strings, which could contain a number of these.
+        $connector = 'and';
+
+        $index = 0;
+
+        foreach ($segments As $segment)
+		{
+            // If the segment is not a boolean connector, we can assume it is a column's name
+            // and we will add it to the query as a new constraint as a where clause, then
+            // we can keep iterating through the dynamic method string's segments again.
+            if ($segment !== 'And' AND $segment !== 'Or')
+			{
+                $this->addDynamic($segment, $connector, $parameters, $index);
+
+                $index++;
+            }
+
+            // Otherwise, we will store the connector so we know how the next where clause we
+            // find in the query should be connected to the previous ones, meaning we will
+            // have the proper boolean connector to connect the next where clause found.
+            else
+			{
+                $connector = $segment;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a single dynamic where clause statement to the query.
+     *
+     * @param  string  $segment
+     * @param  string  $connector
+     * @param  array   $parameters
+     * @param  int     $index
+     * @return void
+     */
+    protected function addDynamic(string $segment, string $connector, array $parameters, int $index)
+    {
+		$field = Str::toSnake($segment);
+
+        // Once we have parsed out the columns and formatted the boolean operators we
+        // are ready to add it to this query as a where clause just like any other
+        // clause on the query. Then we'll increment the parameter index values.
+
+		if ('or' === strtolower($connector))
+		{
+			$this->orWhere($field, $parameters[$index]);
+		}
+        else
+		{
+			$this->where($field, $parameters[$index]);
+		}
+    }
 
     /*************************** SQL Statement Generator Methods ********************/
 
