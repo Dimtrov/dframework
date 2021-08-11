@@ -68,6 +68,7 @@ class Service
     {
         return Injector::instance();
     }
+
     /**
      * @return \DI\Container
      */
@@ -80,34 +81,34 @@ class Service
     /**
      * Query Builder
      *
-     * @param boolean $shared
      * @param string|null $group
+     * @param boolean $shared
      * @return \dFramework\core\db\query\Builder
      */
-    public static function builder(bool $shared = true, ?string $group = null)
+    public static function builder(?string $group = null, bool $shared = true)
     {
         if (true === $shared)
         {
-            return Injector::singleton(Builder::class);
+            return self::injector()->singleton(Builder::class);
         }
 
-        return Injector::factory(Builder::class, [$group]);
+        return self::factory(Builder::class, [$group]);
     }
     /**
      * Database manager
      *
-     * @param boolean $shared
      * @param string|null $group
+     * @param boolean $shared
      * @return \dFramework\core\db\Database
      */
-    public static function database(bool $shared = true, ?string $group = null)
+    public static function database(?string $group = null, bool $shared = true)
     {
         if (true === $shared)
         {
-            return Injector::singleton(Database::class)->setGroup($group);
+            return self::singleton(Database::class)->setGroup($group);
         }
 
-        return Injector::factory(Database::class, [$group]);
+        return self::factory(Database::class, [$group]);
     }
 
     /**
@@ -120,10 +121,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(ResponseEmitter::class);
+            return self::singleton(ResponseEmitter::class);
         }
 
-        return Injector::factory(ResponseEmitter::class);
+        return self::factory(ResponseEmitter::class);
     }
 
     /**
@@ -136,10 +137,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Input::class);
+            return self::singleton(Input::class);
         }
 
-        return Injector::factory(Input::class);
+        return self::factory(Input::class);
     }
 
     /**
@@ -157,10 +158,10 @@ class Service
 		}
         if (true === $shared)
         {
-            return Injector::singleton(Negotiator::class)->setRequest($request);
+            return self::singleton(Negotiator::class)->setRequest($request);
         }
 
-        return Injector::factory(Negotiator::class, [$request]);
+        return self::factory(Negotiator::class, [$request]);
     }
 
     /**
@@ -173,10 +174,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(ServerRequest::class);
+            return self::singleton(ServerRequest::class);
         }
 
-        return Injector::factory(ServerRequest::class);
+        return self::factory(ServerRequest::class);
     }
 
     /**
@@ -189,10 +190,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Response::class);
+            return self::singleton(Response::class);
         }
 
-        return Injector::factory(Response::class);
+        return self::factory(Response::class);
     }
 
     /**
@@ -205,10 +206,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Redirection::class);
+            return self::singleton(Redirection::class);
         }
 
-        return Injector::factory(Redirection::class);
+        return self::factory(Redirection::class);
     }
 
     /**
@@ -221,10 +222,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Uri::class);
+            return self::singleton(Uri::class);
         }
 
-        return Injector::factory(Uri::class);
+        return self::factory(Uri::class);
     }
 
     /**
@@ -238,10 +239,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Cache::class);
+            return self::singleton(Cache::class);
         }
 
-        return Injector::factory(Cache::class);
+        return self::factory(Cache::class);
     }
 
     /**
@@ -257,9 +258,9 @@ class Service
 	{
         if (true === $shared)
         {
-            return Injector::singleton(View::class);
+            return self::singleton(View::class);
         }
-		return Injector::factory(View::class);
+		return self::factory(View::class);
 	}
 
     /**
@@ -270,27 +271,27 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Helpers::class);
+            return self::singleton(Helpers::class);
         }
 
-        return Injector::factory(Helpers::class);
+        return self::factory(Helpers::class);
     }
 
 	/**
 	 * Responsible for loading the language string translations.
 	 *
-	 * @param string  $locale
+	 * @param string|null  $locale
 	 * @param bool $shared
 	 * @return \dFramework\core\output\Language
 	 */
-	public static function language(string $locale = null, bool $shared = true)
+	public static function language(?string $locale = null, bool $shared = true)
 	{
 		if (true === $shared)
 		{
-            return Injector::singleton(Language::class)->setLocale($locale);
+            return self::singleton(Language::class)->setLocale($locale);
         }
 
-        return Injector::factory(Language::class)->setLocale($locale);
+        return self::factory(Language::class)->setLocale($locale);
     }
 
     /**
@@ -304,33 +305,39 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(RouteCollection::class);
+            return self::singleton(RouteCollection::class);
         }
 
-        return Injector::factory(RouteCollection::class);
+        return self::factory(RouteCollection::class);
     }
+
     /**
 	 * The Router class uses a RouteCollection's array of routes, and determines
 	 * the correct Controller and Method to execute.
 	 *
 	 * @param \dFramework\core\router\RouteCollection $routes
-	 * @param \dFramework\core\http\ServerRequest                    $request
-	 * @param boolean                                      $shared
+	 * @param \dFramework\core\http\ServerRequest     $request
+	 * @param boolean                                 $shared
 	 *
 	 * @return \dFramework\core\router\Router
 	 */
-	public static function router(RouteCollection $routes = null, ServerRequest $request = null, bool $shared = true)
+	public static function router(?RouteCollection $routes = null, ?ServerRequest $request = null, bool $shared = true)
 	{
 		if (true === $shared)
 		{
-            return Injector::singleton(Router::class);
+            return self::singleton(Router::class);
 		}
 
 		if (empty($routes))
 		{
 			$routes = static::routes(true);
 		}
-        return Injector::factory(Router::class, [$routes, $request]);
+		if (empty($request))
+		{
+			$request = static::request(true);
+		}
+
+        return self::factory(Router::class, [$routes, $request]);
 	}
 
 
@@ -344,10 +351,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(EventManager::class);
+            return self::singleton(EventManager::class);
         }
 
-        return Injector::factory(EventManager::class);
+        return self::factory(EventManager::class);
     }
 
     /**
@@ -362,10 +369,10 @@ class Service
     {
         if (true === $shared)
         {
-            return Injector::singleton(Timer::class);
+            return self::singleton(Timer::class);
         }
 
-        return Injector::factory(Timer::class);
+        return self::factory(Timer::class);
     }
 
     /**
@@ -379,10 +386,10 @@ class Service
 	{
 		if ($shared)
 		{
-            return Injector::singleton(Toolbar::class);
+            return self::singleton(Toolbar::class);
 		}
 
-		return Injector::factory(Toolbar::class);
+		return self::factory(Toolbar::class);
 	}
 
 	/**
@@ -396,10 +403,10 @@ class Service
 	{
 		if ($shared)
 		{
-            return Injector::singleton(Logger::class);
+            return self::singleton(Logger::class);
 		}
 
-		return Injector::factory(Logger::class);
+		return self::factory(Logger::class);
 	}
 
 
@@ -433,9 +440,33 @@ class Service
         $shared = array_pop($arguments);
         if ($shared !== true)
         {
-            return Injector::factory($name, $arguments);
+            return self::factory($name, $arguments);
         }
 
-        return Injector::singleton($name);
+        return self::singleton($name);
+	}
+
+
+	/**
+	 * Inject single instance of given class
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	private static function singleton(string $name)
+	{
+		return self::injector()->get($name);
+	}
+
+	/**
+	 * Inject new instance of given class
+	 *
+	 * @param string $name
+	 * @param array $arguments
+	 * @return mixed
+	 */
+	public static function factory(string $name, array $arguments = [])
+	{
+		return self::injector()->make($name, $arguments);
 	}
 }
