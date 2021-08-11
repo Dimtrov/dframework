@@ -22,7 +22,6 @@ use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
 use dFramework\core\http\Uri;
-use dFramework\core\loader\Injector;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -245,7 +244,7 @@ class Dispatcher
 				// Is there a "post_controller_constructor" event?
 				Service::event()->trigger('post_controller_constructor');
 
-				$resp = $this->runController($controller, $request, $response);
+				$resp = $this->runController($controller);
 			}
 			else
 			{
@@ -423,7 +422,7 @@ class Dispatcher
 			array_push($sendParameters, $request, $response);
 
 			// return $controller(...$sendParameters);
-			return Injector::call($controller, $sendParameters);
+			return Service::injector()->call($controller, $sendParameters);
 		}
 
 		// Try to autoload the class
@@ -515,7 +514,7 @@ class Dispatcher
 		/**
 		 * @var \dFramework\core\Controller
 		 */
-		$class = Injector::singleton($this->controller);
+		$class = Service::injector()->singleton($this->controller);
 
 		if (method_exists($class, 'initialize'))
 		{
@@ -529,21 +528,16 @@ class Dispatcher
 	 * Runs the controller, allowing for _remap methods to function.
 	 *
 	 * @param mixed $class
-	 * @param ServerRequestInterface $request
-	 * @param ResponseInterface $response
-	 *
 	 * @return mixed
 	 */
-	private function runController($class, ServerRequestInterface $request, ResponseInterface $response)
+	private function runController($class)
 	{
 		// If this is a console request then use the input segments as parameters
 		// $params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
-		$params = [...$this->parameters];
-		array_push($params, $request, $response);
-
+		$params = $this->parameters;
 		$method = method_exists($class, '_remap') ? '_remap' : $this->method;
 
-		return Injector::call([$class, $method], $params);
+		return Service::injector()->call([$class, $method], (array) $params);
 	}
 
 	//--------------------------------------------------------------------
@@ -571,7 +565,7 @@ class Dispatcher
 				unset($override);
 
 				$controller = $this->createController($this->request, $this->response);
-				$this->runController($controller, $this->request, $this->response);
+				$this->runController($controller);
 			}
 
 			return;
