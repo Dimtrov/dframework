@@ -18,5 +18,6 @@
 
 return [
     Psr\Http\Message\ServerRequestInterface::class => service('request'),
-    Psr\Http\Message\ResponseInterface::class => service('response')
+    Psr\Http\Message\ResponseInterface::class => service('response'),
+	Psr\Container\ContainerInterface::class => service('container')
 ];
