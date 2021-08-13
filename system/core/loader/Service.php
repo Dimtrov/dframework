@@ -215,17 +215,18 @@ class Service
     /**
 	 * The URI class provides a way to model and manipulate URIs.
      *
+     * @param string|null $uri
      * @param boolean $shared
      * @return \dFramework\core\http\Uri
      */
-    public static function uri(bool $shared = true)
+    public static function uri(?string $uri = null, bool $shared = true)
     {
         if (true === $shared)
         {
-            return self::singleton(Uri::class);
+            return self::singleton(Uri::class)->setURI($uri);
         }
 
-        return self::factory(Uri::class);
+        return self::factory(Uri::class, [$uri]);
     }
 
     /**
