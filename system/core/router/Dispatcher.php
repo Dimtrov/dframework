@@ -130,7 +130,7 @@ class Dispatcher
 		$this->request = Service::request();
 		$this->response = Service::response();
 
-		$this->middleware = new Middleware($this->response);
+		$this->middleware = Service::injector()->make(Middleware::class, [$this->response]);
 
 		$middlewaresFile = APP_DIR . 'config' . DS . 'middlewares.php';
 		if (file_exists($middlewaresFile) AND !in_array($middlewaresFile, get_included_files()))
@@ -368,7 +368,7 @@ class Dispatcher
 	 */
 	private function dispatchRoutes(RouteCollection $routes, ServerRequest $request)
     {
-		$this->router = new Router($routes, $request);
+		$this->router = Service::router($routes, $request, false);
 
 		$this->timer->stop('bootstrap');
 		$this->timer->start('routing');
@@ -514,7 +514,7 @@ class Dispatcher
 		/**
 		 * @var \dFramework\core\Controller
 		 */
-		$class = Service::injector()->singleton($this->controller);
+		$class = Service::injector()->get($this->controller);
 
 		if (method_exists($class, 'initialize'))
 		{
@@ -539,8 +539,6 @@ class Dispatcher
 
 		return Service::injector()->call([$class, $method], (array) $params);
 	}
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Displays a 404 Page Not Found error. If set, will try to
@@ -593,8 +591,6 @@ class Dispatcher
 		throw new \Exception("PageNotFoundException::forPageNotFound($e->getMessage())");
 	}
 
-
-
 	//--------------------------------------------------------------------
 
 	/**
@@ -622,7 +618,7 @@ class Dispatcher
 		// This is mainly needed during testing...
 		if (is_string($uri))
 		{
-			$uri = new URI($uri);
+			$uri = Service::uri($uri, false);
 		}
 
 		if (isset($_SESSION))

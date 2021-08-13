@@ -272,7 +272,7 @@ class ServerRequest implements ServerRequestInterface
             'cookies'     => $_COOKIE,
             'environment' => [],
             'url'         => '',
-            'uri'         => new Uri($_SERVER['REQUEST_URI'] ?? null),
+            'uri'         => Service::uri($_SERVER['REQUEST_URI'] ?? null),
             'base'        => '',
             'webroot'     => '',
             'input'       => null,
@@ -1385,7 +1385,7 @@ class ServerRequest implements ServerRequestInterface
      * Check whether or not a Request is a certain type.
      *
      * Uses the built in detection rules as well as additional rules
-     * defined with Cake\Http\ServerRequest::addDetector(). Any detector can be called
+     * defined with self::addDetector(). Any detector can be called
      * as `is($type)` or `is$Type()`.
      *
      * @param string|array $type The type of request you want to check. If an array
