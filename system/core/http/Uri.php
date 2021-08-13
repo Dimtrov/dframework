@@ -3,16 +3,16 @@
  * dFramework
  *
  * The simplest PHP framework for beginners
- * Copyright (c) 2019, Dimtrov Sarl
+ * Copyright (c) 2019 - 2021, Dimtrov Lab's
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	Copyright (c) 2019, Dimtrov Sarl. (https://dimtrov.hebfree.org)
- * @copyright	Copyright (c) 2019, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.4
  */
 
 namespace dFramework\core\http;
@@ -28,7 +28,7 @@ use Psr\Http\Message\UriInterface;
  * @package		dFramework
  * @subpackage	Core
  * @category    Http
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.2.0
  * @credit      CodeIgniter\HTTP\URI (https://codeigniter.com CodeIgniter Framework)
@@ -152,12 +152,9 @@ class Uri implements UriInterface
 	 *
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(string $uri = null)
+	public function __construct(?string $uri = null)
 	{
-		if (! is_null($uri))
-		{
-			$this->setURI($uri);
-		}
+		$this->setURI($uri);
 		$this->port = $_SERVER['SERVER_PORT'] ?? 80;
 	}
 
@@ -170,7 +167,7 @@ class Uri implements UriInterface
 	 *
 	 * @return URI
 	 */
-	public function setURI(string $uri = null)
+	public function setURI(?string $uri = null)
 	{
 		if (! is_null($uri))
 		{
