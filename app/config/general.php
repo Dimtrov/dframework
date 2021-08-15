@@ -39,7 +39,7 @@ $general['url_suffix'] = '';
 |   - dev / prod
 |	- auto : utilisera prod ou dev selon que le site soit en ligne ou pas. (la fonction is_online() est utiliser pour determiner la valeur à choisir)
 */
-$general['environment']	= env('ENVIRONMENT', 'dev');
+$general['environment']	= env('ENVIRONMENT', 'auto');
 
 /*
 | Specifie si on doit afficher la debugbar ou pas
