@@ -12,12 +12,11 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.3.4
  */
 
 namespace dFramework\core\exception;
 
-use dFramework\core\Config;
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -45,7 +44,7 @@ class Exception extends \Exception
      */
     public static function init() : void
     {
-        if (Config::get('general.environment') === 'dev')
+        if (on_dev())
         {
             $whoops  =  new Run();
 

@@ -19,6 +19,7 @@ namespace dFramework\core;
 
 use dFramework\core\exception\ConfigException;
 use dFramework\core\utilities\Arr;
+use InvalidArgumentException;
 
 /**
  * Config
@@ -108,7 +109,6 @@ class Config
 
     /**
      * Config constructor.
-     * @throws ConfigException
      */
     public static function init()
     {
@@ -204,6 +204,9 @@ class Config
         }
     }
 
+	/**
+	 * Set default value of required configuration
+	 */
     private static function setDefaultVar()
     {
         if (empty(self::$_config['general']['base_url']))
@@ -244,8 +247,6 @@ class Config
 
     /**
      * Initialize the system configuration with data from config file
-     *
-     * @throws ConfigException
      */
     private static function initialize()
     {
@@ -274,24 +275,36 @@ class Config
                 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
                 break;
             default:
-                ConfigException::except('
-                    The <b>general[environment]</b> configuration is not set correctly (Accept values: dev/prod/test/auto).
-                    <br>
-                    Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
-                ');
+				self::exceptBadConfigValue('environment', ['dev', 'prod', 'test', 'auto'], 'general');
         }
         ini_set('log_errors', 1);
         ini_set('error_log', APP_DIR.'logs'.DS.'dflogs');
 
+		/* ----------------
+            Compression de vue
+        ------------------- */
         self::$_config['general']['compress_output'] = self::$_config['general']['compress_output'] ?? 'auto';
         if (!in_array(self::$_config['general']['compress_output'], ['auto', true, false]))
         {
-            ConfigException::except('
-                The <b>general[compress_output]</b> configuration is not set correctly (Accept values: auto/true/false).
-                <br>
-                Please edit &laquo; '.self::$_config_file['general'].' &raquo; file to correct it
-            ');
+			self::exceptBadConfigValue('compress_output', ['auto', true, false], 'general');
         }
+		if (self::$_config['general']['compress_output'] == 'auto')
+		{
+			self::$_config['general']['compress_output'] = is_online();
+		}
+
+		/* ----------------
+            Affichage de la debugbar
+        ------------------- */
+		self::$_config['general']['show_debugbar'] = self::$_config['general']['show_debugbar'] ?? 'auto';
+        if (!in_array(self::$_config['general']['show_debugbar'], ['auto', true, false]))
+        {
+			self::exceptBadConfigValue('show_debugbar', ['auto', true, false], 'general');
+        }
+		if (self::$_config['general']['show_debugbar'] == 'auto')
+		{
+			self::$_config['general']['show_debugbar'] = !is_online();
+		}
 
         /* ----------------
             Parametres de session
@@ -303,21 +316,38 @@ class Config
             $config = strtolower(self::get('data.session.cache_limiter'));
             if (!in_array($config, $autorize))
             {
-                ConfigException::except('
-                    The <b>data[session][cache_limiter]</b> configuration is not set correctly (Accept values: '.implode('/', $autorize).').
-                    <br>
-                    Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
-                ');
+				self::exceptBadConfigValue('session[cache_limiter]', $autorize, 'data');
             }
             self::set('data.session.cache_limiter', $config);
         }
         if (isset(self::$_config['data']['session']['lifetime']) AND !is_int(self::$_config['data']['session']['lifetime']))
         {
-            ConfigException::except('
-                The <b>session[lifetime]</b> configuration is not set correctly: It accept only integer values.
-                <br>
-                Please edit &laquo; '.self::$_config_file['data'].' &raquo; file to correct it
-            ');
+			self::exceptBadConfigValue('session[lifetime]', 'It accept only integer values', 'data');
         }
     }
+
+
+	/**
+	 * Affiche l'exception dû à la mauvaise definition d'une configuration
+	 *
+	 * @param string $config_key
+	 * @param array|string $accepts_values
+	 * @param string $group (general, data, database, etc.)
+	 */
+	public static function exceptBadConfigValue(string $config_key, $accepts_values, string $group)
+	{
+		if (is_array($accepts_values))
+		{
+			$accepts_values = '(Accept values: '.implode('/', $accepts_values).')';
+		}
+		else if (!is_string($accepts_values))
+		{
+			throw new InvalidArgumentException('Mauvaise utilisation de la methode '. __METHOD__);
+		}
+		ConfigException::except('
+			The <b>'.$group.'.'.$config_key.'</b> configuration is not set correctly. '.$accepts_values.'.
+			<br>
+			Please edit &laquo; '.self::$_config_file[$group].' &raquo; file to correct it
+		');
+	}
 }
