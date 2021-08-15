@@ -43,8 +43,10 @@ $general['environment']	= env('ENVIRONMENT', 'dev');
 
 /*
 | Specifie si on doit afficher la debugbar ou pas
+| 	- True / False
+|	- auto : Le systeme affichera la debugbar uniquement dans un environnement de development
 */
-$general['show_debugbar'] = true;
+$general['show_debugbar'] = 'auto';
 
 /*
 | Specificie si on doit compresser le code de la vue avant de l'afficher ou pas
