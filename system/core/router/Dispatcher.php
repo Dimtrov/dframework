@@ -21,7 +21,6 @@ use dFramework\components\rest\Controller;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
-use dFramework\core\http\Uri;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -535,8 +534,12 @@ class Dispatcher
 		// If this is a console request then use the input segments as parameters
 		// $params = defined('SPARKED') ? $this->request->getSegments() : $this->parameters;
 		$params = $this->parameters;
-		$method = method_exists($class, '_remap') ? '_remap' : $this->method;
-
+		$method = $this->method;
+		if (method_exists($class, '_remap'))
+		{
+			$params = [$method, $params];
+			$method = '_remap';
+		}
 		return Service::injector()->call([$class, $method], (array) $params);
 	}
 

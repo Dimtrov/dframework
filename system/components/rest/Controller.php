@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.3
+ * @version     3.3.4
  */
 
 namespace dFramework\components\rest;
@@ -138,7 +138,7 @@ class Controller extends CoreController
 
         // Call the controller method and passed arguments
         try {
-            $instance = new $class;
+            $instance = Service::injector()->get($class);
             $instance->initialize($this->request, $this->response);
 
             require_once __DIR__ . DS . 'annotations.php';
@@ -152,7 +152,7 @@ class Controller extends CoreController
             $this->checkProcess();
 			$instance->payload = $this->payload;
 
-            return call_user_func_array([$instance, $method], (array) $params);
+            return Service::injector()->call([$instance, $method], (array) $params);
         }
         catch (Throwable $ex) {
             if (Config::get('general.environment') !== 'dev')
