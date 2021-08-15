@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 namespace dFramework\core;
@@ -27,7 +27,7 @@ use dFramework\core\utilities\Arr;
  *
  * @package		dFramework
  * @subpackage	Core
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       1.0
  * @file		/system/core/Config.php
@@ -251,16 +251,25 @@ class Config
     {
 		if (self::$_config['general']['environment'] == 'auto')
 		{
-			self::$_config['general']['environment'] = is_online() ? 'prod' : 'dev';
+			self::$_config['general']['environment'] = is_online() ? 'production' : 'development';
 		}
+		if (self::$_config['general']['environment'] == 'dev')
+		{
+			self::$_config['general']['environment'] = 'development';
+		}
+		if (self::$_config['general']['environment'] == 'prod')
+		{
+			self::$_config['general']['environment'] = 'production';
+		}
+
         switch (self::$_config['general']['environment'])
         {
-            case 'dev':
+			case 'development':
                 error_reporting(-1);
                 ini_set('display_errors', 1);
                 break;
             case 'test':
-            case 'prod':
+            case 'production':
                 ini_set('display_errors', 0);
                 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
                 break;
