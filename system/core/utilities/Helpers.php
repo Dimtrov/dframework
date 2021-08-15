@@ -287,13 +287,15 @@ class Helpers
      */
     public static function is_online() : bool
     {
+		$host = explode(':', $_SERVER['HTTP_HOST'])[0];
+
         return (
-            !in_array($_SERVER['HTTP_HOST'], ['localhost','127.0.0.1'])
-            AND !preg_match('#\.dev$#', $_SERVER['HTTP_HOST'])
-            AND !preg_match('#\.test$#', $_SERVER['HTTP_HOST'])
-            AND !preg_match('#\.lab$#', $_SERVER['HTTP_HOST'])
-            AND !preg_match('#\.loc(al)?$#', $_SERVER['HTTP_HOST'])
-            AND !preg_match('#^192\.168#', $_SERVER['HTTP_HOST'])
+            !in_array($host, ['localhost','127.0.0.1'])
+            AND !preg_match('#\.dev$#', $host)
+            AND !preg_match('#\.test$#', $host)
+            AND !preg_match('#\.lab$#', $host)
+            AND !preg_match('#\.loc(al)?$#', $host)
+            AND !preg_match('#^192\.168#', $host)
         );
     }
 
