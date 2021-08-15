@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.2.3
+ *  @version    3.3.4
  */
 
 namespace dFramework\core\utilities;
@@ -28,10 +28,10 @@ use Laminas\Escaper\Escaper;
  *
  * @package		dFramework
  * @subpackage	Core
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       1.0
- * @file		/system/core/Helpers.php
+ * @file		/system/core/utilities/Helpers.php
  */
 class Helpers
 {
@@ -39,14 +39,14 @@ class Helpers
      * @var Helpers
      */
     private static $_instance = null;
-    private $config;
+    private static $config;
 
     /**
      * @return self
      */
     public static function instance() : self
     {
-        if(is_null(self::$_instance))
+        if (is_null(self::$_instance))
         {
             self::$_instance = new self;
         }
@@ -55,10 +55,8 @@ class Helpers
 
     public function __construct()
     {
-        $this->config = Config::get('general');
+        self::$config = Config::get('general');
     }
-
-    // --------------------------------------------------------------------
 
     /**
      * Fetch a config file item
@@ -67,16 +65,18 @@ class Helpers
      * @param	string	$index	Index name
      * @return	string|null	The configuration item or NULL if the item doesn't exist
      */
-    public function item($item, $index = '')
+    public static function item(string $item, ?string $index = '') : ?string
     {
+		if (empty(self::$config))
+		{
+			self::$config = Config::get('general');
+		}
         if ($index == '')
         {
-            return $this->config[$item] ?? NULL;
+            return self::$config[$item] ?? NULL;
         }
-        return isset($this->config[$index], $this->config[$index][$item]) ? $this->config[$index][$item] : NULL;
+        return isset(self::$config[$index], self::$config[$index][$item]) ? self::$config[$index][$item] : NULL;
     }
-
-    // --------------------------------------------------------------------
 
     /**
      * Fetch a config file item with slash appended (if not empty)
@@ -84,20 +84,20 @@ class Helpers
      * @param	string		$item	Config item name
      * @return	string|null	The configuration item or NULL if the item doesn't exist
      */
-    public function slash_item($item)
+    public static function slash_item(string $item) : ?string
     {
-        if ( ! isset($this->config[$item]))
-        {
-            return NULL;
-        }
-        if (trim($this->config[$item]) === '')
+		$config = self::item($item);
+
+		if ($config == null)
+		{
+			return null;
+		}
+        if (trim($config) === '')
         {
             return '';
         }
-        return rtrim($this->config[$item], '/').'/';
+        return rtrim($config, '/').'/';
     }
-
-    // --------------------------------------------------------------------
 
     /**
      * Site URL
@@ -105,10 +105,10 @@ class Helpers
      * Returns base_url . index_page [. uri_string]
      *
      * @param	string|string[]	$uri	URI string or an array of segments
-     * @param	string	$protocol
+     * @param	string|null	$protocol
      * @return	string
      */
-    public function site_url($uri = '', $protocol = NULL)
+    public static function site_url($uri = '', ?string $protocol = NULL) : string
     {
         $uri = explode('#', $uri);
         $hash = $uri[1] ?? '';
@@ -116,9 +116,9 @@ class Helpers
         $query = $uri[1] ?? '';
 
         $uri = $uri[0];
-        $uri = preg_replace('#'.$this->item('url_suffix').'$#i', '', $uri);
+        $uri = preg_replace('#'.self::item('url_suffix').'$#i', '', $uri);
 
-        $base_url = $this->getBaseUrl();
+        $base_url = self::getBaseUrl();
 
         if (isset($protocol))
         {
@@ -133,12 +133,12 @@ class Helpers
         }
         if (empty($uri))
         {
-            return $base_url.$this->item('index_page');
+            return $base_url.self::item('index_page');
         }
 
-        $uri = $this->_uri_string($uri);
+        $uri = self::_uri_string($uri);
 
-        $suffix = (string) $this->item('url_suffix');
+        $suffix = (string) self::item('url_suffix');
 
         if ($suffix !== '')
         {
@@ -161,10 +161,8 @@ class Helpers
             $uri .= '#'.$hash;
         }
 
-        return $base_url.$this->slash_item('index_page').$uri;
+        return $base_url.self::slash_item('index_page').$uri;
     }
-
-    // -------------------------------------------------------------
 
     /**
      * Base URL
@@ -172,12 +170,12 @@ class Helpers
      * Returns base_url [. uri_string]
      *
      * @param	string|string[]	$uri	URI string or an array of segments
-     * @param	string	$protocol
+     * @param	string|null	$protocol
      * @return	string
      */
-    public function base_url($uri = '', $protocol = NULL)
+    public static function base_url($uri = '', ?string $protocol = NULL) : string
     {
-        $base_url = $this->getBaseUrl();
+        $base_url = self::getBaseUrl();
 
         if (isset($protocol))
         {
@@ -191,11 +189,11 @@ class Helpers
                 $base_url = $protocol.substr($base_url, strpos($base_url, '://'));
             }
         }
-        return $base_url.$this->_uri_string($uri);
+        return $base_url.self::_uri_string($uri);
     }
-    private function getBaseUrl() : string
+    private static function getBaseUrl() : string
     {
-        return $this->slash_item('base_url');
+        return (string) self::slash_item('base_url');
 
 		/**
 		 * @todo text
@@ -207,34 +205,29 @@ class Helpers
 		*/
     }
 
-    // -------------------------------------------------------------
-
     /**
      * Build URI string
      *
      * @param	string|string[]	$uri	URI string or an array of segments
      * @return	string
      */
-    protected function _uri_string($uri)
+    protected static function _uri_string($uri) : string
     {
         is_array($uri) && $uri = implode('/', $uri);
             return ltrim($uri, '/');
     }
-
-    // --------------------------------------------------------------------
 
     /**
      * System URL
      *
      * @return	string
      */
-    public function system_url()
+    public static function system_url() : string
     {
         $x = explode('/', preg_replace('|/*(.+?)/*$|', '\\1', BASEPATH));
-        return $this->slash_item('base_url').end($x).'/';
-    }
 
-    // --------------------------------------------------------------------
+        return self::slash_item('base_url').end($x).'/';
+    }
 
     /**
      * Set a config file item
@@ -243,19 +236,19 @@ class Helpers
      * @param	string	$value	Config item value
      * @return	void
      */
-    public function set_item($item, $value)
+    public static function set_item($item, $value)
     {
-        $this->config[$item] = $value;
+        self::$config[$item] = $value;
     }
 
 
 	/**
 	 * Determines if the current version of PHP is equal to or greater than the supplied value
 	 *
-	 * @param	string
+	 * @param	string $version
 	 * @return	bool	TRUE if the current version is $version or higher
 	 */
-	public function is_php($version) : bool
+	public static function is_php(string $version) : bool
 	{
 		static $_is_php;
 		$version = (string) $version;
@@ -274,9 +267,9 @@ class Helpers
      * @param string $name
      * @return	bool
      */
-    public function is_localfile(string $name) : bool
+    public static function is_localfile(string $name) : bool
     {
-        if (preg_match('#^'.Config::get('general.base_url').'#i', $name))
+        if (preg_match('#^'.self::item('base_url').'#i', $name))
         {
             return true;
         }
@@ -292,7 +285,7 @@ class Helpers
      *
      * @return bool
      */
-    public function is_online() : bool
+    public static function is_online() : bool
     {
         return (
             !in_array($_SERVER['HTTP_HOST'], ['localhost','127.0.0.1'])
@@ -318,7 +311,7 @@ class Helpers
 	 * @throws             \Exception
 	 * @codeCoverageIgnore Not practical to test, as travis runs on linux
 	 */
-	function is_really_writable(string $file): bool
+	public static function is_really_writable(string $file): bool
 	{
 		// If we're on a Unix server with safe_mode off we call is_writable
 		if (DIRECTORY_SEPARATOR === '/' || ! ini_get('safe_mode'))
@@ -357,7 +350,7 @@ class Helpers
      * @param string $url
      * @return string
      */
-    public function clean_url(string $url) : string
+    public static function clean_url(string $url) : string
     {
         $path = parse_url($url);
         $query = '';
@@ -406,7 +399,7 @@ class Helpers
 	 * @param	bool $url_encoded
 	 * @return	string
 	 */
-	public function remove_invisible_characters(string $str, bool $url_encoded = true) : string
+	public static function remove_invisible_characters(string $str, bool $url_encoded = true) : string
 	{
 		$non_displayables = array();
 
@@ -447,13 +440,13 @@ class Helpers
 	 * @return string|array
 	 * @throws \InvalidArgumentException
 	 */
-	public function esc($data, ?string $context = 'html', ?string $encoding = null)
+	public static function esc($data, ?string $context = 'html', ?string $encoding = null)
 	{
 		if (is_array($data))
 		{
 			foreach ($data As $key => &$value)
 			{
-				$value = $this->esc($value, $context);
+				$value = self::esc($value, $context);
 			}
 		}
 
@@ -575,18 +568,18 @@ class Helpers
      * @param string|false        $config      The name of the configuration (switch case) to use.
      * @return string|string[]               The cleaned string (or array of strings).
      */
-    public function purify($dirty_html, $config = false)
+    public static function purify($dirty_html, $config = false)
     {
         if (is_array($dirty_html))
         {
             foreach ($dirty_html As $key => $val)
             {
-                $clean_html[$key] = $this->purify($val, $config);
+                $clean_html[$key] = self::purify($val, $config);
             }
         }
         else
         {
-            $charset = Config::get('general.charset');
+            $charset = self::item('charset');
 
             switch ($config)
             {
@@ -629,7 +622,7 @@ class Helpers
 	 *
 	 * @return string
 	 */
-	public function stringify_attributes($attributes, bool $js = false): string
+	public static function stringify_attributes($attributes, bool $js = false): string
 	{
 		$atts = '';
 
@@ -647,7 +640,7 @@ class Helpers
 
 		foreach ($attributes as $key => $val)
 		{
-			$atts .= ($js) ? $key . '=' . $this->esc($val, 'js') . ',' : ' ' . $key . '="' . $this->esc($val, 'attr') . '"';
+			$atts .= ($js) ? $key . '=' . self::esc($val, 'js') . ',' : ' ' . $key . '="' . self::esc($val, 'attr') . '"';
 		}
 
 		return rtrim($atts, ',');
@@ -783,14 +776,13 @@ class Helpers
         return $default;
     }
 
-
     /**
      * Shortcut to ref library, HTML mode
      *
      * @param   mixed $args
 	 * @return  void|string
      */
-    public function r()
+    public static function r()
     {
         $args = func_get_args();
 
@@ -838,7 +830,7 @@ class Helpers
     * @param   mixed $args
     * @return  void|string
     */
-    public function rt()
+    public static function rt()
     {
         $args        = func_get_args();
         $options     = array();

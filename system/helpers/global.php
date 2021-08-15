@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 use dFramework\core\Config;
@@ -260,6 +260,24 @@ if (!function_exists('session'))
 
 // ================================= FONCTIONS D'ENVIRONNEMENT D'EXECUTION ================================= //
 
+
+if (!function_exists('on_dev'))
+{
+	/**
+	 * On dev environment
+	 *
+	 * Test to see if we are in development environment
+	 *
+	 * @return 	bool
+	 */
+	function on_dev() : bool
+	{
+		$env = config('general.environment');
+
+		return in_array($env, ['dev', 'development']);
+	}
+}
+
 if (!function_exists('is_cli'))
 {
 	/**
@@ -269,7 +287,7 @@ if (!function_exists('is_cli'))
 	 *
 	 * @return 	bool
 	 */
-	function is_cli()
+	function is_cli() : bool
 	{
 		return (PHP_SAPI === 'cli' OR defined('STDIN'));
 	}
@@ -280,12 +298,12 @@ if (!function_exists('is_php'))
 	/**
 	 * Determines if the current version of PHP is equal to or greater than the supplied value
 	 *
-	 * @param	string
+	 * @param	string $version
 	 * @return	bool
 	 */
-	function is_php($version)
+	function is_php(string $version) : bool
 	{
-		return Service::helpers()->is_php($version);
+		return Helpers::is_php($version);
 	}
 }
 
@@ -309,7 +327,7 @@ if (!function_exists('is_https'))
      *
      * @return	bool
      */
-    function is_https()
+    function is_https() : bool
     {
         return Service::request()->is('ssl');
     }
@@ -323,9 +341,9 @@ if (!function_exists('is_localfile'))
      * @param string $name
      * @return	bool
      */
-    function is_localfile(string $name)
+    function is_localfile(string $name) : bool
     {
-        return Service::helpers()->is_localfile($name);
+        return Helpers::is_localfile($name);
     }
 }
 
@@ -336,9 +354,9 @@ if (!function_exists('is_online'))
      *
      * @return bool
      */
-    function is_online()
+    function is_online() : bool
     {
-        return Service::helpers()->is_online();
+        return Helpers::is_online();
     }
 }
 
@@ -349,7 +367,7 @@ if (!function_exists('is_ajax_request'))
      *
      * @return    bool
      */
-    function is_ajax_request()
+    function is_ajax_request() : bool
     {
         return Service::request()->is('ajax');
     }
@@ -367,12 +385,12 @@ if (!function_exists('site_url'))
 	 * first parameter either as a string or an array.
 	 *
 	 * @param	string	$uri
-	 * @param	string	$protocol
+	 * @param	string|null	$protocol
 	 * @return	string
 	 */
-    function site_url($uri = '', $protocol = NULL)
+    function site_url($uri = '', ?string $protocol = NULL) : string
     {
-        return Service::helpers()->site_url($uri, $protocol);
+        return Helpers::site_url($uri, $protocol);
     }
 }
 
@@ -386,12 +404,12 @@ if (!function_exists('base_url'))
      * or a URL to a file can be passed in, e.g. to an image file.
      *
      * @param	string	$uri
-     * @param	string	$protocol
+     * @param	string|null	$protocol
      * @return	string
      */
-    function base_url($uri = '', $protocol = NULL)
+    function base_url($uri = '', ?string $protocol = NULL) : string
     {
-        return Service::helpers()->base_url($uri, $protocol);
+        return Helpers::base_url($uri, $protocol);
     }
 }
 
@@ -409,7 +427,7 @@ if (!function_exists('current_url'))
 	 */
 	function current_url(bool $returnObject = false)
 	{
-		$uri = new Uri(site_url($_SERVER['REQUEST_URI']));
+		$uri = Service::uri(site_url($_SERVER['REQUEST_URI']));
 
 		// Since we're basing off of the IncomingRequest URI,
 		// we are guaranteed to have a host based on our own configs.
@@ -444,7 +462,7 @@ if (!function_exists('previous_url'))
 
 		$referer = $referer ?? site_url('/');
 
-		return $returnObject ? new Uri($referer) : $referer;
+		return $returnObject ? Service::uri($referer) : $referer;
 	}
 }
 
@@ -454,10 +472,11 @@ if (!function_exists('redirect'))
      * Redirect user
      *
      * @param    string $uri
+     * @param    string $method
      * @param    int|null $code
      * @return    void
      */
-    function redirect(string $uri = '', string $method = 'location', int $code = 302)
+    function redirect(string $uri = '', string $method = 'location', ?int $code = 302)
     {
         Service::response()->redirect($uri, $method, $code);
     }
@@ -476,7 +495,7 @@ if (! function_exists('redirection'))
 	 *
 	 * @param string $uri
 	 *
-	 * @return \dFramework\core\Http\Redirection
+	 * @return \dFramework\core\Http\Redirection|void
 	 */
 	function redirection(string $uri = null)
 	{
@@ -504,11 +523,16 @@ if (!function_exists('link_to'))
 	 * @param string $method
 	 * @param array  ...$params
 	 *
-	 * @return false|string
+	 * @return string
 	 */
-	function link_to(string $method, ...$params)
+	function link_to(string $method, ...$params) : string
 	{
-		return site_url(Service::routes()->reverseRoute($method, ...$params));
+		$url = Service::routes()->reverseRoute($method, ...$params);
+		if (empty($url))
+		{
+			$rul = '';
+		}
+		return site_url($url);
 	}
 }
 
@@ -518,9 +542,9 @@ if (!function_exists('clean_url'))
      * @param string $url
      * @return string
      */
-    function clean_url(string $url)
+    function clean_url(string $url) : string
     {
-        return Service::helpers()->clean_url($url);
+        return Helpers::clean_url($url);
     }
 }
 
@@ -540,7 +564,7 @@ if (!function_exists('esc'))
 	 */
     function esc($data, ?string $context = 'html', ?string $encoding = null)
 	{
-        return Service::helpers()->esc($data, $context, $encoding);
+        return Helpers::esc($data, $context, $encoding);
 	}
 }
 
@@ -559,7 +583,7 @@ if (!function_exists('h')) {
      */
     function h($text, bool $double = true, ?string $charset = null)
     {
-		return Service::helpers()->h($text, $double, $charset);
+		return Helpers::h($text, $double, $charset);
     }
 }
 
@@ -575,7 +599,7 @@ if (!function_exists('purify'))
      */
     function purify($dirty_html, $config = false)
     {
-        return Service::helpers()->purify($dirty_html, $config);
+        return Helpers::purify($dirty_html, $config);
 	}
 }
 
@@ -591,9 +615,9 @@ if (!function_exists('remove_invisible_characters'))
 	 * @param	bool
 	 * @return	string
 	 */
-	function remove_invisible_characters(string $str, bool $url_encoded = true)
+	function remove_invisible_characters(string $str, bool $url_encoded = true) : string
 	{
-		return Service::helpers()->remove_invisible_characters($str, $url_encoded);
+		return Helpers::remove_invisible_characters($str, $url_encoded);
 	}
 }
 
@@ -606,9 +630,9 @@ if (!function_exists('stringify_attributes'))
 	 * @param bool $js
 	 * @return string
 	 */
-	function stringify_attributes($attributes, bool $js = false)
+	function stringify_attributes($attributes, bool $js = false) : string
 	{
-        return Service::helpers()->stringify_attributes($attributes, $js);
+        return Helpers::stringify_attributes($attributes, $js);
 	}
 }
 
@@ -788,7 +812,7 @@ if (!function_exists('vd'))
 	function vd()
 	{
 		$params = func_get_args();
-		return 	Service::helpers()->r(...$params);
+		return 	Helpers::r(...$params);
   	}
 }
 
@@ -803,7 +827,7 @@ if (!function_exists('vdt'))
 	function vdt()
 	{
 		$params = func_get_args();
-		return 	Service::helpers()->rt(...$params);
+		return 	Helpers::rt(...$params);
   	}
 }
 
@@ -897,9 +921,9 @@ if (!function_exists('ip_address'))
      *
      * @return    string
      */
-    function ip_address()
+    function ip_address() : string
     {
-        return Service::request()->clientIp();
+        return (string) Service::request()->clientIp();
     }
 }
 
@@ -911,9 +935,9 @@ if (!function_exists('is_really_writable'))
      * @param string $file
 	 * @return bool
      */
-	function is_really_writable(string $file)
+	function is_really_writable(string $file) : bool
 	{
-		return Service::helpers()->is_really_writable($file);
+		return Helpers::is_really_writable($file);
 	}
 }
 
@@ -1006,7 +1030,7 @@ if (!function_exists('flash'))
      */
     function flash() : FlashMessages
     {
-		return New FlashMessages;
+		return  service(FlashMessages::class);
     }
 }
 
