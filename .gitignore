@@ -2,6 +2,7 @@
 .idea
 .env
 vendor/
-app/resources/reserved/debugbar/
+**/logs/**
+**/debugbar/**
 Doxyfile
 phpDocumentor.phar
