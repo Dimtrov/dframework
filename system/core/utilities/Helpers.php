@@ -287,10 +287,11 @@ class Helpers
      */
     public static function is_online() : bool
     {
-		$host = explode(':', $_SERVER['HTTP_HOST'])[0];
+		$host = explode(':', $_SERVER['HTTP_HOST'] ?? '')[0];
 
         return (
-            !in_array($host, ['localhost','127.0.0.1'])
+			!empty($host) // Si c'est vide, ca veut certainement dire qu'on est en CLI or le CLI << n'est pas >> utilisé en ligne
+			AND !in_array($host, ['localhost','127.0.0.1'])
             AND !preg_match('#\.dev$#', $host)
             AND !preg_match('#\.test$#', $host)
             AND !preg_match('#\.lab$#', $host)
