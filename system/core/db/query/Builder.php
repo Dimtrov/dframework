@@ -17,10 +17,13 @@
 
 namespace dFramework\core\db\query;
 
+use BadMethodCallException;
 use PDO;
 use dFramework\core\db\Database;
 use dFramework\core\exception\DatabaseException;
+use dFramework\core\utilities\Arr;
 use dFramework\core\utilities\Str;
+use InvalidArgumentException;
 
 /**
  * Builder
@@ -1096,6 +1099,51 @@ class Builder
         }
 
         return $this;
+    }
+
+	 /**
+     * Builds an multi insert query.
+     *
+     * @param array $data Array of key and values to insert
+     * @param string|null $table Table to insert data
+     * @return array
+     */
+    final public function bulckInsert(array $data, ?string $table = null) : array
+    {
+		if (2 !== Arr::maxDimensions($data))
+		{
+			throw new BadMethodCallException("Mauvaise utilisation de la méthode " . __METHOD__);
+		}
+
+		if (empty($table))
+		{
+			$table = $this->table;
+		}
+		$table = (array) $table;
+		$table = array_pop($table);
+		if (empty($table) OR !is_string($table))
+		{
+			throw new InvalidArgumentException("Aucune table d'insertion trouvée");
+		}
+
+		$insered = [];
+		foreach ($data As $item)
+		{
+			if (is_array($item))
+			{
+				$result = $this->into($table)->insert($item, true);
+				if ($result instanceof Result)
+				{
+					$details = $result->details();
+					if (!empty($details['insert_id']))
+					{
+						$insered[] = $details['insert_id'];
+					}
+				}
+			}
+		}
+
+		return $insered;
     }
 
     /**
