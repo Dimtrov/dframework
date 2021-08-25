@@ -3,8 +3,7 @@
     "description": "The simplest PHP framework for beginners",
     "type": "project",
     "keywords": ["php", "framework", "dimtrov", "dframework", "beginners"],
-    "homepage": "http://dframework.com",
-    "version": "3.3.3",
+    "homepage": "http://dframework.totalh.net",
     "license": "MPL-2.0",
     "minimum-stability": "stable",
     "prefer-stable": true,
@@ -49,7 +48,7 @@
         ]
     },
     "support": {
-        "forum": "http://forum.dframework.com/",
+        "forum": "http://dframework.totalh.net/web/forum",
         "source": "https://github.com/Dimtrov/dFramework"
     }
 }
