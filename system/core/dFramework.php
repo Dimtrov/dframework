@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.2
+ *  @version    3.3.4
  */
 
 namespace dFramework\core;
@@ -38,7 +38,7 @@ use MirazMac\Requirements\Checker As envChecker;
  */
 class dFramework
 {
-    const VERSION = '3.3.2';
+    const VERSION = '3.3.4';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
