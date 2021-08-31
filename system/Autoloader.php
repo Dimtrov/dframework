@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitric Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitric Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework;
@@ -24,7 +24,8 @@ namespace dFramework;
  *
  * @package		dFramework
  * @subpackage	null
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @since		1.0
  */
 class Autoloader
 {
@@ -53,7 +54,7 @@ class Autoloader
     public static function load()
     {
         self::loadConfigFiles();
-        
+
         spl_autoload_register([__CLASS__, 'autoload']);
     }
 
@@ -63,14 +64,14 @@ class Autoloader
     public static function autoload(string $input)
     {
         $functions = [
-            'syst', 'app', 
+            'syst', 'app',
             'psr4', 'syst_classmap', 'app_classmap',
-            'controllers', 'models', 'entities', 'middlewares'
+            'controllers', 'models', 'entities', 'middlewares', 'services'
         ];
 
         foreach ($functions As $func)
         {
-            if (self::{'autoload_'.$func}($input)) 
+            if (self::{'autoload_'.$func}($input))
             {
                 return;
             }
@@ -103,7 +104,7 @@ class Autoloader
         {
             self::$_class_map_syst = require $class_map_file;
         }
-        
+
         $class_map_file = APP_DIR.'resources'.DS.'reserved'.DS.'.classmap.php';
         /**
          * Chargement des classes applicatives mapées
@@ -112,7 +113,6 @@ class Autoloader
         {
             self::$_class_map_app = require $class_map_file;
         }
-
     }
 
     /**
@@ -160,13 +160,14 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
 
         return false;
     }
+
     /**
      * Chargement des fichiers du namespace App
      *
@@ -187,23 +188,23 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
 
         return false;
     }
-        
+
     /**
      * Chargement des fichiers de namespace personnalisés
      *
      * @param string $input
      * @return boolean
      */
-    private static function autoload_psr4($input) : bool 
+    private static function autoload_psr4($input) : bool
     {
-        foreach (self::$_class_map_psr As $key => $value) 
+        foreach (self::$_class_map_psr As $key => $value)
         {
             $key = rtrim($key, '\\').'\\';
             $value = rtrim($value, DS);
@@ -225,17 +226,18 @@ class Autoloader
 
                 break;
             }
-        } 
+        }
 
         return false;
     }
+
     /**
      * Chargement des dependences systemes mapées
-     *  
+     *
      * @param string $input
      * @return bool
      */
-    private static function autoload_syst_classmap(string $input) : bool 
+    private static function autoload_syst_classmap(string $input) : bool
     {
         if (array_key_exists($input, self::$_class_map_syst))
         {
@@ -243,20 +245,21 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
 
         return false;
     }
+
     /**
      * Chargement des classes applicatives mapées
      *
      * @param string $input
      * @return boolean
      */
-    private static function autoload_app_classmap(string $input) : bool 
+    private static function autoload_app_classmap(string $input) : bool
     {
         if (array_key_exists($input, self::$_class_map_app))
         {
@@ -264,7 +267,7 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
@@ -278,7 +281,7 @@ class Autoloader
      * @param string $input
      * @return boolean
      */
-    private static function autoload_controllers(string $input) : bool 
+    private static function autoload_controllers(string $input) : bool
     {
         if (preg_match('#Controller$#', $input))
         {
@@ -290,13 +293,14 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
 
         return false;
     }
+
     /**
      * Chargement des modeles
      *
@@ -315,13 +319,14 @@ class Autoloader
             if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
-        
+
         return false;
     }
+
     /**
      * Chargement des entites
      *
@@ -337,35 +342,62 @@ class Autoloader
             $namespace = implode(DS, $input);
 
             $file = rtrim(ENTITY_DIR . $namespace, DS) . DS . $class . '.php';
-            if (is_file($file)) 
+            if (is_file($file))
             {
                 require_once $file;
-                
+
                 return true;
             }
         }
 
         return false;
     }
+
     /**
      * Chargement des middlewares
      *
      * @param string $input
      * @return boolean
      */
-    private static function autoload_middlewares(string $input) : bool 
+    private static function autoload_middlewares(string $input) : bool
     {
         if (preg_match('#Middleware$#', $input))
         {
             $input = explode('\\', $input);
             $class = array_pop($input);
-            $namespace = implode(DS, $input);            
-            
+            $namespace = implode(DS, $input);
+
             $file = rtrim(MIDDLEWARE_DIR . $namespace, DS) . DS . $class . '.php';
             if (is_file($file))
             {
                 require_once $file;
-                
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+	/**
+     * Chargement des services
+     *
+     * @param string $input
+     * @return boolean
+     */
+    private static function autoload_services(string $input) : bool
+    {
+        if (preg_match('#Service$#', $input))
+        {
+            $input = explode('\\', $input);
+            $class = array_pop($input);
+            $namespace = implode(DS, $input);
+
+            $file = rtrim(SERVICE_DIR . $namespace, DS) . DS . $class . '.php';
+            if (is_file($file))
+            {
+                require_once $file;
+
                 return true;
             }
         }

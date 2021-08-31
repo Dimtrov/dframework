@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db;
@@ -22,6 +22,7 @@ use dFramework\core\db\seeder\Faker;
 use dFramework\core\db\seeder\Generator;
 use dFramework\core\db\seeder\Table;
 use dFramework\core\db\seeder\TableDef;
+use dFramework\core\loader\Service;
 
 /**
  * Seeder
@@ -31,7 +32,7 @@ use dFramework\core\db\seeder\TableDef;
  * @package		dFramework
  * @subpackage	Core
  * @category    Db
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/Seeder.html
  * @since       3.2.3
  * @file        /system/core/db/Seeder.php
@@ -55,7 +56,7 @@ abstract class Seeder
      * @var array
      */
     private $filledTablesNames = [];
-    
+
     /**
      * @param string $locale
      * @param string $group
@@ -63,7 +64,7 @@ abstract class Seeder
     public function __construct(string $locale = 'fr_FR', string $group = null)
     {
         $this->generator = new Generator($locale);
-        $this->builder = new Builder($group);
+        $this->builder = Service::builder($group);
     }
 
     /**
@@ -71,7 +72,7 @@ abstract class Seeder
      *
      * @return void
      */
-    public function run() 
+    public function run()
     {
         return $this->execute();
     }
@@ -93,7 +94,7 @@ abstract class Seeder
      */
     protected function table(string $name, bool $truncate = false) : TableDef
     {
-        if (!isset($this->tables[$name])) 
+        if (!isset($this->tables[$name]))
         {
             $this->tables[$name] = new Table($name, $this->generator, $this->builder, $truncate);
         }
@@ -112,20 +113,20 @@ abstract class Seeder
         $foolProofCounter = 0;
         $tableNamesIntersection = [];
 
-        while ($tableNamesIntersection !== $tableNames) 
+        while ($tableNamesIntersection !== $tableNames)
         {
-            if ($foolProofCounter++ > 500) 
+            if ($foolProofCounter++ > 500)
             {
                 throw new \Exception("Something unexpected happened: some tables possibly cannot be filled");
             }
             foreach ($this->tables As $tableName => $table) {
 
-                if (!$table->getIsFilled() AND $table->canBeFilled($this->filledTablesNames)) 
+                if (!$table->getIsFilled() AND $table->canBeFilled($this->filledTablesNames))
                 {
                     $table->fill();
                     $this->generator->setColumns($tableName, $table->getColumns());
 
-                    if (!in_array($tableName, $this->filledTablesNames)) 
+                    if (!in_array($tableName, $this->filledTablesNames))
                     {
                          // because some tables are filled twice
                         $this->filledTablesNames[] = $tableName;
@@ -141,15 +142,15 @@ abstract class Seeder
     private function checkCrossDependentTables()
     {
         $dependencyMap = [];
-        foreach ($this->tables As $tableName => $table) 
+        foreach ($this->tables As $tableName => $table)
         {
             $dependencyMap[$tableName] = $table->getDependsOn();
         }
-        foreach ($dependencyMap As $tableName => $tableDependencies) 
+        foreach ($dependencyMap As $tableName => $tableDependencies)
         {
-            foreach ($tableDependencies As $dependencyTableName) 
+            foreach ($tableDependencies As $dependencyTableName)
             {
-                if (in_array($tableName, $dependencyMap[$dependencyTableName])) 
+                if (in_array($tableName, $dependencyMap[$dependencyTableName]))
                 {
                     throw new \InvalidArgumentException("You cannot pass tables that are dependent on each other");
                 }

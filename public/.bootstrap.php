@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 
@@ -44,7 +44,6 @@ if (!is_dir($system_path))
     exit(3); // EXIT_CONFIG
 }
 
-
 // The path to the "application" directory
 if (is_dir($application_folder))
 {
@@ -69,7 +68,33 @@ else
     exit(3); // EXIT_CONFIG
 }
 
-
+// The path to the "storage" directory
+if (is_dir($storage_dir))
+{
+    if (($_temp = realpath($storage_dir)) !== FALSE)
+    {
+        $storage_dir = $_temp;
+    }
+    else
+    {
+        $storage_dir = strtr(rtrim($storage_dir, '/\\'), '/\\', DS.DS);
+    }
+}
+elseif (is_dir($system_path.$storage_dir.DS))
+{
+    $storage_dir = $system_path.strtr(trim($storage_dir, '/\\'), '/\\', DS.DS);
+}
+elseif (is_dir($application_folder.$storage_dir.DS))
+{
+    $storage_dir = $application_folder.strtr(trim($storage_dir, '/\\'), '/\\', DS.DS);
+}
+else
+{
+    header('HTTP/1.1 503 Service Unavailable.', TRUE, 503);
+    echo 'Your storage folder path does not appear to be set correctly. ';
+    echo 'Please open the following file and correct this: "'.__DIR__.DS.'.bootstrap.config.php"';
+    exit(3); // EXIT_CONFIG
+}
 
 // The path to the "composer autoload" directory
 if (!empty($composer_autoload_file))
@@ -94,6 +119,8 @@ if (!empty($composer_autoload_file))
 define('SYST_DIR', rtrim($system_path, '/\\').DS);
 
 define('APP_DIR', rtrim($application_folder, '/\\').DS);
+
+define('STORAGE_DIR', rtrim($storage_dir, '/\\').DS);
 
 define('WEBROOT', __DIR__.DS);
 

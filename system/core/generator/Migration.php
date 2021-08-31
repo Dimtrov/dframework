@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\generator;
@@ -33,7 +33,7 @@ use Nette\PhpGenerator\PhpFile;
  * @package		dFramework
  * @subpackage	Core
  * @category    Generator
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.3.0
  * @file		/system/core/generator/Migration.php
@@ -50,9 +50,9 @@ final class Migration
     private $action = null;
 
 
-    public function generate(string $class, string $dir = \MIGRATION_DIR)
+    public function generate(string $class, string $dir = DB_MIGRATION_DIR)
     {
-        $dir = empty($dir) ? \MIGRATION_DIR : $dir;
+        $dir = empty($dir) ? DB_MIGRATION_DIR : $dir;
 
         $this->write($class, $render);
 
@@ -107,8 +107,8 @@ final class Migration
     {
         $class_name = date('YmdHis').'-'.Str::toSnakeCase($class);
 
-        $dir = str_replace(\MIGRATION_DIR, '', $dir);
-        $dir = MIGRATION_DIR.trim($dir, '/\\');
+        $dir = str_replace(DB_MIGRATION_DIR, '', $dir);
+        $dir = DB_MIGRATION_DIR.trim($dir, '/\\');
         $dir = str_replace(['/', '\\'], DS, $dir);
         $dir = rtrim($dir, DS).DS;
 
@@ -164,14 +164,16 @@ final class Migration
         $body = '//';
         if (!empty($this->table) AND $this->action === 'created')
         {
-            $body = "\$this->create('".$this->table."', function(Schema \$schema) { \n ";
+            $body = "\$this->create('".$this->table."', function(Schema \$schema) : Schema { \n ";
                 $body .= "\t// \n";
+                $body .= "\treturn \$schema;\n";
             $body .= "});";
         }
         if (!empty($this->table) AND $this->action === 'modified')
         {
-            $body = "\$this->modify('".$this->table."', function(Schema \$schema) { \n ";
+            $body = "\$this->modify('".$this->table."', function(Schema \$schema) : Schema { \n ";
                 $body .= "\t// \n";
+				$body .= "\treturn \$schema;\n";
             $body .= "});";
         }
         $m->setBody($body);
@@ -197,8 +199,9 @@ final class Migration
         }
         if (!empty($this->table) AND $this->action === 'modified')
         {
-            $body = "\$this->modify('".$this->table."', function(Schema \$schema) { \n ";
+            $body = "\$this->modify('".$this->table."', function(Schema \$schema) : Schema { \n ";
                 $body .= "\t// \n";
+				$body .= "\treturn \$schema;\n";
             $body .= "});";
         }
         $m->setBody($body);

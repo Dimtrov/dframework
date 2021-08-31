@@ -7,20 +7,21 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\cli;
 
-use dFramework\core\db\Database As Db;
 use dFramework\core\db\Dumper;
 use dFramework\core\db\Seeder;
-use dFramework\core\db\seeder\Faker;
+use dFramework\core\loader\Filesystem;
+use dFramework\core\loader\Injector;
+use dFramework\core\utilities\Str;
 
 /**
  * Database
@@ -28,7 +29,7 @@ use dFramework\core\db\seeder\Faker;
  * @package		dFramework
  * @subpackage	Core
  * @category    Cli
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Validator.html
  * @since       3.3.0
  * @file        /system/core/cli/Database.php
@@ -42,9 +43,11 @@ class Database extends Cli
      */
     protected function _seed() : Command
     {
+		$commander = $this;
+
         return (new Command('db:seed', 'Exécute le seeder spécifié pour remplir les données connues dans la base de données.'))
-            ->argument('<file>', 'Nom du fichier à seeder')
-            ->action(function($file) {
+            ->argument('[file]', 'Nom du fichier à seeder')
+            ->action(function($file) use ($commander) {
                 /**
                  * @var Command
                  */
@@ -53,42 +56,41 @@ class Database extends Cli
                     $cli->start('Service de remplissage de base de donnees');
                     $cli->task('Demarrage du seed');
 
-                    $seed = ucfirst(strtolower($file));
-                    $file = RESOURCE_DIR.'database'.DS.'seeds'.DS.$seed.'.php';
+					$queue = [];
+					if (!empty($file))
+					{
+						$seed = Str::toPascal($file);
+						$file = DB_SEED_DIR . $seed.'.php';
 
-                    if (!file_exists($file))
-                    {
-                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true);
-                        return $cli->showHelp();
-                    }
-                    require_once $file;
+						if (!file_exists($file))
+						{
+							$cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" n\'existe pas', true);
+							return $cli->showHelp();
+						}
+						$queue[$seed] = $file;
+					}
+					else
+					{
+						/**
+						 * @var \Symfony\Component\Finder\SplFileInfo[]
+						 */
+						$files = Filesystem::files(DB_SEED_DIR);
+						foreach ($files As $file)
+						{
+							if ($file->getExtension() == 'php')
+							{
+								$queue[$file->getFilenameWithoutExtension()] = $file->getPathname();
+							}
+						}
+					}
 
-                    if (!class_exists($seed))
-                    {
-                        $cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true);
-                        return $cli->showHelp();
-                    }
+					foreach ($queue As $seed => $file)
+					{
+						$commander->execSeed($cli, $seed, $file);
+					}
 
-                    $class = new $seed;
-
-                    if (!($class instanceof Seeder))
-                    {
-                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.DbSeeder::class.'"', true);
-                        return $cli->showHelp();
-                    }
-                    if (!method_exists($class, 'seed'))
-                    {
-                        $cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'implemente pas la methode "seed()"', true);
-                        return $cli->showHelp();
-                    }
-
-                    $cli->io->write("\n\t Remplissage en cours de traitement : Utilisation de la clase '".$seed."' \n");
-                    sleep(2.5);
-                    $class->seed(new Faker)->run();
-                    sleep(2);
-                    $cli->io->ok("\t => Remplissage terminé avec succès. \n");
+					$cli->io->ok("\t => Remplissage terminé avec succès. \n");
                     sleep(1.5);
-
                     $cli->end();
                 }
                 catch (\Throwable $th) {
@@ -151,4 +153,37 @@ class Database extends Cli
                 }
             });
     }
+
+
+	/**
+	 * Execute le seed d'un fichier
+	 *
+	 * @param Command $cli
+	 * @param string $seed
+	 * @param string $file
+	 */
+	private function execSeed(Command $cli, string $seed, string $file)
+	{
+		require_once $file;
+
+        if (!class_exists($seed))
+		{
+			$cli->io->error('Impossible de demarrer le remplissage car le fichier "'.$file.'" ne contient pas de classe "'.$seed.'"', true);
+			$cli->showHelp();
+			exit;
+		}
+
+		$class = Injector::get($seed);
+		if (!($class instanceof Seeder))
+		{
+			$cli->io->error('Impossible d\'effectuer le remplissage car la classe "'.$seed.'" n\'est pas une instance de "'.Seeder::class.'"', true);
+			$cli->showHelp();
+			exit;
+		}
+
+		$cli->io->yellow("\n\t Remplissage en cours de traitement : Utilisation de la classe < ".$seed." > \n");
+		sleep(2.5);
+		Injector::call([$class, 'seed'])->run();
+		sleep(2);
+	}
 }

@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.2
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\debug;
@@ -37,14 +37,14 @@ use Psr\Http\Message\ResponseInterface;
  * @package		dFramework
  * @subpackage	Core
  * @category    Debug
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @since       3.3.0
  * @credit      CodeIgniter 4.0 (CodeIgniter\Debug\Toolbar)
  * @file        /system/core/debug/Toolbar.php
  */
 class Toolbar
 {
-	private $debug_path = RESOURCE_DIR . 'reserved/debugbar';
+	private $debug_path = STORAGE_DIR . 'debugbar';
 
 	const COLLECTORS = [
 		\dFramework\core\debug\toolbar\collectors\Timers::class,

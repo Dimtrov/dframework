@@ -7,18 +7,19 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db;
 
 use dFramework\core\exception\DatabaseException;
 use dFramework\core\loader\Filesystem;
+use dFramework\core\loader\Service;
 
 /**
  * Dumper
@@ -28,7 +29,7 @@ use dFramework\core\loader\Filesystem;
  * @package		dFramework
  * @subpackage	Core
  * @category    Db
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since		2.1
  * @file		/system/core/db/Dump.php
@@ -48,7 +49,7 @@ class Dumper
     /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR . 'database'.DS.'dump' . DS;
+    private $save_folder = DB_DUMP_DIR;
 
     /**
      * @var string
@@ -64,9 +65,9 @@ class Dumper
     {
         if ('cli' !== PHP_SAPI)
         {
-            exit('Fonctionnalités disponible uniquement en invite de commande');
+            // exit('Fonctionnalités disponible uniquement en invite de commande');
         }
-        $this->db = Database::instance($group);
+        $this->db = Service::database($group);
         $this->config = $this->db->config();
     }
 
@@ -112,24 +113,29 @@ class Dumper
         return $save_file;
     }
 
+	/**
+	 * Restaure la base de données à partir d'un fichier de sauvegarde
+	 *
+	 * @param string $version
+	 * @return string a saved file used for restoration
+	 */
     public function up(string $version) : string
     {
+		$filename = !empty($this->filename) ? $this->filename : $this->config['database'];
+		$filename .= '_version_'.$version.'.sql';
+
 		if ($version === 'last')
 		{
 			/**
 			 * @var \Symfony\Component\Finder\SplFileInfo
 			 */
-			$filename = Filesystem::files($this->save_folder, false, 'modifiedTime')[0] ?? '';
-			if (!empty($filename))
+			$fileinfo = Filesystem::files($this->save_folder, false, 'modifiedTime')[0] ?? '';
+			if (!empty($fileinfo) AND $fileinfo->getExtension() == 'sql')
 			{
-				$filename = $filename->getFilename();
+				$filename = $fileinfo->getFilename();
 			}
 		}
-		else
-		{
-			$filename = !empty($this->filename) ? $this->filename : $this->config['database'];
-			$filename .= '_version_'.$version.'.sql';
-		}
+
 		$file = rtrim($this->save_folder, DS).DS.$filename;
 
         if (!file_exists($file) OR !is_readable($file))
@@ -137,7 +143,7 @@ class Dumper
             throw new DatabaseException('
                 Impossible de charger la migration <b>'.$filename.'</b>
                 <br>
-                Le fichier de &laquo; '.$file.' &raquo; n\'existe pas ou n\'est pas accessible en lecture
+                Le fichier < '.$file.' > n\'existe pas ou n\'est pas accessible en lecture
             ');
         }
 
@@ -155,7 +161,6 @@ class Dumper
 
         return $file;
     }
-
 
     /**
      * suppression des anciennes sauvegardes

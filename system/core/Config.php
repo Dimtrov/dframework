@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core;
@@ -275,10 +275,10 @@ class Config
                 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
                 break;
             default:
-				self::exceptBadConfigValue('environment', ['dev', 'prod', 'test', 'auto'], 'general');
+				self::exceptBadConfigValue('environment', ['development', 'production', 'test', 'auto'], 'general');
         }
         ini_set('log_errors', 1);
-        ini_set('error_log', APP_DIR.'logs'.DS.'dflogs');
+        ini_set('error_log', LOG_DIR.'dflogs');
 
 		/* ----------------
             Compression de vue

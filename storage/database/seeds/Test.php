@@ -9,7 +9,7 @@ class Test extends Seeder
     {
         $this->table('etudiants', true)->columns([
             'nom' => $faker->firstName,
-            'sexe' => array_rand(['M', 'F']),
+            'sexe' => $faker->randomElement(['m', 'f']),
             'date_naissance' => $faker->date()
         ])->rows(50);
 
