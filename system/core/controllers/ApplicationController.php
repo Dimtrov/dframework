@@ -35,7 +35,7 @@ use ReflectionClass;
  * @since       3.4.0
  * @file		/system/core/controllers/ApplicationController.php
  */
-class ApplcationController extends BaseController
+class ApplicationController extends BaseController
 {
     /**
      * @var array Données partagées entre toutes les vue chargées à partir d'un controleur

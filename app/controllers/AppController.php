@@ -10,11 +10,10 @@
  * For security be sure to declare any new methods as protected or private.
  */
 
-use dFramework\core\Controller;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class AppController extends Controller
+class AppController extends \dFramework\core\controllers\ApplicationController
 {
 	/**
 	 * Constructor.
@@ -23,7 +22,7 @@ class AppController extends Controller
 	{
 		// Do Not Edit This Line
 		parent::initialize($request, $response);
-	
+
 		// Preload any models, libraries, etc, here.
 		//--------------------------------------------------------------------
 		// E.g.:
