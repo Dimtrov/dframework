@@ -36,6 +36,7 @@ use dFramework\core\output\View;
 use dFramework\core\router\RouteCollection;
 use dFramework\core\router\Router;
 use dFramework\core\utilities\Helpers;
+use DI\NotFoundException;
 
 /**
  * Service
@@ -431,6 +432,7 @@ class Service
     }
 
     /**
+	 * Try to get service from container
 	 *
 	 * @param string $name
 	 * @param array  $arguments
@@ -441,10 +443,51 @@ class Service
         $shared = array_pop($arguments);
         if ($shared !== true)
         {
-            return self::factory($name, $arguments);
+			return self::discoverServiceFactory($name, $arguments);
         }
 
-        return self::singleton($name);
+        return self::discoverServiceSingleton($name);
+	}
+
+	/**
+	 * Try to find a service
+	 *
+	 * @param string $name
+	 * @param string $arguments
+	 */
+	private static function discoverServiceFactory(string $name, array $arguments)
+	{
+		try {
+			return self::factory($name, $arguments);
+		}
+		catch(NotFoundException $e) {
+			try {
+				return self::factory($name.'Service', $arguments);
+			}
+			catch(NotFoundException $ex) {
+				throw $e;
+			}
+		}
+	}
+
+	/**
+	 * Try to find a single service
+	 *
+	 * @param string $name
+	 */
+	private static function discoverServiceSingleton(string $name)
+	{
+		try {
+			return self::singleton($name);
+		}
+		catch(NotFoundException $e) {
+			try {
+				return self::singleton($name.'Service');
+			}
+			catch(NotFoundException $ex) {
+				throw $e;
+			}
+		}
 	}
 
 
