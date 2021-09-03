@@ -7,25 +7,24 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package     dFramework
- * @author      Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author      Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright   Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright   Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license     https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link        https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
- 
+
 namespace dFramework\core\generator;
 
 use RuntimeException;
 use Nette\PhpGenerator\Method;
 use dFramework\core\dFramework;
-use dFramework\core\loader\Load;
 use Nette\PhpGenerator\ClassType;
 use dFramework\core\utilities\Str;
 use Nette\PhpGenerator\PhpNamespace;
-use dFramework\core\Controller as CoreController;
-use dFramework\components\rest\Controller as RestController;
+use dFramework\core\controllers\ApplcationController;
+use dFramework\core\controllers\RestController;
 use dFramework\core\support\traits\CliMessage;
 
 /**
@@ -36,7 +35,7 @@ use dFramework\core\support\traits\CliMessage;
  * @package     dFramework
  * @subpackage  Core
  * @category    Generator
- * @author      Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author      Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link        https://dimtrov.hebfree.org/docs/dframework/api
  * @since       3.1
  * @file        /system/core/generator/Controller.php
@@ -60,7 +59,7 @@ final class Controller
      * @var string Dossier de sauvegarde
      */
     private $dir = '';
-    
+
 
     /**
      * Constructor
@@ -70,7 +69,7 @@ final class Controller
      */
     public function __construct($resource = null, $presenter = null)
     {
-        if (!empty($resource)) 
+        if (!empty($resource))
         {
             $this->type = 'resource';
         }
@@ -78,7 +77,7 @@ final class Controller
         {
             $this->type = 'presenter';
         }
-        Load::helper('inflector');    
+		helper('inflector');
     }
 
 
@@ -114,12 +113,12 @@ final class Controller
         $dir = str_replace(['/', '\\'], '/', $dir);
         $dir = rtrim($dir, '/');
 
-        if (!empty($dir)) 
+        if (!empty($dir))
         {
-            $namespace = new PhpNamespace(str_replace('/', '\\', $dir)); 
+            $namespace = new PhpNamespace(str_replace('/', '\\', $dir));
         }
         $this->dir = $dir . (empty($dir) ? '' : '/');
-        
+
         $class_name = Str::toPascalCase(plural($this->class)).'Controller';
         $generator = (new ClassType($class_name, $namespace ?? null))
             ->addComment($class_name."\n")
@@ -127,20 +126,20 @@ final class Controller
             ->addComment('Date : '.date('r'))
             ->addComment('PHP Version : '.phpversion())
             ->addComment('Controller : '.preg_replace("#Controller$#", '', $class_name));
-        
-        if ($this->type === 'resource') 
+
+        if ($this->type === 'resource')
         {
             $generator->setExtends(RestController::class);
         }
-        else 
+        else
         {
-            $generator->setExtends(CoreController::class);
+            $generator->setExtends(ApplcationController::class);
         }
         if (!empty($this->type))
         {
             /* Ajout de la methode de lecture (R) */
             $this->addIndexMethod($generator);
-            
+
             /* Ajout de la methode de creation (C)*/
             $this->addCreateMethod($generator);
 
@@ -168,7 +167,7 @@ final class Controller
         $dir = CONTROLLER_DIR.trim($dir, '/\\');
         $dir = str_replace(['/', '\\'], DS, $dir);
         $dir = rtrim($dir, DS).DS;
-        
+
         $this->dir = $dir;
         if (!is_dir($this->dir))
         {
@@ -194,14 +193,14 @@ final class Controller
     private function addIndexMethod(ClassType &$generator)
     {
         $class = singular($this->class);
-        
+
         $message = 'You can access this page via the URL /'.$this->dir.plural($this->class);
         $method = (new Method('index'))->setPublic();
         if ($this->type === 'presenter')
         {
             $method->addComment('Showing all array of '.plural($class).' objects');
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Display a listing of the '.$class)->setBody("\$this->allowed_methods('get')->checkProcess(); \n");
         }
@@ -216,7 +215,7 @@ final class Controller
             $method->addComment('Showing a specific '.$class.' object, all properties');
             $message .= '/show/{id}';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Display the specified '.$class)->setBody("\$this->allowed_methods('get')->checkProcess(); \n");
             $message .= '/{id}';
@@ -233,7 +232,7 @@ final class Controller
     private function addCreateMethod(ClassType &$generator)
     {
         $class = singular($this->class);
-        
+
         $message = 'You can access this page via the URL /'.$this->dir.plural($this->class);
         $method = (new Method('new'))->setPublic();
         if ($this->type === 'presenter')
@@ -241,14 +240,14 @@ final class Controller
             $method->addComment('Showing a form for an empty '.$class.' object, with default properties');
             $message .= '/new';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Show the form for creatin a new '.$class)->setBody("\$this->allowed_methods('get')->checkProcess(); \n");
             $message .= '/new';
         }
         $method->addComment('HTTP GET: '.$message);
         $generator->addMember($method);
-        
+
         $message = 'You can access this page via the URL /'.$this->dir.$this->class;
         $method = (new Method('create'))->setPublic();
         if ($this->type === 'presenter')
@@ -256,7 +255,7 @@ final class Controller
             $method->addComment('Processing the form for a new '.$class);
             $message .= '/create';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Store a newly created '.$class.' in storage')->setBody("\$this->allowed_methods('post')->checkProcess(); \n");
         }
@@ -272,7 +271,7 @@ final class Controller
     private function addUpdateMethod(ClassType &$generator)
     {
         $class = singular($this->class);
-        
+
         $message = 'You can access this page via the URL /'.$this->dir.plural($this->class);
         $method = (new Method('edit'))->setPublic();
         $method->addParameter('id');
@@ -281,10 +280,10 @@ final class Controller
             $method->addComment('Show an editing form for a specific '.$class.' object, editable properties');
             $message .= '/edit/{id}';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Show the form for editing the specified '.$class)->setBody("\$this->allowed_methods('get')->checkProcess(); \n");
-            $message  .= '/{id}/edit';      
+            $message  .= '/{id}/edit';
         }
         $method->addComment('HTTP GET: '.$message)->addComment("\n@param int \$id");
         $generator->addMember($method);
@@ -297,7 +296,7 @@ final class Controller
             $method->addComment('Process the editing form data');
             $message .= '/update/{id}';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Update the specified '.$class.' in storage')->setBody("\$this->allowed_methods('put', 'patch')->checkProcess(); \n");
             $message .= '/{id}';
@@ -314,7 +313,7 @@ final class Controller
     private function addDeleteMethod(ClassType &$generator)
     {
         $class = singular($this->class);
-        
+
         if ($this->type === 'presenter')
         {
             $method = (new Method('remove'))->setPublic();
@@ -332,7 +331,7 @@ final class Controller
             $method->addComment('Deleting the specified '.$class);
             $message .= '/delete/{id}';
         }
-        if ($this->type === 'resource') 
+        if ($this->type === 'resource')
         {
             $method->addComment('Remove the specified '.$class.' in storage')->setBody("\$this->allowed_methods('delete')->checkProcess(); \n");
             $message .= '/{id}';

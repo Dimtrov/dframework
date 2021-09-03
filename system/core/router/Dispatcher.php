@@ -12,12 +12,12 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\router;
 
-use dFramework\components\rest\Controller;
+use dFramework\core\controllers\RestController;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
@@ -439,10 +439,10 @@ class Dispatcher
 
 		if (!method_exists($this->controller, $this->method))
 		{
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unknow_method')
-				])))->withStatus(Controller::HTTP_NOT_ACCEPTABLE);
+				])))->withStatus(RestController::HTTP_NOT_ACCEPTABLE);
 
 				return;
 			}
@@ -457,10 +457,10 @@ class Dispatcher
 
         if ($reflection->getName() == "__construct")
         {
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -472,10 +472,10 @@ class Dispatcher
         }
         if ($reflection->isProtected() OR $reflection->isPrivate())
         {
-            if ($reflectedClass->isSubclassOf(Controller::class)) {
+            if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -488,10 +488,10 @@ class Dispatcher
 
 		if (!in_array($reflection->getName(), $this->reservedMethods) AND preg_match('#^_#i', $reflection->getName()))
         {
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -506,12 +506,12 @@ class Dispatcher
     /**
 	 * Instantiates the controller class.
 	 *
-	 * @return \dFramework\core\Controller|mixed
+	 * @return \dFramework\core\controllers\BaseController|mixed
 	 */
 	private function createController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		/**
-		 * @var \dFramework\core\Controller
+		 * @var \dFramework\core\controllers\BaseController
 		 */
 		$class = Service::injector()->get($this->controller);
 
