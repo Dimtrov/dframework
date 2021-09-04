@@ -273,7 +273,7 @@ class Input
             $this->set_cookie(
                 $index,
                 $data['value'],
-                (int) $data['expire'] ?? 0,
+                (int) ( $data['expire'] ?? 0),
                 $data['domain'] ?? '',
                 $data['path'] ?? '/',
                 $data['prefix'] ?? '',
