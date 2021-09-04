@@ -61,6 +61,14 @@ if (!defined('RESOURCE_DIR'))
 	define('RESOURCE_DIR', APP_DIR . 'resources' . DS);
 }
 
+if (!defined('LANG_DIR'))
+{
+	/**
+	 * File translation directory path
+	 */
+	define('LANG_DIR', RESOURCE_DIR . 'lang' . DS);
+}
+
 if (!defined('SERVICE_DIR'))
 {
 	/**
@@ -91,7 +99,7 @@ if (!defined('DB_MIGRATION_DIR'))
 	/**
 	 * Database migrations storage path
 	 */
-	define('DB_MIGRATION_DIR', DATABASE_DIR . 'migrations' . DS);
+	define('DB_MIGRATION_DIR', RESOURCE_DIR . 'database' . DS . 'migrations' . DS);
 }
 
 if (!defined('DB_SEED_DIR'))
@@ -99,7 +107,7 @@ if (!defined('DB_SEED_DIR'))
 	/**
 	 * Database seeds storage path
 	 */
-	define('DB_SEED_DIR', DATABASE_DIR . 'seeds' . DS);
+	define('DB_SEED_DIR', RESOURCE_DIR . 'database' . DS . 'seeds' . DS);
 }
 
 if (!defined('DB_DUMP_DIR'))

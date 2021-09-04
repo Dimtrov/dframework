@@ -70,7 +70,7 @@ class General extends Cli
                                 \APP_DIR.'class',
                             ]
                         ]);
-                        $export_file = \RESOURCE_DIR.'reserved'.\DS.'.classmap.php';
+                        $export_file = STORAGE_DIR . '.classmap.php';
                     }
                     else
                     {

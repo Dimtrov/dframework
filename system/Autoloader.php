@@ -105,7 +105,7 @@ class Autoloader
             self::$_class_map_syst = require $class_map_file;
         }
 
-        $class_map_file = APP_DIR.'resources'.DS.'reserved'.DS.'.classmap.php';
+        $class_map_file = STORAGE_DIR . '.classmap.php';
         /**
          * Chargement des classes applicatives mapées
          */

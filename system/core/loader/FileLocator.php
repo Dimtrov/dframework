@@ -45,13 +45,13 @@ class FileLocator
             SYST_DIR . 'constants' . DS . 'lang' . DS . config('general.language') . DS . $file,
 
             // Path to app languages
-            RESOURCE_DIR . 'reserved' . DS . 'lang' . DS . config('general.language') . DS . $file,
+			LANG_DIR . config('general.language') . DS . $file,
 
             // Path to system languages
             SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file,
 
             // Path to app languages
-            RESOURCE_DIR . 'reserved' . DS . 'lang' . DS . $locale . DS . $file,
+            LANG_DIR . $locale . DS . $file,
         ];
         $file_exist = false;
         $languages = [];
