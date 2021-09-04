@@ -303,7 +303,10 @@ class Toolbar
 
 			foreach ($value As $h)
 			{
-				$data['vars']['headers'][esc($h->getName())] = esc($h->getValueLine());
+				if (is_object($h) AND method_exists($h, 'getName') AND method_exists($h, 'getValueLine'))
+				{
+					$data['vars']['headers'][esc($h->getName())] = esc($h->getValueLine());
+				}
 			}
 		}
 
