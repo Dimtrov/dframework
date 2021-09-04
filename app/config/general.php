@@ -72,6 +72,40 @@ $general['use_absolute_link'] = true;
 */
 $general['language']	= 'en';
 
+/**
+ * --------------------------------------------------------------------------
+ * Negotiate Locale
+ * --------------------------------------------------------------------------
+ *
+ * If true, the current Request object will automatically determine the
+ * language to use based on the value of the Accept-Language header.
+ *
+ * If false, no automatic detection will be performed.
+ */
+$general['negotiate_locale'] = true;
+
+/**
+ * --------------------------------------------------------------------------
+ * Supported Locales
+ * --------------------------------------------------------------------------
+ *
+ * If $negotiate_locale is true, this array lists the locales supported
+ * by the application in descending order of priority. If no match is
+ * found, the first locale will be used.
+ */
+$general['supported_locales'] = ['fr', 'en'];
+
+/**
+ * --------------------------------------------------------------------------
+ * Application Timezone
+ * --------------------------------------------------------------------------
+ *
+ * The default timezone that will be used in your application to display
+ * dates with the date helper, and can be retrieved through app_timezone()
+ */
+$general['timezone'] = 'Africa/Douala';
+
+
 /*
 |--------------------------------------------------------------------------
 | Default Character Set
