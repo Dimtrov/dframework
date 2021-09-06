@@ -165,7 +165,7 @@ class Controller
      * @return bool
      * @throws exception\LoadException
      */
-    final protected function validate(array $rules, ?array $data = [], ?string $locale = null)
+	final protected function validate(array $rules, ?array $data = [], ?string $locale = null)
     {
         if (!Arr::isAssoc($rules))
         {
@@ -177,11 +177,14 @@ class Controller
         $this->loadLibrary('Validator');
         $this->validator->init($locale, $data);
 
-        foreach ($rules As $field => $rule)
+        foreach ($rules As $field => $regles)
         {
-            $rule = (array) $rule;
-            $messages = $rule[1] ?? [];
-            $rule = explode('|', $rule[0]);
+			$regles = (array) $regles;
+
+			$rule = array_shift($regles);
+			$rule = explode('|', $rule);
+
+            $messages = $regles;
 
             $field = explode('|', $field);
             $label = $field[1] ?? '';
