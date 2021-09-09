@@ -87,9 +87,9 @@ class Guardian
 	 * Recupere l'utilisateur issu du processus en cours
 	 *
 	 * @param string|null $process
-	 * @return object
+	 * @return object|null
 	 */
-	public function getUser(?string $process = null) : object
+	public function getUser(?string $process = null) : ?object
 	{
 		if (empty($this->user))
 		{
@@ -98,7 +98,7 @@ class Guardian
 				$this->user = Injector::make(Authenticator::class, [$this->configurer])->getUser();
 			}
 		}
-		return $this->user ?? new \stdClass;
+		return empty($this->user) ? null : (object) $this->user;
 	}
 
 

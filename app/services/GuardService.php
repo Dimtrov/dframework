@@ -59,9 +59,9 @@ class GuardService
 	 * Renvoi l'utilisateur issue du processus
 	 *
 	 * @param string|null $process
-	 * @return object
+	 * @return object|null
 	 */
-	public function getUser(?string $process = null) : object
+	public function getUser(?string $process = null) : ?object
 	{
 		return $this->guardian->getUser($process);
 	}

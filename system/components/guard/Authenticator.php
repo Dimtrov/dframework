@@ -268,11 +268,11 @@ class Authenticator
 	/**
 	 * Renvoi l'utilisateur trouvé
 	 *
-	 * @return object
+	 * @return object|null
 	 */
-	public function getUser() : object
+	public function getUser() : ?object
 	{
-		return (object) $this->user;
+		return empty($this->user) ? null : (object) $this->user;
 	}
 
 
@@ -366,7 +366,7 @@ class Authenticator
 
             'uid'      => hash('sha512', uniqid('', true) . '_' . mt_rand()),
             'uua'      => hash('sha512', $_SERVER['HTTP_USER_AGENT']),
-            'ure'      => hash('sha512', parse_url($_SERVER['HTTP_REFERER'] ?? null, PHP_URL_HOST)),
+            'ure'      => hash('sha512', parse_url($_SERVER['HTTP_HOST'] ?? '', PHP_URL_HOST)),
             'uip'      => hash('sha512', ip_address()),
         ];
         if (1 < $this->params->inactivity_timeout)
@@ -450,7 +450,7 @@ class Authenticator
         {
             $this->logout();
         }
-        else if (empty($auth_session['ure']) OR $auth_session['ure'] !== hash('sha512', parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_HOST)))
+        else if (empty($auth_session['ure']) OR $auth_session['ure'] !== hash('sha512', parse_url($_SERVER['HTTP_HOST'] ?? '', PHP_URL_HOST)))
         {
             $this->logout();
         }
