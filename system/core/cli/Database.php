@@ -43,11 +43,9 @@ class Database extends Cli
      */
     protected function _seed() : Command
     {
-		$commander = $this;
-
-        return (new Command('db:seed', 'Exécute le seeder spécifié pour remplir les données connues dans la base de données.'))
+		return (new Command('db:seed', 'Exécute le seeder spécifié pour remplir les données connues dans la base de données.'))
             ->argument('[file]', 'Nom du fichier à seeder')
-            ->action(function($file) use ($commander) {
+            ->action(function($file) {
                 /**
                  * @var Command
                  */
@@ -86,7 +84,7 @@ class Database extends Cli
 
 					foreach ($queue As $seed => $file)
 					{
-						$commander->execSeed($cli, $seed, $file);
+						self::execSeed($cli, $seed, $file);
 					}
 
 					$cli->io->ok("\t => Remplissage terminé avec succès. \n");
@@ -107,16 +105,16 @@ class Database extends Cli
     protected function _dump() : Command
     {
         return (new Command('db:dump', 'Demarre l\'importation ou l\'exportation de votre base de données'))
-            ->option('-b --backup', 'Cree une sauvegarde de la base de donnees')
-            ->option('-u --upgrade', 'Importe un script de base de donnees')
+            ->option('-e --export', 'Cree une sauvegarde de la base de donnees')
+            ->option('-i --import', 'Importe un script de base de donnees')
             ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
-            ->action(function($backup, $upgrade, $database) {
+            ->action(function($export, $import, $database) {
                 /**
                  * @var Command
                  */
                 $cli = $this;
                 try {
-                    if (empty($backup) AND empty($upgrade))
+                    if (empty($export) AND empty($import))
                     {
                         $cli->io->warn("\n Veuillez selectionner une option pour pouvoir executer cette tache.", true);
                         return $cli->showHelp();
@@ -125,12 +123,12 @@ class Database extends Cli
 
                     $dump = new Dumper($database);
 
-                    if (!empty($backup))
+                    if (!empty($export))
                     {
                         $cli->task('Sauvegarde de la base de données');
                         $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", date('Y-m-d'));
 
-                        $filename = $dump->down($num_ver);
+                        $filename = $dump->export($num_ver);
 
                         $cli->io->ok("\n\t Base de donnees sauvegardée avec succès.", true);
                         $cli->io->info("\t Fichier de sauvegarde: ".$filename);
@@ -140,7 +138,7 @@ class Database extends Cli
                         $cli->task('Importation de la base de données en cours');
                         $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", 'last');
 
-                        $filename = $dump->up($num_ver);
+                        $filename = $dump->import($num_ver);
 
                         $cli->io->ok("\n\t Base de donnees migrée avec succès.", true);
                         $cli->io->info("\t Fichier utilisé: ".$filename);
@@ -162,7 +160,7 @@ class Database extends Cli
 	 * @param string $seed
 	 * @param string $file
 	 */
-	private function execSeed(Command $cli, string $seed, string $file)
+	private static function execSeed(Command $cli, string $seed, string $file)
 	{
 		require_once $file;
 
