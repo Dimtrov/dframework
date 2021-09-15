@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 namespace dFramework\core\loader;
@@ -29,7 +29,7 @@ use dFramework\core\support\traits\Macroable;
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @since       3.3.0
  * @file		/system/core/loader/Filesystem.php
  */
@@ -37,60 +37,13 @@ class Filesystem
 {
     use Macroable;
 
-	/**
-     * @var self
-     */
-    private static $_instance = null;
-
-	public static function instance() : self
-    {
-        if (null === self::$_instance)
-        {
-            self::$_instance = new self;
-        }
-        return self::$_instance;
-    }
-	/**
-	 * @param string $name
-	 * @param mixed $arguments
-	 * @return mixed
-	 */
-	public static function __callStatic($name, $arguments)
-    {
-        return self::execFacade($name, $arguments);
-    }
-	/**
-	 * @param string $name
-	 * @param mixed $arguments
-	 * @return mixed
-	 */
-    public function __call($name, $arguments)
-    {
-        return self::execFacade($name, $arguments);
-    }
-	/**
-	 * @param mixed $name
-	 * @param mixed $arguments
-	 * @return void
-	 */
-    private static function execFacade($name, $arguments)
-    {
-        $instance = self::instance();
-        if (method_exists($instance, '_'.$name))
-        {
-            return call_user_func_array([$instance, '_'.$name], $arguments);
-        }
-		throw new \Exception("Unknow method < ".__CLASS__.":$name >");
-    }
-
-
     /**
      * Determine if a file or directory exists.
      *
      * @param  string  $path
      * @return bool
      */
-    private function _exists(string $path) : bool
+    public static function exists(string $path) : bool
     {
         return file_exists($path);
     }
@@ -102,11 +55,11 @@ class Filesystem
      * @param  bool  $lock
      * @return string
      */
-    private function _get(string $path, bool $lock = false) : string
+    public static function get(string $path, bool $lock = false) : string
     {
-        if ($this->isFile($path))
+        if (self::isFile($path))
         {
-            return $lock ? $this->sharedGet($path) : file_get_contents($path);
+            return $lock ? self::sharedGet($path) : file_get_contents($path);
         }
 
         throw new LoadException("File does not exist at path {$path}");
@@ -118,7 +71,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _sharedGet(string $path) : string
+    public static function sharedGet(string $path) : string
     {
         $contents = '';
 
@@ -131,7 +84,7 @@ class Filesystem
                 {
                     clearstatcache(true, $path);
 
-                    $contents = fread($handle, $this->size($path) ?: 1);
+                    $contents = fread($handle, self::size($path) ?: 1);
 
                     flock($handle, LOCK_UN);
                 }
@@ -150,9 +103,9 @@ class Filesystem
      * @param  string  $path
      * @return mixed
      */
-    private function _getRequire(string $path)
+    public static function getRequire(string $path)
     {
-        if ($this->isFile($path))
+        if (self::isFile($path))
         {
             return require $path;
         }
@@ -166,7 +119,7 @@ class Filesystem
      * @param  string  $file
      * @return mixed
      */
-    private function _requireOnce(string $file)
+    public static function requireOnce(string $file)
     {
         require_once $file;
     }
@@ -177,7 +130,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _hash(string $path) : string
+    public static function hash(string $path) : string
     {
         return md5_file($path);
     }
@@ -190,7 +143,7 @@ class Filesystem
      * @param  bool  $lock
      * @return int|bool
      */
-    private function _put(string $path, string $contents, bool $lock = false)
+    public static function put(string $path, string $contents, bool $lock = false)
     {
         return file_put_contents($path, $contents, $lock ? LOCK_EX : 0);
     }
@@ -202,7 +155,7 @@ class Filesystem
      * @param  string  $content
      * @return void
      */
-    private function _replace(string $path, string $content)
+    public static function replace(string $path, string $content)
     {
         // If the path already exists and is a symlink, get the real path...
         clearstatcache(true, $path);
@@ -226,14 +179,14 @@ class Filesystem
      * @param  string  $data
      * @return int
      */
-    private function _prepend(string $path, string $data) : int
+    public static function prepend(string $path, string $data) : int
     {
-        if ($this->exists($path))
+        if (self::exists($path))
         {
-            return $this->put($path, $data.$this->get($path));
+            return self::put($path, $data.self::get($path));
         }
 
-        return $this->put($path, $data);
+        return self::put($path, $data);
     }
 
     /**
@@ -243,7 +196,7 @@ class Filesystem
      * @param  string  $data
      * @return int
      */
-    private function _append(string $path, string $data) : int
+    public static function append(string $path, string $data) : int
     {
         return file_put_contents($path, $data, FILE_APPEND);
     }
@@ -255,7 +208,7 @@ class Filesystem
      * @param  int|null  $mode
      * @return mixed
      */
-    private function _chmod(string $path, ?int $mode = null)
+    public static function chmod(string $path, ?int $mode = null)
     {
         if ($mode) {
             return chmod($path, $mode);
@@ -270,7 +223,7 @@ class Filesystem
      * @param  string|array  $paths
      * @return bool
      */
-    private function _delete($paths) : bool
+    public static function delete($paths) : bool
     {
         $paths = is_array($paths) ? $paths : func_get_args();
 
@@ -299,7 +252,7 @@ class Filesystem
      * @param  string  $target
      * @return bool
      */
-    private function _move(string $path, string $target) : bool
+    public static function move(string $path, string $target) : bool
     {
         return rename($path, $target);
     }
@@ -311,7 +264,7 @@ class Filesystem
      * @param  string  $target
      * @return bool
      */
-    private function _copy(string $path, string $target) : bool
+    public static function copy(string $path, string $target) : bool
     {
         return copy($path, $target);
     }
@@ -323,14 +276,14 @@ class Filesystem
      * @param  string  $link
      * @return bool|void
      */
-    private function _link(string $target, string $link)
+    public static function link(string $target, string $link)
     {
         if (! is_windows())
         {
             return symlink($target, $link);
         }
 
-        $mode = $this->isDirectory($target) ? 'J' : 'H';
+        $mode = self::isDirectory($target) ? 'J' : 'H';
 
         exec("mklink /{$mode} ".escapeshellarg($link).' '.escapeshellarg($target));
     }
@@ -341,7 +294,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _name(string $path) : string
+    public static function name(string $path) : string
     {
         return pathinfo($path, PATHINFO_FILENAME);
     }
@@ -352,7 +305,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _basename(string $path) : string
+    public static function basename(string $path) : string
     {
         return pathinfo($path, PATHINFO_BASENAME);
     }
@@ -363,7 +316,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _dirname(string $path) : string
+    public static function dirname(string $path) : string
     {
         return pathinfo($path, PATHINFO_DIRNAME);
     }
@@ -374,7 +327,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _extension(string $path) : string
+    public static function extension(string $path) : string
     {
         return pathinfo($path, PATHINFO_EXTENSION);
     }
@@ -385,7 +338,7 @@ class Filesystem
      * @param  string  $path
      * @return string
      */
-    private function _type(string $path) : string
+    public static function type(string $path) : string
     {
         return filetype($path);
     }
@@ -396,7 +349,7 @@ class Filesystem
      * @param  string  $path
      * @return string|false
      */
-    private function _mimeType(string $path)
+    public static function mimeType(string $path)
     {
         return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
     }
@@ -407,7 +360,7 @@ class Filesystem
      * @param  string  $path
      * @return int
      */
-    private function _size(string $path) : int
+    public static function size(string $path) : int
     {
         return filesize($path);
     }
@@ -418,7 +371,7 @@ class Filesystem
      * @param  string  $path
      * @return int
      */
-    private function _lastModified(string $path) : int
+    public static function lastModified(string $path) : int
     {
         return filemtime($path);
     }
@@ -429,7 +382,7 @@ class Filesystem
      * @param  string  $directory
      * @return bool
      */
-    private function _isDirectory(string $directory) : bool
+    public static function isDirectory(string $directory) : bool
     {
         return is_dir($directory);
     }
@@ -440,7 +393,7 @@ class Filesystem
      * @param  string  $path
      * @return bool
      */
-    private function _isReadable(string $path) : bool
+    public static function isReadable(string $path) : bool
     {
         return is_readable($path);
     }
@@ -451,7 +404,7 @@ class Filesystem
      * @param  string  $path
      * @return bool
      */
-    private function _isWritable(string $path) : bool
+    public static function isWritable(string $path) : bool
     {
         return is_writable($path);
     }
@@ -462,7 +415,7 @@ class Filesystem
      * @param  string  $file
      * @return bool
      */
-    private function _isFile(string $file) : bool
+    public static function isFile(string $file) : bool
     {
         return is_file($file);
     }
@@ -474,7 +427,7 @@ class Filesystem
      * @param  int     $flags
      * @return array
      */
-    private function _glob(string $pattern, int $flags = 0) : array
+    public static function glob(string $pattern, int $flags = 0) : array
     {
         return glob($pattern, $flags);
     }
@@ -487,7 +440,7 @@ class Filesystem
      * @param  string  $sortBy
      * @return \Symfony\Component\Finder\SplFileInfo[]
      */
-    private function _files(string $directory, bool $hidden = false, string $sortBy = 'name') : array
+    public static function files(string $directory, bool $hidden = false, string $sortBy = 'name') : array
     {
 		$files = Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory)->depth(0);
 
@@ -524,7 +477,7 @@ class Filesystem
      * @param  string  $sortBy
      * @return \Symfony\Component\Finder\SplFileInfo[]
      */
-    private function _allFiles(string $directory, bool $hidden = false, string $sortBy = 'name') : array
+    public static function allFiles(string $directory, bool $hidden = false, string $sortBy = 'name') : array
     {
 		$files = Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory);
 
@@ -559,7 +512,7 @@ class Filesystem
      * @param  string  $directory
      * @return array
      */
-    private function _directories(string $directory) : array
+    public static function directories(string $directory) : array
     {
         $directories = [];
 
@@ -580,7 +533,7 @@ class Filesystem
      * @param  bool    $force
      * @return bool
      */
-    private function _makeDirectory(string $path, int $mode = 0755, bool $recursive = false, bool $force = false) : bool
+    public static function makeDirectory(string $path, int $mode = 0755, bool $recursive = false, bool $force = false) : bool
     {
         if ($force)
         {
@@ -598,9 +551,9 @@ class Filesystem
      * @param  bool  $overwrite
      * @return bool
      */
-    private function _moveDirectory(string $from, string $to, bool $overwrite = false) : bool
+    public static function moveDirectory(string $from, string $to, bool $overwrite = false) : bool
     {
-        if ($overwrite AND $this->isDirectory($to) AND ! $this->deleteDirectory($to))
+        if ($overwrite AND self::isDirectory($to) AND ! self::deleteDirectory($to))
         {
             return false;
         }
@@ -616,9 +569,9 @@ class Filesystem
      * @param  int|null  $options
      * @return bool
      */
-    private function _copyDirectory(string $directory, string $destination, ?int $options = null) : bool
+    public static function copyDirectory(string $directory, string $destination, ?int $options = null) : bool
     {
-        if (! $this->isDirectory($directory))
+        if (!self::isDirectory($directory))
         {
             return false;
         }
@@ -628,9 +581,9 @@ class Filesystem
         // If the destination directory does not actually exist, we will go ahead and
         // create it recursively, which just gets the destination prepared to copy
         // the files over. Once we make the directory we'll proceed the copying.
-        if (! $this->isDirectory($destination))
+        if (!self::isDirectory($destination))
         {
-            $this->makeDirectory($destination, 0777, true);
+            self::makeDirectory($destination, 0777, true);
         }
 
         $items = new FilesystemIterator($directory, $options);
@@ -646,7 +599,7 @@ class Filesystem
             {
                 $path = $item->getPathname();
 
-                if (! $this->copyDirectory($path, $target, $options))
+                if (! self::copyDirectory($path, $target, $options))
                 {
                     return false;
                 }
@@ -657,7 +610,7 @@ class Filesystem
             // and return false, so the developer is aware that the copy process failed.
             else
             {
-                if (! $this->copy($item->getPathname(), $target))
+                if (! self::copy($item->getPathname(), $target))
                 {
                     return false;
                 }
@@ -676,9 +629,9 @@ class Filesystem
      * @param  bool    $preserve
      * @return bool
      */
-    private function _deleteDirectory(string $directory, bool $preserve = false) : bool
+    public static function deleteDirectory(string $directory, bool $preserve = false) : bool
     {
-        if (! $this->isDirectory($directory))
+        if (! self::isDirectory($directory))
         {
             return false;
         }
@@ -692,7 +645,7 @@ class Filesystem
             // keep iterating through each file until the directory is cleaned.
             if ($item->isDir() AND ! $item->isLink())
             {
-                $this->deleteDirectory($item->getPathname());
+                self::deleteDirectory($item->getPathname());
             }
 
             // If the item is just a file, we can go ahead and delete it since we're
@@ -700,7 +653,7 @@ class Filesystem
             // and calling directories recursively, so we delete the real path.
             else
             {
-                $this->delete($item->getPathname());
+                self::delete($item->getPathname());
             }
         }
 
@@ -718,15 +671,15 @@ class Filesystem
      * @param  string  $directory
      * @return bool
      */
-    private function _deleteDirectories($directory)
+    public static function deleteDirectories($directory) : bool
     {
-        $allDirectories = $this->directories($directory);
+        $allDirectories = self::directories($directory);
 
         if (! empty($allDirectories))
         {
             foreach ($allDirectories As $directoryName)
             {
-                $this->deleteDirectory($directoryName);
+                self::deleteDirectory($directoryName);
             }
 
             return true;
@@ -741,8 +694,8 @@ class Filesystem
      * @param  string  $directory
      * @return bool
      */
-    private function _cleanDirectory($directory)
+    public static function cleanDirectory($directory) : bool
     {
-        return $this->deleteDirectory($directory, true);
+        return self::deleteDirectory($directory, true);
     }
 }

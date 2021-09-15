@@ -18,6 +18,7 @@
 namespace dFramework\core\db;
 
 use dFramework\core\exception\DatabaseException;
+use dFramework\core\exception\Exception;
 use dFramework\core\loader\Filesystem;
 use dFramework\core\loader\Service;
 
@@ -72,18 +73,18 @@ class Dumper
     }
 
     /**
-     * Sauvegarde une base de donnee
+     * Sauvegarde l'état actuel d'une base de données dans un fichier de dump
      *
      * @param string $version
      * @return string a path for saved file
      */
-    public function down(string $version) : string
+    public function export(string $version) : string
     {
         if (false === is_dir($this->save_folder))
         {
             if ( mkdir($this->save_folder, 0700) === FALSE )
             {
-                exit('<br /><br />Impossible de creer le repertoire pour la sauvegarde. Veuillez le creer manuellement');
+				throw new Exception("\n Impossible de creer le repertoire pour la sauvegarde. Veuillez le créer manuellement");
             }
         }
         $filename = !empty($this->filename) ? $this->filename : $this->config['database'];
@@ -114,22 +115,36 @@ class Dumper
     }
 
 	/**
-	 * Restaure la base de données à partir d'un fichier de sauvegarde
+	 * down
+	 * Alias of self::export
 	 *
 	 * @param string $version
-	 * @return string a saved file used for restoration
+	 * @return string
 	 */
-    public function up(string $version) : string
+	public function down(string $version) : string
+	{
+		return $this->export($version);
+	}
+
+
+	/**
+	 * Execute un fichier de dump pour importer la base de données
+	 *
+	 * @param string $version
+	 * @return string
+	 */
+    public function import(string $version) : string
     {
 		$filename = !empty($this->filename) ? $this->filename : $this->config['database'];
 		$filename .= '_version_'.$version.'.sql';
 
 		if ($version === 'last')
 		{
+			$files = Filesystem::files($this->save_folder, false, 'modifiedTime');
 			/**
 			 * @var \Symfony\Component\Finder\SplFileInfo
 			 */
-			$fileinfo = Filesystem::files($this->save_folder, false, 'modifiedTime')[0] ?? '';
+			$fileinfo = array_pop($files);
 			if (!empty($fileinfo) AND $fileinfo->getExtension() == 'sql')
 			{
 				$filename = $fileinfo->getFilename();
@@ -141,13 +156,13 @@ class Dumper
         if (!file_exists($file) OR !is_readable($file))
         {
             throw new DatabaseException('
-                Impossible de charger la migration <b>'.$filename.'</b>
+                Impossible de charger la migration < '.$filename.' >
                 <br>
                 Le fichier < '.$file.' > n\'existe pas ou n\'est pas accessible en lecture
             ');
         }
 
-       $this->deleteAllTables();
+       	$this->deleteAllTables();
 
         $command = 'mysql'
             . ' --host=' . $this->config['host']
@@ -161,6 +176,19 @@ class Dumper
 
         return $file;
     }
+
+	/**
+	 * up
+	 * Alias of self::import()
+	 *
+	 * @param string $version
+	 * @return string
+	 */
+	public function up(string $version) : string
+	{
+		return $this->import($version);
+	}
+
 
     /**
      * suppression des anciennes sauvegardes
@@ -178,7 +206,6 @@ class Dumper
             }
         }
     }
-
 
     /**
      * Delete all tables in the database
