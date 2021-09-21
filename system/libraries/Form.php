@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitric Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.2
+ * @version     3.3.4
  */
 
 namespace dFramework\libraries;
@@ -64,15 +64,20 @@ class Form
 	/**
      * Initailise les donnees et les erreurs du formulaire
      *
-	 * @param ServerRequestInterface $request
+	 * @param ServerRequestInterface|null $request
      * @param array|null $datas
      * @param array|null $errors
      * @return self
      */
-    public function init(ServerRequestInterface $request, ?array $datas = [], ?array $errors = []) : self
+    public function init(?ServerRequestInterface $request = null, ?array $datas = [], ?array $errors = []) : self
     {
         $this->datas = !empty($datas) ? $datas : [];
         $this->errors = !empty($errors) ? $errors : [];
+
+		if (empty($request) OR ! ($request instanceof ServerRequestInterface))
+		{
+			$request = Service::request();
+		}
         $this->request = $request;
 
         return $this;
@@ -204,9 +209,10 @@ class Form
 	 * Ouvre un formulaire en inserant une cle de securite
 	 *
 	 * @param array $options
+	 * @param array $attributes
 	 * @return string
 	 */
-    public function open(array $options = []) : string
+    public function open(array $options = [], array $attributes = []) : string
     {
     	$options = array_merge([
     		'action'     => $this->request->getRequestTarget(),
@@ -264,7 +270,7 @@ class Form
 
         $key = !empty($options['key']) ? $options['key'] : 'form'.uniqid();
         $enctype = !empty($options['enctype']) ? 'enctype="'.$options['enctype'].'"' : '';
-        $attributes = $options['attributes'];
+        $attributes = array_merge((array) $options['attributes'], $attributes);
 
         $class = preg_replace('#form-control#i', 'form', $this->getInputClass($key, $attributes['class'] ?? null));
 
@@ -310,9 +316,16 @@ HTML;
 	 */
     public function hidden(string $key, ?array $attributes = []) : string
     {
+		unset($attributes['disabled']);
+		$k = array_search('disabled', $attributes);
+		if (is_string($k) OR is_int($k))
+		{
+			unset($attributes[$k]);
+		}
         $this->surround(false);
         $r = $this->input('hidden', $key, false, $attributes);
         $this->surround(null);
+
         return $r;
     }
 
@@ -326,7 +339,7 @@ HTML;
      */
     public function password(string $key, $label = null, ?array $attributes = []) : string
     {
-        return $this->input('password', $key, $label, $attributes);
+		return $this->input('password', $key, $label, $attributes);
     }
 
     /**
@@ -517,21 +530,31 @@ HTML;
      * @param string $type Type d'input a creer
      * @param string $key Nom du champ
      * @param false|null|string $label Nom du label (si false pas de label, si null label issu du parametre key)
-     * @param array|null $attributes Attributs supplementaire
+     * @param array $attributes Attributs supplementaire
      * @return string
      */
-    public function input(string $type, string $key, $label = null, ?array $attributes = []) : string
+    public function input(string $type, string $key, $label = null, array $attributes = []) : string
     {
-        $key = $this->makeKey($key);
+		$key = $this->makeKey($key);
+		$attributes = $this->makeAttributes($attributes, $key);
         $type = strtolower($type);
         $name = $attributes['name'] ?? $key;
+
         $value = ($type == 'password') ? null : 'value="'.($attributes['value'] ?? $this->getValue($key)).'"';
+		$description = ($type != 'hidden') ? $this->makeDescription($attributes, $key) : '';
+		$error_feedback = ($type != 'hidden') ? $this->getErrorFeedback($key) : '';
+
+		$hidden = '';
+		if ((isset($attributes['disabled']) AND true == $attributes['disabled']) OR in_array('disabled', $attributes))
+		{
+			$hidden = $this->hidden($key, $attributes);
+		}
 
 		return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
                 <input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
-                {$this->getErrorFeedback($key)}
+				{$description} {$error_feedback} {$hidden}
             {$this->surround['end']}
 HTML;
     }
@@ -626,13 +649,21 @@ HTML;
      */
     public function textarea(string $key, $label = null, ?array $attributes = []) : string
     {
-        $key = $this->makeKey($key);
+		$key = $this->makeKey($key);
+		$attributes = $this->makeAttributes($attributes, $key);
+        $name = $attributes['name'] ?? $key;
+
+       	$hidden = '';
+		if ((isset($attributes['disabled']) AND true == $attributes['disabled']) OR in_array('disabled', $attributes))
+		{
+			$hidden = $this->hidden($key, $attributes);
+		}
 
         return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
-                <textarea name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$this->getValue($key)}</textarea>
-                {$this->getErrorFeedback($key)}
+                <textarea name="{$name}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$this->getValue($key)}</textarea>
+                {$this->makeDescription($attributes, $key)} {$this->getErrorFeedback($key)} {$hidden}
             {$this->surround['end']}
 HTML;
     }
@@ -648,7 +679,10 @@ HTML;
      */
     public function select(string $key, array $options, $label = null, ?array $attributes = []) : string
     {
-        $key = $this->makeKey($key);
+		$key = $this->makeKey($key);
+		$attributes = $this->makeAttributes($attributes, $key);
+        $name = $attributes['name'] ?? $key;
+
         $r = '';
         foreach ($options As $k => $v)
         {
@@ -694,11 +728,12 @@ HTML;
                 $r .= '<option value="'.$k.'" '.$selected.'>'.ucfirst($v).'</option>';
             }
         }
+
         return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
-                <select name="{$key}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$r}</select>
-                {$this->getErrorFeedback($key)}
+                <select name="{$name}" id="field_{$key}" class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)}>{$r}</select>
+                {$this->makeDescription($attributes, $key)} {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
     }
@@ -716,6 +751,9 @@ HTML;
     public function checkbox(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $only = false) : string
     {
         $key = $this->makeKey($key);
+		$attributes = $this->makeAttributes($attributes, $key);
+        $name = $attributes['name'] ?? $key;
+
         $r = ''; $i = 0;
         $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
 
@@ -744,7 +782,7 @@ HTML;
             {
                 $r .= $surround_start;
             }
-            $r .= '<input type="checkbox" name="'.$key.'[]" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
+            $r .= '<input type="checkbox" name="'.$name.'[]" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
             $r .= '<label class="form-check-label" for="field_'.$key.$i.'">'.ucfirst($v).'</label>';
             if (true === $only)
             {
@@ -757,13 +795,13 @@ HTML;
         {
             return <<<HTML
                 {$r}
-                {$this->getErrorFeedback($key)}
+                {$this->makeDescription($attributes, $key)} {$this->getErrorFeedback($key)}
 HTML;
         }
         return <<<HTML
             {$surround_start}
                 {$r}
-                {$this->getErrorFeedback($key)}
+                {$this->makeDescription($attributes, $key)} {$this->getErrorFeedback($key)}
             {$this->surround['end']}
 HTML;
     }
@@ -781,6 +819,9 @@ HTML;
     public function radio(string $key, array $options, ?array $attributes = [], $checked = null, ?bool $inline = false) : string
     {
         $key = $this->makeKey($key);
+		$attributes = $this->makeAttributes($attributes, $key);
+        $name = $attributes['name'] ?? $key;
+
         $r = '';
         $i = 0;
         $class = preg_replace('#form-control#i', 'form-check-input', $this->getInputClass($key, $attributes['class'] ?? null));
@@ -809,7 +850,7 @@ HTML;
 
             $r .= $surround_start;
 
-            $r .= '<input type="radio" name="'.$key.'" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
+            $r .= '<input type="radio" name="'.$name.'" id="field_'.$key.$i.'" class="'.$class.'" value="'.$k.'" '.$checked.' '.$this->getAttributes($attributes).'/>';
             $r .= '<label class="form-check-label" for="field_'.$key.$i.'">'.ucfirst($v).'</label>';
 
             $r .= $this->surround['end'];
@@ -819,7 +860,7 @@ HTML;
 
         return <<<HTML
             {$r}
-            {$this->getErrorFeedback($key)}
+            {$this->makeDescription($attributes, $key)} {$this->getErrorFeedback($key)}
 HTML;
     }
 
@@ -897,11 +938,14 @@ HTML;
      */
     protected function getLabel(string $key, $label, bool $required = false) : string
     {
+		$text = Str::toSnake($label ?? $key);
+		$text = str_replace('_', ' ', ucfirst($text));
+
 		$required = (true === $required)
 			? '<span class="text-danger">*</span>'
 			: '';
         return (false === $label) ? '' :
-			'<label for="field_'.$key.'" class="form-label">'.ucfirst($label ?? $key).' '.$required.'</label>';
+			'<label for="field_'.$key.'" class="form-label">'.$text.' '.$required.'</label>';
     }
 
     /**
@@ -912,7 +956,8 @@ HTML;
      */
     protected function getValues(string $key) : array
     {
-        $post = (array) (Service::request()->data[$key] ?? []);
+		$parsedBody = $this->request->getParsedBody();
+		$post = (array) ($parsedBody[$key] ?? []);
 
         return (array) (!empty($post) ? $post : ($this->datas[$key] ?? []));
     }
@@ -932,7 +977,7 @@ HTML;
      * @param array|null $attributes Les attributs a compiler
      * @return string
      */
-    protected function getAttributes(?array $attributes) : string
+    protected function getAttributes(?array $attributes = null) : string
     {
         if (!is_array($attributes))
         {
@@ -948,6 +993,10 @@ HTML;
         $return = '';
         foreach ($attributes As $key => $value)
         {
+			if ($key === 'description')
+			{
+				continue;
+			}
             if (is_string($key))
             {
                 $return .= ' '.$key.'="'.$value . '"';
@@ -957,7 +1006,8 @@ HTML;
                 $return .= ' '.$value;
             }
         }
-        return trim($return);
+
+		return trim($return);
     }
 
     /**
@@ -974,4 +1024,35 @@ HTML;
         }
         return str_replace('\'', '', Str::toSnake($key));
     }
+
+	/**
+	 * Cree les attributs necessaires à un champs de saisie
+	 *
+	 * @param array $attributes
+	 * @param string $key
+	 * @return array
+	 */
+	protected function makeAttributes(array $attributes, string $key) : array
+	{
+		return array_merge($attributes, [
+			'aria-describedby' => 'help_field_'.$key
+		]);
+	}
+
+	/**
+	 * Genere la description d'un champ de saisie
+	 *
+	 * @param array $attributes
+	 * @param string $key
+	 * @return string
+	 */
+	protected function makeDescription(array $attributes, string $key) : string
+	{
+		$description = $attributes['description'] ?? null;
+		if (empty($description))
+		{
+			return '';
+		}
+		return '<small id="help_field_'.$key.'" class="text-muted">'.$description.'</small>';
+	}
 }
