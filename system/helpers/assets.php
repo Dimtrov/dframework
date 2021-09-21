@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.0
+ *  @version    3.3.4
  */
 
 
@@ -29,7 +29,7 @@
 // ------------------------------------------------------------------------
 
 
-if ( ! function_exists('css_url'))
+if (!function_exists('css_url'))
 {
     /**
      * CSS URL
@@ -39,22 +39,24 @@ if ( ! function_exists('css_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function css_url($name)
+    function css_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
             $filename = WEBROOT.'css'.DS.$name;
-            return base_url() . 'css/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'css/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('js_url'))
+if (!function_exists('js_url'))
 {
     /**
      * JS URL
@@ -64,22 +66,24 @@ if ( ! function_exists('js_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function js_url($name)
+    function js_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
             $filename = WEBROOT.'js'.DS.$name;
-            return base_url() . 'js/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'js/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('lib_css_url'))
+if (!function_exists('lib_css_url'))
 {
     /**
      * LIB CSS URL
@@ -89,22 +93,24 @@ if ( ! function_exists('lib_css_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function lib_css_url($name)
+    function lib_css_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
             $filename = WEBROOT.'lib'.DS.$name;
-            return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name . (!preg_match('#\.css$#i', $name) ? '.css' : '');
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('lib_js_url'))
+if (!function_exists('lib_js_url'))
 {
     /**
      * LIB JS URL
@@ -114,22 +120,24 @@ if ( ! function_exists('lib_js_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function lib_js_url($name)
+    function lib_js_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
             $filename = WEBROOT.'lib'.DS.$name;
-            return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'lib/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name . (!preg_match('#\.js$#i', $name) ? '.js' : '');
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('lib_styles'))
+if (!function_exists('lib_styles'))
 {
     /**
      * LIB_STYLES
@@ -137,40 +145,51 @@ if ( ! function_exists('lib_styles'))
      * inclu une ou plusieurs feuilles de style css
      *
      * @param	string|string[]	$name nom du fichier dont on veut inserer
-     * @return	void
+	 * @param	bool $print Specifie si on affiche directement la sortie ou si on la retourne
+     * @return	void|string
      */
-    function lib_styles($name) : void
+    function lib_styles($name, bool $print = true)
     {
         $name = (array) $name;
+		$return = [];
+
         foreach ($name As $style)
         {
-            if(is_string($style))
+            if (is_string($style))
             {
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
-                if(is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $style)))
+                if (is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $style)))
                 {
-                    echo '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">';
-                    echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
+                    $return[] = '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">
+						<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />';
                 }
-                else if(is_localfile($style))
+                else if (is_localfile($style))
                 {
-                    echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
-                    echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" /> -->'; echo "\n";
+					$return[] = "<!-- The specified file do not exist. we can not load it. \n\t";
+                    $return[] = '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" /> -->';
                 }
-				else 
+				else
 				{
-					echo '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">';
-                    echo '<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />'; echo "\n";
+					$return[] = '<link rel="preload" type="text/css" href="'.lib_css_url($style).'" as="style">
+						<link rel="stylesheet" type="text/css" href="'.lib_css_url($style).'" />';
 				}
             }
         }
-        return;
+
+		$output = join("\n", $return);
+
+		if (false === $print)
+		{
+			return $output;
+		}
+
+		echo $output;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('lib_scripts'))
+if (!function_exists('lib_scripts'))
 {
     /**
      * LIB_SCRIPTS
@@ -178,38 +197,49 @@ if ( ! function_exists('lib_scripts'))
      * inclu un ou plusieurs scripts js
      *
      * @param	string|string[]	$name nom du fichier dont on veut inserer
-     * @return	void
+     * @param	bool $print Specifie si on affiche directement la sortie ou si on la retourne
+     * @return	void|string
      */
-    function lib_scripts($name)
+    function lib_scripts($name, bool $print = true)
     {
         $name = (array) $name;
+		$return = [];
+
         foreach ($name As $script)
         {
-            if(is_string($script))
+            if (is_string($script))
             {
                 $script = (!preg_match('#\.js$#i', $script) ? $script.'.js' : $script);
-                if(is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $script)))
+                if (is_file(WEBROOT.'lib'.DS.str_replace('/', DS, $script)))
                 {
-                    echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script>'; echo "\n";
+                    $return[] = '<script type="text/javascript" src="'.lib_js_url($script).'"></script>';
                 }
-                else if(is_localfile($script))
+                else if (is_localfile($script))
                 {
-                    echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
-                    echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script> -->'; echo "\n";
+					$return[] = "<!-- The specified file do not exist. we can not load it. \n\t";
+                    $return[] = '<script type="text/javascript" src="'.lib_js_url($script).'"></script> -->';
                 }
-				else 
+				else
 				{
-					echo '<script type="text/javascript" src="'.lib_js_url($script).'"></script>'; echo "\n";
+					$return[] = '<script type="text/javascript" src="'.lib_js_url($script).'"></script>';
 				}
             }
         }
-        return;
+
+		$output = join("\n", $return);
+
+		if (false === $print)
+		{
+			return $output;
+		}
+
+		echo $output;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('styles'))
+if (!function_exists('styles'))
 {
     /**
      * STYLES
@@ -217,40 +247,51 @@ if ( ! function_exists('styles'))
      * inclu une ou plusieurs feuilles de style css
      *
      * @param	string|string[]	$name nom du fichier dont on veut inserer
-     * @return	void
+	 * @param	bool $print Specifie si on affiche directement la sortie ou si on la retourne
+     * @return	void|string
      */
-    function styles($name)
+    function styles($name, bool $print = true)
     {
         $name = (array) $name;
+		$return = [];
+
         foreach ($name As $style)
         {
-            if(is_string($style))
+            if (is_string($style))
             {
                 $style = (!preg_match('#\.css$#i', $style) ? $style.'.css' : $style);
-                if(is_file(WEBROOT.'css'.DS.str_replace('/', DS, $style)))
+                if (is_file(WEBROOT.'css'.DS.str_replace('/', DS, $style)))
                 {
-                    echo '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">';
-                    echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
+					$return[] = '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">
+						<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />';
                 }
-                else if(is_localfile($style))
+                else if (is_localfile($style))
                 {
-                    echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
-                    echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" /> -->'; echo "\n";
+					$return[] = "<!-- The specified file do not exist. we can not load it. \n\t";
+                    $return[] = '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" /> -->';
                 }
-				else 
+				else
 				{
-					echo '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">';
-                    echo '<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />'; echo "\n";
+					$return[] = '<link rel="preload" type="text/css" href="'.css_url($style).'" as="style">
+						<link rel="stylesheet" type="text/css" href="'.css_url($style).'" />';
 				}
             }
         }
-        return;
+
+		$output = join("\n", $return);
+
+		if (false === $print)
+		{
+			return $output;
+		}
+
+		echo $output;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('scripts'))
+if (!function_exists('scripts'))
 {
     /**
      * SCRIPTS
@@ -258,38 +299,49 @@ if ( ! function_exists('scripts'))
      * inclu un ou plusieurs scripts js
      *
      * @param	string|string[]	$name nom du fichier dont on veut inserer
-     * @return	void
+     * @param	bool $print Specifie si on affiche directement la sortie ou si on la retourne
+     * @return	void|string
      */
-    function scripts($name)
+    function scripts($name, bool $print = true)
     {
         $name = (array) $name;
+		$return = [];
+
         foreach ($name As $script)
         {
             if(is_string($script))
             {
                 $script = (!preg_match('#\.js$#i', $script) ? $script.'.js' : $script);
-                if(is_file(WEBROOT.'js'.DS.str_replace('/', DS, $script)))
+                if (is_file(WEBROOT.'js'.DS.str_replace('/', DS, $script)))
                 {
-                    echo '<script type="text/javascript" src="'.js_url($script).'"></script>'; echo "\n";
+                    $return[] = '<script type="text/javascript" src="'.js_url($script).'"></script>';
                 }
-                else if(is_localfile($script))
+                else if (is_localfile($script))
                 {
-                    echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
-                    echo '<script type="text/javascript" src="'.js_url($script).'"></script> -->'; echo "\n";
+                    $return[] = "<!-- The specified file do not exist. we can not load it. \n\t";
+                    $return[] = '<script type="text/javascript" src="'.js_url($script).'"></script> -->';
                 }
-				else 
+				else
 				{
-					echo '<script type="text/javascript" src="'.js_url($script).'"></script>'; echo "\n";
+					$return[] = '<script type="text/javascript" src="'.js_url($script).'"></script>';
 				}
             }
         }
-        return;
+
+		$output = join("\n", $return);
+
+		if (false === $print)
+		{
+			return $output;
+		}
+
+		echo $output;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('less_url'))
+if (!function_exists('less_url'))
 {
     /**
      * LESS URL
@@ -299,22 +351,24 @@ if ( ! function_exists('less_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function less_url($name)
+    function less_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.less$#i', $name) ? '.less' : '');
             $filename = WEBROOT.'less'.DS.$name;
-            return base_url() . 'less/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'less/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name . (!preg_match('#\.less$#i', $name) ? '.less' : '');
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('less_styles'))
+if (!function_exists('less_styles'))
 {
     /**
      * LESS_STYLES
@@ -322,39 +376,50 @@ if ( ! function_exists('less_styles'))
      * inclu une ou plusieurs feuilles de style less
      *
      * @param	string|string[]	$name nom du fichier dont on veut inserer
-     * @return	void
+     * @param	bool $print Specifie si on affiche directement la sortie ou si on la retourne
+     * @return	void|string
      */
-    function less_styles($name)
+    function less_styles($name, bool $print = true)
     {
         $name = (array) $name;
+		$return = [];
+
         foreach ($name As $style)
         {
-            if(is_string($style))
+            if (is_string($style))
             {
                 $style = (!preg_match('#\.less$#i', $style) ? $style.'.less' : $style);
-                if(is_file(WEBROOT.'less'.DS.str_replace('/', DS, $style)))
+                if (is_file(WEBROOT.'less'.DS.str_replace('/', DS, $style)))
                 {
-                    echo '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" />'; echo "\n";
+                    $return[] = '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" />';
                 }
-                else if(is_localfile($style))
+                else if (is_localfile($style))
                 {
-                    echo '<!-- The specified file do not exist. we can not load it.'; echo "\n\t";
-                    echo '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" /> -->'; echo "\n";
+                    $return[] = "<!-- The specified file do not exist. we can not load it. \n\t";
+                    $return[] = '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" /> -->';
                 }
-				else 
+				else
 				{
-					echo '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" />'; echo "\n";
+					$return[] = '<link rel="stylesheet" type="text/less" href="'.less_url($style).'" />';
 				}
             }
         }
-        return;
+
+		$output = join("\n", $return);
+
+		if (false === $print)
+		{
+			return $output;
+		}
+
+		echo $output;
     }
 }
 
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('img_url'))
+if (!function_exists('img_url'))
 {
     /**
      * IMG URL
@@ -364,47 +429,59 @@ if ( ! function_exists('img_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function img_url($name)
+    function img_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $filename = WEBROOT.'img'.DS.$name;
-            return base_url() . 'img/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'img/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('img'))
+if (!function_exists('img'))
 {
     /**
      * IMG
      *
      * Cree une image
      *
-     * @param    string $name nom du fichier dont on veut inserer
-     * @param    string $alt texte alternatif
-     * @param array $options
-     * @return    void
+     * @param	string $name nom du fichier dont on veut inserer
+     * @param	string $alt texte alternatif
+     * @param 	array $options
+     * @return	void|string
      */
-    function img($name, $alt = '', array $options = [])
+    function img(string $name, string $alt = '', array $options = [])
     {
         $return = '<img src="' . img_url($name) . '" alt="' . $alt . '"';
+
+		$noprint = isset($options['print']) AND $options['print'] == false;
+		unset($options['print']);
+
         foreach ($options As $key => $value)
         {
             $return .= ' '.$key.'="'.$value.'"';
         }
         $return .= ' />';
+
+		if ($noprint === true)
+		{
+			return $return;
+		}
+
         echo $return;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('docs_url'))
+if (!function_exists('docs_url'))
 {
     /**
      * DOCS URL
@@ -414,21 +491,23 @@ if ( ! function_exists('docs_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function docs_url($name)
+    function docs_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $filename = WEBROOT.'docs'.DS.$name;
-            return base_url() . 'docs/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'docs/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name;
     }
 }
 
 // ------------------------------------------------------------------------
 
-if ( ! function_exists('videos_url'))
+if (!function_exists('videos_url'))
 {
     /**
      * VIDEOS URL
@@ -438,14 +517,16 @@ if ( ! function_exists('videos_url'))
      * @param	string	$name nom du fichier dont on veut avoir l'url
      * @return	string
      */
-    function videos_url($name)
+    function videos_url(string $name) : string
     {
         $name = htmlspecialchars($name);
-        if(is_localfile($name))
+        if (is_localfile($name))
         {
             $filename = WEBROOT.'videos'.DS.$name;
-            return base_url() . 'videos/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
+
+			return base_url() . 'videos/' . $name.((file_exists($filename)) ? '?_ref='.filemtime($filename) : '');
         }
+
         return $name;
     }
 }
