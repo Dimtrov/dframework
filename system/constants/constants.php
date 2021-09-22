@@ -142,6 +142,38 @@ if (!defined('LAYOUT_DIR'))
 	define('LAYOUT_DIR', VIEW_DIR . 'layouts' . DS);
 }
 
+if (!defined('VIEW_CACHE_DIR'))
+{
+	/**
+	 * Views cache directory path
+	 */
+	define('VIEW_CACHE_DIR', STORAGE_DIR . 'cache' . DS);
+}
+
+if (!defined('SMARTY_CACHE_DIR'))
+{
+	/**
+	 * Smarty views cache directory path
+	 */
+	define('SMARTY_CACHE_DIR', STORAGE_DIR . 'smarty' . DS . 'cache' . DS);
+}
+
+if (!defined('SMARTY_COMPILES_DIR'))
+{
+	/**
+	 * Smarty views compile directory path
+	 */
+	define('SMARTY_COMPILES_DIR', STORAGE_DIR . 'smarty' . DS . 'compiles' . DS);
+}
+
+if (!defined('SMARTY_CONF_DIR'))
+{
+	/**
+	 * Smarty views config directory path
+	 */
+	define('SMARTY_CONF_DIR', STORAGE_DIR . 'smarty' . DS . 'conf' . DS);
+}
+
 /**
  * Defines a constant for framework's classes directories
  */
