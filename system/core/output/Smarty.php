@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\output;
@@ -55,9 +55,9 @@ class Smarty extends \SmartyBC
 			SYST_DIR . 'helpers',
 			APP_DIR . 'helpers',
 		]);
-        $this->compile_dir  = VIEW_DIR.'reserved'.DS.'compiles'.DS;
-        $this->cache_dir    = VIEW_DIR.'reserved'.DS.'cache'.DS;
-        $this->config_dir   = VIEW_DIR.'reserved'.DS.'conf'.DS;
+        $this->compile_dir  = SMARTY_COMPILES_DIR;
+        $this->cache_dir    = SMARTY_CACHE_DIR;
+        $this->config_dir   = SMARTY_CONF_DIR;
 
         $this->caching = self::CACHING_LIFETIME_SAVED;
         $this->compile_check = on_dev();
