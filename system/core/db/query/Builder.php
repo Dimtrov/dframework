@@ -183,7 +183,7 @@ class Builder
      * @return object Self reference
      * @throws DatabaseException For invalid join type
      */
-    final public function join($table, array $fields, $type = 'INNER') : self
+    final public function join(string $table, array $fields, string $type = 'INNER') : self
     {
         $this->crud = 'select';
 
@@ -210,7 +210,7 @@ class Builder
      * @param array $fields Fields to join on
      * @return object Self reference
      */
-    final public function leftJoin($table, array $fields) : self
+    final public function leftJoin(string $table, array $fields) : self
     {
         return $this->join($table, $fields, 'LEFT');
     }
@@ -222,7 +222,7 @@ class Builder
      * @param array $fields Fields to join on
      * @return object Self reference
      */
-    final public function rightJoin($table, array $fields) : self
+    final public function rightJoin(string $table, array $fields) : self
     {
         return $this->join($table, $fields, 'RIGHT');
     }
@@ -482,11 +482,11 @@ class Builder
     /**
      * Adds fields to order by.
      *
-     * @param string $field Field name
+     * @param string|array $field Field name
      * @param string $direction Sort direction
      * @return object Self reference
      */
-    final public function orderBy($field, $direction = 'ASC') : self
+    final public function orderBy($field, string $direction = 'ASC') : self
     {
         $this->crud = 'select';
 
@@ -529,7 +529,7 @@ class Builder
     /**
      * Adds an ascending sort for a field.
      *
-     * @param string $field Field name
+     * @param string|array $field Field name
      * @return object Self reference
      */
     final public function sortAsc($field) : self
@@ -540,7 +540,7 @@ class Builder
     /**
      * Adds an descending sort for a field.
      *
-     * @param string $field Field name
+     * @param string|array $field Field name
      * @return object Self reference
      */
     final public function sortDesc($field) : self
@@ -795,11 +795,11 @@ class Builder
      * Gets the min value for a specified field.
      *
      * @param string $field Field name
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @param string $key Cache key
      * @return mixed
      */
-    final public function min($field, $key = null, $expire = 0)
+    final public function min(string $field, ?string $key = null, int $expire = 0)
     {
         $this->select('MIN('.$field.') min_value');
 
@@ -814,11 +814,11 @@ class Builder
      * Gets the max value for a specified field.
      *
      * @param string $field Field name
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @param string $key Cache key
      * @return mixed
      */
-    final public function max($field, $key = null, $expire = 0)
+    final public function max(string $field, ?string $key = null, int $expire = 0)
     {
         $this->select('MAX('.$field.') max_value');
 
@@ -833,11 +833,11 @@ class Builder
      * Gets the sum value for a specified field.
      *
      * @param string $field Field name
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @param string $key Cache key
      * @return mixed
      */
-    final public function sum($field, $key = null, $expire = 0)
+    final public function sum(string $field, ?string $key = null, int $expire = 0)
     {
         $this->select('SUM('.$field.') sum_value');
 
@@ -852,11 +852,11 @@ class Builder
      * Gets the average value for a specified field.
      *
      * @param string $field Field name
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @param string $key Cache key
      * @return mixed
      */
-    final public function avg($field, $key = null, $expire = 0)
+    final public function avg(string $field, ?string $key = null, int $expire = 0)
     {
         $this->select('AVG('.$field.') avg_value');
 
@@ -871,11 +871,11 @@ class Builder
      * Gets a count of records for a table.
      *
      * @param string $field Field name
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return mixed
      */
-    final public function count($field = '*', ?string $key = null, int $expire = 0)
+    final public function count(string $field = '*', ?string $key = null, int $expire = 0)
     {
         $this->select('COUNT('.$field.') num_rows');
 
@@ -904,11 +904,11 @@ class Builder
     /**
      * Executes a sql statement.
      *
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return Result
      */
-    final public function execute($key = null, $expire = 0)
+    final public function execute(?string $key = null, int $expire = 0)
     {
         return $this->result = $this->query($this->sql(), $this->params);
     }
@@ -917,7 +917,7 @@ class Builder
      * Fetch multiple rows from a select query.
      *
      * @param int|string $type
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return array Rows
      */
@@ -942,7 +942,7 @@ class Builder
      * Fetch a single row from a select query.
      *
      * @param int|string $type
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return mixed
      */
@@ -958,7 +958,7 @@ class Builder
      *
      * @alias self::one()
      * @param int|string $type
-     * @param string $key
+     * @param string|null $key
      * @param int $expire
      * @return mixed
      */
@@ -971,11 +971,11 @@ class Builder
      * Recupere un resultat precis dans les resultat d'une requete en BD
      *
      * @param int|string $type
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return mixed Row
      */
-    final public function row(int $index, $type = PDO::FETCH_OBJ, ?string $key, int $expire)
+    final public function row(int $index, $type = PDO::FETCH_OBJ, ?string $key = null, int $expire = 0)
     {
         $this->execute($key, $expire);
         return $this->result->row($index, $type);
@@ -985,11 +985,11 @@ class Builder
      * Fetch a value from a field.
      *
      * @param string $name Database field name
-     * @param string $key Cache key
+     * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
      * @return mixed Row value
      */
-    final public function value($name, $key = null, $expire = 0)
+    final public function value(string $name, ?string $key = null, int $expire = 0)
     {
         $row = $this->one(PDO::FETCH_OBJ, $key, $expire);
 
