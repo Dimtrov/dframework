@@ -143,6 +143,11 @@ class View
      */
     private $response;
 
+	/**
+	 * @var Cache
+	 */
+	private $cacher;
+
 
     /**
      * Constructeur
@@ -167,6 +172,7 @@ class View
 		$this->title(ucfirst($method) . ' - ' . ucfirst($class));
 
         $this->debug = true;
+		$this->cacher = Service::cache();
     }
 
 
@@ -702,6 +708,7 @@ class View
         {
             $viewPath = $this->config['view_path'];
         }
+		$ext = pathinfo($view)['extension'] ?? 'php';
 
         $view = preg_replace('#\.(php|tpl|html?)$#i', '', $view);
         $this->renderVars['start'] = microtime(true);
@@ -715,8 +722,13 @@ class View
         }
         $this->renderVars['file'] = str_replace('/', DS, $this->renderVars['file']);
 
-        $ext = 'php';
-        foreach (['php', 'tpl', 'html'] As $value)
+		if (!empty($this->renderVars['options']['layout']))
+        {
+            $this->layout = $this->renderVars['options']['layout'];
+        }
+
+		$availableExt = array_unique(array_merge([$ext], ['php', 'tpl', 'html']));
+        foreach ($availableExt As $value)
         {
             if (view_exist($this->renderVars['file'], $value))
             {
@@ -724,6 +736,7 @@ class View
                 break;
             }
         }
+
         if ('php' !== $ext)
         {
             return $this->smarty(str_replace($viewPath, '', $this->renderVars['file']), $ext);
@@ -734,13 +747,12 @@ class View
         // Was it cached?
 		if (isset($this->renderVars['options']['cache_name']))
 		{
-			if ($output = Service::cache()->read($this->renderVars['options']['cache_name']))
+			if ($output = $this->cacher->read($this->renderVars['options']['cache_name']))
 			{
 				$this->logPerformance($this->renderVars['start'], microtime(true), $this->renderVars['view']);
 				return $output;
 			}
 		}
-
 
         if (! is_file($this->renderVars['file']))
         {
@@ -755,10 +767,6 @@ class View
         $output = ob_get_contents();
         @ob_end_clean();
 
-        if (!empty($this->renderVars['options']['layout']))
-        {
-            $this->layout = $this->renderVars['options']['layout'];
-        }
         if (! is_null($this->layout) AND empty($this->currentSection))
 		{
 			$layoutView   = $this->layout;
@@ -798,7 +806,7 @@ class View
         // Should we cache?
 		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
 		{
-            Service::cache()->write(
+            $this->cacher->write(
                 $this->renderVars['options']['cache_name'],
                 $output,
                 (int) $this->renderVars['options']['cache_time']
@@ -817,7 +825,7 @@ class View
     private function compressView(string $output, $compress = 'auto') : string
     {
         if (!in_array($compress, [true, false, 'true', 'false'], true)) {
-            $compress = Config::get('general.environment') !== 'dev';
+            $compress = false == on_dev();
         }
         return (true === $compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
     }
@@ -831,8 +839,16 @@ class View
     {
         $smarty = new Smarty();
         $smarty->assign($this->getData());
-        $smarty->display($file.'.'.str_replace('.', '', $ext));
+		$smarty->assign('page_title', $this->title());
+		$smarty->setLayout($this->layout);
 
-        return '';
+		// Should we cache?
+		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
+		{
+			$smarty->setCacheLifetime(60 * $this->renderVars['options']['cache_time'] ?? 60);
+			$smarty->setCompileId($this->renderVars['options']['cache_name'] ?? null);
+		}
+
+        return $smarty->render($file.'.'.str_replace('.', '', $ext));
     }
 }
