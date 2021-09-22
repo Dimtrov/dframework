@@ -38,7 +38,7 @@ use MirazMac\Requirements\Checker As envChecker;
  */
 class dFramework
 {
-    const VERSION = '3.3.4';
+    const VERSION = '3.3.5';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
