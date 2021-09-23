@@ -160,12 +160,14 @@ class Controller extends CoreController
                 $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->badRequest(lang('rest.bad_used', [$url], $this->_locale));
             }
-            if ($this->_config['handle_exceptions'] === false)
-            {
-                throw $ex;
-            }
-            // If the method doesn't exist, then the error will be caught and an error response shown
-           Exception::Throw($ex);
+
+			return $this->internalError('Internal Server Error', [
+				"type"    => get_class($ex),
+				'message' => $ex->getMessage(),
+				'code'    => $ex->getCode(),
+				'file'    => $ex->getFile(),
+				'line'    => $ex->getLine()
+			]);
         }
     }
 
