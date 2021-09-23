@@ -826,8 +826,18 @@ class Controller extends CoreController
         {
             if ('bearer' === strtolower($this->_config['auth']))
             {
-                $payload = $this->decodeToken($this->getBearerToken(), 'bearer');
+				$token = $this->getBearerToken();
+				if (empty($token))
+				{
+					$response = $this->invalidToken(lang('rest.token_not_found', null, $this->_locale));
+					if ($response instanceof ResponseInterface)
+                    {
+                        $this->response = $response;
+                    }
+					return false;
+				}
 
+                $payload = $this->decodeToken($token, 'bearer');
                 if ($payload instanceof Throwable)
                 {
 					$response = $this->invalidToken($payload->getMessage());
