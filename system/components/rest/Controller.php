@@ -155,7 +155,7 @@ class Controller extends CoreController
             return Service::injector()->call([$instance, $method], (array) $params);
         }
         catch (Throwable $ex) {
-            if (Config::get('general.environment') !== 'dev')
+            if (!on_dev())
             {
                 $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->badRequest(lang('rest.bad_used', [$url], $this->_locale));
