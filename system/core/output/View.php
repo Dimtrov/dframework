@@ -845,6 +845,7 @@ class View
 		// Should we cache?
 		if (!empty($this->renderVars['options']['cache_name']) OR !empty($this->renderVars['options']['cache_time']))
 		{
+			$smarty->enableCache();
 			$smarty->setCacheLifetime(60 * $this->renderVars['options']['cache_time'] ?? 60);
 			$smarty->setCompileId($this->renderVars['options']['cache_name'] ?? null);
 		}
