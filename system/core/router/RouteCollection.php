@@ -643,34 +643,41 @@ class RouteCollection
 			}
 		}
 
+		$as = $name;
+		if (!empty($this->group))
+		{
+			$as = str_replace(['/', '\\'], '.', $this->group) . '.' . $as;
+		}
+		$as = strtolower($as);
+
 		if (in_array('index', $methods))
 		{
-			$this->get($name, $new_name . '::index', array_merge($options ?? [], ['as' => strtolower($name.'.index')]));
+			$this->get($name, $new_name . '::index', array_merge($options ?? [], ['as' => $as.'.index']));
 		}
 		if (in_array('new', $methods))
 		{
-			$this->get($name . '/new', $new_name . '::new', array_merge($options ?? [], ['as' => strtolower($name.'.new')]));
+			$this->get($name . '/new', $new_name . '::new', array_merge($options ?? [], ['as' => $as.'.new']));
 		}
 		if (in_array('edit', $methods))
 		{
-			$this->get($name . '/' . $id . '/edit', $new_name . '::edit/$1', array_merge($options ?? [], ['as' => strtolower($name.'.edit')]));
+			$this->get($name . '/' . $id . '/edit', $new_name . '::edit/$1', array_merge($options ?? [], ['as' => $as.'.edit']));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/' . $id, $new_name . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
+			$this->get($name . '/' . $id, $new_name . '::show/$1', array_merge($options ?? [], ['as' => $as.'.show']));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name, $new_name . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
+			$this->post($name, $new_name . '::create', array_merge($options ?? [], ['as' => $as.'.create']));
 		}
 		if (in_array('update', $methods))
 		{
-			$this->put($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update_put')]));
-			$this->patch($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update_patch')]));
+			$this->put($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => $as.'.update_put']));
+			$this->patch($name . '/' . $id, $new_name . '::update/$1', array_merge($options ?? [], ['as' => $as.'.update_patch']));
 		}
 		if (in_array('delete', $methods))
 		{
-			$this->delete($name . '/' . $id, $new_name . '::delete/$1', array_merge($options ?? [], ['as' => strtolower($name.'.delete')]));
+			$this->delete($name . '/' . $id, $new_name . '::delete/$1', array_merge($options ?? [], ['as' => $as.'.delete']));
 		}
 
 		// Web Safe? delete needs checking before update because of method name
@@ -678,11 +685,11 @@ class RouteCollection
 		{
 			if (in_array('delete', $methods))
 			{
-				$this->post($name . '/' . $id . '/delete', $new_name . '::delete/$1',  array_merge($options ?? [], ['as' => strtolower($name.'.delete_post')]));
+				$this->post($name . '/' . $id . '/delete', $new_name . '::delete/$1',  array_merge($options ?? [], ['as' => $as.'.delete_post']));
 			}
 			if (in_array('update', $methods))
 			{
-				$this->post($name . '/' . $id, $new_name . '::update/$1',  array_merge($options ?? [], ['as' => strtolower($name.'.update_post')]));
+				$this->post($name . '/' . $id, $new_name . '::update/$1',  array_merge($options ?? [], ['as' => $as.'.update_post']));
 			}
 		}
 
@@ -762,45 +769,52 @@ class RouteCollection
 			}
 		}
 
+		$as = $name;
+		if (!empty($this->group))
+		{
+			$as = str_replace(['/', '\\'], '.', $this->group) . '.' . $as;
+		}
+		$as = strtolower($as);
+
 		if (in_array('index', $methods))
 		{
-			$this->get($name, $newName . '::index', array_merge($options ?? [], ['as' => strtolower($name.'.index')]));
+			$this->get($name, $newName . '::index', array_merge($options ?? [], ['as' => $as.'.index']));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/show/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
+			$this->get($name . '/show/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => $as.'.show']));
 		}
 		if (in_array('new', $methods))
 		{
-			$this->get($name . '/new', $newName . '::new', array_merge($options ?? [], ['as' => strtolower($name.'.new')]));
+			$this->get($name . '/new', $newName . '::new', array_merge($options ?? [], ['as' => $as.'.new']));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name . '/create', $newName . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
+			$this->post($name . '/create', $newName . '::create', array_merge($options ?? [], ['as' => $as.'.create']));
 		}
 		if (in_array('edit', $methods))
 		{
-			$this->get($name . '/edit/' . $id, $newName . '::edit/$1', array_merge($options ?? [], ['as' => strtolower($name.'.edit')]));
+			$this->get($name . '/edit/' . $id, $newName . '::edit/$1', array_merge($options ?? [], ['as' => $as.'.edit']));
 		}
 		if (in_array('update', $methods))
 		{
-			$this->post($name . '/update/' . $id, $newName . '::update/$1', array_merge($options ?? [], ['as' => strtolower($name.'.update')]));
+			$this->post($name . '/update/' . $id, $newName . '::update/$1', array_merge($options ?? [], ['as' => $as.'.update']));
 		}
 		if (in_array('remove', $methods))
 		{
-			$this->get($name . '/remove/' . $id, $newName . '::remove/$1', array_merge($options ?? [], ['as' => strtolower($name.'.remove')]));
+			$this->get($name . '/remove/' . $id, $newName . '::remove/$1', array_merge($options ?? [], ['as' => $as.'.remove']));
 		}
 		if (in_array('delete', $methods))
 		{
-			$this->post($name . '/delete/' . $id, $newName . '::delete/$1', array_merge($options ?? [], ['as' => strtolower($name.'.delete')]));
+			$this->post($name . '/delete/' . $id, $newName . '::delete/$1', array_merge($options ?? [], ['as' => $as.'.delete']));
 		}
 		if (in_array('show', $methods))
 		{
-			$this->get($name . '/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => strtolower($name.'.show')]));
+			$this->get($name . '/' . $id, $newName . '::show/$1', array_merge($options ?? [], ['as' => $as.'.show']));
 		}
 		if (in_array('create', $methods))
 		{
-			$this->post($name, $newName . '::create', array_merge($options ?? [], ['as' => strtolower($name.'.create')]));
+			$this->post($name, $newName . '::create', array_merge($options ?? [], ['as' => $as.'.create']));
 		}
 
 		return $this;
@@ -1076,7 +1090,19 @@ class RouteCollection
 			$from = str_ireplace(':' . $tag, $pattern, $from);
         }
 
-		$name = $options['as'] ?? $from;
+		if (!empty($options['as']))
+		{
+			$name = $options['as'];
+		}
+		else
+		{
+			$name = $from;
+			if (!empty($this->group))
+			{
+				$name = str_replace(['/', '\\'], '.', $this->group) . '.' . $name;
+			}
+			$name = strtolower($name);
+		}
 
 		if (isset($this->routes[$verb][$name]))
 		{
