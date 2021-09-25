@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.3
+ *  @version    3.3.5
  */
 
 namespace dFramework\core\router;
@@ -608,7 +608,10 @@ class RouteCollection
 		// $name value with the name of the new controller.
 		if (isset($options['controller']))
 		{
-			$new_name = ucfirst(filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$controller = explode('/', filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$last_index = count($controller) - 1;
+			$controller[$last_index] = ucfirst($controller[$last_index]);
+			$new_name = implode('/', $controller);
 		}
 
 		// In order to allow customization of allowed id values
@@ -724,7 +727,10 @@ class RouteCollection
 		// $name value with the name of the new controller.
 		if (isset($options['controller']))
 		{
-			$newName = ucfirst(filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$controller = explode('/', filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$last_index = count($controller) - 1;
+			$controller[$last_index] = ucfirst($controller[$last_index]);
+			$newName = implode('/', $controller);
 		}
 
 		// In order to allow customization of allowed id values

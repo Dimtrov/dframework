@@ -122,7 +122,9 @@ class FileLocator
      */
     public static function library(string $library)
     {
+		$library = str_replace(DS, '/', $library);
         $library = explode('/', $library);
+
         $lib = ucfirst(end($library));
         $library[count($library) - 1] = $lib;
 
@@ -178,7 +180,9 @@ class FileLocator
      */
     public static function model(string $model)
     {
+		$model = str_replace(DS, '/', $model);
         $model = explode('/', $model);
+
         $mod = ucfirst(end($model));
         $mod = (!preg_match('#Model$#', $mod)) ? $mod.'Model' : $mod;
         $model[count($model) - 1] = $mod;
@@ -232,7 +236,9 @@ class FileLocator
      */
     public static function controller(string $controller)
     {
+		$controller = str_replace(DS, '/', $controller);
         $controller = explode('/', $controller);
+
         $con = ucfirst(end($controller));
         $con = (!preg_match('#Controller$#', $con)) ? $con.'Controller' : $con;
         $controller[count($controller) - 1] = $con;
