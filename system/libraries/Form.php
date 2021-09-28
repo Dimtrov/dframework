@@ -61,6 +61,11 @@ class Form
 	private $request;
 
 
+	public function __construct()
+	{
+		$this->request = Service::request();
+	}
+
 	/**
      * Initailise les donnees et les erreurs du formulaire
      *
@@ -74,11 +79,10 @@ class Form
         $this->datas = !empty($datas) ? $datas : [];
         $this->errors = !empty($errors) ? $errors : [];
 
-		if (empty($request) OR ! ($request instanceof ServerRequestInterface))
+		if (!empty($request) AND $request instanceof ServerRequestInterface)
 		{
-			$request = Service::request();
+			$this->request = $request;
 		}
-        $this->request = $request;
 
         return $this;
     }
@@ -550,10 +554,17 @@ HTML;
 			$hidden = $this->hidden($key, $attributes);
 		}
 
+		$prepend = $append = '';
+		if ($type === 'file')
+		{
+			$prepend = '<div class="custom-file">';
+			$append = '<label class="custom-file-label" for="field_'.$key.'">Choose file</label></div>';
+		}
+
 		return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
-                <input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
+                {$prepend}<input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />{$append}
 				{$description} {$error_feedback} {$hidden}
             {$this->surround['end']}
 HTML;
