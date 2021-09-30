@@ -557,8 +557,11 @@ HTML;
 		$prepend = $append = '';
 		if ($type === 'file')
 		{
+            $placeholder = $attributes['placeholder'] ?? 'Choose file';
+            unset($attributes['placeholder']);
+
 			$prepend = '<div class="custom-file">';
-			$append = '<label class="custom-file-label" for="field_'.$key.'">Choose file</label></div>';
+			$append = '<label class="custom-file-label" for="field_'.$key.'">'.$placeholder.'</label></div>';
 		}
 
 		return <<<HTML
@@ -627,6 +630,12 @@ HTML;
         $name = ($key !== null) ? "name={$key}" : "";
 
         $class = $attributes['class'] ?? '';
+        $href = '';
+		if (!empty($attributes['href']))
+		{
+			$href = $attributes['href'];
+			unset($attributes['href']);
+		}
 
         if (empty($attributes['class']) OR (!empty($attributes['class']) AND !preg_match('#btn-(primary|danger|default|secondary|warning|success|info)#i', strtolower($attributes['class']))))
         {
@@ -643,9 +652,15 @@ HTML;
             }
         }
 
+        $btn = '<button type="'.$type.'" class="btn '.$class.'" id="btn_'.$id.'" '.$name.' '.$this->getAttributes($attributes).'>'.$value.'</button>';
+		if ($type === 'reset' AND !empty($href))
+		{
+			$btn = '<a href="'.$href.'" class="btn '.$class.'" id="btn_'.$id.'" '.$name.' '.$this->getAttributes($attributes).'>'.$value.'</a>';
+		}
+
         return <<<HTML
             {$this->surround['start']}
-                <button type="{$type}" class="btn {$class}" id="btn_{$id}" {$name} {$this->getAttributes($attributes)}>{$value}</button>
+                {$btn}
             {$this->surround['end']}
 HTML;
     }
