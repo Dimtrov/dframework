@@ -246,6 +246,25 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @return object Self reference
+     */
+    final public function notWhere($field, $value = null) : self
+    {
+        if (!is_array($field))
+        {
+            $field = [$field => $value];
+        }
+        foreach ($field As $key => $value)
+        {
+            $this->where($key . ' !=', $value);
+        }
+        return $this;
+    }
+	/**
+     * Adds where conditions.
+     *
+     * @param string|array $field A field name or an array of fields and values.
+     * @param mixed $value A field value to compare to
      * @return self
      */
     final public function orWhere($field, $value = null) : self
@@ -257,6 +276,25 @@ class Builder
         foreach ($field As $key => $value)
         {
             $this->where('|' . $key, $value);
+        }
+        return $this;
+    }
+	/**
+     * Adds where conditions.
+     *
+     * @param string|array $field A field name or an array of fields and values.
+     * @param mixed $value A field value to compare to
+     * @return self
+     */
+    final public function orNotWhere($field, $value = null) : self
+    {
+        if (!is_array($field))
+        {
+            $field = [$field => $value];
+        }
+        foreach ($field As $key => $value)
+        {
+            $this->where('|' . $key . ' !=', $value);
         }
         return $this;
     }
