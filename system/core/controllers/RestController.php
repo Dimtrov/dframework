@@ -172,16 +172,17 @@ class RestController extends BaseController
 		{
 			if (method_exists($element, 'format'))
 			{
-				$element = $element->format();
+				$element = Service::injector()->call([$element, 'format']);
 			}
 			else
 			{
-				$element = $element->toArray();
+				$element = Service::injector()->call([$element, 'toArray']);
 			}
 		}
 
 		return $element;
 	}
+
 
 	/**
      * Genere un token d'authentification
@@ -371,7 +372,7 @@ class RestController extends BaseController
 		return $this->response($response, $code);
     }
 
-	/**
+    /**
      * Renvoi un message d'erreur generaliste
      *
      * @param string $message
