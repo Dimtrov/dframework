@@ -311,11 +311,11 @@ class Controller extends CoreController
 		{
 			if (method_exists($element, 'format'))
 			{
-				$element = $element->format();
+				$element = Service::injector()->call([$element, 'format']);
 			}
 			else
 			{
-				$element = $element->toArray();
+				$element = Service::injector()->call([$element, 'toArray']);
 			}
 		}
 
