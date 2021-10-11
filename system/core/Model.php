@@ -174,11 +174,11 @@ class Model extends Builder
 
         foreach ($dif As $key => $value)
         {
-            $this->where($key, $value);
+            $this->where($key . ' !=', $value);
         }
         foreach ($eq As $key => $value)
         {
-            $this->where($key . ' !=', $value);
+            $this->where($key, $value);
         }
 
         return $this->count() > 0;
