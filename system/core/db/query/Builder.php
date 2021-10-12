@@ -191,6 +191,9 @@ class Builder
             'INNER',
             'LEFT',
             'RIGHT',
+			'FULL OUTER',
+            'LEFT OUTER',
+            'RIGHT OUTER',
         ];
         if (!in_array($type, $joins))
         {
@@ -204,6 +207,30 @@ class Builder
     }
 
     /**
+     * Adds a full table join.
+     *
+     * @param string $table Table to join to
+     * @param array $fields Fields to join on
+     * @return self
+     */
+    final public function fullJoin(string $table, array $fields) : self
+	{
+        return $this->join($table, $fields, 'FULL OUTER');
+    }
+
+	/**
+     * Adds a inner table join.
+     *
+     * @param string $table Table to join to
+     * @param array $fields Fields to join on
+     * @return self
+     */
+    final public function innerJoin(string $table, array $fields) : self
+	{
+        return $this->join($table, $fields, 'INNER');
+    }
+
+	/**
      * Adds a left table join.
      *
      * @param string $table Table to join to
