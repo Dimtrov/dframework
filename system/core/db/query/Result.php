@@ -393,7 +393,7 @@ class Result
      *
      * @return int|null
      */
-    public function insertID() : ?int
+    final public function insertID() : ?int
     {
         return $this->db->insertID();
     }
