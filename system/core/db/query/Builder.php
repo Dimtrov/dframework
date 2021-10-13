@@ -143,6 +143,10 @@ class Builder
      */
     final public function from($tables, bool $reset = false) : self
     {
+		if (true === $reset)
+		{
+			$this->table = [];
+		}
         $tables = (array) $tables;
         foreach ($tables As $table)
         {
