@@ -288,7 +288,7 @@ class BaseController
         {
 			$instance = Load::controller($controller);
 
-			if ($alias == false) {
+			if ($alias === false) {
 				return $instance;
 			}
 
@@ -335,7 +335,7 @@ class BaseController
         {
             $instance = Load::library($library);
 
-			if ($alias == false) {
+			if ($alias === false) {
 				return $instance;
 			}
 
