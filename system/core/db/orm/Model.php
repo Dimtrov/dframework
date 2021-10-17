@@ -390,6 +390,7 @@ class Model
 		if ($entry !== false)
 		{
 			$this->exists = true;
+			$this->setData($data);
 
 			if ($this->incrementing)
 			{
