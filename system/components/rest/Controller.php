@@ -315,7 +315,7 @@ class Controller extends CoreController
 			}
 			else
 			{
-				$element = Service::injector()->call([$element, 'toArray']);
+				$element = call_user_func([$element, 'toArray']);
 			}
 		}
 
