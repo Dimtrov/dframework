@@ -101,7 +101,7 @@ abstract class Entity
 	 */
 	private function _accepts() : array
 	{
-		return $this->accepts;
+		return (array) ($this->accepts == '*' ? $this->columns : $this->accepts);
 	}
 	/**
 	 * Verifie si un attributs est autorisé
@@ -113,10 +113,11 @@ abstract class Entity
 	{
 		$attributes = (array) $attributes;
 		$isAccepts = true;
+		$accepted = $this->_accepts();
 
 		foreach ($attributes As $key => $value)
 		{
-			if (!in_array($key, $this->accepts))
+			if (!in_array($key, $accepted))
 			{
 				$isAccepts = false;
 				break;
@@ -132,7 +133,7 @@ abstract class Entity
 	 */
 	private function _rejects() : array
 	{
-		return $this->rejects;
+		return (array) ($this->rejects == '*' ? $this->columns : $this->rejects);
 	}
 	/**
 	 * Verifie si un attributs est rejeté
@@ -144,10 +145,11 @@ abstract class Entity
 	{
 		$attributes = (array) $attributes;
 		$isRejects = false;
+		$rejected = $this->_rejects();
 
 		foreach ($attributes As $key => $value)
 		{
-			if (in_array($key, $this->rejects))
+			if (in_array($key, $rejected))
 			{
 				$isRejects = false;
 				break;
