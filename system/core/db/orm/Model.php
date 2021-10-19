@@ -25,10 +25,11 @@ use dFramework\core\db\Database;
 use dFramework\core\loader\Load;
 use dFramework\core\utilities\Str;
 use dFramework\core\exception\Errors;
-use dFramework\core\db\orm\Relations\HasOne;
-use dFramework\core\db\orm\Relations\HasMany;
-use dFramework\core\db\orm\Relations\BelongsTo;
-use dFramework\core\db\orm\Relations\BelongsToMany;
+use dFramework\core\db\orm\relations\HasOne;
+use dFramework\core\db\orm\relations\HasMany;
+use dFramework\core\db\orm\relations\BelongsTo;
+use dFramework\core\db\orm\relations\BelongsToMany;
+use dFramework\core\db\orm\relations\Relation;
 
 /**
  * Model
@@ -600,7 +601,7 @@ class Model
 	 */
 	public function hasOne(string $related, ?string $foreign_key = null) : HasOne
 	{
-		return new Relations\HasOne($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new HasOne($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 
 	/**
@@ -612,7 +613,7 @@ class Model
 	 */
 	public function hasMany(string $related, ?string $foreign_key = null) : HasMany
 	{
-		return new Relations\HasMany($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new HasMany($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
 
 	/**
@@ -623,7 +624,7 @@ class Model
 	 */
 	public function belongsTo(string $related, ?string $foreign_key = null) : BelongsTo
 	{
-		return new Relations\BelongsTo($this->entity, $related, $this->getRelationFk(false, $related, $foreign_key));
+		return new BelongsTo($this->entity, $related, $this->getRelationFk(false, $related, $foreign_key));
 	}
 
 	/**
@@ -650,7 +651,7 @@ class Model
 
 		$pivot_builder = new QueryBuilder($this->entity, $pivot_table);
 
-		return new Relations\BelongsToMany($this->entity, $related, $pivot_builder, $foreign_key, $other_key);
+		return new BelongsToMany($this->entity, $related, $pivot_builder, $foreign_key, $other_key);
 	}
 
 	/**
@@ -682,10 +683,10 @@ class Model
 	 * Defini une relation
 	 *
 	 * @param string $name
-	 * @param Relations\Relation $relation
+	 * @param Relation $relation
 	 * @return void
 	 */
-	public function setRelation(string $name, Relations\Relation $relation)
+	public function setRelation(string $name, Relation $relation)
 	{
 		$this->relations[$name] = $relation->relate($this->entity);
 	}
@@ -694,9 +695,9 @@ class Model
 	 * Recupere une relation
 	 *
 	 * @param string $name
-	 * @return Relations\Relation
+	 * @return Relation|null
 	 */
-	public function getRelation(string $name) : ?Relations\Relation
+	public function getRelation(string $name) : ?Relation
 	{
 		return $this->relations[$name] ?? null;
 	}
