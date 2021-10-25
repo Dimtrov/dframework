@@ -59,7 +59,7 @@ class Smarty extends \SmartyBC
         $this->cache_dir    = VIEW_DIR.'reserved'.DS.'cache'.DS;
         $this->config_dir   = VIEW_DIR.'reserved'.DS.'conf'.DS;
 
-        $this->caching = self::CACHING_LIFETIME_SAVED;
+        $this->caching = self::CACHING_OFF;
         $this->compile_check = on_dev();
     }
 
@@ -72,6 +72,18 @@ class Smarty extends \SmartyBC
 	public function setLayout(?string $layout) : self
 	{
 		$this->layout = $layout;
+
+		return $this;
+	}
+
+	/**
+	 * Active la mise en cache des pages
+	 *
+	 * @return self
+	 */
+	public function enableCache() : self
+	{
+		$this->setCaching(self::CACHING_LIFETIME_SAVED);
 
 		return $this;
 	}

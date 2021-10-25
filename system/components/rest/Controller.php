@@ -155,17 +155,19 @@ class Controller extends CoreController
             return Service::injector()->call([$instance, $method], (array) $params);
         }
         catch (Throwable $ex) {
-            if (Config::get('general.environment') !== 'dev')
+            if (!on_dev())
             {
                 $url = explode('?', $this->request->getRequestTarget())[0];
                 return $this->badRequest(lang('rest.bad_used', [$url], $this->_locale));
             }
-            if ($this->_config['handle_exceptions'] === false)
-            {
-                throw $ex;
-            }
-            // If the method doesn't exist, then the error will be caught and an error response shown
-           Exception::Throw($ex);
+
+			return $this->internalError('Internal Server Error', [
+				"type"    => get_class($ex),
+				'message' => $ex->getMessage(),
+				'code'    => $ex->getCode(),
+				'file'    => $ex->getFile(),
+				'line'    => $ex->getLine()
+			]);
         }
     }
 
@@ -309,11 +311,11 @@ class Controller extends CoreController
 		{
 			if (method_exists($element, 'format'))
 			{
-				$element = $element->format();
+				$element = Service::injector()->call([$element, 'format']);
 			}
 			else
 			{
-				$element = $element->toArray();
+				$element = call_user_func([$element, 'toArray']);
 			}
 		}
 
@@ -826,8 +828,18 @@ class Controller extends CoreController
         {
             if ('bearer' === strtolower($this->_config['auth']))
             {
-                $payload = $this->decodeToken($this->getBearerToken(), 'bearer');
+				$token = $this->getBearerToken();
+				if (empty($token))
+				{
+					$response = $this->invalidToken(lang('rest.token_not_found', null, $this->_locale));
+					if ($response instanceof ResponseInterface)
+                    {
+                        $this->response = $response;
+                    }
+					return false;
+				}
 
+                $payload = $this->decodeToken($token, 'bearer');
                 if ($payload instanceof Throwable)
                 {
 					$response = $this->invalidToken($payload->getMessage());

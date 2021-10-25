@@ -25,10 +25,11 @@ use dFramework\core\db\Database;
 use dFramework\core\loader\Load;
 use dFramework\core\utilities\Str;
 use dFramework\core\exception\Errors;
-use dFramework\core\db\orm\Relations\HasOne;
-use dFramework\core\db\orm\Relations\HasMany;
-use dFramework\core\db\orm\Relations\BelongsTo;
-use dFramework\core\db\orm\Relations\BelongsToMany;
+use dFramework\core\db\orm\relations\HasOne;
+use dFramework\core\db\orm\relations\HasMany;
+use dFramework\core\db\orm\relations\BelongsTo;
+use dFramework\core\db\orm\relations\BelongsToMany;
+use dFramework\core\db\orm\relations\Relation;
 
 /**
  * Model
@@ -87,13 +88,19 @@ class Model
 	protected $relations = [];
 
 
+	/**
+	 * construct
+	 *
+	 * @param Entity $entity
+	 * @param array $newData
+	 */
 	public function __construct(Entity $entity, array $newData = [])
 	{
 		$this->entity = $entity;
 
 		if (is_array($newData))
 		{
-			$this->setData( $newData);
+			$this->setData($newData);
 		}
 		helper('inflector');
 	}
@@ -148,8 +155,9 @@ class Model
 
 		return clone $this->entity;
 	}
+
 	/**
-	 * Undocumented function
+	 * Renvoie les données exposées de l'entité sous forme de tableau associatif
 	 *
 	 * @return array
 	 */
@@ -186,8 +194,9 @@ class Model
 
 		return $array;
 	}
+
 	/**
-	 * Undocumented function
+	 * Renvoie les propriétés exposées de l'entité sous forme de chaine json
 	 *
 	 * @return string
 	 */
@@ -195,6 +204,12 @@ class Model
 	{
 		return json_encode($this->toArray());
 	}
+	/**
+	 * Renvoie les propriétés exposées de l'entité sous forme de chaine json
+	 *
+	 * @alias self::json()
+	 * @return string
+	 */
 	public function toJson() : string
 	{
 		return $this->json();
@@ -225,6 +240,28 @@ class Model
 		$result = new Result($this, $builder);
 
 		return is_array($id) ? $result->rows() : $result->first();
+	}
+	/**
+	 * Retrouve une donnees en fonction de sa cle primaire
+	 *
+	 * @param mixed $id
+	 * @alias self::find()
+	 * @return mixed
+	 */
+	public function findByPk($id)
+	{
+		return $this->find($id);
+	}
+	/**
+	 * Retrouve une donnees en fonction de sa cle primaire
+	 *
+	 * @param mixed $id
+	 * @alias self::find()
+	 * @return mixed
+	 */
+	public function findById($id)
+	{
+		return $this->find($id);
 	}
 
 	/**
@@ -279,8 +316,15 @@ class Model
 			$builder->select($columns);
 		}
 
-		return (new Result( $this, $builder))->first();
+		return (new Result($this, $builder))->first();
 	}
+	/**
+	 * Recupere les donnees du premier element dans la table d'entite
+	 *
+	 * @param array $columns
+	 * @alias self::first()
+	 * @return mixed
+	 */
 	public function one(array $columns = [])
 	{
 		return $this->first($columns);
@@ -292,14 +336,18 @@ class Model
 	 * @param string $field
 	 * @return mixed
 	 */
-	protected function pluck(string $field)
+	public function pluck(string $field)
 	{
 		return $this->first([$field])->{$field};
 	}
 	/**
-	 * alias self::pluck
+	 * Retourne la valeur d'un champ donné dans le premier enregistrement de la table d'entite
+	 *
+	 * @param string $field
+	 * @alias self::pluck
+	 * @return mixed
 	 */
-	protected function value(string $field)
+	public function value(string $field)
 	{
 		return $this->pluck($field);
 	}
@@ -343,6 +391,7 @@ class Model
 		if ($entry !== false)
 		{
 			$this->exists = true;
+			$this->setData($data);
 
 			if ($this->incrementing)
 			{
@@ -485,8 +534,9 @@ class Model
 		$builder->limit($per_page, $offset);
 		return $this->get();
 	}
+
 	/**
-	 * Genere une pagination navbar
+	 * Genere une navbar de pagination
 	 *
 	 * @param integer|null $per_page
 	 * @return array
@@ -527,22 +577,21 @@ class Model
 	 */
 	private function getRelationFk(bool $has, string $related, ?string $foreign_key = null) : string
 	{
+		if (empty($foreign_key) AND true == $has)
+		{
+			$foreign_key = $this->entity->getPrimaryKey();
+		}
 		if (empty($foreign_key))
 		{
-			if ($has)
-			{
-				$foreign_key = $this->entity->getPrimaryKey();
-			}
-			else
-			{
-				$related = $this->makeTableFromClass($related);
+			$related = $this->makeTableFromClass($related);
 
-				$pk = Database::indexes(plural($related), 'PRIMARY');
-				$foreign_key = $pk->fields[0] ?? 'id_' . singular($related);
-			}
+			$pk = Database::indexes($related, 'PRIMARY');
+			$foreign_key = $pk->fields[0] ?? 'id_' . singularize($related);
 		}
+
 		return $foreign_key;
 	}
+
 	/**
 	 * Cree une relation de type 1-1
 	 *
@@ -552,8 +601,9 @@ class Model
 	 */
 	public function hasOne(string $related, ?string $foreign_key = null) : HasOne
 	{
-		return new Relations\HasOne($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new HasOne($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
+
 	/**
 	 * Cree une relation de type 1-n
 	 *
@@ -563,8 +613,9 @@ class Model
 	 */
 	public function hasMany(string $related, ?string $foreign_key = null) : HasMany
 	{
-		return new Relations\HasMany($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
+		return new HasMany($this->entity, $related, $this->getRelationFk(true, $related, $foreign_key));
 	}
+
 	/**
 	 *
 	 * @param string $related
@@ -573,7 +624,7 @@ class Model
 	 */
 	public function belongsTo(string $related, ?string $foreign_key = null) : BelongsTo
 	{
-		return new Relations\BelongsTo($this->entity, $related, $this->getRelationFk(false, $related, $foreign_key));
+		return new BelongsTo($this->entity, $related, $this->getRelationFk(false, $related, $foreign_key));
 	}
 
 	/**
@@ -600,8 +651,9 @@ class Model
 
 		$pivot_builder = new QueryBuilder($this->entity, $pivot_table);
 
-		return new Relations\BelongsToMany($this->entity, $related, $pivot_builder, $foreign_key, $other_key);
+		return new BelongsToMany($this->entity, $related, $pivot_builder, $foreign_key, $other_key);
 	}
+
 	/**
 	 * Fabrique un nom de table en fonction du nom de la classe d'entité donnée
 	 *
@@ -613,34 +665,47 @@ class Model
 		$entityname = explode('\\', preg_replace('#Entity$#', '', $entityname));
 		$entityname = end($entityname);
 
-		return pluralize(Str::toSnake($entityname));
+		$table_name = Str::toSnake($entityname);
+
+		if (!Database::tableExist($table_name))
+		{
+			$table_name = pluralize($table_name);
+			if (!Database::tableExist($table_name))
+			{
+				$table_name = singularize($table_name);
+			}
+		}
+
+		return $table_name;
 	}
 
 	/**
 	 * Defini une relation
 	 *
 	 * @param string $name
-	 * @param Relations\Relation $relation
+	 * @param Relation $relation
 	 * @return void
 	 */
-	public function setRelation(string $name, Relations\Relation $relation)
+	public function setRelation(string $name, Relation $relation)
 	{
 		$this->relations[$name] = $relation->relate($this->entity);
 	}
+
 	/**
 	 * Recupere une relation
 	 *
 	 * @param string $name
-	 * @return Relations\Relation
+	 * @return Relation|null
 	 */
-	public function getRelation(string $name) : ?Relations\Relation
+	public function getRelation(string $name) : ?Relation
 	{
 		return $this->relations[$name] ?? null;
 	}
+
 	// Eager loading for a single row? Just call the method
-	public function load($related)
+	public function load(string $related)
 	{
-		if(!method_exists($this, $related))
+		if (!method_exists($this, $related))
 		{
 			return false;
 		}
@@ -661,7 +726,7 @@ class Model
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function exist($key, $value = null) : bool
+	final public function exist($key, $value = null) : bool
 	{
 		$process = false;
 		$conditions = [];
@@ -681,6 +746,7 @@ class Model
 		}
 		throw new Exception("Mauvaise utilisation de la methode exist(). Consultez la doc pour plus d'informations", 1);
 	}
+
 	/**
      * Verifie si une valeur n'existe pas deja pour une cle donnee
      *
@@ -707,27 +773,62 @@ class Model
 	// Aggregate Methods
 	// ======================================
 
-	protected function aggregates($function, $field)
+	protected function aggregates(string $function, string $field)
 	{
 		return call_user_func([$this->builder(), $function], $field);
 	}
-	protected function max($field)
+
+	/**
+     * Gets the max value for a specified field.
+     *
+     * @param string $field Field name
+     * @return mixed
+     */
+    final public function max(string $field)
 	{
 		return $this->aggregates(__FUNCTION__, $field);
 	}
-	protected function min($field)
+
+	/**
+     * Gets the min value for a specified field.
+     *
+     * @param string $field Field name
+     * @return mixed
+     */
+    final public function min(string $field)
 	{
 		return $this->aggregates(__FUNCTION__, $field);
 	}
-	protected function avg($field)
+
+	/**
+     * Gets the average value for a specified field.
+     *
+     * @param string $field Field name
+     * @return mixed
+     */
+    final public function avg(string $field)
 	{
 		return round( $this->aggregates(__FUNCTION__, $field), 2);
 	}
-	protected function sum($field)
+
+	/**
+     * Gets the sum value for a specified field.
+     *
+     * @param string $field Field name
+     * @return mixed
+     */
+	final public function sum(string $field)
 	{
 		return $this->aggregates(__FUNCTION__, $field);
 	}
-	protected function count($field = null)
+
+	/**
+     * Gets a count of records for a table.
+     *
+     * @param string $field Field name
+     * @return mixed
+     */
+    final public function count(?string $field = null)
 	{
 		if (empty($field))
 		{
@@ -738,7 +839,11 @@ class Model
 	}
 
 
-
+	/**
+	 * Renvoi l'instance de QueryBuilder existant ou créé un nouveau si nécessaire
+	 *
+	 * @return QueryBuilder
+	 */
 	protected function builder() : QueryBuilder
 	{
 		if (!empty($this->queryBuilder))

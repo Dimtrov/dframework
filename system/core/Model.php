@@ -39,7 +39,7 @@ class Model extends Builder
 {
     /**
      * Charge un model
-     * 
+     *
      * @param string|array $model
      * @param string|null $alias
      * @since 3.2
@@ -49,14 +49,14 @@ class Model extends Builder
     {
         if (is_array($model))
         {
-            foreach ($model As $k => $v) 
+            foreach ($model As $k => $v)
             {
-                if (is_string($k)) 
+                if (is_string($k))
                 {
                     $mod = $k;
                     $alias = $v;
                 }
-                else 
+                else
                 {
                     $mod = $v;
                     $alias = $v;
@@ -64,16 +64,16 @@ class Model extends Builder
                 $this->loadModel($mod, $alias);
             }
         }
-        else 
+        else
         {
             $mod = explode('/', $model);
             $mod = end($mod);
             $property = strtolower((!empty($alias) AND is_string($alias)) ? $alias : $mod);
-     
+
             $this->{$property} = Load::model($model);
         }
     }
-    
+
     /**
      * Charge une api externe
      *
@@ -87,7 +87,7 @@ class Model extends Builder
         if (empty($this->{$var}) OR !$this->{$var} instanceof Api)
         {
             $this->{$var} = new Api;
-        } 
+        }
         $this->{$var}->baseUrl($base_url);
     }
     /**
@@ -107,9 +107,9 @@ class Model extends Builder
      * Execute un bloc de requete dans une transaction
      *
      * @param callable $function
-     * @return mixed Result of the callback function 
+     * @return mixed Result of the callback function
      */
-    final public function transaction(callable $function) 
+    final public function transaction(callable $function)
     {
         try {
             $this->beginTransaction();
@@ -141,7 +141,7 @@ class Model extends Builder
     final public function exist($key, $value, string $table = null) : bool
     {
         $process = false;
-        if (empty($table) AND is_array($key) AND is_string($value)) 
+        if (empty($table) AND is_array($key) AND is_string($value))
         {
             $process = true;
             $data  = $key;
@@ -152,7 +152,7 @@ class Model extends Builder
             $process = true;
             $data = [$key => $value];
         }
-       
+
         if (true === $process)
         {
             return $this->from($table)->where($data)->count() > 0;
@@ -171,16 +171,16 @@ class Model extends Builder
     final public function existOther(array $dif, array $eq, string $table) : bool
     {
         $this->from($table);
-        
-        foreach ($dif As $key => $value) 
+
+        foreach ($dif As $key => $value)
         {
             $this->where($key . ' !=', $value);
         }
-        foreach ($eq As $key => $value) 
+        foreach ($eq As $key => $value)
         {
             $this->where($key, $value);
         }
-        
+
         return $this->count() > 0;
     }
 }

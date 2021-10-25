@@ -61,6 +61,11 @@ class Form
 	private $request;
 
 
+	public function __construct()
+	{
+		$this->request = Service::request();
+	}
+
 	/**
      * Initailise les donnees et les erreurs du formulaire
      *
@@ -74,11 +79,10 @@ class Form
         $this->datas = !empty($datas) ? $datas : [];
         $this->errors = !empty($errors) ? $errors : [];
 
-		if (empty($request) OR ! ($request instanceof ServerRequestInterface))
+		if (!empty($request) AND $request instanceof ServerRequestInterface)
 		{
-			$request = Service::request();
+			$this->request = $request;
 		}
-        $this->request = $request;
 
         return $this;
     }
@@ -550,10 +554,20 @@ HTML;
 			$hidden = $this->hidden($key, $attributes);
 		}
 
+		$prepend = $append = '';
+		if ($type === 'file')
+		{
+            $placeholder = $attributes['placeholder'] ?? 'Choose file';
+            unset($attributes['placeholder']);
+
+			$prepend = '<div class="custom-file">';
+			$append = '<label class="custom-file-label" for="field_'.$key.'">'.$placeholder.'</label></div>';
+		}
+
 		return <<<HTML
             {$this->surround['start']}
                 {$this->getLabel($key, $label, in_array('required', array_values($attributes)))}
-                <input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />
+                {$prepend}<input type="{$type}" name="{$name}" id="field_{$key}" {$value} class="{$this->getInputClass($key, $attributes['class'] ?? null)}" {$this->getAttributes($attributes)} />{$append}
 				{$description} {$error_feedback} {$hidden}
             {$this->surround['end']}
 HTML;
@@ -616,6 +630,12 @@ HTML;
         $name = ($key !== null) ? "name={$key}" : "";
 
         $class = $attributes['class'] ?? '';
+        $href = '';
+		if (!empty($attributes['href']))
+		{
+			$href = $attributes['href'];
+			unset($attributes['href']);
+		}
 
         if (empty($attributes['class']) OR (!empty($attributes['class']) AND !preg_match('#btn-(primary|danger|default|secondary|warning|success|info)#i', strtolower($attributes['class']))))
         {
@@ -632,9 +652,15 @@ HTML;
             }
         }
 
+        $btn = '<button type="'.$type.'" class="btn '.$class.'" id="btn_'.$id.'" '.$name.' '.$this->getAttributes($attributes).'>'.$value.'</button>';
+		if ($type === 'reset' AND !empty($href))
+		{
+			$btn = '<a href="'.$href.'" class="btn '.$class.'" id="btn_'.$id.'" '.$name.' '.$this->getAttributes($attributes).'>'.$value.'</a>';
+		}
+
         return <<<HTML
             {$this->surround['start']}
-                <button type="{$type}" class="btn {$class}" id="btn_{$id}" {$name} {$this->getAttributes($attributes)}>{$value}</button>
+                {$btn}
             {$this->surround['end']}
 HTML;
     }

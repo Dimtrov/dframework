@@ -1026,11 +1026,33 @@ if (!function_exists('flash'))
     /**
      * Fournisseur d'acces rapide a la classe PHP Flash
      *
-     * @return FlashMessages
+     * @return FlashMessages|string
      */
-    function flash() : FlashMessages
+    function flash()
     {
-		return  service(FlashMessages::class);
+		/** @var FlashMessages $flash  */
+		$flash = service(FlashMessages::class);
+
+		$params = func_get_args();
+		$type = array_shift($params);
+
+		if (!empty($type))
+		{
+			if (empty($params))
+			{
+				if ($type === 'all')
+				{
+					$type = null;
+				}
+				return $flash->display($type, false);
+			}
+
+			$message = array_shift($params);
+
+			return $flash->add($message, $type, ...$params);
+		}
+
+		return $flash;
     }
 }
 

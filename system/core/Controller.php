@@ -323,7 +323,7 @@ class Controller
         {
             $instance = Load::model($model);
 
-			if ($alias == false) {
+			if ($alias === false) {
 				return $instance;
 			}
 
@@ -370,7 +370,7 @@ class Controller
         {
 			$instance = Load::controller($controller);
 
-			if ($alias == false) {
+			if ($alias === false) {
 				return $instance;
 			}
 

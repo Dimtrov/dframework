@@ -417,7 +417,11 @@ class Dispatcher
 		{
 			$controller = $this->controller;
 
-			$sendParameters = [...$this->parameters];
+			$sendParameters = [];
+			foreach ($this->parameters As $parameter)
+			{
+				$sendParameters[] = $parameter;
+			}
 			array_push($sendParameters, $request, $response);
 
 			// return $controller(...$sendParameters);

@@ -1747,12 +1747,24 @@ class ServerRequest implements ServerRequestInterface
      * Get the uploaded file from a dotted path.
      *
      * @param string $path The dot separated path to the file you want.
-     * @return \Psr\Http\Message\UploadedFileInterface|null
+     * @return \Psr\Http\Message\UploadedFileInterface|\Psr\Http\Message\UploadedFileInterface[]|null
      */
     public function getUploadedFile(string $path)
     {
         $file = Arr::get($this->uploadedFiles, $path);
-        if (!$file instanceof UploadedFile)
+        if (is_array($file))
+		{
+			foreach ($file As $f)
+			{
+				if (!($f instanceof UploadedFile))
+				{
+					return null;
+				}
+			}
+			return $file;
+		}
+
+		if (!($file instanceof UploadedFile))
 		{
             return null;
         }

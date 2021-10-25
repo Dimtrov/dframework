@@ -143,6 +143,10 @@ class Builder
      */
     final public function from($tables, bool $reset = false) : self
     {
+		if (true === $reset)
+		{
+			$this->table = [];
+		}
         $tables = (array) $tables;
         foreach ($tables As $table)
         {
@@ -180,7 +184,7 @@ class Builder
      * @param string $table Table to join to
      * @param array $fields Fields to join on
      * @param string $type Type of join
-     * @return object Self reference
+     * @return self
      * @throws DatabaseException For invalid join type
      */
     final public function join(string $table, array $fields, string $type = 'INNER') : self
@@ -191,6 +195,9 @@ class Builder
             'INNER',
             'LEFT',
             'RIGHT',
+			'FULL OUTER',
+            'LEFT OUTER',
+            'RIGHT OUTER',
         ];
         if (!in_array($type, $joins))
         {
@@ -204,11 +211,35 @@ class Builder
     }
 
     /**
+     * Adds a full table join.
+     *
+     * @param string $table Table to join to
+     * @param array $fields Fields to join on
+     * @return self
+     */
+    final public function fullJoin(string $table, array $fields) : self
+	{
+        return $this->join($table, $fields, 'FULL OUTER');
+    }
+
+	/**
+     * Adds a inner table join.
+     *
+     * @param string $table Table to join to
+     * @param array $fields Fields to join on
+     * @return self
+     */
+    final public function innerJoin(string $table, array $fields) : self
+	{
+        return $this->join($table, $fields, 'INNER');
+    }
+
+	/**
      * Adds a left table join.
      *
      * @param string $table Table to join to
      * @param array $fields Fields to join on
-     * @return object Self reference
+     * @return self
      */
     final public function leftJoin(string $table, array $fields) : self
     {
@@ -220,7 +251,7 @@ class Builder
      *
      * @param string $table Table to join to
      * @param array $fields Fields to join on
-     * @return object Self reference
+     * @return self
      */
     final public function rightJoin(string $table, array $fields) : self
     {
@@ -232,7 +263,7 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
-     * @return object Self reference
+     * @return self
      */
     final public function where($field, $value = null) : self
     {
@@ -248,6 +279,25 @@ class Builder
      * @param mixed $value A field value to compare to
      * @return self
      */
+    final public function notWhere($field, $value = null) : self
+    {
+        if (!is_array($field))
+        {
+            $field = [$field => $value];
+        }
+        foreach ($field As $key => $value)
+        {
+            $this->where($key . ' !=', $value);
+        }
+        return $this;
+    }
+	/**
+     * Adds where conditions.
+     *
+     * @param string|array $field A field name or an array of fields and values.
+     * @param mixed $value A field value to compare to
+     * @return self
+     */
     final public function orWhere($field, $value = null) : self
     {
         if (!is_array($field))
@@ -257,6 +307,25 @@ class Builder
         foreach ($field As $key => $value)
         {
             $this->where('|' . $key, $value);
+        }
+        return $this;
+    }
+	/**
+     * Adds where conditions.
+     *
+     * @param string|array $field A field name or an array of fields and values.
+     * @param mixed $value A field value to compare to
+     * @return self
+     */
+    final public function orNotWhere($field, $value = null) : self
+    {
+        if (!is_array($field))
+        {
+            $field = [$field => $value];
+        }
+        foreach ($field As $key => $value)
+        {
+            $this->where('|' . $key . ' !=', $value);
         }
         return $this;
     }
@@ -484,7 +553,7 @@ class Builder
      *
      * @param string|array $field Field name
      * @param string $direction Sort direction
-     * @return object Self reference
+     * @return self
      */
     final public function orderBy($field, string $direction = 'ASC') : self
     {
@@ -530,7 +599,7 @@ class Builder
      * Adds an ascending sort for a field.
      *
      * @param string|array $field Field name
-     * @return object Self reference
+     * @return self
      */
     final public function sortAsc($field) : self
     {
@@ -541,7 +610,7 @@ class Builder
      * Adds an descending sort for a field.
      *
      * @param string|array $field Field name
-     * @return object Self reference
+     * @return self
      */
     final public function sortDesc($field) : self
     {
@@ -551,7 +620,7 @@ class Builder
     /**
      * Adds an random sort for fields.
      *
-     * @return object Self reference
+     * @return object
      */
     final public function rand() : self
     {
@@ -700,7 +769,8 @@ class Builder
      * Builds an insert query.
      *
      * @param array $data Array of key and values to insert
-     * @return mixed
+	 * @param bool $execute Specified if we want to directly execute the query
+     * @return Result|self
      */
     final public function insert(array $data, bool $execute = true)
     {
@@ -728,7 +798,8 @@ class Builder
      * Builds an update query.
      *
      * @param string|array $data Array of keys and values, or string literal
-     * @return mixed
+     * @param bool $execute Specified if we want to directly execute the query
+     * @return Result|self
      */
     final public function update($data, bool $execute = true)
     {
@@ -766,9 +837,9 @@ class Builder
     /**
      * Builds a delete query.
      *
-     * @param bool $execute
+     * @param bool $execute Specified if we want to directly execute the query
      * @param array $where Where conditions
-     * @return mixed
+     * @return Result|self
      */
     final public function delete(bool $execute = true, ?array $where = null)
     {
@@ -1134,10 +1205,10 @@ class Builder
 				$result = $this->into($table)->insert($item, true);
 				if ($result instanceof Result)
 				{
-					$details = $result->details();
-					if (!empty($details['insert_id']))
+					$insert_id = $result->insertID();
+					if (!empty($insert_id))
 					{
-						$insered[] = $details['insert_id'];
+						$insered[] = $insert_id;
 					}
 				}
 			}
