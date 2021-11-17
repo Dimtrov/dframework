@@ -263,12 +263,13 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+	 * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function where($field, $value = null) : self
+    final public function where($field, $value = null, bool $escape = true) : self
     {
         $join = empty($this->where) ? 'WHERE' : '';
-        $this->where .= $this->parseCondition($field, $value, $join);
+        $this->where .= $this->parseCondition($field, $value, $join, $escape);
 
         return $this;
     }
@@ -277,9 +278,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function notWhere($field, $value = null) : self
+    final public function notWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -287,7 +289,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' !=', $value);
+            $this->where($key . ' !=', $value, $escape);
         }
         return $this;
     }
@@ -296,9 +298,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orWhere($field, $value = null) : self
+    final public function orWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -306,7 +309,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key, $value);
+            $this->where('|' . $key, $value, $escape);
         }
         return $this;
     }
@@ -315,9 +318,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orNotWhere($field, $value = null) : self
+    final public function orNotWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -325,7 +329,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' !=', $value);
+            $this->where('|' . $key . ' !=', $value, $escape);
         }
         return $this;
     }
@@ -476,9 +480,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function like($field, $value = null) : self
+    final public function like($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -486,7 +491,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' %', $value);
+            $this->where($key . ' %', $value, $escape);
         }
         return $this;
     }
@@ -495,9 +500,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function notLike($field, $value = null) : self
+    final public function notLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -505,7 +511,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' !%', $value);
+            $this->where($key . ' !%', $value, $escape);
         }
         return $this;
     }
@@ -514,9 +520,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orLike($field, $value = null) : self
+    final public function orLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -524,7 +531,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' %', $value);
+            $this->where('|' . $key . ' %', $value, $escape);
         }
         return $this;
     }
@@ -533,9 +540,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orNotLike($field, $value = null) : self
+    final public function orNotLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -543,7 +551,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' !%', $value);
+            $this->where('|' . $key . ' !%', $value, $escape);
         }
         return $this;
     }
