@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\db\orm;
@@ -20,7 +20,7 @@ namespace dFramework\core\db\orm;
 use Exception;
 use ReflectionClass;
 use dFramework\core\Config;
-use dFramework\core\Entity;
+use dFramework\core\models\Entity;
 use dFramework\core\db\Database;
 use dFramework\core\loader\Load;
 use dFramework\core\utilities\Str;
