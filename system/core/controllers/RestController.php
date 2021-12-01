@@ -17,7 +17,7 @@
 
 namespace dFramework\core\controllers;
 
-use dFramework\core\Entity;
+use dFramework\core\models\Entity;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Service;
 use dFramework\core\output\Format;
