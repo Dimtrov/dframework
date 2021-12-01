@@ -161,25 +161,64 @@ class Model
 	 *
 	 * @return array
 	 */
-	public function toArray() : array
+	public function toArray(bool $onlyChanged = false, bool $cast = true, bool $recursive = true) : array
 	{
-	    $exposed = array_map(function ($elt) {
+	   $exposed = array_map(function ($elt) {
 	        return self::getProperty($elt);
         }, $this->entity->exposes());
 
-        $array = [];
-
         if (empty($exposed))
         {
-            $array = $this->data;
+            return [];
         }
-        else
-        {
-            foreach ($this->data As $key => $value)
-            {
-                if (in_array($key, $exposed))
-                {
-                    $array[$key] = $value;
+
+		return $this->_toArray($exposed, $onlyChanged, $cast, $recursive);
+	}
+
+
+	/**
+     * General method that will return all public and protected values
+     * of this entity as an array. All values are accessed through the
+     * __get() magic method so will have any casts, etc applied to them.
+     *
+     * @param bool $onlyChanged If true, only return values that have changed since object creation
+     * @param bool $cast        If true, properties will be casted.
+     * @param bool $recursive   If true, inner entities will be casted as array as well.
+     */
+    public function _toArray(array $keys, bool $onlyChanged = false, bool $cast = true, bool $recursive = true) : array
+    {
+        $this->entity->cast($cast);
+
+		$dataMap = $this->entity->dataMap();
+
+        if (is_array($dataMap))
+		{
+            $keys = array_unique(
+                array_merge(array_diff($keys, $dataMap), array_keys($dataMap))
+            );
+        }
+
+        $return = [];
+
+        // Loop over the properties, to allow magic methods to do their thing.
+        foreach ($keys As $key)
+		{
+            if ($onlyChanged AND !$this->entity->hasChanged($key))
+			{
+                continue;
+            }
+
+            $return[$key] = $this->entity->__get($key);
+
+			if ($recursive)
+			{
+                if ($return[$key] instanceof Entity)
+				{
+                    $return[$key] = $return[$key]->toArray($onlyChanged, $cast, $recursive);
+                }
+				else if (is_callable([$return[$key], 'toArray']))
+				{
+                    $return[$key] = $return[$key]->toArray();
                 }
             }
         }
@@ -188,12 +227,14 @@ class Model
 		{
 			foreach ($models as $model)
 			{
-				$array[$relation ][] = $model->toArray();
+				$return[$relation][] = $model->toArray($onlyChanged, $cast, $recursive);
 			}
 		}
 
-		return $array;
-	}
+        $this->entity->cast(true);
+
+        return $return;
+    }
 
 	/**
 	 * Renvoie les propriétés exposées de l'entité sous forme de chaine json
