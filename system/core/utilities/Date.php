@@ -106,7 +106,7 @@ class Date extends DateTime
 	 * @param  string|DateTimeZone  $timezone
 	 * @return self
 	 */
-	public static function make(?string $time = null, $timezone = null)
+	public static function make(?string $time = null, $timezone = null) : self
 	{
 		return new static($time, $timezone);
 	}
@@ -124,6 +124,37 @@ class Date extends DateTime
 	{
 		return static::makeFromDateTime($year, $month, $day, null, null, null, $timezone);
 	}
+
+	/**
+     * Takes an instance of DateTimeInterface and returns an instance of Time with it's same values.
+     *
+     * @param DateTimeInterface $dateTime
+     * @return self
+     */
+    public static function createFromInstance(DateTimeInterface $dateTime) : self
+    {
+        return self::makeFromDateTime(
+			(int) $dateTime->format('Y'),
+			(int) $dateTime->format('m'),
+			(int) $dateTime->format('d'),
+			(int) $dateTime->format('H'),
+			(int) $dateTime->format('i'),
+			(int) $dateTime->format('s'),
+			$dateTime->getTimezone()
+		);
+    }
+
+	/**
+     * Returns a new instance with the datetime set based on the provided UNIX timestamp.
+     *
+	 * @param int $timestamp
+     * @param DateTimeZone|string|null $timezone
+     * @return self
+     */
+    public static function createFromTimestamp(int $timestamp, $timezone = null) : self
+    {
+        return self::make(gmdate('Y-m-d H:i:s', $timestamp), $timezone);
+    }
 
 	/**
 	 * Make and return a new ExpressiveDate instance with defined hour, minute, and second.
