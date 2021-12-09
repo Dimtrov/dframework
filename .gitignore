@@ -4,5 +4,6 @@
 vendor/
 **/logs/**
 **/debugbar/**
+**/cache/**
 Doxyfile
 phpDocumentor.phar
