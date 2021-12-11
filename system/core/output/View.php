@@ -23,7 +23,6 @@ use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
 use dframework\core\router\Dispatcher;
 use Exception;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * View
@@ -139,11 +138,6 @@ class View
     protected $_page_vars = [];
 
     /**
-     * @var ResponseInterface
-     */
-    private $response;
-
-	/**
 	 * @var Cache
 	 */
 	private $cacher;
@@ -155,15 +149,12 @@ class View
      * @param array|null $data
      * @param string|null $controller
      * @param array|null $options
-     * @param ResponseInterface|null $response
      */
-    public function __construct(?array $data = [], ?string $controller= '', ?array $options = [], ?array $config = [], $response = null)
+    public function __construct(?array $data = [], ?string $controller= '', ?array $options = [], ?array $config = [])
     {
         $this->data = (array) $data;
         $this->controller = strtolower(trim($controller, DS));
         $this->addConfig($config)->setOptions($options);
-
-        $this->response = $response instanceof ResponseInterface ? $response : Service::response();
 
         Load::helper('assets');
         $class = Dispatcher::getClass();

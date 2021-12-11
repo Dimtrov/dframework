@@ -61,7 +61,7 @@ class ApplicationController extends BaseController
         $reflection = new ReflectionClass(get_called_class());
         $path = str_replace([CONTROLLER_DIR, 'Controller', '.php'], '', $reflection->getFileName());
 
-        $object = new View($data, $path, $options, $config, $this->response);
+        $object = new View($data, $path, $options, $config);
         if (!empty($this->layout) AND is_string($this->layout))
         {
             $object->layout($this->layout);
