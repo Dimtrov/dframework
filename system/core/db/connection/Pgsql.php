@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db\connection;
@@ -29,7 +29,7 @@ use dFramework\core\exception\DatabaseException;
  * @package		dFramework
  * @subpackage	Core
  * @category    Db/Connection
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.3.0
  * @file		/system/core/db/connection/Pgsql.php
@@ -106,11 +106,17 @@ class Pgsql extends BaseConnection
                 break;
             case 'pdopgsql':
             case 'pdo_pgsql':
-				$this->dsn = sprintf(
+				$this->dsn = true === $this->with_database ? sprintf(
                     'pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s',
                     $this->host,
                     !empty($this->port) ? $this->port : 5432,
                     $this->database,
+                    $this->username,
+                    $this->password
+                ) : sprintf(
+                    'pgsql:host=%s;port=%d;user=%s;password=%s',
+                    $this->host,
+                    !empty($this->port) ? $this->port : 5432,
                     $this->username,
                     $this->password
                 );

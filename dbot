@@ -8,12 +8,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
- * @copyright	  Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
- * @copyright	  Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
+ * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
+ * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
- * @link	      https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @link	    https://dimtrov.hebfree.org/works/dframework
+ * @version     3.4.0
  */
 
 
@@ -34,6 +34,7 @@ $app
 	->add(dFramework\core\cli\App::initialize())
 	->add(dFramework\core\cli\App::routes())
     ->add(dFramework\core\cli\App::serve())
+    ->add(dFramework\core\cli\Database::create())
     ->add(dFramework\core\cli\Database::dump())
     ->add(dFramework\core\cli\Database::seed())
     ->add(dFramework\core\cli\General::map())
