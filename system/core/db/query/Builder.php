@@ -876,9 +876,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function min(string $field, ?string $key = null, int $expire = 0)
+    final public function min(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('MIN('.$field.') min_value');
 
@@ -886,7 +886,7 @@ class Builder
             'min_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -895,9 +895,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function max(string $field, ?string $key = null, int $expire = 0)
+    final public function max(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('MAX('.$field.') max_value');
 
@@ -905,7 +905,7 @@ class Builder
             'max_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -914,9 +914,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function sum(string $field, ?string $key = null, int $expire = 0)
+    final public function sum(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('SUM('.$field.') sum_value');
 
@@ -924,7 +924,7 @@ class Builder
             'sum_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -933,9 +933,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function avg(string $field, ?string $key = null, int $expire = 0)
+    final public function avg(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('AVG('.$field.') avg_value');
 
@@ -943,7 +943,7 @@ class Builder
             'avg_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -952,9 +952,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return int
      */
-    final public function count(string $field = '*', ?string $key = null, int $expire = 0)
+    final public function count(string $field = '*', ?string $key = null, int $expire = 0) : int
     {
         $this->select('COUNT('.$field.') num_rows');
 
@@ -962,7 +962,7 @@ class Builder
             'num_rows',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
 
