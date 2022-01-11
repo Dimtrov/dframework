@@ -112,9 +112,21 @@ class App extends Cli
                         'connect',
                         'cli',
                     ];
-
+					$nbr_routes = [
+                        'get'     => 0,
+                        'head'    => 0,
+                        'post'    => 0,
+                        'patch'   => 0,
+                        'put'     => 0,
+                        'delete'  => 0,
+                        'options' => 0,
+                        'trace'   => 0,
+                        'connect' => 0,
+                        'cli'     => 0,
+                    ];
                     $table = [];
-                    foreach ($methods as $method)
+
+					foreach ($methods as $method)
                     {
                         $routes = $collection->getRoutes($method, true);
 
@@ -126,22 +138,34 @@ class App extends Cli
                                 'Name' => '',
                                 'Handler' => ''
                             ];
-                            if(is_string($handler))
+                            if (is_string($handler))
                             {
                                 $tab['Handler'] = $handler;
                             }
-                            if(is_array($handler))
+                            if (is_array($handler))
                             {
                                 $tab['Handler'] = is_string($handler['handler']) ? $handler['handler'] : 'Closure';
                                 $tab['Name'] = $handler['name'];
                             }
 
                             $table[] = $tab;
+
+							$nbr_routes[$method]++;
                         }
                     }
+
+					$total_routes = array_sum($nbr_routes);
+
+					$cli->io->writer()->write("\t ==> ")->boldGreen($total_routes)->write(" routes trouvées <== \n", true);
                     $cli->io->table($table);
 
-                    $cli->end();
+					$cli->io->writer()->write("\n ==> ")->boldGreen($total_routes)->write(" routes trouvées <== \n", true);
+					foreach ($nbr_routes As $key => $value)
+					{
+						$cli->io->writer()->write("======> " . strtoupper($key) . ': ')->boldGreen($value)->write(" routes", true);
+					}
+
+					$cli->end();
                 }
                 catch (\Throwable $th) {
                     $cli->showError($th);
