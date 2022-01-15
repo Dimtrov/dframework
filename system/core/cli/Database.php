@@ -17,10 +17,12 @@
 
 namespace dFramework\core\cli;
 
+use dFramework\core\db\Database as DbDatabase;
 use dFramework\core\db\Dumper;
 use dFramework\core\db\Seeder;
 use dFramework\core\loader\Filesystem;
 use dFramework\core\loader\Injector;
+use dFramework\core\utilities\Date;
 use dFramework\core\utilities\Str;
 
 /**
@@ -107,8 +109,9 @@ class Database extends Cli
         return (new Command('db:dump', 'Demarre l\'importation ou l\'exportation de votre base de données'))
             ->option('-e --export', 'Cree une sauvegarde de la base de donnees')
             ->option('-i --import', 'Importe un script de base de donnees')
-            ->argument('[database]', 'Specifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"')
-            ->action(function($export, $import, $database) {
+            ->argument('[ver]', 'Spécifie la version du fichier de script à utiliser pour restaurer la base de données. Si aucun fichier n\'est spécifié, une liste au choix sera proposée')
+            ->argument('[database]', 'Spécifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"', 'default')
+            ->action(function($export, $import, $ver, $database) {
                 /**
                  * @var Command
                  */
@@ -135,10 +138,45 @@ class Database extends Cli
                     }
                     else
                     {
-                        $cli->task('Importation de la base de données en cours');
-                        $num_ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", 'last');
+                        if (empty($ver))
+						{
+							$table = [];
 
-                        $filename = $dump->import($num_ver);
+							/**
+							 * @var \Symfony\Component\Finder\SplFileInfo[]
+							 */
+							$files = Filesystem::files(DB_DUMP_DIR, false, 'modifiedTime');
+							foreach ($files As $file)
+							{
+								if ($file->getExtension() == 'sql')
+								{
+									$filename = $file->getFilenameWithoutExtension();
+									$tmp = explode('version_', $filename);
+
+									$table[] = [
+										'version'    => array_pop($tmp),
+										'updated_at' => Date::createFromTimestamp($file->getMTime())->format('d M Y - H:i:s'),
+										'filename'   => $file->getPathname(),
+									];
+								}
+							}
+
+							if (empty($table))
+							{
+								$cli->io->warn('Aucun fichier de sauvegarde trouvé');
+								return $cli->end();
+							}
+
+							$cli->io->white('Liste des sauvegardes disponibles', true);
+							$cli->io->table($table);
+
+							$ver = $cli->io->prompt("\nVeuillez entrer le numero de la version de votre base de donnee", $table[0]['version']);
+						}
+
+						sleep(1);
+						$cli->task('Importation de la base de données en cours');
+
+                        $filename = $dump->import($ver);
 
                         $cli->io->ok("\n\t Base de donnees migrée avec succès.", true);
                         $cli->io->info("\t Fichier utilisé: ".$filename);
@@ -152,6 +190,50 @@ class Database extends Cli
             });
     }
 
+	protected function _create() : Command
+	{
+		return (new Command('db:create', "Crée la base de données si elle n'existe pas encore"))
+            ->argument('[dbname]', 'Spécifie un nom de base de données différent de celui défini dans le fichier de configuration')
+            ->argument('[database]', 'Spécifie la configuration de la base de donnees a utiliser. Par defaut il s\'agit de la configuration "default"', 'default')
+            ->action(function($dbname, $database) {
+                /**
+                 * @var Command
+                 */
+                $cli = $this;
+                try {
+                    $cli->start('Service de d\'import/export de base de donnees');
+
+					if (empty($dbname))
+					{
+						$dbname = config('database.'.$database.'.database');
+					}
+					if (empty($dbname))
+					{
+						$cli->io->error("Aucune base de donnees n'a étée définie", true);
+						return $cli->showHelp();
+					}
+
+					$cli->task('Création de la base de données en cours');
+					sleep(1);
+
+					try {
+						DbDatabase::connect($database)->withoutDatabase()->createDatabase($dbname);
+
+						$cli->io->ok("\n\t Base de données créée avec succès.", true);
+                        $cli->io->info("\t Base de données: ".$dbname);
+					} catch (\Throwable $th) {
+						$cli->io->warn("\nNous n'avons pas pu créer la base de données. Vous pouvez essayer de le faire manuellement", true);
+						$cli->io->error($th->getMessage());
+						return;
+					}
+
+					$cli->end();
+                }
+                catch (\Throwable $th) {
+                    $cli->showError($th);
+                }
+            });
+    }
 
 	/**
 	 * Execute le seed d'un fichier

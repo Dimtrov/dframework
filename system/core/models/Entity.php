@@ -610,8 +610,15 @@ abstract class Entity
 		$field = $this->mapProperty($field);
 
 		$value = $this->orm->getData($field);
-		$accessor = 'getAttr'.Str::toPascalCase($field);
+		if (empty($value))
+		{
+			if (method_exists($this, $field))
+			{
+				return call_user_func([$this, $field], $value);
+			}
+		}
 
+		$accessor = 'getAttr'.Str::toPascalCase($field);
 		if (method_exists($this, $accessor))
 		{
 			$value = call_user_func([$this, $accessor], $value);

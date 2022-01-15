@@ -19,6 +19,7 @@ namespace dFramework\core\output;
 
 use dFramework\core\Config;
 use dFramework\core\loader\FileLocator;
+use dFramework\core\loader\Service;
 use dFramework\core\utilities\Arr;
 
 /**
@@ -93,9 +94,12 @@ class Language
 	}
 
 	/**
+	 * Gets the current locale, with a fallback to the default
+     * locale if none is set.
+     *
 	 * @return string
 	 */
-	public function getLocale(): string
+	public function getLocale():  string
 	{
 		if (empty($this->locale))
 		{
@@ -277,17 +281,24 @@ class Language
 	 */
 	public static function searchLocale(?string $locale = null) : string
 	{
+		$config = Config::get('general');
+
 		if (empty($locale))
 		{
-			$locale = Config::get('general.language');
+			$locale = Service::negotiator()->language($config['supported_locales']);
+		}
+		if (empty($locale))
+		{
+			$locale = $config['general.language'];
 		}
 
 		return self::normalizeLocale(empty($locale) ? 'en' : $locale);
 	}
-
-	private function findLocale(?string $locale = null)
+	private function findLocale(?string $locale = null) : string
 	{
 		$this->locale = self::searchLocale($locale);
+		Config::set('general.language', $this->locale);
+
 		return $this->locale;
 	}
 	/**

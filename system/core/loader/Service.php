@@ -453,7 +453,7 @@ class Service
 	 * Try to find a service
 	 *
 	 * @param string $name
-	 * @param string $arguments
+	 * @param array $arguments
 	 */
 	private static function discoverServiceFactory(string $name, array $arguments)
 	{
