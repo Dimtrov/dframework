@@ -17,6 +17,7 @@
 
 namespace dFramework\libraries;
 
+use dFramework\core\dFramework;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Html2Pdf;
@@ -30,6 +31,7 @@ use Spipu\Html2Pdf\Html2Pdf;
  * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/guide/Dom.html
  * @since       3.0
+ * @uses		Html2Pdf - https://github.com/spipu/html2pdf
  * @file        /system/librairies/Pdf.php
  */
 class Pdf
@@ -64,6 +66,8 @@ class Pdf
     {
         $this->generator = new Html2Pdf($orientation, $format, $locale, $unicode, $encoding, $margins, $pdfa);
 
+		$this->setCreator('dFramework v'.dFramework::VERSION . ' - ' . PDF_CREATOR);
+
 		return $this;
     }
 
@@ -76,6 +80,123 @@ class Pdf
 	{
 		return $this->generator;
 	}
+
+	/**
+	 * Defines the creator of the document. This is typically the name of the application that generates the PDF.
+	 *
+	 * @param string $creator The name of the creator.
+	 * @return self
+	 */
+	public function setCreator(string $creator) : self
+	{
+		$this->generator->pdf->setCreator($creator);
+
+		return $this;
+	}
+
+	/**
+	 * Defines the author of the document.
+	 *
+	 * @param string $author The name of the author.
+	 * @return self
+	 */
+	public function setAuthor(string $author) : self
+	{
+		$this->generator->pdf->setAuthor($author);
+
+		return $this;
+	}
+
+	/**
+	 * Defines the title of the document.
+	 *
+	 * @param string $title The title.
+	 * @return self
+	 */
+	public function setTitle(string $title) : self
+	{
+		$this->generator->pdf->setTitle($title);
+
+		return $this;
+	}
+	/**
+	 * Defines the subject of the document.
+	 *
+	 * @param string $subject The subject.
+	 * @return self
+	 */
+	public function setSubject(string $subject) : self
+	{
+		$this->generator->pdf->setSubject($subject);
+
+		return $this;
+	}
+
+	/**
+	 * Associates keywords with the document, generally in the form 'keyword1 keyword2 ...'.
+	 *
+	 * @param string $keywords The list of keywords.
+	 * @return self
+	 */
+	public function setKeywords(string $keywords) : self
+	{
+		$this->generator->pdf->setKeywords($keywords);
+
+		return $this;
+	}
+
+	/**
+	 * Set page orientation.
+	 *
+	 * @param string $orientation page orientation. Possible values are (case insensitive):<ul><li>P or Portrait (default)</li><li>L or Landscape</li><li>'' (empty string) for automatic orientation</li></ul>
+	 * @param boolean|null $autopagebreak Boolean indicating if auto-page-break mode should be on or off.
+	 * @param float|null $bottommargin bottom margin of the page.
+	 * @return self
+	 */
+	public function setOrientation(string $orientation, ?bool $autopagebreak = null, ?bool $bottommargin = null) : self
+	{
+		$this->generator->pdf->setPageOrientation($orientation, $autopagebreak, $bottommargin);
+
+		return $this;
+	}
+
+	/**
+	 * Set document protection
+	 *
+	 * Remark: the protection against modification is for people who have the full Acrobat product.
+	 * If you don't set any password, the document will open as usual. If you set a user password, the PDF viewer will ask for it before displaying the document. The master password, if different from the user one, can be used to get full access.
+	 * Note: protecting a document requires to encrypt it, which increases the processing time a lot. This can cause a PHP time-out in some cases, especially if the document contains images or fonts.
+	 *
+	 * @param array $permissions the set of permissions (specify the ones you want to block):<ul><li>print : Print the document;</li><li>modify : Modify the contents of the document by operations other than those controlled by 'fill-forms', 'extract' and 'assemble';</li><li>copy : Copy or otherwise extract text and graphics from the document;</li><li>annot-forms : Add or modify text annotations, fill in interactive form fields, and, if 'modify' is also set, create or modify interactive form fields (including signature fields);</li><li>fill-forms : Fill in existing interactive form fields (including signature fields), even if 'annot-forms' is not specified;</li><li>extract : Extract text and graphics (in support of accessibility to users with disabilities or for other purposes);</li><li>assemble : Assemble the document (insert, rotate, or delete pages and create bookmarks or thumbnail images), even if 'modify' is not set;</li><li>print-high : Print the document to a representation from which a faithful digital copy of the PDF content could be generated. When this is not set, printing is limited to a low-level representation of the appearance, possibly of degraded quality.</li><li>owner : (inverted logic - only for public-key) when set permits change of encryption and enables all other permissions.</li></ul>
+	 * @param string $user_pass user password. Empty by default.
+	 * @param string|null $owner_pass owner password. If not specified, a random value is used.
+	 * @param int $mode encryption strength: 0 = RC4 40 bit; 1 = RC4 128 bit; 2 = AES 128 bit; 3 = AES 256 bit.
+	 * @param array|null $pubkeys array of recipients containing public-key certificates ('c') and permissions ('p'). For example: array(array('c' => 'file://../examples/data/cert/tcpdf.crt', 'p' => array('print')))
+	 * @return self
+	 */
+	public function setProtection(array $permissions = ['print', 'modify', 'copy', 'annot-forms', 'fill-forms', 'extract', 'assemble', 'print-high'], string $user_pass = '', ?string $owner_pass = null, ?int $mode = 0, ?array $pubkeys = null) : self
+	{
+		$this->generator->pdf->setProtection($permissions, $user_pass, $owner_pass, $mode, $pubkeys);
+
+		return $this;
+	}
+
+
+	/**
+	 * Defines the way the document is to be displayed by the viewer.
+	 *
+	 * @param mixed $zoom The zoom to use. It can be one of the following string values or a number indicating the zooming factor to use. <ul><li>fullpage: displays the entire page on screen </li><li>fullwidth: uses maximum width of window</li><li>real: uses real size (equivalent to 100% zoom)</li><li>default: uses viewer default mode</li></ul>
+	 * @param string $layout The page layout. Possible values are:<ul><li>SinglePage Display one page at a time</li><li>OneColumn Display the pages in one column</li><li>TwoColumnLeft Display the pages in two columns, with odd-numbered pages on the left</li><li>TwoColumnRight Display the pages in two columns, with odd-numbered pages on the right</li><li>TwoPageLeft (PDF 1.5) Display the pages two at a time, with odd-numbered pages on the left</li><li>TwoPageRight (PDF 1.5) Display the pages two at a time, with odd-numbered pages on the right</li></ul>
+	 * @param string $mode A name object specifying how the document should be displayed when opened:<ul><li>UseNone Neither document outline nor thumbnail images visible</li><li>UseOutlines Document outline visible</li><li>UseThumbs Thumbnail images visible</li><li>FullScreen Full-screen mode, with no menu bar, window controls, or any other window visible</li><li>UseOC (PDF 1.5) Optional content group panel visible</li><li>UseAttachments (PDF 1.6) Attachments panel visible</li></ul>
+	 * @return self
+	 */
+	public function displayMode($zoom, string $layout = 'SinglePage', string $mode = 'UseNone') : self
+    {
+        $this->generator->pdf->SetDisplayMode($zoom, $layout, $mode);
+
+		return $this;
+    }
+
 
     /**
      * Definit le contenu a generer
@@ -90,20 +211,6 @@ class Pdf
         return $this;
     }
 
-    /**
-	 * Defines the way the document is to be displayed by the viewer.
-	 *
-	 * @param mixed $zoom The zoom to use. It can be one of the following string values or a number indicating the zooming factor to use. <ul><li>fullpage: displays the entire page on screen </li><li>fullwidth: uses maximum width of window</li><li>real: uses real size (equivalent to 100% zoom)</li><li>default: uses viewer default mode</li></ul>
-	 * @param string $layout The page layout. Possible values are:<ul><li>SinglePage Display one page at a time</li><li>OneColumn Display the pages in one column</li><li>TwoColumnLeft Display the pages in two columns, with odd-numbered pages on the left</li><li>TwoColumnRight Display the pages in two columns, with odd-numbered pages on the right</li><li>TwoPageLeft (PDF 1.5) Display the pages two at a time, with odd-numbered pages on the left</li><li>TwoPageRight (PDF 1.5) Display the pages two at a time, with odd-numbered pages on the right</li></ul>
-	 * @param string $mode A name object specifying how the document should be displayed when opened:<ul><li>UseNone Neither document outline nor thumbnail images visible</li><li>UseOutlines Document outline visible</li><li>UseThumbs Thumbnail images visible</li><li>FullScreen Full-screen mode, with no menu bar, window controls, or any other window visible</li><li>UseOC (PDF 1.5) Optional content group panel visible</li><li>UseAttachments (PDF 1.6) Attachments panel visible</li></ul>
-	 * @return self
-	 */
-	public function displayMode($zoom, string $layout = 'SinglePage', string $mode = 'UseNone') : self
-    {
-        $this->generator->pdf->SetDisplayMode($zoom, $layout, $mode);
-
-		return $this;
-    }
 
 	/**
      * display a automatic index, from the bookmarks
