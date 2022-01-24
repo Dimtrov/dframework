@@ -65,7 +65,7 @@ class Pdf
     public function init(string $orientation = 'P', $format = 'A4', string $locale = 'fr', bool $unicode = true, string $encoding = 'UTF-8', array $margins = [5, 5, 5, 8], bool $pdfa = false) : self
     {
         $this->generator = new Html2Pdf($orientation, $format, $locale, $unicode, $encoding, $margins, $pdfa);
-
+		$this->generator->setTestIsImage(false);
 		$this->setCreator('dFramework v'.dFramework::VERSION . ' - ' . PDF_CREATOR);
 
 		return $this;
@@ -79,6 +79,32 @@ class Pdf
 	public function getGenerator() : Html2Pdf
 	{
 		return $this->generator;
+	}
+
+	/**
+     * Set the default font to use, if no font is specified, or if the asked font does not exist
+     *
+     * @param  string   $default name of the default font to use. If null : Arial if no font is specified, and error if the asked font does not exist
+     * @return self
+     */
+	public function defaultFont(string $fontName) : self
+	{
+		$this->generator->setDefaultFont($fontName);
+
+		return $this;
+	}
+
+	/**
+     * Set a fallback image
+     *
+     * @param string $fallback Path or URL to the fallback image
+     * @return self
+     */
+	public function fallbackImage(string $fallback) : self
+	{
+		$this->generator->setFallbackImage($fallback);
+
+		return $this;
 	}
 
 	/**
