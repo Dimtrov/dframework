@@ -224,10 +224,16 @@ class Dispatcher
 	private function run()
 	{
 		// Set default locale on the server
-        locale_set_default($this->config['language'] ?? 'en');
+		if (function_exists('locale_set_default'))
+		{
+			locale_set_default($this->config['language'] ?? 'en');
+		}
 
         // Set default timezone on the server
-        date_default_timezone_set($this->config['timezone'] ?? 'UTC');
+		if (function_exists('date_default_timezone_set'))
+		{
+			date_default_timezone_set($this->config['timezone'] ?? 'UTC');
+		}
 
 		$this->forceSecureAccess();
 		$this->spoofRequestMethod();
