@@ -122,7 +122,7 @@ class Database extends Cli
                         $cli->io->warn("\n Veuillez selectionner une option pour pouvoir executer cette tache.", true);
                         return $cli->showHelp();
                     }
-                    $cli->start('Service de d\'import/export de base de donnees');
+                    $cli->start('Service d\'import/export de base de donnees');
 
                     $dump = new Dumper($database);
 
@@ -145,7 +145,9 @@ class Database extends Cli
 							/**
 							 * @var \Symfony\Component\Finder\SplFileInfo[]
 							 */
-							$files = Filesystem::files(DB_DUMP_DIR, false, 'modifiedTime');
+							$files = Filesystem::files(DB_DUMP_DIR, false, 'changedTime');
+							$files = array_reverse($files);
+
 							foreach ($files As $file)
 							{
 								if ($file->getExtension() == 'sql')
@@ -190,6 +192,11 @@ class Database extends Cli
             });
     }
 
+	/**
+	 * Creation de la base de donnees
+	 *
+	 * @return Command
+	 */
 	protected function _create() : Command
 	{
 		return (new Command('db:create', "Crée la base de données si elle n'existe pas encore"))
