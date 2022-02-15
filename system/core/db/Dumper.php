@@ -62,7 +62,7 @@ class Dumper
      * Migrator constructor.
      * @param string $group
      */
-    public function __construct(?string $group = null)
+    public function __construct(?string $group = null, ?string $filename = null)
     {
         if ('cli' !== PHP_SAPI)
         {
@@ -70,7 +70,21 @@ class Dumper
         }
         $this->db = Service::database($group);
         $this->config = $this->db->config();
+		$this->filename = $filename;
     }
+
+	/**
+	 * Modifie le nom du fichier de dump à utiliser
+	 *
+	 * @param string $filename
+	 * @return self
+	 */
+	public function setFilename(string $filename) : self
+	{
+		$this->filename = $filename;
+
+		return $this;
+	}
 
     /**
      * Sauvegarde l'état actuel d'une base de données dans un fichier de dump
