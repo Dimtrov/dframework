@@ -33,7 +33,7 @@
 if (!function_exists('css_path'))
 {
     /**
-     * CSS DIR
+     * CSS PATH
      *
      * Renvoie le chemin absolu d'un fichier css.
      *
@@ -44,9 +44,9 @@ if (!function_exists('css_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-		return WEBROOT . 'css' . $name;
+		return WEBROOT . 'css' . str_replace('/', DS, $name);
     }
 }
 
@@ -55,7 +55,7 @@ if (!function_exists('css_path'))
 if (!function_exists('js_path'))
 {
     /**
-     * JS DIR
+     * JS PATH
      *
      * Renvoie le chemin absolu d'un fichier js.
      *
@@ -66,9 +66,9 @@ if (!function_exists('js_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT. 'js' .$name;
+        return WEBROOT. 'js' . str_replace('/', DS, $name);
     }
 }
 
@@ -77,7 +77,7 @@ if (!function_exists('js_path'))
 if (!function_exists('lib_path'))
 {
     /**
-     * LIB DIR
+     * LIB PATH
      *
      * Renvoie le chemin absolu d'un fichier d'une librairie
      *
@@ -88,9 +88,9 @@ if (!function_exists('lib_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT. 'lib' .$name;
+        return WEBROOT. 'lib' . str_replace('/', DS, $name);
     }
 }
 
@@ -99,7 +99,7 @@ if (!function_exists('lib_path'))
 if (!function_exists('less_path'))
 {
     /**
-     * LESS DIR
+     * LESS PATH
      *
      * Renvoie le chemin absolu d'un fichier less.
      *
@@ -110,9 +110,9 @@ if (!function_exists('less_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT. 'less' .$name;
+        return WEBROOT. 'less' . str_replace('/', DS, $name);
     }
 }
 
@@ -122,7 +122,7 @@ if (!function_exists('less_path'))
 if (!function_exists('img_path'))
 {
     /**
-     * IMG DIR
+     * IMG PATH
      *
      * Renvoie le chemin absolu d'une image
      *
@@ -133,9 +133,9 @@ if (!function_exists('img_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT. 'img' . $name;
+        return WEBROOT. 'img' . str_replace('/', DS, $name);
     }
 }
 
@@ -144,7 +144,7 @@ if (!function_exists('img_path'))
 if (!function_exists('docs_path'))
 {
     /**
-     * DOCS DIR
+     * DOCS PATH
      *
      * Renvoie le chemin absolu d'un document
      *
@@ -155,9 +155,9 @@ if (!function_exists('docs_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT . 'docs' . $name;
+        return WEBROOT . 'docs' . str_replace('/', DS, $name);
     }
 }
 
@@ -166,7 +166,7 @@ if (!function_exists('docs_path'))
 if (!function_exists('video_path'))
 {
     /**
-     * VIDEO DIR
+     * VIDEO PATH
      *
      * Renvoie le chemin absolu d'une vidéo
      *
@@ -177,9 +177,9 @@ if (!function_exists('video_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return WEBROOT. 'videos'. $name;
+        return WEBROOT. 'videos'. str_replace('/', DS, $name);
     }
 }
 
@@ -188,7 +188,7 @@ if (!function_exists('video_path'))
 if (!function_exists('public_path'))
 {
     /**
-     * PUBLIC DIR
+     * PUBLIC PATH
      *
      * Renvoie le chemin absolu du dossier public
      *
@@ -199,9 +199,9 @@ if (!function_exists('public_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return WEBROOT. $name;
+        return WEBROOT. str_replace('/', DS, $name);
     }
 }
 
@@ -210,7 +210,7 @@ if (!function_exists('public_path'))
 if (!function_exists('class_path'))
 {
     /**
-     * CLASS DIR
+     * CLASS PATH
      *
      * Renvoie le chemin absolu d'une classe applicative
      *
@@ -221,9 +221,9 @@ if (!function_exists('class_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return APP_DIR. 'class'. $name;
+        return APP_DIR. 'class'. str_replace('/', DS, $name);
     }
 }
 
@@ -232,7 +232,7 @@ if (!function_exists('class_path'))
 if (!function_exists('config_path'))
 {
     /**
-     * CONFIG DIR
+     * CONFIG PATH
      *
      * Renvoie le chemin absolu d'un fichier de configuration
      *
@@ -243,9 +243,9 @@ if (!function_exists('config_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return APP_DIR. 'config'. $name;
+        return APP_DIR. 'config'. str_replace('/', DS, $name);
     }
 }
 
@@ -254,7 +254,7 @@ if (!function_exists('config_path'))
 if (!function_exists('controller_path'))
 {
     /**
-     * CONTROLLER DIR
+     * CONTROLLER PATH
      *
      * Renvoie le chemin absolu d'un contrôleur
      *
@@ -266,14 +266,14 @@ if (!function_exists('controller_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 
 			if ($only === true AND !preg_match('#Controller\.php$#', $name))
 			{
 				$name = ucfirst(strtolower($name)).'Controller.php';
 			}
 		}
-        return CONTROLLER_DIR . $name;
+        return CONTROLLER_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -282,7 +282,7 @@ if (!function_exists('controller_path'))
 if (!function_exists('entity_path'))
 {
     /**
-     * ENTITY DIR
+     * ENTITY PATH
      *
      * Renvoie le chemin absolu d'une entité
      *
@@ -294,14 +294,14 @@ if (!function_exists('entity_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 
 			if ($only === true AND !preg_match('#Entity\.php$#', $name))
 			{
 				$name = ucfirst($name).'Entity.php';
 			}
 		}
-        return ENTITY_DIR . $name;
+        return ENTITY_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -310,7 +310,7 @@ if (!function_exists('entity_path'))
 if (!function_exists('helper_path'))
 {
     /**
-     * HELPER DIR
+     * HELPER PATH
      *
      * Renvoie le chemin absolu d'un helper
      *
@@ -322,12 +322,12 @@ if (!function_exists('helper_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
 		if ($system === true) {
-			return SYST_DIR. 'helpers'. $name;
+			return SYST_DIR. 'helpers'. str_replace('/', DS, $name);
 		}
-        return APP_DIR. 'helpers'. $name;
+        return APP_DIR. 'helpers'. str_replace('/', DS, $name);
     }
 }
 
@@ -336,7 +336,7 @@ if (!function_exists('helper_path'))
 if (!function_exists('library_path'))
 {
     /**
-     * LIBRARY DIR
+     * LIBRARY PATH
      *
      * Renvoie le chemin absolu d'une librairie
      *
@@ -348,12 +348,12 @@ if (!function_exists('library_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
 		if ($system === true) {
-			return SYST_DIR. 'libraries'. $name;
+			return SYST_DIR. 'libraries'. str_replace('/', DS, $name);
 		}
-        return APP_DIR. 'libraries'. $name;
+        return APP_DIR. 'libraries'. str_replace('/', DS, $name);
     }
 }
 
@@ -362,7 +362,7 @@ if (!function_exists('library_path'))
 if (!function_exists('middleware_path'))
 {
     /**
-     * MIDDLEWARE DIR
+     * MIDDLEWARE PATH
      *
      * Renvoie le chemin absolu d'un middleware
      *
@@ -375,7 +375,7 @@ if (!function_exists('middleware_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 
 			if ($only === true AND !preg_match('#Middleware\.php$#', $name))
 			{
@@ -383,9 +383,9 @@ if (!function_exists('middleware_path'))
 			}
 		}
 		if ($system === true) {
-			return SYST_DIR. 'middlewares'. $name;
+			return SYST_DIR. 'middlewares'. str_replace('/', DS, $name);
 		}
-        return APP_DIR. 'middlewares'. $name;
+        return APP_DIR. 'middlewares'. str_replace('/', DS, $name);
     }
 }
 
@@ -394,7 +394,7 @@ if (!function_exists('middleware_path'))
 if (!function_exists('model_path'))
 {
     /**
-     * MODEL DIR
+     * MODEL PATH
      *
      * Renvoie le chemin absolu d'un modèle
      *
@@ -406,14 +406,14 @@ if (!function_exists('model_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 
 			if ($only === true AND !preg_match('#Model\.php$#', $name))
 			{
 				$name = ucfirst(strtolower($name)).'Model.php';
 			}
 		}
-        return MODEL_DIR . $name;
+        return MODEL_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -422,7 +422,7 @@ if (!function_exists('model_path'))
 if (!function_exists('resource_path'))
 {
     /**
-     * RESOURCE DIR
+     * RESOURCE PATH
      *
      * Renvoie le chemin absolu d'un fichier ressource
      *
@@ -433,9 +433,9 @@ if (!function_exists('resource_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return RESOURCE_DIR . $name;
+        return RESOURCE_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -444,7 +444,7 @@ if (!function_exists('resource_path'))
 if (!function_exists('migration_path'))
 {
     /**
-     * MIGRATION DIR
+     * MIGRATION PATH
      *
      * Renvoie le chemin absolu d'un fichier de migration
      *
@@ -455,9 +455,9 @@ if (!function_exists('migration_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return DB_MIGRATION_DIR . $name;
+        return DB_MIGRATION_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -466,7 +466,7 @@ if (!function_exists('migration_path'))
 if (!function_exists('seed_path'))
 {
     /**
-     * SEED DIR
+     * SEED PATH
      *
      * Renvoie le chemin absolu d'un fichier de seed
      *
@@ -477,9 +477,9 @@ if (!function_exists('seed_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return DB_SEED_DIR . $name;
+        return DB_SEED_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -488,7 +488,7 @@ if (!function_exists('seed_path'))
 if (!function_exists('lang_path'))
 {
     /**
-     * LANG DIR
+     * LANG PATH
      *
      * Renvoie le chemin absolu d'un fichier de langue
      *
@@ -500,12 +500,12 @@ if (!function_exists('lang_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
 		if ($system === true) {
-			return SYST_DIR. 'constants' . DS . 'lang' . $name;
+			return SYST_DIR. 'constants' . DS . 'lang' . str_replace('/', DS, $name);
 		}
-        return RESOURCE_DIR. 'lang'. $name;
+        return RESOURCE_DIR. 'lang'. str_replace('/', DS, $name);
     }
 }
 
@@ -514,7 +514,7 @@ if (!function_exists('lang_path'))
 if (!function_exists('service_path'))
 {
     /**
-     * SERVICE DIR
+     * SERVICE PATH
      *
      * Renvoie le chemin absolu d'un service
      *
@@ -526,14 +526,14 @@ if (!function_exists('service_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 
 			if ($only === true AND !preg_match('#Service\.php$#', $name))
 			{
 				$name = ucfirst($name).'Service.php';
 			}
 		}
-        return SERVICE_DIR . $name;
+        return SERVICE_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -542,7 +542,7 @@ if (!function_exists('service_path'))
 if (!function_exists('view_path'))
 {
     /**
-     * VIEW DIR
+     * VIEW PATH
      *
      * Renvoie le chemin absolu d'une vue
      *
@@ -553,9 +553,9 @@ if (!function_exists('view_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return VIEW_DIR . $name;
+        return VIEW_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -564,7 +564,7 @@ if (!function_exists('view_path'))
 if (!function_exists('layout_path'))
 {
     /**
-     * LAYOUT DIR
+     * LAYOUT PATH
      *
      * Renvoie le chemin absolu d'un layout
      *
@@ -575,9 +575,9 @@ if (!function_exists('layout_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return LAYOUT_DIR . $name;
+        return LAYOUT_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -586,7 +586,7 @@ if (!function_exists('layout_path'))
 if (!function_exists('partial_path'))
 {
     /**
-     * PARTIAL DIR
+     * PARTIAL PATH
      *
      * Renvoie le chemin absolu d'une partie de vue
      *
@@ -597,9 +597,9 @@ if (!function_exists('partial_path'))
     {
 		if (!empty($name))
 		{
-			$name = DS . ltrim($name, DS);
+			$name = DS . ltrim($name, '/\\');
 		}
-        return VIEW_DIR . 'partials' . $name;
+        return VIEW_DIR . 'partials' . str_replace('/', DS, $name);
     }
 }
 
@@ -608,7 +608,7 @@ if (!function_exists('partial_path'))
 if (!function_exists('app_path'))
 {
     /**
-     * APP DIR
+     * APP PATH
      *
      * Renvoie le chemin absolu d'un fichier du dossier app
      *
@@ -619,9 +619,9 @@ if (!function_exists('app_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return APP_DIR . $name;
+        return APP_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -630,7 +630,7 @@ if (!function_exists('app_path'))
 if (!function_exists('cache_path'))
 {
     /**
-     * CACHE DIR
+     * CACHE PATH
      *
      * Renvoie le chemin absolu d'un fichier mis en cache
      *
@@ -641,9 +641,9 @@ if (!function_exists('cache_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return VIEW_CACHE_DIR . $name;
+        return VIEW_CACHE_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -652,7 +652,7 @@ if (!function_exists('cache_path'))
 if (!function_exists('dump_path'))
 {
     /**
-     * DUMP DIR
+     * DUMP PATH
      *
      * Renvoie le chemin absolu d'un fichier de sauvegarde (dump) de la base de donnees
      *
@@ -663,9 +663,9 @@ if (!function_exists('dump_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return DB_DUMP_DIR . $name;
+        return DB_DUMP_DIR . str_replace('/', DS, $name);
     }
 }
 
@@ -674,7 +674,7 @@ if (!function_exists('dump_path'))
 if (!function_exists('storage_path'))
 {
     /**
-     * STORAGE DIR
+     * STORAGE PATH
      *
      * Renvoie le chemin absolu d'un fichier du dossier storage
      *
@@ -685,9 +685,9 @@ if (!function_exists('storage_path'))
     {
 		if (!empty($name))
 		{
-			$name = ltrim($name, DS);
+			$name = ltrim($name, '/\\');
 		}
-        return STORAGE_DIR . $name;
+        return STORAGE_DIR . str_replace('/', DS, $name);
     }
 }
 
