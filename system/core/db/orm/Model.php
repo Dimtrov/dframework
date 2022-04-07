@@ -309,9 +309,10 @@ class Model
 	 * Recupere les donnees
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function get(array $columns = [])
+	public function get(array $columns = [], $type = null)
 	{
 		if (is_null( $this->queryBuilder ))
 		{
@@ -323,32 +324,34 @@ class Model
 		}
 		$this->pagingBuilder = clone $this->queryBuilder;
 
-		return (new Result($this, $this->queryBuilder))->rows();
+		return (new Result($this, $this->queryBuilder))->rows($type);
 	}
 
 	/**
 	 * Recupere toutes les donnees d'une table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return array
 	 */
-	public function all(array $columns = [])
+	public function all(array $columns = [], $type = null)
 	{
 		$builder = $this->builder();
 		if (!empty($columns))
 		{
 			$builder->select($columns);
 		}
-		return (new Result($this, $builder))->rows();
+		return (new Result($this, $builder))->rows($type);
 	}
 
 	/**
 	 * Recupere les donnees du premier element dans la table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function first(array $columns = [])
+	public function first(array $columns = [], $type = null)
 	{
 		$builder = $this->queryBuilder ?: $this->builder();
 
@@ -357,40 +360,43 @@ class Model
 			$builder->select($columns);
 		}
 
-		return (new Result($this, $builder))->first();
+		return (new Result($this, $builder))->first($type);
 	}
 	/**
 	 * Recupere les donnees du premier element dans la table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @alias self::first()
 	 * @return mixed
 	 */
-	public function one(array $columns = [])
+	public function one(array $columns = [], $type = null)
 	{
-		return $this->first($columns);
+		return $this->first($columns, $type);
 	}
 
 	/**
 	 * Retourne la valeur d'un champ donné dans le premier enregistrement de la table d'entite
 	 *
 	 * @param string $field
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function pluck(string $field)
+	public function pluck(string $field, $type = null)
 	{
-		return $this->first([$field])->{$field};
+		return $this->first([$field], $type)->{$field};
 	}
 	/**
 	 * Retourne la valeur d'un champ donné dans le premier enregistrement de la table d'entite
 	 *
 	 * @param string $field
+	 * @param int|string $type
 	 * @alias self::pluck
 	 * @return mixed
 	 */
-	public function value(string $field)
+	public function value(string $field, $type = null)
 	{
-		return $this->pluck($field);
+		return $this->pluck($field, $type);
 	}
 
 	/**
