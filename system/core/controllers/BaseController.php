@@ -160,7 +160,10 @@ class BaseController
         if (empty($data)) {
             $data = $this->request->getParsedBody();
         }
-        $this->loadLibrary('Validator');
+
+		if (empty($this->validator)) {
+			$this->loadLibrary('Validator');
+		}
         $this->validator->init($locale, $data);
 
         foreach ($rules As $field => $regles)
