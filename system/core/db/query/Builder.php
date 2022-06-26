@@ -556,6 +556,71 @@ class Builder
         return $this;
     }
 
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function whereNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where($value . ' IS NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function whereNotNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where($value . ' IS NOT NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function orWhereNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where('|'. $value . ' IS NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function orWhereNotNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where('|'. $value . ' IS NOT NULL');
+        }
+        return $this;
+    }
+
     /**
      * Adds fields to order by.
      *
@@ -1378,9 +1443,15 @@ class Builder
     {
         if (is_string($field))
         {
+			if (empty($join))
+            {
+                $join = ($field[0] == '|') ? ' OR ' : ' AND ';
+            }
+			$field = str_replace('|', '', $field);
+
             if ($value === null)
             {
-                return $join.' '.trim($field);
+				return $join.' '.trim($field);
             }
             $operator = '';
 
@@ -1418,12 +1489,7 @@ class Builder
                 $condition = '=';
             }
 
-            if (empty($join))
-            {
-                $join = ($field[0] == '|') ? ' OR ' : ' AND ';
-            }
-
-            if (is_array($value))
+           	if (is_array($value))
             {
                 if (strpos($operator, '@') === false)
                 {
@@ -1443,7 +1509,7 @@ class Builder
                 $value = ($escape AND !is_numeric($value)) ? $this->db->quote($value) : $value;
             }
 
-            return $join.' '.str_replace('|', '', $field).$condition.$value;
+            return $join.' '.$field.$condition.$value;
         }
         else if (is_array($field))
         {
