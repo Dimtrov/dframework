@@ -158,7 +158,7 @@ class Csrf
      *
      * @return void;
      */
-    final private function updateSysTime()
+    private function updateSysTime()
     {
         $this->sysTime = time();
     }
