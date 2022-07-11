@@ -41,7 +41,9 @@ if (!function_exists('css_url'))
      */
     function css_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+		$name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'css/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
@@ -68,7 +70,9 @@ if (!function_exists('js_url'))
      */
     function js_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'js/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
@@ -95,7 +99,9 @@ if (!function_exists('lib_css_url'))
      */
     function lib_css_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'lib/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.css$#i', $name) ? '.css' : '');
@@ -122,7 +128,9 @@ if (!function_exists('lib_js_url'))
      */
     function lib_js_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'lib/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.js$#i', $name) ? '.js' : '');
@@ -353,7 +361,9 @@ if (!function_exists('less_url'))
      */
     function less_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'less/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $name .=  (!preg_match('#\.less$#i', $name) ? '.less' : '');
@@ -431,7 +441,9 @@ if (!function_exists('img_url'))
      */
     function img_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'img/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $filename = WEBROOT.'img'.DS.$name;
@@ -493,7 +505,9 @@ if (!function_exists('docs_url'))
      */
     function docs_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'docs/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $filename = WEBROOT.'docs'.DS.$name;
@@ -519,7 +533,9 @@ if (!function_exists('videos_url'))
      */
     function videos_url(string $name) : string
     {
-        $name = htmlspecialchars($name);
+        $name = explode('?', $name)[0];
+		$name = str_replace(base_url() . 'videos/', '', htmlspecialchars($name));
+
         if (is_localfile($name))
         {
             $filename = WEBROOT.'videos'.DS.$name;
