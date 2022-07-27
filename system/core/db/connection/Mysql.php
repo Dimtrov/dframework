@@ -163,6 +163,26 @@ class Mysql extends BaseConnection
     //--------------------------------------------------------------------
 
 	/**
+	 * The name of the platform in use (MySQLi, mssql, etc)
+	 *
+	 * @return string
+	 */
+	public function getPlatform(): string
+	{
+		if (isset($this->dataCache['platform']))
+		{
+			return $this->dataCache['platform'];
+		}
+
+		if (empty($this->conn))
+		{
+			$this->initialize();
+        }
+
+		return $this->dataCache['platform'] = $this->driver === 'mysqli' ? 'mysql' : $this->conn->getAttribute(PDO::ATTR_DRIVER_NAME);
+	}
+
+	/**
 	 * Returns a string containing the version of the database being used.
 	 *
 	 * @return string
@@ -179,7 +199,7 @@ class Mysql extends BaseConnection
 			$this->initialize();
         }
 
-		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_info : $this->conn->getAttribute(PDO::ATTR_CLIENT_VERSION);
+		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_version : $this->conn->getAttribute(PDO::ATTR_SERVER_VERSION);
 	}
 
     /**
