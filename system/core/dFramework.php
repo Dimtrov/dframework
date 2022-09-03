@@ -200,7 +200,9 @@ class dFramework
      */
     private static function initializeKint()
     {
-        RichRenderer::$folder = false;
-		RichRenderer::$sort   = Renderer::SORT_FULL;
+		if (class_exists('\Kint\Renderer\RichRenderer')) {
+			RichRenderer::$folder = false;
+			RichRenderer::$sort   = Renderer::SORT_FULL;
+		}
     }
 }
