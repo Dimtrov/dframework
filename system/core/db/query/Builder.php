@@ -1361,7 +1361,10 @@ class Builder
             $this->setSql([
                 'DELETE FROM',
                 $this->table[0],
-                $this->where
+                $this->where,
+				$this->order,
+                $this->limit,
+                $this->offset
             ]);
         }
 
