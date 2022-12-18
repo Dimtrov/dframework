@@ -1230,6 +1230,7 @@ class Date extends DateTime
 
 			// If we need to use the date fix for United States dates
 			// and there are no characters as in 02-JAN-03 then...
+			/*
 			if (($forceFixDate OR self::isTimeZoneInCountry($timezone, 'US')) AND is_string($date) AND !preg_match('/[a-z]/i', $date))
             {
 				// U.S. dates with '-' do not convert correctly so replace them with '/'
@@ -1240,6 +1241,8 @@ class Date extends DateTime
                 // No fix needed..., Use the date passed in
 				$datevalue = $date;
 			}
+			*/
+			$datevalue = $date;
 
 			// Convert the string into a linux time stamp
 			$timestamp = strtotime($datevalue);
