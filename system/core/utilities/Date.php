@@ -1069,11 +1069,16 @@ class Date extends DateTime
 	 * Get the interval of time between two dates
 	 *
 	 * @param DateTime|string $date1 First date
-	 * @param DateTime|string $date2 Second date
+	 * @param DateTime|string|null $date2 Second date
 	 * @return mixed Returns an interval object
 	 */
-	private static function differenceInterval($date1, $date2)
+	private static function differenceInterval($date1, $date2 = null)
     {
+		if (null === $date2) {
+			$date2 = $date1;
+			$date1 = self::now();
+		}
+
 		// Make sure our dates are DateTime objects
 		$datetime1 = self::convertToDate($date1);
 		$datetime2 = self::convertToDate($date2);
@@ -1092,10 +1097,10 @@ class Date extends DateTime
 	 * Get the number of days between two dates
 	 *
 	 * @param DateTime|string $date1 First date
-	 * @param DateTime|string $date2 Second date
+	 * @param DateTime|string|null $date2 Second date
 	 * @return int|false Returns the number of days or false if invalid dates
 	 */
-	public static function differenceDays($date1, $date2)
+	public static function differenceDays($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1115,7 +1120,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of hours or false if invalid dates
 	 */
-	public static function differenceHours($date1, $date2)
+	public static function differenceHours($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1135,7 +1140,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of minutes or false if invalid dates
 	 */
-	public static function differenceMinutes($date1, $date2)
+	public static function differenceMinutes($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1155,7 +1160,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of months or false if invalid dates
 	 */
-	public static function differenceMonths($date1, $date2)
+	public static function differenceMonths($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1175,7 +1180,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of seconds or false if invalid dates
 	 */
-	public static function differenceSeconds($date1, $date2)
+	public static function differenceSeconds($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1195,7 +1200,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of years or false if invalid dates
 	 */
-	public static function differenceYears($date1, $date2)
+	public static function differenceYears($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
