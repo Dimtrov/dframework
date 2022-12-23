@@ -19,8 +19,11 @@ namespace dFramework\core\controllers;
 
 use BadMethodCallException;
 use dFramework\core\http\Middleware;
+use dFramework\core\http\Response;
+use dFramework\core\http\ServerRequest;
 use dFramework\core\loader\Injector;
 use dFramework\core\loader\Load;
+use dFramework\core\loader\Service;
 use dFramework\core\utilities\Arr;
 use ReflectionClass;
 use Psr\Http\Message\ResponseInterface;
@@ -467,5 +470,8 @@ class BaseController
 			    $this->response = $middleware->handle($this->request);
 		    }
         }
+
+		Service::container()->set(ServerRequest::class, $this->request);
+		Service::container()->set(Response::class, $this->response);
     }
 }
