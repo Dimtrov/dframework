@@ -350,7 +350,7 @@ class Builder
 
         if (is_array($param))
         {
-            $param = implode(',', $param);
+			$param = implode(',', array_map([$this->db, 'quote'], $param));
         }
         else if ($param instanceof self)
         {
