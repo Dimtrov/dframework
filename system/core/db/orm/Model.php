@@ -954,7 +954,7 @@ class Model
      */
     private static function getProperty(string $fieldName) : string
     {
-        $case = strtolower(Config::get('data.hydrator.case'));
+        $case = strtolower(Config::get('data.hydrator.case') ?? '');
         if (in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
         {
             return Str::{'to'.$case}($fieldName);

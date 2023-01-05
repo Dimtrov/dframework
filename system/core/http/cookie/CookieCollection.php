@@ -28,6 +28,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use dFramework\core\support\contracts\CookieInterface;
+use Traversable;
 
 /**
  * Cookie Collection
@@ -100,10 +101,8 @@ class CookieCollection implements IteratorAggregate, Countable
 
     /**
      * Get the number of cookies in the collection.
-     *
-     * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->cookies);
     }
@@ -215,10 +214,8 @@ class CookieCollection implements IteratorAggregate, Countable
 
     /**
      * Gets the iterator
-     *
-     * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->cookies);
     }

@@ -675,7 +675,7 @@ class Helpers
             {
                 return (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) AND strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off');
             }
-            return (strpos(self::env('SCRIPT_URI'), 'https://') === 0);
+            return (strpos((string) self::env('SCRIPT_URI'), 'https://') === 0);
         }
 
         if ($key === 'SCRIPT_NAME')

@@ -23,6 +23,7 @@ use EmptyIterator;
 use dFramework\core\db\orm\Result;
 use dFramework\core\db\query\Hydrator;
 use dFramework\core\models\Entity;
+use Traversable;
 
 /**
  * Relation
@@ -120,7 +121,7 @@ abstract class Relation implements Countable, IteratorAggregate
 	}
 
 	// Implements IteratorAggregate function so the result can be looped without needs to call get() first.
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		$return = $this->getResult();
 
@@ -128,7 +129,7 @@ abstract class Relation implements Countable, IteratorAggregate
 	}
 
 	// Implements Countable function
-	public function count()
+	public function count(): int
 	{
 		$result = $this->getResult();
 

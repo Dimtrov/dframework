@@ -78,17 +78,14 @@ class Xss
      * @param string $str
      * @return string
      */
-    private function stripe_slashes(string $str) : string 
+    private function stripe_slashes(string $str) : string
     {
         return stripslashes($str);
     }
 
-    //Call native PHP function "filter_var" and "FILTER_SANITIZE_STRING"
     private function filter_sanitize($string_arg)
     {
-        $string_arg = filter_var($string_arg, FILTER_SANITIZE_STRING);
-
-        return $string_arg;
+        return esc($string_arg);
     }
 
     //Call native PHP function "filter_var" and "FILTER_VALIDATE_EMAIL"

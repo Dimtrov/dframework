@@ -1425,7 +1425,7 @@ class Builder
      */
     private function build(?string $sql, ?string $input) : string
     {
-        return (strlen($input) > 0) ? ($sql.' '.$input) : $sql;
+        return (strlen($input ?? '') > 0) ? ($sql.' '.$input) : $sql;
     }
 
 
