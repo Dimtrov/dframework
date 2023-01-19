@@ -200,7 +200,7 @@
 			return $this->createReflectionAnnotatedMethod(parent::getConstructor());
 		}
 
-		public function getMethod(string $name): ReflectionMethod {
+		public function getMethod($name): ReflectionMethod {
 			return $this->createReflectionAnnotatedMethod(parent::getMethod($name));
 		}
 
@@ -216,7 +216,7 @@
 			return $result;
 		}
 
-		public function getProperty(string $name): ReflectionProperty {
+		public function getProperty($name): ReflectionProperty {
 			return $this->createReflectionAnnotatedProperty(parent::getProperty($name));
 		}
 
