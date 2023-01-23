@@ -23,7 +23,7 @@ use dFramework\core\loader\FileLocator;
 use dFramework\core\loader\Load;
 use dFramework\core\router\Dispatcher;
 use dFramework\core\security\Session;
-use Kint\Renderer\Renderer;
+use Kint\Renderer\AbstractRenderer;
 use Kint\Renderer\RichRenderer;
 use MirazMac\Requirements\Checker As envChecker;
 
@@ -202,7 +202,7 @@ class dFramework
     {
 		if (class_exists('\Kint\Renderer\RichRenderer')) {
 			RichRenderer::$folder = false;
-			RichRenderer::$sort   = Renderer::SORT_FULL;
+			RichRenderer::$sort   = AbstractRenderer::SORT_FULL;
 		}
     }
 }
