@@ -360,6 +360,19 @@ if (!function_exists('is_online'))
     }
 }
 
+if (!function_exists('is_connected'))
+{
+    /**
+     * Test if user has an acctive internet connection.
+     *
+     * @return bool
+     */
+    function is_connected() : bool
+    {
+        return Helpers::is_connected();
+    }
+}
+
 if (!function_exists('is_ajax_request'))
 {
     /**
@@ -639,23 +652,6 @@ if (!function_exists('stringify_attributes'))
 
 // ================================= FONCTIONS DE DEBOGAGE ================================= //
 
-
-if (!function_exists('dd'))
-{
-	/**
-	 * Prints a Kint debug report and exits.
-	 *
-	 * @param array ...$vars
-	 *
-	 * @codeCoverageIgnore Can't be tested ... exits
-	 */
-	function dd(...$vars)
-	{
-        Kint::$aliases[] = 'dd';
-		Kint::dump(...$vars);
-		exit;
-	}
-}
 
 if (!function_exists('deprecationWarning'))
 {

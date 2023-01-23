@@ -15,7 +15,7 @@
  * @version     3.4.0
  */
 
-namespace dFramework;
+namespace dFramework\core;
 
 /**
  * Autoloader
@@ -148,15 +148,15 @@ class Autoloader
      */
     private static function autoload_syst(string $input) : bool
     {
-        if (strpos($input, __NAMESPACE__ . '\\') !== false)
+        if (strpos($input, '\\dFramework\\') !== false)
         {
-            $input = str_replace(__NAMESPACE__ . '\\', '', $input);
+            $input = str_replace('\\dFramework\\', '', $input);
             $input = explode('\\', $input);
 
             $class = array_pop($input);
             $namespace = implode(DS, $input);
 
-            $file = __DIR__. DS . $namespace . DS . $class . '.php';
+            $file = dirname(__DIR__). DS . $namespace . DS . $class . '.php';
             if (is_file($file))
             {
                 require_once $file;

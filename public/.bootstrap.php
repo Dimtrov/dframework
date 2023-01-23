@@ -126,16 +126,4 @@ define('WEBROOT', __DIR__.DS);
 
 define('BASE_URL', trim(dirname($_SERVER['SCRIPT_NAME'], 2), '\\'));
 
-
-require_once SYST_DIR.'Autoloader.php';
-
-\dFramework\Autoloader::load();
-
-if (file_exists(APP_DIR . 'config' . DS . 'constants.php'))
-{
-	require_once APP_DIR . 'config' . DS . 'constants.php';
-}
-require_once SYST_DIR . 'constants'.DS.'constants.php';
-
-
-return (new \dFramework\core\dFramework)->init();
+return require_once SYST_DIR . 'initializer' . DS . 'bootstrap.php';
