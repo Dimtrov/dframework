@@ -103,7 +103,7 @@ class Date extends DateTime
 	 * Make and return new Date instance.
 	 *
 	 * @param  string|null  $time
-	 * @param  string|DateTimeZone  $timezone
+	 * @param  string|DateTimeZone|null  $timezone
 	 * @return self
 	 */
 	public static function make(?string $time = null, $timezone = null) : self
@@ -155,6 +155,21 @@ class Date extends DateTime
     {
         return self::make(gmdate('Y-m-d H:i:s', $timestamp), $timezone);
     }
+
+	/**
+	 * Parse a string into a new DateTime object according to the specified format
+	 *
+	 * @param string $format
+	 * @param string $datetime
+	 * @param DateTimeZone|null $timezone
+	 * @return self
+	 */
+	public static function createFromFormat($format, $datetime, ?DateTimeZone $timezone = null): self
+	{
+		$date = parent::createFromFormat($format, $datetime, $timezone);
+
+		return self::make($date->format('Y-m-d H:i:s'), $timezone);
+	}
 
 	/**
 	 * Make and return a new ExpressiveDate instance with defined hour, minute, and second.
