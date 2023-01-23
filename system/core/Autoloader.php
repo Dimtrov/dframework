@@ -148,9 +148,9 @@ class Autoloader
      */
     private static function autoload_syst(string $input) : bool
     {
-        if (strpos($input, '\\dFramework\\') !== false)
+        if (strpos($input, 'dFramework\\') !== false)
         {
-            $input = str_replace('\\dFramework\\', '', $input);
+            $input = str_replace('dFramework\\', '', $input);
             $input = explode('\\', $input);
 
             $class = array_pop($input);
