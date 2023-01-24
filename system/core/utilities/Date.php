@@ -88,11 +88,11 @@ class Date extends DateTime
 	/**
 	 * Create a new Date instance.
 	 *
-	 * @param  string|null  $time
+	 * @param  string  $time
 	 * @param  string|DateTimeZone  $timezone
 	 * @return void
 	 */
-	public function __construct(?string $time = null, $timezone = null)
+	public function __construct(string $time = 'now', $timezone = null)
 	{
 		$timezone = $this->parseSuppliedTimezone($timezone);
 
@@ -102,11 +102,11 @@ class Date extends DateTime
 	/**
 	 * Make and return new Date instance.
 	 *
-	 * @param  string|null  $time
+	 * @param  string  $time
 	 * @param  string|DateTimeZone|null  $timezone
 	 * @return self
 	 */
-	public static function make(?string $time = null, $timezone = null) : self
+	public static function make(string $time = 'now', $timezone = null) : self
 	{
 		return new static($time, $timezone);
 	}
@@ -199,7 +199,7 @@ class Date extends DateTime
 	 */
 	public static function makeFromDateTime(?int $year = null, ?int $month = null, ?int $day = null, ?int $hour = null, ?int $minute = null, ?int $second = null, $timezone = null)
 	{
-		$date = new static(null, $timezone);
+		$date = new static('now', $timezone);
 
 		$date->setDate($year ?: $date->getYear(), $month ?: $date->getMonth(), $day ?: $date->getDay());
 
@@ -258,7 +258,7 @@ class Date extends DateTime
 	 */
 	public static function now($format = false, $timezone = null)
 	{
-		$now = new static(null, $timezone);
+		$now = new static('now', $timezone);
 		$now->setTimestamp(time());
 
 		if ($format)
