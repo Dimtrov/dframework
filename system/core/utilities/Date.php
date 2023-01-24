@@ -88,11 +88,11 @@ class Date extends DateTime
 	/**
 	 * Create a new Date instance.
 	 *
-	 * @param  string|null  $time
+	 * @param  string  $time
 	 * @param  string|DateTimeZone  $timezone
 	 * @return void
 	 */
-	public function __construct(?string $time = null, $timezone = null)
+	public function __construct(string $time = 'now', $timezone = null)
 	{
 		$timezone = $this->parseSuppliedTimezone($timezone);
 
@@ -102,11 +102,11 @@ class Date extends DateTime
 	/**
 	 * Make and return new Date instance.
 	 *
-	 * @param  string|null  $time
-	 * @param  string|DateTimeZone  $timezone
+	 * @param  string  $time
+	 * @param  string|DateTimeZone|null  $timezone
 	 * @return self
 	 */
-	public static function make(?string $time = null, $timezone = null)
+	public static function make(string $time = 'now', $timezone = null) : self
 	{
 		return new static($time, $timezone);
 	}
@@ -123,6 +123,52 @@ class Date extends DateTime
 	public static function makeFromDate(?int $year = null, ?int $month = null, ?int $day = null, $timezone = null)
 	{
 		return static::makeFromDateTime($year, $month, $day, null, null, null, $timezone);
+	}
+
+	/**
+     * Takes an instance of DateTimeInterface and returns an instance of Time with it's same values.
+     *
+     * @param DateTimeInterface $dateTime
+     * @return self
+     */
+    public static function createFromInstance(DateTimeInterface $dateTime) : self
+    {
+        return self::makeFromDateTime(
+			(int) $dateTime->format('Y'),
+			(int) $dateTime->format('m'),
+			(int) $dateTime->format('d'),
+			(int) $dateTime->format('H'),
+			(int) $dateTime->format('i'),
+			(int) $dateTime->format('s'),
+			$dateTime->getTimezone()
+		);
+    }
+
+	/**
+     * Returns a new instance with the datetime set based on the provided UNIX timestamp.
+     *
+	 * @param int $timestamp
+     * @param DateTimeZone|string|null $timezone
+     * @return self
+     */
+    public static function createFromTimestamp(int $timestamp, $timezone = null) : self
+    {
+        return self::make(gmdate('Y-m-d H:i:s', $timestamp), $timezone);
+    }
+
+	/**
+	 * Parse a string into a new DateTime object according to the specified format
+	 *
+	 * @param string $format
+	 * @param string $datetime
+	 * @param DateTimeZone|null $timezone
+	 * @return self
+	 */
+	public static function createFromFormat($format, $datetime, ?DateTimeZone $timezone = null): self
+	{
+		$date = parent::createFromFormat($format, $datetime, $timezone);
+
+		return self::make($date->format('Y-m-d H:i:s'), $timezone);
 	}
 
 	/**
@@ -153,7 +199,7 @@ class Date extends DateTime
 	 */
 	public static function makeFromDateTime(?int $year = null, ?int $month = null, ?int $day = null, ?int $hour = null, ?int $minute = null, ?int $second = null, $timezone = null)
 	{
-		$date = new static(null, $timezone);
+		$date = new static('now', $timezone);
 
 		$date->setDate($year ?: $date->getYear(), $month ?: $date->getMonth(), $day ?: $date->getDay());
 
@@ -212,7 +258,7 @@ class Date extends DateTime
 	 */
 	public static function now($format = false, $timezone = null)
 	{
-		$now = new static(null, $timezone);
+		$now = new static('now', $timezone);
 		$now->setTimestamp(time());
 
 		if ($format)
@@ -1038,11 +1084,16 @@ class Date extends DateTime
 	 * Get the interval of time between two dates
 	 *
 	 * @param DateTime|string $date1 First date
-	 * @param DateTime|string $date2 Second date
+	 * @param DateTime|string|null $date2 Second date
 	 * @return mixed Returns an interval object
 	 */
-	private static function differenceInterval($date1, $date2)
+	private static function differenceInterval($date1, $date2 = null)
     {
+		if (null === $date2) {
+			$date2 = $date1;
+			$date1 = self::now();
+		}
+
 		// Make sure our dates are DateTime objects
 		$datetime1 = self::convertToDate($date1);
 		$datetime2 = self::convertToDate($date2);
@@ -1061,10 +1112,10 @@ class Date extends DateTime
 	 * Get the number of days between two dates
 	 *
 	 * @param DateTime|string $date1 First date
-	 * @param DateTime|string $date2 Second date
+	 * @param DateTime|string|null $date2 Second date
 	 * @return int|false Returns the number of days or false if invalid dates
 	 */
-	public static function differenceDays($date1, $date2)
+	public static function differenceDays($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1084,7 +1135,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of hours or false if invalid dates
 	 */
-	public static function differenceHours($date1, $date2)
+	public static function differenceHours($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1104,7 +1155,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of minutes or false if invalid dates
 	 */
-	public static function differenceMinutes($date1, $date2)
+	public static function differenceMinutes($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1124,7 +1175,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of months or false if invalid dates
 	 */
-	public static function differenceMonths($date1, $date2)
+	public static function differenceMonths($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1144,7 +1195,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of seconds or false if invalid dates
 	 */
-	public static function differenceSeconds($date1, $date2)
+	public static function differenceSeconds($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1164,7 +1215,7 @@ class Date extends DateTime
 	 * @param DateTime|string $date2 Second date
 	 * @return int|false Returns the number of years or false if invalid dates
 	 */
-	public static function differenceYears($date1, $date2)
+	public static function differenceYears($date1, $date2 = null)
     {
 		// Get the difference between the two dates
 		$interval = self::differenceInterval($date1, $date2);
@@ -1194,6 +1245,7 @@ class Date extends DateTime
 
 			// If we need to use the date fix for United States dates
 			// and there are no characters as in 02-JAN-03 then...
+			/*
 			if (($forceFixDate OR self::isTimeZoneInCountry($timezone, 'US')) AND is_string($date) AND !preg_match('/[a-z]/i', $date))
             {
 				// U.S. dates with '-' do not convert correctly so replace them with '/'
@@ -1204,6 +1256,8 @@ class Date extends DateTime
                 // No fix needed..., Use the date passed in
 				$datevalue = $date;
 			}
+			*/
+			$datevalue = $date;
 
 			// Convert the string into a linux time stamp
 			$timestamp = strtotime($datevalue);

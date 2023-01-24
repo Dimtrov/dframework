@@ -12,15 +12,18 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\router;
 
-use dFramework\components\rest\Controller;
+use dFramework\core\Config;
+use dFramework\core\controllers\RestController;
+use dFramework\core\exception\Exception;
 use dFramework\core\exception\RouterException;
 use dFramework\core\http\Middleware;
 use dFramework\core\http\ServerRequest;
+use dFramework\core\http\Uri;
 use dFramework\core\loader\Service;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -101,9 +104,25 @@ class Dispatcher
 	 */
 	private $totalTime = 0;
 
-
+	/**
+	 * @var self|null
+	 */
 	private static $_instance = null;
+	/**
+     * Cache expiration time
+     *
+     * @var int
+     */
+    protected static $cacheTTL = 0;
 
+	/**
+	 * @var array
+	 */
+	private $config;
+
+	/**
+	 * @var string
+	 */
 	private $output = '';
 
 
@@ -126,8 +145,11 @@ class Dispatcher
 	 */
     private function __construct()
     {
+		$this->startBenchmark();
+
 		$this->request = Service::request();
 		$this->response = Service::response();
+		$this->config = Config::get('general');
 
 		$this->middleware = Service::injector()->make(Middleware::class, [$this->response]);
 
@@ -196,11 +218,24 @@ class Dispatcher
 
 	//--------------------------------------------------------------------
 
-
+	/**
+	 * Initialise le lancement de l'application
+	 */
 	private function run()
 	{
-		$this->startBenchmark();
+		// Set default locale on the server
+		if (function_exists('locale_set_default'))
+		{
+			locale_set_default($this->config['language'] ?? 'en');
+		}
 
+        // Set default timezone on the server
+		if (function_exists('date_default_timezone_set'))
+		{
+			date_default_timezone_set($this->config['timezone'] ?? 'UTC');
+		}
+
+		$this->forceSecureAccess();
 		$this->spoofRequestMethod();
 
 		/**
@@ -212,6 +247,14 @@ class Dispatcher
 			require_once $events_file;
 		}
 		Service::event()->trigger('pre_system');
+
+		// Check for a cached page. Execution will stop
+        // if the page has been cached.
+        $response    = $this->displayCache();
+        if ($response instanceof ResponseInterface)
+		{
+			return $this->emitResponse($response);
+        }
 
 		$routesFile = APP_DIR . 'config' . DS . 'routes.php';
 		if (file_exists($routesFile))
@@ -307,6 +350,14 @@ class Dispatcher
 		}
 
 		$this->output .= $returned;
+
+		// Cache it without the performance metrics replaced
+        // so that we can have live speed updates along the way.
+        if (static::$cacheTTL > 0)
+		{
+            $this->cachePage();
+        }
+
 		$this->output = $this->displayPerformanceMetrics($this->output);
 		$this->response = $this->response->withBody(to_stream($this->output));
 
@@ -382,7 +433,7 @@ class Dispatcher
 		// then we need to set the correct locale on our Request.
 		if ($this->router->hasLocale())
 		{
-			// $this->request->setLocale($this->router->getLocale());
+			$this->request = $this->request->withLocale($this->router->getLocale());
 		}
 
 		$this->timer->stop('routing');
@@ -443,10 +494,11 @@ class Dispatcher
 
 		if (!method_exists($this->controller, $this->method))
 		{
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class))
+			{
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unknow_method')
-				])))->withStatus(Controller::HTTP_NOT_ACCEPTABLE);
+				])))->withStatus(RestController::HTTP_NOT_ACCEPTABLE);
 
 				return;
 			}
@@ -461,10 +513,10 @@ class Dispatcher
 
         if ($reflection->getName() == "__construct")
         {
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -476,10 +528,10 @@ class Dispatcher
         }
         if ($reflection->isProtected() OR $reflection->isPrivate())
         {
-            if ($reflectedClass->isSubclassOf(Controller::class)) {
+            if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -492,10 +544,10 @@ class Dispatcher
 
 		if (!in_array($reflection->getName(), $this->reservedMethods) AND preg_match('#^_#i', $reflection->getName()))
         {
-			if ($reflectedClass->isSubclassOf(Controller::class)) {
+			if ($reflectedClass->isSubclassOf(RestController::class)) {
 				$this->response = $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
-				])))->withStatus(Controller::HTTP_FORBIDDEN);
+				])))->withStatus(RestController::HTTP_FORBIDDEN);
 
 				return;
 			}
@@ -510,12 +562,12 @@ class Dispatcher
     /**
 	 * Instantiates the controller class.
 	 *
-	 * @return \dFramework\core\Controller|mixed
+	 * @return \dFramework\core\controllers\BaseController|mixed
 	 */
 	private function createController(ServerRequestInterface $request, ResponseInterface $response)
 	{
 		/**
-		 * @var \dFramework\core\Controller
+		 * @var \dFramework\core\controllers\BaseController
 		 */
 		$class = Service::injector()->get($this->controller);
 
@@ -660,4 +712,103 @@ class Dispatcher
 			'totalTime' => $this->totalTime,
 		];
 	}
+
+	/**
+     * Force Secure Site Access? If the config value 'forceGlobalSecureRequests'
+     * is true, will enforce that all requests to this site are made through
+     * HTTPS. Will redirect the user to the current page with HTTPS, as well
+     * as set the HTTP Strict Transport Security header for those browsers
+     * that support it.
+     *
+     * @param int $duration How long the Strict Transport Security
+     *                      should be enforced for this URL.
+     */
+    protected function forceSecureAccess($duration = 31536000)
+    {
+        if ($this->config['force_global_secure_requests'] !== true)
+		{
+            return;
+        }
+
+        force_https($duration, $this->request, $this->response);
+    }
+
+    /**
+     * Determines if a response has been cached for the given URI.
+     *
+     * @throws Exception
+     *
+     * @return bool|ResponseInterface
+     */
+    public function displayCache()
+    {
+        if ($cachedResponse = Service::cache()->read($this->generateCacheName()))
+		{
+            $cachedResponse = unserialize($cachedResponse);
+            if (! is_array($cachedResponse) OR ! isset($cachedResponse['output']) OR ! isset($cachedResponse['headers']))
+			{
+                throw new Exception('Error unserializing page cache');
+            }
+
+            $headers = $cachedResponse['headers'];
+            $output  = $cachedResponse['output'];
+
+            // Clear all default headers
+            foreach (array_keys($this->response->getHeaders()) As $key)
+			{
+                $this->response = $this->response->withoutHeader($key);
+            }
+
+            // Set cached headers
+            foreach ($headers As $name => $value)
+			{
+                $this->response = $this->response->withHeader($name, $value);
+            }
+
+            $output = $this->displayPerformanceMetrics($output);
+
+			return $this->response->withBody(to_stream($output));
+        }
+
+        return false;
+    }
+
+    /**
+     * Tells the app that the final output should be cached.
+     */
+    public static function cache(int $time)
+    {
+        static::$cacheTTL = $time;
+    }
+
+    /**
+     * Caches the full response from the current request. Used for
+     * full-page caching for very high performance.
+     *
+     * @return mixed
+     */
+    public function cachePage()
+    {
+        $headers = [];
+
+        foreach (array_keys($this->response->getHeaders()) As $header)
+		{
+            $headers[$header] = $this->response->getHeaderLine($header);
+        }
+
+        return Service::cache()->write($this->generateCacheName(), serialize(['headers' => $headers, 'output' => $this->output]), static::$cacheTTL);
+    }
+
+    /**
+     * Generates the cache name to use for our full-page caching.
+     */
+    protected function generateCacheName(): string
+    {
+        $uri = $this->request->getUri();
+
+		$name = Uri::createURIString($uri->getScheme(), $uri->getAuthority(), $uri->getPath());
+
+		return md5($name);
+    }
+
 }

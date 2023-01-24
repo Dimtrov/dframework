@@ -30,6 +30,7 @@ use dFramework\core\utilities\Utils;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use dFramework\core\exception\HttpException;
+use dFramework\core\output\Language;
 use Psr\Http\Message\ServerRequestInterface;
 use GuzzleHttp\Psr7\ServerRequest as Psr7ServerRequest;
 
@@ -324,7 +325,7 @@ class ServerRequest implements ServerRequestInterface
      * Get/Set value from the request's environment data.
      * Fallback to using env() if key not set in $environment property.
      *
-     * @deprecated 3.5.0 Use getEnv()/withEnv() instead.
+     * @deprecated 3.4.0 Use getEnv()/withEnv() instead.
      * @param string $key The key you want to read/write from/to.
      * @param string|null $value Value to set. Default null.
      * @param string|null $default Default value when trying to retrieve an environment
@@ -545,7 +546,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $name Name of the header you want.
      * @return string|null Either null on no header being set or the value of the header.
-     * @deprecated 4.0.0 The automatic fallback to env() will be removed in 4.0.0, see getHeader()
+     * @deprecated 3.4.0 The automatic fallback to env() will be removed in 4.0.0, see getHeader()
      */
     public function header($name)
     {
@@ -1086,7 +1087,7 @@ class ServerRequest implements ServerRequestInterface
      * @param string|null $name Dot separated name of the value to read/write
      * @param mixed ...$args The data to set (deprecated)
      * @return mixed|$this Either the value being read, or this so you can chain consecutive writes.
-     * /deprecated 3.4.0 Use withData() and getData() or getParsedBody() instead.
+     * @deprecated 3.4.0 Use withData() and getData() or getParsedBody() instead.
      */
     public function data($name = null, ...$args)
     {
@@ -1146,9 +1147,9 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $name The name of the parameter to get.
      * @param mixed ...$args Value to set (deprecated).
-     * @return mixed|$this The value of the provided parameter. Will
+     * @return mixed|self The value of the provided parameter. Will
      *   return false if the parameter doesn't exist or is falsey.
-     * @/deprecated 3.4.0 Use getParam() and withParam() instead.
+     * @deprecated 3.4.0 Use getParam() and withParam() instead.
      */
     public function param($name, ...$args)
     {
@@ -1167,7 +1168,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $key The key you want to read.
      * @return string|null Either the cookie value, or null if the value doesn't exist.
-     * /deprecated 3.4.0 Use getCookie() instead.
+     * @deprecated 3.4.0 Use getCookie() instead.
      */
     public function cookie($key)
     {
@@ -1545,7 +1546,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param array $params Array of parameters to merge in
      * @return $this The current object, you can chain this method.
-     * @deprecated 3.6.0 ServerRequest::addParams() is deprecated. Use `withParam()` or
+     * @deprecated 3.4.0 ServerRequest::addParams() is deprecated. Use `withParam()` or
      *   `withAttribute('params')` instead.
      */
     public function addParams(array $params) : self
@@ -1561,7 +1562,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param array $paths Array of paths to merge in
      * @return $this The current object, you can chain this method.
-     * @deprecated 3.6.0 Mutating a request in place is deprecated. Use `withAttribute()` to modify paths instead.
+     * @deprecated 3.4.0 Mutating a request in place is deprecated. Use `withAttribute()` to modify paths instead.
      */
     public function addPaths(array $paths) : self
     {
@@ -1582,7 +1583,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @param string $input A string to replace original parsed data from input()
      * @return void
-     * /deprecated 3.4.0 This method will be removed in 4.0.0. Use withBody() instead.
+     * @deprecated 3.4.0 This method will be removed in 4.0.0. Use withBody() instead.
      */
     public function setInput($input)
     {
@@ -1998,6 +1999,37 @@ class ServerRequest implements ServerRequestInterface
 
 		throw new HTTPException($type . ' is not a valid negotiation type. Must be one of: media, charset, encoding, language.');
 	}
+
+	/**
+     * Sets the locale string for this request.
+     *
+     * @return self
+     */
+    public function withLocale(string $locale) : self
+    {
+		$validLocales = Config::get('general.supported_locales');
+		// If it's not a valid locale, set it
+        // to the default locale for the site.
+        if (!in_array($locale, $validLocales, true))
+		{
+            $locale = Config::get('general.language');
+        }
+
+		Service::language()->setLocale($locale);
+
+        return $this->withAttribute('locale', $locale);
+    }
+
+	/**
+     * Gets the current locale, with a fallback to the default
+     * locale if none is set.
+     */
+    public function getLocale() : string
+    {
+		$locale = $this->getAttribute('locale');
+
+		return $locale ?? Service::language()->getLocale();
+    }
 
 
 

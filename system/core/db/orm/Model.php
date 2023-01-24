@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\db\orm;
@@ -20,7 +20,7 @@ namespace dFramework\core\db\orm;
 use Exception;
 use ReflectionClass;
 use dFramework\core\Config;
-use dFramework\core\Entity;
+use dFramework\core\models\Entity;
 use dFramework\core\db\Database;
 use dFramework\core\loader\Load;
 use dFramework\core\utilities\Str;
@@ -161,25 +161,64 @@ class Model
 	 *
 	 * @return array
 	 */
-	public function toArray() : array
+	public function toArray(bool $onlyChanged = false, bool $cast = true, bool $recursive = true) : array
 	{
-	    $exposed = array_map(function ($elt) {
+	   $exposed = array_map(function ($elt) {
 	        return self::getProperty($elt);
         }, $this->entity->exposes());
 
-        $array = [];
-
         if (empty($exposed))
         {
-            $array = $this->data;
+            return [];
         }
-        else
-        {
-            foreach ($this->data As $key => $value)
-            {
-                if (in_array($key, $exposed))
-                {
-                    $array[$key] = $value;
+
+		return $this->_toArray($exposed, $onlyChanged, $cast, $recursive);
+	}
+
+
+	/**
+     * General method that will return all public and protected values
+     * of this entity as an array. All values are accessed through the
+     * __get() magic method so will have any casts, etc applied to them.
+     *
+     * @param bool $onlyChanged If true, only return values that have changed since object creation
+     * @param bool $cast        If true, properties will be casted.
+     * @param bool $recursive   If true, inner entities will be casted as array as well.
+     */
+    public function _toArray(array $keys, bool $onlyChanged = false, bool $cast = true, bool $recursive = true) : array
+    {
+        $this->entity->cast($cast);
+
+		$dataMap = $this->entity->dataMap();
+
+        if (is_array($dataMap))
+		{
+            $keys = array_unique(
+                array_merge(array_diff($keys, $dataMap), array_keys($dataMap))
+            );
+        }
+
+        $return = [];
+
+        // Loop over the properties, to allow magic methods to do their thing.
+        foreach ($keys As $key)
+		{
+            if ($onlyChanged AND !$this->entity->hasChanged($key))
+			{
+                continue;
+            }
+
+            $return[$key] = $this->entity->__get($key);
+
+			if ($recursive)
+			{
+                if ($return[$key] instanceof Entity)
+				{
+                    $return[$key] = $return[$key]->toArray($onlyChanged, $cast, $recursive);
+                }
+				else if (is_callable([$return[$key], 'toArray']))
+				{
+                    $return[$key] = $return[$key]->toArray();
                 }
             }
         }
@@ -188,12 +227,14 @@ class Model
 		{
 			foreach ($models as $model)
 			{
-				$array[$relation ][] = $model->toArray();
+				$return[$relation][] = $model->toArray($onlyChanged, $cast, $recursive);
 			}
 		}
 
-		return $array;
-	}
+        $this->entity->cast(true);
+
+        return $return;
+    }
 
 	/**
 	 * Renvoie les propriétés exposées de l'entité sous forme de chaine json
@@ -268,9 +309,10 @@ class Model
 	 * Recupere les donnees
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function get(array $columns = [])
+	public function get(array $columns = [], $type = null)
 	{
 		if (is_null( $this->queryBuilder ))
 		{
@@ -282,32 +324,34 @@ class Model
 		}
 		$this->pagingBuilder = clone $this->queryBuilder;
 
-		return (new Result($this, $this->queryBuilder))->rows();
+		return (new Result($this, $this->queryBuilder))->rows($type);
 	}
 
 	/**
 	 * Recupere toutes les donnees d'une table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return array
 	 */
-	public function all(array $columns = [])
+	public function all(array $columns = [], $type = null)
 	{
 		$builder = $this->builder();
 		if (!empty($columns))
 		{
 			$builder->select($columns);
 		}
-		return (new Result($this, $builder))->rows();
+		return (new Result($this, $builder))->rows($type);
 	}
 
 	/**
 	 * Recupere les donnees du premier element dans la table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function first(array $columns = [])
+	public function first(array $columns = [], $type = null)
 	{
 		$builder = $this->queryBuilder ?: $this->builder();
 
@@ -316,40 +360,43 @@ class Model
 			$builder->select($columns);
 		}
 
-		return (new Result($this, $builder))->first();
+		return (new Result($this, $builder))->first($type);
 	}
 	/**
 	 * Recupere les donnees du premier element dans la table d'entite
 	 *
 	 * @param array $columns
+	 * @param int|string $type
 	 * @alias self::first()
 	 * @return mixed
 	 */
-	public function one(array $columns = [])
+	public function one(array $columns = [], $type = null)
 	{
-		return $this->first($columns);
+		return $this->first($columns, $type);
 	}
 
 	/**
 	 * Retourne la valeur d'un champ donné dans le premier enregistrement de la table d'entite
 	 *
 	 * @param string $field
+	 * @param int|string $type
 	 * @return mixed
 	 */
-	public function pluck(string $field)
+	public function pluck(string $field, $type = null)
 	{
-		return $this->first([$field])->{$field};
+		return $this->first([$field], $type)->{$field};
 	}
 	/**
 	 * Retourne la valeur d'un champ donné dans le premier enregistrement de la table d'entite
 	 *
 	 * @param string $field
+	 * @param int|string $type
 	 * @alias self::pluck
 	 * @return mixed
 	 */
-	public function value(string $field)
+	public function value(string $field, $type = null)
 	{
-		return $this->pluck($field);
+		return $this->pluck($field, $type);
 	}
 
 	/**
@@ -907,7 +954,7 @@ class Model
      */
     private static function getProperty(string $fieldName) : string
     {
-        $case = strtolower(Config::get('data.hydrator.case'));
+        $case = strtolower(Config::get('data.hydrator.case') ?? '');
         if (in_array($case, ['camel', 'pascal', 'snake', 'ada', 'macro']))
         {
             return Str::{'to'.$case}($fieldName);

@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @link	    https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.4
+ *  @version    3.4.0
  */
 
 namespace dFramework\core;
@@ -23,6 +23,8 @@ use dFramework\core\loader\FileLocator;
 use dFramework\core\loader\Load;
 use dFramework\core\router\Dispatcher;
 use dFramework\core\security\Session;
+use Kint\Renderer\AbstractRenderer;
+use Kint\Renderer\RichRenderer;
 use MirazMac\Requirements\Checker As envChecker;
 
 /**
@@ -38,7 +40,7 @@ use MirazMac\Requirements\Checker As envChecker;
  */
 class dFramework
 {
-    const VERSION = '3.3.6';
+    const VERSION = '3.4.0';
 
 	/**
 	 * @var array Liste des extensions requises pour le fonctionnement du framework
@@ -101,6 +103,11 @@ class dFramework
          * Autocharge les elements specifiés par le dev a travers le fichier /app/config/autoload
          */
         Load::init();
+
+		/**
+		 * Initalise l'outil de debug Kint
+		 */
+		self::initializeKint();
 
         return $this;
     }
@@ -186,5 +193,16 @@ class dFramework
 
         define('UTF8_ENABLED', defined('PREG_BAD_UTF8_ERROR') AND (ICONV_ENABLED === TRUE OR MB_ENABLED === TRUE) AND $charset === 'UTF-8');
 
+    }
+
+	/**
+     * Initializes Kint
+     */
+    private static function initializeKint()
+    {
+		if (class_exists('\Kint\Renderer\RichRenderer')) {
+			RichRenderer::$folder = false;
+			RichRenderer::$sort   = AbstractRenderer::SORT_FULL;
+		}
     }
 }

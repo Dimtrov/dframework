@@ -280,6 +280,20 @@ class Helpers
         return false;
     }
 
+	/**
+     * Test if user has an acctive internet connection.
+     */
+    public static function is_connected(): bool
+    {
+        $connected = @fsockopen("www.google.com", 80);
+        if ($connected) {
+            fclose($connected);
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Test if a application is running in local or online
      *
@@ -675,7 +689,7 @@ class Helpers
             {
                 return (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) AND strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off');
             }
-            return (strpos(self::env('SCRIPT_URI'), 'https://') === 0);
+            return (strpos((string) self::env('SCRIPT_URI'), 'https://') === 0);
         }
 
         if ($key === 'SCRIPT_NAME')

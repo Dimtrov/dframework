@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db;
@@ -35,7 +35,7 @@ use dFramework\core\db\migration\Schema;
 abstract class Migration
 {
 	/**
-	 * @var array liste des taches 
+	 * @var array liste des taches
 	 */
 	private $schemas = [];
 
@@ -57,14 +57,14 @@ abstract class Migration
 	 * Revert a migration step.
 	 */
 	abstract public function down();
-	
+
 
 	/**
 	 * Renvoi la liste des executions soue
 	 *
 	 * @return array
 	 */
-	final public function getSchemas() : array 
+	final public function getSchemas() : array
 	{
 		return $this->schemas;
 	}
@@ -73,7 +73,7 @@ abstract class Migration
 	 *
 	 * @return string|null
 	 */
-	final public function getGroup() : ?string 
+	final public function getGroup() : ?string
 	{
 		return $this->group;
 	}
@@ -92,7 +92,7 @@ abstract class Migration
 
 		$this->schemas[] = $schema;
     }
-	
+
 	/**
      * Modify a table on the schema.
      *
@@ -153,16 +153,24 @@ abstract class Migration
 
 
 	/**
+	 * Execute le callback avec le Schema
+	 *
      * @param string $table
      * @param callable $callback
-     * @return schema
+     * @return Schema
      */
-    private function build(string $table, callable $callback) : schema
-    {        
+    private function build(string $table, callable $callback) : Schema
+    {
         return $callback($this->createSchema($table));
     }
-	
-    private function createSchema(string $table) : schema 
+
+	/**
+	 * Cree et renvoi un Schema
+	 *
+     * @param string $table
+     * @return Schema
+     */
+    private function createSchema(string $table) : Schema
     {
         return new Schema($table);
     }

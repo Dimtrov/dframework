@@ -263,12 +263,13 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+	 * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function where($field, $value = null) : self
+    final public function where($field, $value = null, bool $escape = true) : self
     {
         $join = empty($this->where) ? 'WHERE' : '';
-        $this->where .= $this->parseCondition($field, $value, $join);
+        $this->where .= $this->parseCondition($field, $value, $join, $escape);
 
         return $this;
     }
@@ -277,9 +278,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function notWhere($field, $value = null) : self
+    final public function notWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -287,7 +289,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' !=', $value);
+            $this->where($key . ' !=', $value, $escape);
         }
         return $this;
     }
@@ -296,9 +298,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orWhere($field, $value = null) : self
+    final public function orWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -306,7 +309,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key, $value);
+            $this->where('|' . $key, $value, $escape);
         }
         return $this;
     }
@@ -315,9 +318,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orNotWhere($field, $value = null) : self
+    final public function orNotWhere($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -325,7 +329,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' !=', $value);
+            $this->where('|' . $key . ' !=', $value, $escape);
         }
         return $this;
     }
@@ -346,7 +350,7 @@ class Builder
 
         if (is_array($param))
         {
-            $param = implode(',', $param);
+			$param = implode(',', array_map([$this->db, 'quote'], $param));
         }
         else if ($param instanceof self)
         {
@@ -476,9 +480,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function like($field, $value = null) : self
+    final public function like($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -486,7 +491,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' %', $value);
+            $this->where($key . ' %', $value, $escape);
         }
         return $this;
     }
@@ -495,9 +500,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function notLike($field, $value = null) : self
+    final public function notLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -505,7 +511,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where($key . ' !%', $value);
+            $this->where($key . ' !%', $value, $escape);
         }
         return $this;
     }
@@ -514,9 +520,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orLike($field, $value = null) : self
+    final public function orLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -524,7 +531,7 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' %', $value);
+            $this->where('|' . $key . ' %', $value, $escape);
         }
         return $this;
     }
@@ -533,9 +540,10 @@ class Builder
      *
      * @param string|array $field A field name or an array of fields and values.
      * @param mixed $value A field value to compare to
+     * @param boolean $escape Escape values setting
      * @return self
      */
-    final public function orNotLike($field, $value = null) : self
+    final public function orNotLike($field, $value = null, bool $escape = true) : self
     {
         if (!is_array($field))
         {
@@ -543,7 +551,72 @@ class Builder
         }
         foreach ($field As $key => $value)
         {
-            $this->where('|' . $key . ' !%', $value);
+            $this->where('|' . $key . ' !%', $value, $escape);
+        }
+        return $this;
+    }
+
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function whereNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where($value . ' IS NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function whereNotNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where($value . ' IS NOT NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function orWhereNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where('|'. $value . ' IS NULL');
+        }
+        return $this;
+    }
+	/**
+     * Définit une condition pour la sélection des données
+     *
+     * @param string|array $field A field name or an array of fields name.
+     * @return self
+     */
+    final public function orWhereNotNull($field) : self
+    {
+		$field = (array) $field;
+
+		foreach ($field As $value)
+        {
+            $this->where('|'. $value . ' IS NOT NULL');
         }
         return $this;
     }
@@ -868,9 +941,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function min(string $field, ?string $key = null, int $expire = 0)
+    final public function min(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('MIN('.$field.') min_value');
 
@@ -878,7 +951,7 @@ class Builder
             'min_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -887,9 +960,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function max(string $field, ?string $key = null, int $expire = 0)
+    final public function max(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('MAX('.$field.') max_value');
 
@@ -897,7 +970,7 @@ class Builder
             'max_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -906,9 +979,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function sum(string $field, ?string $key = null, int $expire = 0)
+    final public function sum(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('SUM('.$field.') sum_value');
 
@@ -916,7 +989,7 @@ class Builder
             'sum_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -925,9 +998,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return float
      */
-    final public function avg(string $field, ?string $key = null, int $expire = 0)
+    final public function avg(string $field, ?string $key = null, int $expire = 0) : float
     {
         $this->select('AVG('.$field.') avg_value');
 
@@ -935,7 +1008,7 @@ class Builder
             'avg_value',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
     /**
@@ -944,9 +1017,9 @@ class Builder
      * @param string $field Field name
      * @param string|null $key Cache key
      * @param int $expire Expiration time in seconds
-     * @return mixed
+     * @return int
      */
-    final public function count(string $field = '*', ?string $key = null, int $expire = 0)
+    final public function count(string $field = '*', ?string $key = null, int $expire = 0) : int
     {
         $this->select('COUNT('.$field.') num_rows');
 
@@ -954,7 +1027,7 @@ class Builder
             'num_rows',
             $key,
             $expire
-        );
+        ) ?? 0;
     }
 
 
@@ -1288,7 +1361,10 @@ class Builder
             $this->setSql([
                 'DELETE FROM',
                 $this->table[0],
-                $this->where
+                $this->where,
+				$this->order,
+                $this->limit,
+                $this->offset
             ]);
         }
 
@@ -1349,7 +1425,7 @@ class Builder
      */
     private function build(?string $sql, ?string $input) : string
     {
-        return (strlen($input) > 0) ? ($sql.' '.$input) : $sql;
+        return (strlen($input ?? '') > 0) ? ($sql.' '.$input) : $sql;
     }
 
 
@@ -1370,9 +1446,15 @@ class Builder
     {
         if (is_string($field))
         {
+			if (empty($join))
+            {
+                $join = ($field[0] == '|') ? ' OR ' : ' AND ';
+            }
+			$field = str_replace('|', '', $field);
+
             if ($value === null)
             {
-                return $join.' '.trim($field);
+				return $join.' '.trim($field);
             }
             $operator = '';
 
@@ -1410,12 +1492,7 @@ class Builder
                 $condition = '=';
             }
 
-            if (empty($join))
-            {
-                $join = ($field[0] == '|') ? ' OR ' : ' AND ';
-            }
-
-            if (is_array($value))
+           	if (is_array($value))
             {
                 if (strpos($operator, '@') === false)
                 {
@@ -1435,7 +1512,7 @@ class Builder
                 $value = ($escape AND !is_numeric($value)) ? $this->db->quote($value) : $value;
             }
 
-            return $join.' '.str_replace('|', '', $field).$condition.$value;
+            return $join.' '.$field.$condition.$value;
         }
         else if (is_array($field))
         {

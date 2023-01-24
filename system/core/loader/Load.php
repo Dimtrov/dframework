@@ -240,7 +240,7 @@ class Load
         }
         $file = preg_replace('#\.json$#i', '', $file);
         $filename = (true === $app)
-            ? RESOURCE_DIR . 'reserved'.DS.'lang' . DS . $locale . DS . $file . '.json'
+			? LANG_DIR . $locale . DS . $file . '.json'
             : SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file . '.json';
 
         if (true !== file_exists($filename))

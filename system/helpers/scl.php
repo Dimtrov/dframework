@@ -902,8 +902,8 @@ function scl_debug($var, $style = false)
  */
 function scl_byte2size($bytes, $format = 1024, $precision = 2)
 {
-    $unit = array('B','KB','MB');
-    return @round($bytes / pow($format, ($i = floor(log($bytes, 1024)))), $precision).' '.$unit[$i];
+    $unit = array('B','KB','MB', 'GB', 'TB');
+    return @round($bytes / pow($format, ($i = floor(log($bytes, $format)))), $precision).' '.$unit[$i];
 }
 
 

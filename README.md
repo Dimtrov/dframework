@@ -1,6 +1,6 @@
-[![Latest Stable Version](http://poser.pugx.org/dimtrov/dframework/v)](https://packagist.org/packages/dimtrov/dframework) [![Total Downloads](http://poser.pugx.org/dimtrov/dframework/downloads)](https://packagist.org/packages/dimtrov/dframework) [![Latest Unstable Version](http://poser.pugx.org/dimtrov/dframework/v/unstable)](https://packagist.org/packages/dimtrov/dframework) [![License](http://poser.pugx.org/dimtrov/dframework/license)](https://packagist.org/packages/dimtrov/dframework)
+[![Latest Stable Version](http://poser.pugx.org/dimtrov/dframework/v)](https://packagist.org/packages/dimtrov/dframework) [![Total Downloads](http://poser.pugx.org/dimtrov/dframework/downloads)](https://packagist.org/packages/dimtrov/dframework) [![Latest Unstable Version](http://poser.pugx.org/dimtrov/dframework/v/unstable)](https://packagist.org/packages/dimtrov/dframework) [![License](http://poser.pugx.org/dimtrov/dframework/license)](https://packagist.org/packages/dimtrov/dframework) [![PSR4](https://img.shields.io/badge/PSR-4-9b59b6.svg)](https://www.php-fig.org/psr/psr-4/)
 
-# dFramework : v3.3.x
+# dFramework : v3.4.x
 
 ### The simplest PHP framework for beginners
 

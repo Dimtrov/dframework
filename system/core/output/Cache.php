@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\output;
@@ -29,7 +29,7 @@ use dFramework\core\router\Dispatcher;
  * @package		dFramework
  * @subpackage	Core
  * @category    Output
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api
  * @since       2.2
  * @file		/system/core/output/Cache.php
@@ -40,7 +40,7 @@ class Cache
     /**
      * @var string Repertoire de stockage des fichiers mis en cache
      */
-    private $cache_dir = VIEW_DIR . 'reserved' . DS . 'cache' . DS;
+    private $cache_dir = VIEW_CACHE_DIR;
 
     /**
      * @var int duree de validite du cache en minute
@@ -63,16 +63,17 @@ class Cache
      */
     public function set(array $options = [])
     {
-        if(!empty($options['cache_dir']) AND is_string($options['cache_dir']))
+        if (!empty($options['cache_dir']) AND is_string($options['cache_dir']))
         {
-            if(!is_dir($options['cache_dir']))
+            if (!is_dir($options['cache_dir']))
             {
                 throw new Exception('Le chemin spécifié pour la sauvegarde des fichiers de cache n\'existe pas');
             }
             $options['cache_dir'] = str_replace('/', DS, $options['cache_dir']);
             $this->cache_dir = trim($options['cache_dir'], DS).DS;
         }
-        if(!empty($options['cache_time']) AND is_int($options['cache_time']))
+
+        if (!empty($options['cache_time']) AND is_int($options['cache_time']))
         {
             $this->cache_time = $options['cache_time'];
         }
@@ -122,7 +123,7 @@ class Cache
     {
         $filename = $this->cache_dir . $this->safe_filename($label) . $this->cache_ext;
 
-        if(file_exists($filename))
+        if (file_exists($filename))
         {
             unlink($filename);
         }
@@ -152,15 +153,16 @@ class Cache
         $class = Dispatcher::getClass();
         $class = (!empty($class)) ? $class : Config::get('route.default_controller');
 
-        if(empty($label))
+        if (empty($label))
         {
             $label = str_replace('.php', '', basename($file));
         }
-        if(! $content = $this->read($label))
+        if (! $content = $this->read($label))
         {
             $content = (new View($vars, $class))->display($file)->get(true);
             $this->write($label, $content);
         }
+
         echo $content;
     }
 
@@ -172,7 +174,7 @@ class Cache
      */
     public function start(string $label)
     {
-        if($content = $this->read($label))
+        if ($content = $this->read($label))
         {
             echo $content;
             $this->buffer = false;
@@ -189,7 +191,7 @@ class Cache
      */
     public function end()
     {
-        if(empty($this->buffer))
+        if (empty($this->buffer))
         {
             return false;
         }

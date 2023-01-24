@@ -7,12 +7,12 @@
  *  This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  *  @package	dFramework
- *  @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ *  @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  *  @copyright	Copyright (c) 2019 - 2020, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.5
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\loader;
@@ -25,7 +25,7 @@ use dFramework\core\exception\LoadException;
  * @package		dFramework
  * @subpackage	Core
  * @category    Loader
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework
  * @since       3.2.1
  * @file		/system/core/loader/FileLocator.php
@@ -41,11 +41,17 @@ class FileLocator
     {
         $file = self::ensureExt($lang, 'json');
         $paths = [
+			// Path to system languages
+            SYST_DIR . 'constants' . DS . 'lang' . DS . config('general.language') . DS . $file,
+
+            // Path to app languages
+			LANG_DIR . config('general.language') . DS . $file,
+
             // Path to system languages
             SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file,
 
             // Path to app languages
-            RESOURCE_DIR . 'reserved' . DS . 'lang' . DS . $locale . DS . $file
+            LANG_DIR . $locale . DS . $file,
         ];
         $file_exist = false;
         $languages = [];
@@ -72,6 +78,8 @@ class FileLocator
     }
 
     /**
+	 * Charge un fichier d'aide (helper)
+	 *
      * @param string $helper
      * @return void
      */
@@ -107,6 +115,8 @@ class FileLocator
     }
 
     /**
+	 * Cree et renvoie une librairie donnée
+	 *
      * @param string $library
      * @return mixed
      */
@@ -159,12 +169,14 @@ class FileLocator
             );
         }
 
-        return Injector::factory($lib);
+        return Injector::make($lib);
     }
 
     /**
+	 * Cree et renvoi un model donné
+	 *
      * @param string $model
-     * @return dFramework\core\Model
+     * @return \dFramework\core\Model
      */
     public static function model(string $model)
     {
@@ -201,7 +213,7 @@ class FileLocator
 
         if (class_exists($class_namespaced, false))
         {
-            return Injector::factory($class_namespaced);
+            return Injector::make($class_namespaced);
         }
         else if (!class_exists($mod, false))
         {
@@ -213,12 +225,14 @@ class FileLocator
             ');
         }
 
-        return Injector::factory($mod);
+        return Injector::make($mod);
     }
 
     /**
+	 * Cree et renvoi un controleur donné
+	 *
      * @param string $controller
-     * @return dFramework\core\Controller
+     * @return \dFramework\core\controllers\BaseController
      */
     public static function controller(string $controller)
     {
@@ -255,7 +269,7 @@ class FileLocator
 
         if (class_exists($class_namespaced, false))
         {
-            return Injector::factory($class_namespaced);
+            return Injector::make($class_namespaced);
         }
         else if (!class_exists($con, false))
         {
@@ -267,7 +281,7 @@ class FileLocator
             );
         }
 
-        return Injector::factory($con);
+        return Injector::make($con);
     }
 
 

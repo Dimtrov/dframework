@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage	https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\exception;
@@ -363,7 +363,7 @@ class Logger
 	 */
 	private function saveError(array $errors)
 	{
-		$errors_file = \APP_DIR.'logs'.DS.date('Y').DS.date('md').'.json';
+		$errors_file = LOG_DIR.date('Y').DS.date('md').'.json';
 
 		$lastErrors = Json::fileToArray($errors_file);
 		if (!empty($lastErrors))

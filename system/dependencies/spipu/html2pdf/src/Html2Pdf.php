@@ -242,7 +242,7 @@ class Html2Pdf
         return array(
             'major'     => 5,
             'minor'     => 2,
-            'revision'  => 3
+            'revision'  => 4
         );
     }
 
@@ -1505,11 +1505,13 @@ class Html2Pdf
     {
         // get the size of the image
         // WARNING : if URL, "allow_url_fopen" must turned to "on" in php.ini
-        if( strpos($src,'data:') === 0 ) {
+
+        if (strpos($src,'data:') === 0) {
             $src = base64_decode( preg_replace('#^data:image/[^;]+;base64,#', '', $src) );
             $infos = @getimagesizefromstring($src);
             $src = "@{$src}";
         } else {
+            $this->parsingCss->checkValidPath($src);
             $infos = @getimagesize($src);
         }
 
@@ -2671,7 +2673,13 @@ class Html2Pdf
                 if ($background['img']) {
                     // get the size of the image
                     // WARNING : if URL, "allow_url_fopen" must turned to "on" in php.ini
-                    $infos=@getimagesize($background['img']);
+                    if( strpos($background['img'],'data:') === 0 ) {
+                        $src = base64_decode( preg_replace('#^data:image/[^;]+;base64,#', '', $background['img']) );
+                        $infos = @getimagesizefromstring($src);
+                        $background['img'] = "@{$src}";
+                    }else{
+                        $infos = @getimagesize($background['img']);
+                    }
                     if (is_array($infos) && count($infos)>1) {
                         $background['img'] = [
                             'file'   => $background['img'],

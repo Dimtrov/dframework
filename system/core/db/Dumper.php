@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.4
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db;
@@ -20,6 +20,7 @@ namespace dFramework\core\db;
 use dFramework\core\exception\DatabaseException;
 use dFramework\core\exception\Exception;
 use dFramework\core\loader\Filesystem;
+use dFramework\core\loader\Service;
 
 /**
  * Dumper
@@ -49,7 +50,7 @@ class Dumper
     /**
      * @var string
      */
-    private $save_folder = RESOURCE_DIR . 'database'.DS.'dump' . DS;
+    private $save_folder = DB_DUMP_DIR;
 
     /**
      * @var string
@@ -61,15 +62,29 @@ class Dumper
      * Migrator constructor.
      * @param string $group
      */
-    public function __construct(?string $group = null)
+    public function __construct(?string $group = null, ?string $filename = null)
     {
         if ('cli' !== PHP_SAPI)
         {
             // exit('Fonctionnalités disponible uniquement en invite de commande');
         }
-        $this->db = Database::instance($group);
+        $this->db = Service::database($group);
         $this->config = $this->db->config();
+		$this->filename = $filename;
     }
+
+	/**
+	 * Modifie le nom du fichier de dump à utiliser
+	 *
+	 * @param string $filename
+	 * @return self
+	 */
+	public function setFilename(string $filename) : self
+	{
+		$this->filename = $filename;
+
+		return $this;
+	}
 
     /**
      * Sauvegarde l'état actuel d'une base de données dans un fichier de dump

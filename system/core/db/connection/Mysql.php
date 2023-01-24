@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db\connection;
@@ -30,7 +30,7 @@ use dFramework\core\exception\DatabaseException;
  * @package		dFramework
  * @subpackage	Core
  * @category    Db/Connection
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.3.0
  * @file		/system/core/db/connection/Mysql.php
@@ -61,7 +61,7 @@ class Mysql extends BaseConnection
                     $this->host,
                     $this->username,
                     $this->password,
-                    $this->database,
+                    true === $this->with_database ? $this->database : null,
                     $this->port
                 );
 
@@ -73,11 +73,15 @@ class Mysql extends BaseConnection
                 break;
             case 'pdomysql':
             case 'pdo_mysql':
-                $this->dsn = sprintf(
+                $this->dsn = true === $this->with_database ? sprintf(
                     'mysql:host=%s;port=%d;dbname=%s',
                     $this->host,
                     $this->port,
                     $this->database
+				) : sprintf(
+                    'mysql:host=%s;port=%d',
+                    $this->host,
+                    $this->port
 				);
 				$db = new PDO($this->dsn, $this->username, $this->password);
 				$this->commands[] = 'SET SQL_MODE=ANSI_QUOTES';
@@ -159,6 +163,26 @@ class Mysql extends BaseConnection
     //--------------------------------------------------------------------
 
 	/**
+	 * The name of the platform in use (MySQLi, mssql, etc)
+	 *
+	 * @return string
+	 */
+	public function getPlatform(): string
+	{
+		if (isset($this->dataCache['platform']))
+		{
+			return $this->dataCache['platform'];
+		}
+
+		if (empty($this->conn))
+		{
+			$this->initialize();
+        }
+
+		return $this->dataCache['platform'] = $this->driver === 'mysqli' ? 'mysql' : $this->conn->getAttribute(PDO::ATTR_DRIVER_NAME);
+	}
+
+	/**
 	 * Returns a string containing the version of the database being used.
 	 *
 	 * @return string
@@ -175,7 +199,7 @@ class Mysql extends BaseConnection
 			$this->initialize();
         }
 
-		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_info : $this->conn->getAttribute(PDO::ATTR_CLIENT_VERSION);
+		return $this->dataCache['version'] = $this->driver === 'mysqli' ? $this->conn->server_version : $this->conn->getAttribute(PDO::ATTR_SERVER_VERSION);
 	}
 
     /**

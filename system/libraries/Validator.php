@@ -59,7 +59,7 @@ class Validator
         $this->validator = new Valitron($data, [], $lang);
 
 
-        $this->validator->addInstanceRule('tel', function($field, bool $use_indicatif = false) {
+        $this->validator->addInstanceRule('tel', function($field, ?bool $use_indicatif = false) {
             $tel = $this->validator->data()[$field] ?? null;
 
             if (empty($tel))

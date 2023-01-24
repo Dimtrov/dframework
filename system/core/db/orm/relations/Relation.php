@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.3.2
+ *  @version    3.4.0
  */
 
 namespace dFramework\core\db\orm\relations;
@@ -22,7 +22,8 @@ use IteratorAggregate;
 use EmptyIterator;
 use dFramework\core\db\orm\Result;
 use dFramework\core\db\query\Hydrator;
-use dFramework\core\Entity;
+use dFramework\core\models\Entity;
+use Traversable;
 
 /**
  * Relation
@@ -120,7 +121,7 @@ abstract class Relation implements Countable, IteratorAggregate
 	}
 
 	// Implements IteratorAggregate function so the result can be looped without needs to call get() first.
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		$return = $this->getResult();
 
@@ -128,7 +129,7 @@ abstract class Relation implements Countable, IteratorAggregate
 	}
 
 	// Implements Countable function
-	public function count()
+	public function count(): int
 	{
 		$result = $this->getResult();
 

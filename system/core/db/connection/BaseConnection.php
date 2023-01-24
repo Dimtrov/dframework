@@ -7,12 +7,12 @@
  * This content is released under the Mozilla Public License 2 (MPL-2.0)
  *
  * @package	    dFramework
- * @author	    Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author	    Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @copyright	Copyright (c) 2019 - 2021, Dimtrov Lab's. (https://dimtrov.hebfree.org)
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.0
+ * @version     3.4.0
  */
 
 namespace dFramework\core\db\connection;
@@ -30,7 +30,7 @@ use PDO;
  * @package		dFramework
  * @subpackage	Core
  * @category    Db/Connection
- * @author		Dimitri Sitchet Tomkeu <dev.dst@gmail.com>
+ * @author		Dimitri Sitchet Tomkeu <devcode.dst@gmail.com>
  * @link		https://dimtrov.hebfree.org/docs/dframework/api/
  * @since       3.3.0
  * @credit 		CodeIgniter 4.0 (\CodeIgniter\Database\BaseConnection - https://codeigniter.com)
@@ -326,6 +326,12 @@ abstract class BaseConnection
 	 */
 	protected static $allConnections = [];
 
+	/**
+	 * Specifie si on doit ouvrir la connexion au serveur en se connectant automatiquement à la base de donnees
+	 */
+	protected $with_database = true;
+
+
 	//--------------------------------------------------------------------
 
 	/**
@@ -344,6 +350,30 @@ abstract class BaseConnection
         }
         $this->timer = Service::timer();
     }
+
+	/**
+	 * On ouvre la connexion au serveur en se connectant directement à la base de donnees
+	 *
+	 * @return self
+	 */
+	public function withDatabase() : self
+	{
+		$this->with_database = true;
+
+		return $this;
+	}
+
+	/**
+	 * On ouvre la connexion au serveur sans se connecter à la base de donnees
+	 *
+	 * @return self
+	 */
+	public function withoutDatabase() : self
+	{
+		$this->with_database = false;
+
+		return $this;
+	}
 
     public function getType() : string
     {
@@ -1369,6 +1399,21 @@ abstract class BaseConnection
 	//--------------------------------------------------------------------
 	// META Methods
 	//--------------------------------------------------------------------
+
+	/**
+	 * Create a database
+	 *
+	 * @param string $dbname
+	 * @return int|false
+	 */
+	public function createDatabase(string $dbname)
+	{
+		$this->reconnect();
+		if (!empty($this->conn) AND $this->type === 'pdo')
+        {
+			return $this->conn->exec("CREATE DATABASE IF NOT EXISTS `$dbname`;");
+		}
+	}
 
 	/**
 	 * List databases

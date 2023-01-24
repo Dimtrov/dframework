@@ -10,11 +10,10 @@
  * For security be sure to declare any new methods as protected or private.
  */
 
-use dFramework\components\rest\Controller;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class RestController extends Controller
+class RestController extends \dFramework\core\controllers\RestController
 {
     /**
      * Constructor.
@@ -25,7 +24,7 @@ class RestController extends Controller
 	{
 		// Do Not Edit This Line
 		parent::initialize($request, $response);
-	
+
 		// Preload any models, libraries, etc, here.
 		//--------------------------------------------------------------------
 		// E.g.:

@@ -238,7 +238,7 @@ class RouteCollection
             return $this->config['default_controller'] ?? 'Home';
         }
 
-        $this->config['default_controller'] = filter_var(ucfirst($value), FILTER_SANITIZE_STRING);
+        $this->config['default_controller'] = esc(ucfirst($value));
 
         return $this;
 	}
@@ -255,7 +255,7 @@ class RouteCollection
             return $this->config['default_method'] ?? 'index';
         }
 
-        $this->config['default_method'] = filter_var(strtolower($value), FILTER_SANITIZE_STRING);
+        $this->config['default_method'] = esc(strtolower($value));
 
         return $this;
 	}
@@ -608,7 +608,7 @@ class RouteCollection
 		// $name value with the name of the new controller.
 		if (isset($options['controller']))
 		{
-			$controller = explode('/', filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$controller = explode('/', esc($options['controller']));
 			$last_index = count($controller) - 1;
 			$controller[$last_index] = ucfirst($controller[$last_index]);
 			$new_name = implode('/', $controller);
@@ -734,7 +734,7 @@ class RouteCollection
 		// $name value with the name of the new controller.
 		if (isset($options['controller']))
 		{
-			$controller = explode('/', filter_var($options['controller'], FILTER_SANITIZE_STRING));
+			$controller = explode('/', esc($options['controller']));
 			$last_index = count($controller) - 1;
 			$controller[$last_index] = ucfirst($controller[$last_index]);
 			$newName = implode('/', $controller);
@@ -1054,7 +1054,7 @@ class RouteCollection
 	{
 		$prefix    = (is_null($this->group) ? '' : $this->group) . '/';
 
-		$from = filter_var($prefix . ltrim($from, '/'), FILTER_SANITIZE_STRING);
+		$from = esc($prefix . ltrim($from, '/'));
 
 		// While we want to add a route within a group of '/',
 		// it doesn't work with matching, so remove them...

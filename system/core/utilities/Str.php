@@ -931,7 +931,7 @@ class Str
      * @param array $options An array of options.
      * @return string
      */
-    protected static function substr(string $text, int $start, ?int $length = null, array $options) : string
+    protected static function substr(string $text, int $start, ?int $length = null, array $options = []) : string
     {
         if (empty($options['trimWidth']))
 		{
