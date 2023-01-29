@@ -56,7 +56,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
     /**
      * Return an instance of SplFileInfo with support for relative paths.
      *
-     * @return SplFileInfo File information
+     * @return SplFileInfo|\FilesystemIterator|string File information
      */
     public function current()
     {
@@ -78,7 +78,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
      *
      * @throws AccessDeniedException
      */
-    public function getChildren()
+    public function getChildren(): \RecursiveDirectoryIterator
     {
         try {
             $children = parent::getChildren();
@@ -106,7 +106,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
     /**
      * Do nothing for non rewindable stream.
      */
-    public function rewind()
+    public function rewind(): void
     {
         if (false === $this->isRewindable()) {
             return;
