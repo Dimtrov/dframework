@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.4.0
+ *  @version    3.4.1
  */
 
 namespace dFramework\core\router;
@@ -75,6 +75,10 @@ class Dispatcher
 	/**
 	 * @var string
 	 */
+	private $controllerFile;
+	/**
+	 * @var string
+	 */
 	private $method;
 	/**
 	 * Methodes reservees qui ne peuvent pas etre utilisee dans des routes
@@ -124,6 +128,13 @@ class Dispatcher
 	 * @var string
 	 */
 	private $output = '';
+
+	/**
+     * Chemin de requête à utiliser.
+     *
+     * @var string
+     */
+    protected $path;
 
 
     /**
@@ -424,7 +435,7 @@ class Dispatcher
 		$this->timer->start('routing');
 		ob_start();
 
-		$this->controller     = $this->router->handle($request->url ?? null);
+		$this->controller     = $this->router->handle($this->determinePath());
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
 		$this->controllerFile = $this->router->controllerFile();
@@ -647,7 +658,7 @@ class Dispatcher
 			}
 		}
 
-		throw new \Exception("PageNotFoundException::forPageNotFound($e->getMessage())");
+		throw new \Exception('PageNotFoundException::forPageNotFound(' . $e->getMessage() . ')');
 	}
 
 	//--------------------------------------------------------------------
@@ -811,4 +822,20 @@ class Dispatcher
 		return md5($name);
     }
 
+	/**
+     * Détermine le chemin à utiliser pour que nous essayions d'acheminer vers, en fonction
+     * de l'entrée de l'utilisateur (setPath), ou le chemin CLI/IncomingRequest.
+     */
+    protected function determinePath(): string
+    {
+        if (! empty($this->path)) {
+            return $this->path;
+        }
+
+        $path = method_exists($this->request, 'getPath')
+            ? $this->request->getPath()
+            : $this->request->getUri()->getPath();
+
+        return preg_replace('#^' . Config::getUri()->getPath() . '#i', '', $path);
+    }
 }

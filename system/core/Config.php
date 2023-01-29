@@ -12,12 +12,13 @@
  *  @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.4.0
+ *  @version    3.4.1
  */
 
 namespace dFramework\core;
 
 use dFramework\core\exception\ConfigException;
+use dFramework\core\http\Uri;
 use dFramework\core\utilities\Arr;
 use InvalidArgumentException;
 
@@ -350,4 +351,61 @@ class Config
 			Please edit &laquo; '.self::$_config_file[$group].' &raquo; file to correct it
 		');
 	}
+
+
+	 /**
+     * Utilisé par les autres fonctions d'URL pour construire un
+     * URI spécifique au framework basé sur la configuration de l'application.
+     *
+     * @internal En dehors du framework, ceci ne doit pas être utilisé directement.
+     *
+     * @param string $relativePath Peut inclure des requêtes ou des fragments
+     *
+     * @throws InvalidArgumentException Pour les chemins ou la configuration non valides
+     */
+    public static function getUri(string $relativePath = ''): Uri
+    {
+        $config = (object) config('general');
+
+        if ($config->base_url === '')
+		{
+            throw new InvalidArgumentException(__METHOD__ . ' requires a valid baseURL.');
+        }
+
+        // Si un URI complet a été passé, convertissez-le
+        if (is_int(strpos($relativePath, '://')))
+			{
+            $full         = new Uri($relativePath);
+            $relativePath = Uri::createURIString(null, null, $full->getPath(), $full->getQuery(), $full->getFragment());
+        }
+
+        $relativePath = URI::removeDotSegments($relativePath);
+
+        // Construire l'URL complète basée sur $config et $relativePath
+        $url = rtrim($config->base_url, '/ ') . '/';
+
+        // Recherche une page d'index
+        if (! empty($config->index_page))
+		{
+            $url .= $config->index_page;
+
+            // Vérifie si nous avons besoin d'un séparateur
+            if ($relativePath !== '' && $relativePath[0] !== '/' && $relativePath[0] !== '?')
+			{
+                $url .= '/';
+            }
+        }
+
+        $url .= $relativePath;
+
+        $uri = new Uri($url);
+
+        // Vérifie si le schéma baseURL doit être contraint dans sa version sécurisée
+        if ($config->force_global_secure_requests && $uri->getScheme() === 'http')
+		{
+            $uri->setScheme('https');
+        }
+
+        return $uri;
+    }
 }

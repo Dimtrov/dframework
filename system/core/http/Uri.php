@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.4
+ * @version     3.4.1
  */
 
 namespace dFramework\core\http;
@@ -1111,7 +1111,7 @@ class Uri implements UriInterface
 	 * @return   string
 	 * @internal param \CodeIgniter\HTTP\URI $uri
 	 */
-	public function removeDotSegments(string $path): string
+	public static function removeDotSegments(string $path): string
 	{
 		if (empty($path) || $path === '/')
 		{
