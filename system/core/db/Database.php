@@ -12,7 +12,7 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.3.5
+ * @version     3.4.1
  */
 
 namespace dFramework\core\db;
@@ -22,6 +22,8 @@ use dFramework\core\db\connection\BaseConnection;
 use dFramework\core\db\connection\Mysql;
 use dFramework\core\db\connection\Pgsql;
 use dFramework\core\db\connection\Sqlite;
+use dFramework\core\db\dump\BaseDump;
+use dFramework\core\db\dump\Mysql as DumpMysql;
 use dFramework\core\utilities\Arr;
 use dFramework\core\exception\DatabaseException;
 
@@ -69,6 +71,11 @@ class Database
      * @var BaseConnection
      */
     private $connection = null;
+
+    /**
+     * @var BaseDump
+     */
+    private $dumper = null;
 
     /**
      * @var self
@@ -239,6 +246,35 @@ class Database
         }
         return $this->connection = $this->createConnection();
     }
+
+    /**
+     * Recupere le gestionnaire adequat de dump a la base de donnees
+     *
+     * @param string|null $group
+     * @return BaseDump
+     */
+    public function dumper(?string $group = null) : BaseDump
+    {
+        if (!empty($group))
+        {
+            if ($group === $this->group)
+            {
+                if (!empty($this->dumper))
+                {
+                    return $this->dumper;
+                }
+            }
+            return $this->dumper = $this->createDumper($group);
+        }
+        if (!empty($this->dumper))
+        {
+            return $this->dumper;
+        }
+        return $this->dumper = $this->createDumper();
+    }
+
+
+
     /**
      * Cree une connection a la base de donnees en utilisant le driver approprier
      *
@@ -261,6 +297,27 @@ class Database
         {
             return new Pgsql($this->config);
         }
+        /**
+         * @todo gerer les autres driver
+         */
+        throw new DatabaseException("Database driver not available for the moment", 1);
+    }
+
+    /**
+     * Cree l'instance approprier du dumper en fonction du driver de la base de données utilisee
+     *
+     * @param string|null $group
+     * @return BaseDump
+     */
+    private function createDumper(?string $group = null): BaseDump
+    {
+        $this->config = $this->makeConfig($group);
+
+        if (preg_match('#mysql#', $this->config['driver']))
+        {
+            return new DumpMysql($this);
+        }
+
         /**
          * @todo gerer les autres driver
          */

@@ -12,13 +12,12 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @link	    https://dimtrov.hebfree.org/works/dframework
- * @version     3.4.0
+ * @version     3.4.1
  */
 
 namespace dFramework\core\cli;
 
 use dFramework\core\db\Database as DbDatabase;
-use dFramework\core\db\Dumper;
 use dFramework\core\db\Seeder;
 use dFramework\core\loader\Filesystem;
 use dFramework\core\loader\Injector;
@@ -124,7 +123,7 @@ class Database extends Cli
                     }
                     $cli->start('Service d\'import/export de base de donnees');
 
-                    $dump = new Dumper($database);
+					$dump = DbDatabase::instance()->dumper($database);
 
                     if (!empty($export))
                     {
