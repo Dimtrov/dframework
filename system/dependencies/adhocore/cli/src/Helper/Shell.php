@@ -106,7 +106,7 @@ class Shell
 
     protected function setInput()
     {
-        \fwrite($this->pipes[self::STDIN_DESCRIPTOR_KEY], $this->input);
+        \fwrite($this->pipes[self::STDIN_DESCRIPTOR_KEY], (string)$this->input);
     }
 
     protected function updateProcessStatus()
