@@ -815,10 +815,18 @@ class View
      */
     private function compressView(string $output, $compress = 'auto') : string
     {
-        if (!in_array($compress, [true, false, 'true', 'false'], true)) {
+        if (!in_array($compress, [true, false, 'true', 'false'], true))
+		{
             $compress = false == on_dev();
         }
-        return (true === $compress) ? trim(preg_replace('/\s+/', ' ', $output)) : $output;
+		if (true === $compress)
+		{
+			$output = preg_replace('/\s+/', ' ', $output);
+			$output = preg_replace('/\/\*(.*?)\*\//iSu', '', $output);
+			$output = preg_replace('/<!--(.*?)-->/iSu', '', $output);
+		}
+
+        return trim($output);
     }
      /**
      * Creer et affiche une vue smarty
