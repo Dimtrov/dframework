@@ -911,11 +911,15 @@ class Date extends DateTime
 	/**
 	 * Get the difference in years.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInYears($compare = null)
+	public function getDifferenceInYears($compare = 'now')
 	{
+		if (is_numeric($compare))
+		{
+			$compare = self::createFromTimestamp((int) $compare, $this->getTimezone());
+		}
 		if (!empty($compare) AND !($compare instanceof DateTimeInterface) AND !is_string($compare))
 		{
 			throw new InvalidArgumentException('$compare must be a string or object implemented DateTimeInterface');
@@ -931,12 +935,16 @@ class Date extends DateTime
 	/**
 	 * Get the difference in months.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInMonths($compare = null)
+	public function getDifferenceInMonths($compare = 'now')
 	{
-		if (!empty($compare) AND !($compare instanceof DateTimeInterface) AND !is_string($compare))
+		if (is_numeric($compare))
+		{
+			$compare = self::createFromTimestamp((int) $compare, $this->getTimezone());
+		}
+		if (!($compare instanceof DateTimeInterface) AND !is_string($compare))
 		{
 			throw new InvalidArgumentException('$compare must be a string or object implemented DateTimeInterface');
 		}
@@ -955,12 +963,16 @@ class Date extends DateTime
 	/**
 	 * Get the difference in days.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInDays($compare = null)
+	public function getDifferenceInDays($compare = 'now')
 	{
-		if (!empty($compare) AND !($compare instanceof DateTimeInterface) AND !is_string($compare))
+		if (is_numeric($compare))
+		{
+			$compare = self::createFromTimestamp((int) $compare, $this->getTimezone());
+		}
+		if (!($compare instanceof DateTimeInterface) AND !is_string($compare))
 		{
 			throw new InvalidArgumentException('$compare must be a string or object implemented DateTimeInterface');
 		}
@@ -975,10 +987,10 @@ class Date extends DateTime
 	/**
 	 * Get the difference in hours.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInHours($compare = null)
+	public function getDifferenceInHours($compare = 'now')
 	{
 		return $this->getDifferenceInMinutes($compare) / 60;
 	}
@@ -986,10 +998,10 @@ class Date extends DateTime
 	/**
 	 * Get the difference in minutes.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInMinutes($compare = null)
+	public function getDifferenceInMinutes($compare = 'now')
 	{
 		return $this->getDifferenceInSeconds($compare) / 60;
 	}
@@ -997,12 +1009,16 @@ class Date extends DateTime
 	/**
 	 * Get the difference in seconds.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getDifferenceInSeconds($compare = null)
+	public function getDifferenceInSeconds($compare = 'now')
 	{
-		if (!empty($compare) AND !($compare instanceof DateTimeInterface) AND !is_string($compare))
+		if (is_numeric($compare))
+		{
+			$compare = self::createFromTimestamp((int) $compare, $this->getTimezone());
+		}
+		if (!($compare instanceof DateTimeInterface) AND !is_string($compare))
 		{
 			throw new InvalidArgumentException('$compare must be a string or object implemented DateTimeInterface');
 		}
@@ -1030,12 +1046,16 @@ class Date extends DateTime
 	/**
 	 * Get a relative date string, e.g., 3 days ago.
 	 *
-	 * @param null|string|DateTimeInterface  $compare
+	 * @param string|int|DateTimeInterface  $compare
 	 * @return string
 	 */
-	public function getRelativeDate($compare = null)
+	public function getRelativeDate($compare = 'now')
 	{
-		if (!empty($compare) AND !($compare instanceof DateTimeInterface) AND !is_string($compare))
+		if (is_numeric($compare))
+		{
+			$compare = self::createFromTimestamp((int) $compare, $this->getTimezone());
+		}
+		if (!($compare instanceof DateTimeInterface) AND !is_string($compare))
 		{
 			throw new InvalidArgumentException('$compare must be a string or object implemented DateTimeInterface');
 		}
