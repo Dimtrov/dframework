@@ -304,7 +304,7 @@ class Configurer
 		{
 			if (empty($this->is_password))
 			{
-				return function(string $pass, string $hash) : bool {
+				$this->is_password = function(string $pass, string $hash) : bool {
 					return Password::compare($pass, $hash);
 				};
 			}

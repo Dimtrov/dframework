@@ -289,9 +289,9 @@ class Config
         {
 			self::exceptBadConfigValue('compress_output', ['auto', true, false], 'general');
         }
-		if (self::$_config['general']['compress_output'] == 'auto')
+		if (self::$_config['general']['compress_output'] === 'auto')
 		{
-			self::$_config['general']['compress_output'] = is_online();
+			self::$_config['general']['compress_output'] = !on_dev();
 		}
 
 		/* ----------------
