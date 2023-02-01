@@ -12,22 +12,22 @@
  * @copyright	Copyright (c) 2019 - 2021, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  * @license	    https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  * @homepage    https://dimtrov.hebfree.org/works/dframework
- * @version     3.4.0
+ * @version     3.4.1
  */
 
 use dFramework\core\Autoloader;
 use dFramework\core\dFramework;
 
-require_once dirname(__DIR__) . DS . 'core' . DS . 'Autoloader.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
 
 Autoloader::load();
 
-if (file_exists(APP_DIR . 'config' . DS . 'constants.php'))
+if (file_exists(APP_DIR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'))
 {
-	require_once APP_DIR . 'config' . DS . 'constants.php';
+	require_once APP_DIR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
 }
-require_once SYST_DIR . 'constants'.DS.'constants.php';
+require_once SYST_DIR . 'constants' . DIRECTORY_SEPARATOR . 'constants.php';
 
-require_once __DIR__ . DS . 'kint.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'kint.php';
 
 return (new dFramework)->init();

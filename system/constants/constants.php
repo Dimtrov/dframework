@@ -1,8 +1,12 @@
 <?php
 
-define('BASEPATH', dirname(SYST_DIR).DS);
+defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
-define('ROOTPATH', dirname(WEBROOT).DS);
+defined('SYST_DIR') || define('SYST_DIR', dirname(__DIR__) . DS);
+
+define('BASEPATH', dirname(SYST_DIR) . DS);
+
+define('ROOTPATH', dirname(WEBROOT) . DS);
 
 
 if (!defined('CONTROLLER_DIR'))
