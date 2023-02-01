@@ -12,7 +12,7 @@
  *  @copyright	Copyright (c) 2019 - 2020, Dimitri Sitchet Tomkeu. (https://www.facebook.com/dimtrovich)
  *  @license	https://opensource.org/licenses/MPL-2.0 MPL-2.0 License
  *  @homepage	https://dimtrov.hebfree.org/works/dframework
- *  @version    3.4.0
+ *  @version    3.4.1
  */
 
 namespace dFramework\core\loader;
@@ -39,35 +39,29 @@ class FileLocator
      */
     public static function lang(string $lang, string $locale) : array
     {
-        $file = self::ensureExt($lang, 'json');
-        $paths = [
-			// Path to system languages
-            SYST_DIR . 'constants' . DS . 'lang' . DS . config('general.language') . DS . $file,
+		$languages  = [];
+		$file_exist = false;
 
-            // Path to app languages
-			LANG_DIR . config('general.language') . DS . $file,
+        $path = self::findLangFile($lang, $locale, 'json');
+		if (null !== $path AND false !== ($lang = file_get_contents($path)))
+		{
+			$file_exist = true;
+			$languages  = array_merge($languages, json_decode($lang, true));
+		}
 
-            // Path to system languages
-            SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file,
-
-            // Path to app languages
-            LANG_DIR . $locale . DS . $file,
-        ];
-        $file_exist = false;
-        $languages = [];
-
-        foreach ($paths As $path)
-        {
-            if (file_exists($path) AND false !== ($lang = file_get_contents($path)))
+		$path = self::findLangFile($lang, $locale, 'php');
+		if (null !== $path)
+		{
+			$file_exist = true;
+			if (! in_array($path, get_included_files()))
             {
-                $languages = array_merge($languages, json_decode($lang, true));
-                $file_exist = true;
+                $languages = array_merge($languages, require($path));
             }
-        }
+		}
 
         if (true !== $file_exist)
         {
-            LoadException::except('
+			LoadException::except('
                 Impossible de charger les langues  <b>'.$lang.'</b>.
                 <br>
                 Aucun fichier accessible en lecture et correspondant à cette langue n\'a été trouvé.
@@ -284,8 +278,43 @@ class FileLocator
         return Injector::make($con);
     }
 
+	/**
+	 * Find the first path for locale
+	 *
+	 * @param string $lang
+	 * @param string $locale
+	 * @param string $ext
+	 * @return string|null
+	 */
+    private static function findLangFile(string $lang, string $locale, string $ext): ?string
+	{
+		$file = self::ensureExt($lang, $ext);
+        $paths = array_unique([
+			// Path to app languages
+            LANG_DIR . $locale . DS . $file,
 
-    /**
+			// Path to app languages
+			LANG_DIR . config('general.language') . DS . $file,
+
+            // Path to system languages
+            SYST_DIR . 'constants' . DS . 'lang' . DS . $locale . DS . $file,
+
+			// Path to system languages
+            SYST_DIR . 'constants' . DS . 'lang' . DS . config('general.language') . DS . $file,
+        ]);
+
+        foreach ($paths As $path)
+        {
+            if (is_readable($path))
+            {
+				return $path;
+            }
+        }
+
+		return null;
+	}
+
+	/**
 	 * Ensures a extension is at the end of a filename
 	 *
 	 * @param string $path
