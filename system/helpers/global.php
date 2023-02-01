@@ -494,26 +494,37 @@ if (!function_exists('link_active'))
     /**
      * Lien actif dans la navbar
      * Un peut comme le router-active-link de vuejs
+     *
+     * @param string|string[] $path
      */
-    function link_active(string $path, string $active_class = 'active', bool $exact = false): string
+    function link_active($path, string $active_class = 'active', bool $exact = false): string
     {
-        $base_url = dirname(substr($_SERVER['SCRIPT_NAME'], 0, strpos($_SERVER['SCRIPT_NAME'], basename($_SERVER['SCRIPT_FILENAME']))));
+        $base_url        = dirname(substr($_SERVER['SCRIPT_NAME'], 0, strpos($_SERVER['SCRIPT_NAME'], basename($_SERVER['SCRIPT_FILENAME']))));
         $current_section = trim(str_replace($base_url, '', $_SERVER['REQUEST_URI']), '/');
 
-        if ($current_section === $path) {
-            return $active_class;
+        $is_active   = false;
+        $current_url = trim(current_url(false), '/');
+
+        foreach ((array) $path as $value)
+        {
+            if ($current_section === $value)
+			{
+                $is_active = true;
+                break;
+            }
+            if (! $exact && preg_match('#^' . $value . '/?#i', $current_section))
+            {
+                $is_active = true;
+                break;
+            }
+            if (trim(link_to($value), '/') === $current_url)
+            {
+                $is_active = true;
+                break;
+            }
         }
 
-        if (! $exact && preg_match('#^' . $path . '/?#i', $current_section)) {
-            return $active_class;
-        }
-
-        $link_to = trim(link_to($path), '/');
-        if ($link_to === trim(current_url(false), '/')) {
-            return $active_class;
-        }
-
-        return '';
+        return $is_active ? $active_class : '';
     }
 }
 
