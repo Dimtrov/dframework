@@ -1,7 +1,5 @@
 <?php
 
-defined('DS') || define('DS', DIRECTORY_SEPARATOR);
-
 defined('SYST_DIR') || define('SYST_DIR', dirname(__DIR__) . DS);
 
 define('BASEPATH', dirname(SYST_DIR) . DS);

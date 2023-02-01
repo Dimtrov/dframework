@@ -18,16 +18,18 @@
 use dFramework\core\Autoloader;
 use dFramework\core\dFramework;
 
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+defined('DS') || define('DS', DIRECTORY_SEPARATOR);
+
+require_once dirname(__DIR__) . DS . 'core' . DS . 'Autoloader.php';
 
 Autoloader::load();
 
-if (file_exists(APP_DIR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'))
+if (file_exists(APP_DIR . 'config' . DS . 'constants.php'))
 {
-	require_once APP_DIR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
+	require_once APP_DIR . 'config' . DS . 'constants.php';
 }
-require_once SYST_DIR . 'constants' . DIRECTORY_SEPARATOR . 'constants.php';
+require_once SYST_DIR . 'constants' . DS . 'constants.php';
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'kint.php';
+require_once __DIR__ . DS . 'kint.php';
 
 return (new dFramework)->init();

@@ -61,10 +61,10 @@ class App extends Cli
 			sleep(2);
 			$cli->io->ok("\t => Le serveur a démarré avec succès.", true);
 
-			sleep(2.5);
+			sleep(2);
 			$cli->io->writer()->colors("\t => <white>Ouvrez votre navigateur a l'adresse</end> <boldGreen><http://".$host.":".$port."></end>");
 
-			sleep(1.5);
+			sleep(1);
 			$cli->end();
 
 			$shell = new Shell($php . ' -S '. $host . ':' . $port . ' -t ' . escapeshellarg(\WEBROOT));
