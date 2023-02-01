@@ -217,7 +217,7 @@ class Config
                 $server_addr = $_SERVER['HTTP_HOST'] ?? ((strpos($_SERVER['SERVER_ADDR'], ':') !== FALSE) ? '[' . $_SERVER['SERVER_ADDR'] . ']' : $_SERVER['SERVER_ADDR']);
                 if(isset($_SERVER['SERVER_PORT']))
                 {
-                    $server_addr .= ':'. ((!preg_match('#:'.$_SERVER['SERVER_PORT'].'$#', $server_addr)) ? $_SERVER['SERVER_PORT'] : '80');
+					$server_addr .= !preg_match('#:'.$_SERVER['SERVER_PORT'].'$#', $server_addr) ? ':80' : '';
                 }
                 if(
                     (!empty($_SERVER['HTTPS']) AND strtolower($_SERVER['HTTPS']) !== 'off') OR
