@@ -454,7 +454,7 @@ if (!function_exists('current_url'))
             $path .= '#' . $fragment;
         }
 
-        $uri = Service::uri($path);
+        $uri = Config::getUri($path);
 
         return $returnObject ? $uri : (string)$uri->setQuery('');
 	}

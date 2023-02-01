@@ -246,7 +246,7 @@ class Uri implements UriInterface
 		{
 			// Don't add port if it's a standard port for
 			// this scheme
-			if ($this->port !== $this->defaultPorts[$this->scheme])
+			if ((int) $this->port !== $this->defaultPorts[$this->scheme])
 			{
 				$authority .= ':' . $this->port;
 			}
