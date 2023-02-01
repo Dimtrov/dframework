@@ -1,0 +1,15 @@
+{
+    "deja_connecter"            : "Vous êtes déja connecté. Veuillez rafraîchir la page pour continuer.",
+    "remplissez_tous_les_champs": "Veuillez remplir tous les champs du formulaire.",
+    "entrez_le_login_mdp"       : "Veuillez renseigner le {entry}.",
+    "login_mdp_incorrect"       : "{login} ou {password} incorrect.",
+    "verifiez_votre_entree"     : "Vérifiez \"{entry}\".",
+    "utilisateur_innexistant"   : "Utilisateur inconnu dans notre base de données.",
+    "mdp_incorrect"             : "Le {password} que vous avez entrer est incorrect.",
+    "nbr_tentatives_epuiser"    : "Vous avez atteint le nombre maximal de tentative de connexion. Reessayez demain.",
+    "nbr_tentatives_restant"    : "Il vous reste {nbr_tentatives} tentative(s).",
+    "essayer_autre_compte"      : "Essayez avec un autre {login}.",
+    "mdp_rater_plusieurs_fois"  : "Vous avez raté votre {password} plus de \"{nbr_fois}\" fois.",
+    "token_invalide"            : "Clé de token invalide",
+    "token_innexistant"         : "Ce formulaire est invalide. Nous n'avons pas la clé du token"
+}
