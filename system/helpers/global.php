@@ -438,15 +438,25 @@ if (!function_exists('current_url'))
 	 *
 	 * @return string|\dFramework\core\http\Uri
 	 */
-	function current_url(bool $returnObject = false)
+	function current_url(bool $returnObject = false, ?ServerRequest $request = null)
 	{
-		$uri = Service::uri(site_url($_SERVER['REQUEST_URI']));
+        $request ??= Service::request();
+        $path = $request->getPath();
 
-		// Since we're basing off of the IncomingRequest URI,
-		// we are guaranteed to have a host based on our own configs.
-		return $returnObject
-			? $uri
-			: (string)$uri->setQuery('');
+        $base_url = dirname(substr($_SERVER['SCRIPT_NAME'], 0, strpos($_SERVER['SCRIPT_NAME'], basename($_SERVER['SCRIPT_FILENAME']))));
+        $path = trim(str_replace($base_url, '', $path), '/');
+
+        // Ajouter des chaine de requêtes et des fragments
+        if ($query = $request->getUri()->getQuery()) {
+            $path .= '?' . $query;
+        }
+        if ($fragment = $request->getUri()->getFragment()) {
+            $path .= '#' . $fragment;
+        }
+
+        $uri = Service::uri($path);
+
+        return $returnObject ? $uri : (string)$uri->setQuery('');
 	}
 }
 
@@ -477,6 +487,34 @@ if (!function_exists('previous_url'))
 
 		return $returnObject ? Service::uri($referer) : $referer;
 	}
+}
+
+if (!function_exists('link_active'))
+{
+    /**
+     * Lien actif dans la navbar
+     * Un peut comme le router-active-link de vuejs
+     */
+    function link_active(string $path, string $active_class = 'active', bool $exact = false): string
+    {
+        $base_url = dirname(substr($_SERVER['SCRIPT_NAME'], 0, strpos($_SERVER['SCRIPT_NAME'], basename($_SERVER['SCRIPT_FILENAME']))));
+        $current_section = trim(str_replace($base_url, '', $_SERVER['REQUEST_URI']), '/');
+
+        if ($current_section === $path) {
+            return $active_class;
+        }
+
+        if (! $exact && preg_match('#^' . $path . '/?#i', $current_section)) {
+            return $active_class;
+        }
+
+        $link_to = trim(link_to($path), '/');
+        if ($link_to === trim(current_url(false), '/')) {
+            return $active_class;
+        }
+
+        return '';
+    }
 }
 
 if (!function_exists('redirect'))
@@ -541,9 +579,9 @@ if (!function_exists('link_to'))
 	function link_to(string $method, ...$params) : string
 	{
 		$url = Service::routes()->reverseRoute($method, ...$params);
-		if (empty($url))
+        if (empty($url))
 		{
-			$rul = '';
+			$url = '';
 		}
 		return site_url($url);
 	}

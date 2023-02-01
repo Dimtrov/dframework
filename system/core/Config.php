@@ -215,10 +215,6 @@ class Config
             if (isset($_SERVER['SERVER_ADDR']))
             {
                 $server_addr = $_SERVER['HTTP_HOST'] ?? ((strpos($_SERVER['SERVER_ADDR'], ':') !== FALSE) ? '[' . $_SERVER['SERVER_ADDR'] . ']' : $_SERVER['SERVER_ADDR']);
-                if(isset($_SERVER['SERVER_PORT']))
-                {
-					$server_addr .= !preg_match('#:'.$_SERVER['SERVER_PORT'].'$#', $server_addr) ? ':80' : '';
-                }
                 if(
                     (!empty($_SERVER['HTTPS']) AND strtolower($_SERVER['HTTPS']) !== 'off') OR
                     (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) AND strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') OR
