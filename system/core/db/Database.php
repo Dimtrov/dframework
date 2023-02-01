@@ -68,14 +68,14 @@ class Database
     private $group = null;
 
     /**
-     * @var BaseConnection
+     * @var BaseConnection[]
      */
-    private $connection = null;
+    private $connections = [];
 
     /**
-     * @var BaseDump
+     * @var BaseDump[]
      */
-    private $dumper = null;
+    private $dumpers = [];
 
     /**
      * @var self
@@ -88,11 +88,11 @@ class Database
         $this->group = $group;
 		$this->customConfig = $customConfig;
     }
-    public static function instance(?string $group = null) : self
+    public static function instance(?string $group = null, array $customConfig = []) : self
     {
         if (null === self::$_instance)
         {
-            self::$_instance = new self($group);
+            self::$_instance = new self($group, $customConfig);
         }
         return self::$_instance;
     }
@@ -113,10 +113,37 @@ class Database
         return (new self($group))->connection($group);
     }
 
+	/**
+	 * Modifie le groupe de connection auquel on souhaite se connecter
+	 *
+	 * @param string|null $group
+	 * @return self
+	 */
     public function setGroup(?string $group) : self
     {
         $this->group = $group;
         return $this;
+    }
+
+	/**
+	 * Recupere le groupe de connection auquel on est actuellement connecter
+	 *
+	 * @return string
+	 */
+    public function getGroup(): string
+    {
+        return $this->group;
+    }
+
+    /**
+     * Verifie si le groupe de la bd est identique a celui fourni
+     *
+     * @param string $group
+     * @return boolean
+     */
+    public function isGroup(string $group) : bool
+    {
+        return $this->group === $group;
     }
 
     public static function __callStatic($name, $arguments)
@@ -191,33 +218,20 @@ class Database
     {
         $config = [];
 
-        if (!empty($group))
-        {
-            if ($group === $this->group)
-            {
-                if (!empty($this->config))
-                {
-                    $config = $this->config;
-                }
-            }
-            else
-            {
-                $config = $this->config = $this->makeConfig($group);
-            }
-        }
-        else if (!empty($this->config))
+        if ($group === $this->group)
         {
             $config = $this->config;
         }
-        else
+        if (empty($config))
         {
-            $config = $this->config = $this->makeConfig();
+            $config = $this->config = $this->makeConfig($group);
         }
 
         if (!empty($key))
         {
             return $config[$key] ?? null;
         }
+
         return $config;
     }
 
@@ -229,22 +243,22 @@ class Database
      */
     public function connection(?string $group = null) : BaseConnection
     {
-        if (!empty($group))
+        $connection = null;
+
+        if (empty($group))
         {
-            if ($group === $this->group)
-            {
-                if (!empty($this->connection))
-                {
-                    return $this->connection;
-                }
-            }
-            return $this->connection = $this->createConnection($group);
+            $group = $this->group;
         }
-        if (!empty($this->connection))
+        if ($group === $this->group)
         {
-            return $this->connection;
+            $connection = $this->connections[$group ?? 'default'] ?? null;
         }
-        return $this->connection = $this->createConnection();
+        if (empty($connection))
+        {
+            $connection = $this->connections[$group ?? 'default'] = $this->createConnection($group);
+        }
+
+        return $connection;
     }
 
     /**
@@ -255,22 +269,21 @@ class Database
      */
     public function dumper(?string $group = null) : BaseDump
     {
-        if (!empty($group))
-        {
-            if ($group === $this->group)
-            {
-                if (!empty($this->dumper))
-                {
-                    return $this->dumper;
-                }
-            }
-            return $this->dumper = $this->createDumper($group);
+		$dumper = null;
+		if (empty($group))
+		{
+			$group = $this->group;
+		}
+        if ($group === $this->group)
+		{
+            $dumper = $this->dumpers[$group ?? 'default'] ?? null;
+		}
+		if (empty($dumper))
+		{
+			$dumper = $this->dumpers[$group ?? 'default'] = $this->createDumper($group);
         }
-        if (!empty($this->dumper))
-        {
-            return $this->dumper;
-        }
-        return $this->dumper = $this->createDumper();
+
+		return $dumper;
     }
 
 
@@ -283,7 +296,10 @@ class Database
      */
     private function createConnection(?string $group = null) : BaseConnection
     {
-        $this->config = $this->makeConfig($group);
+        if (empty($this->config) OR $this->group !== $group)
+        {
+            $this->config = $this->makeConfig($group);
+        }
 
         if (preg_match('#mysql#', $this->config['driver']))
         {
@@ -311,7 +327,10 @@ class Database
      */
     private function createDumper(?string $group = null): BaseDump
     {
-        $this->config = $this->makeConfig($group);
+        if (empty($this->config) OR $this->group !== $group)
+        {
+            $this->config = $this->makeConfig($group);
+        }
 
         if (preg_match('#mysql#', $this->config['driver']))
         {
@@ -357,6 +376,7 @@ class Database
                 Please open the "'.Config::$_config_file['database'].'" file to set it
             ');
         }
+
         $group = empty($group) ? $config['connection'] : $group;
 
         if (empty($config[$group]))

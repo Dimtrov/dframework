@@ -87,7 +87,7 @@ class Builder
      */
     public function __construct(?string $group = null)
     {
-		$this->useConnection(empty($group) ? '' : $group, [], true);
+		$this->useConnection(empty($group) ? '' : $group, []);
     }
     public static function instance(?string $group = null) : self
     {
@@ -103,14 +103,64 @@ class Builder
 	 *
 	 * @param string $group
 	 * @param array $customConfig
-	 * @param boolean $shared
 	 * @return void
 	 */
-	public function useConnection(string $group, array $customConfig = [], bool $shared = false)
+	public function useConnection(string $group, array $customConfig = [])
 	{
-		$this->db = true === $shared ? Database::instance($group) : new Database($group, $customConfig);
-        $this->db_config = $this->db->config();
+        $make = true;
+        if ($this->db !== null AND $this->db->isGroup($group))
+        {
+            $make = false;
+        }
+        if ($make)
+        {
+            $this->db = Database::instance($group, $customConfig);
+            $this->db_config = $this->db->config(null, $group);
+        }
 	}
+    /**
+	 * Defini la configuration de la base de donnees a utiliser
+	 *
+	 * @param string $group
+	 * @param callable $callback
+	 * @param array $customConfig
+	 * @return self
+	 */
+    public function use(string $group, ...$params): self
+    {
+        $params = func_get_args();
+        $group = array_shift($params);
+
+        $callback = null;
+        $customConfig = [];
+
+        for ($i = 0, $size = count($params); $i < $size; $i++)
+        {
+            if ($i > 1)
+            {
+                break;
+            }
+            if (is_array($params[$i]))
+            {
+                $customConfig = $params[$i];
+            }
+            else if (is_callable($params[$i]))
+            {
+                $callback = $params[$i];
+            }
+        }
+
+        $this->useConnection($group, $customConfig);
+
+        if (!empty($callback))
+        {
+            call_user_func($callback, $this);
+
+            $this->useConnection('');
+        }
+
+        return $this;
+    }
 
     public function __clone()
     {
@@ -1042,7 +1092,12 @@ class Builder
      */
     final public function query(string $sql, array $params = [])
     {
-        return Database::query($sql, $params);
+        if (empty($this->db))
+        {
+            $this->useConnection('', [], true);
+        }
+
+        return $this->db->connection()->query($sql, $params);
     }
 
     /**
@@ -1444,6 +1499,19 @@ class Builder
      */
     final protected function parseCondition($field, $value = null, $join = '', $escape = true)
     {
+        if (is_array($field))
+        {
+            $str = '';
+            foreach ($field as $key => $value)
+            {
+                if (!empty($value)) {
+                    $str .= $this->parseCondition($key, $value, $join, $escape);
+                    $join = '';
+                }
+            }
+            return $str;
+        }
+
         if (is_string($field))
         {
 			if (empty($join))
@@ -1514,22 +1582,9 @@ class Builder
 
             return $join.' '.$field.$condition.$value;
         }
-        else if (is_array($field))
-        {
-            $str = '';
-            foreach ($field as $key => $value)
-            {
-                if (!empty($value)) {
-                    $str .= $this->parseCondition($key, $value, $join, $escape);
-                    $join = '';
-                }
-            }
-            return $str;
-        }
-        else
-        {
-            throw new DatabaseException('Invalid where condition.');
-        }
+
+
+        throw new DatabaseException('Builder : Invalid where condition.');
     }
 
     /**
