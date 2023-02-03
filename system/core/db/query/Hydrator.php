@@ -39,7 +39,7 @@ class Hydrator
      * @param array $datas
      * @param string $class
      * @param string $dir
-     * @return \dFramework\core\Entity
+     * @return \dFramework\core\models\Entity
      */
     public static function hydrate(array $datas, string $class, string $dir = '')
     {

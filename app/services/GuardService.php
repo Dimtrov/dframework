@@ -59,11 +59,12 @@ class GuardService
 	 * Renvoi l'utilisateur issue du processus
 	 *
 	 * @param string|null $process
+	 * @param int|string|null $fecth_type
 	 * @return object|null
 	 */
-	public function getUser(?string $process = null) : ?object
+	public function getUser(?string $process = null, $fetch_type = null) : ?object
 	{
-		return $this->guardian->getUser($process);
+		return $this->guardian->getUser($process, $fetch_type);
 	}
 
 

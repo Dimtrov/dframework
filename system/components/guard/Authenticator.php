@@ -17,8 +17,10 @@
 
 namespace dFramework\components\guard;
 
+use dFramework\core\db\query\Hydrator;
 use dFramework\core\loader\Load;
 use dFramework\core\loader\Service;
+use dFramework\core\models\Entity;
 use dFramework\core\security\Session;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -268,11 +270,26 @@ class Authenticator
 	/**
 	 * Renvoi l'utilisateur trouvé
 	 *
-	 * @return object|null
+	 * @param int|string|null $fetch_type
+	 * @return mixed|null
 	 */
-	public function getUser() : ?object
+	public function getUser($fetch_type = \PDO::FETCH_OBJ) : ?object
 	{
-		return empty($this->user) ? null : (object) $this->user;
+        if (empty($this->user))
+        {
+            return null;
+        }
+
+        if ($fetch_type === \PDO::FETCH_ASSOC)
+        {
+            return (array) $this->user;
+        }
+        if (is_string($fetch_type) AND (preg_match('#Entity$#', $fetch_type) OR is_subclass_of($fetch_type, Entity::class)))
+        {
+            return Hydrator::hydrate((array) $this->user, $fetch_type);
+        }
+
+		return (object) $this->user;
 	}
 
 

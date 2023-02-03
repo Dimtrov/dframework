@@ -87,15 +87,16 @@ class Guardian
 	 * Recupere l'utilisateur issu du processus en cours
 	 *
 	 * @param string|null $process
+	 * @param int|string|null $fetch_type
 	 * @return object|null
 	 */
-	public function getUser(?string $process = null) : ?object
+	public function getUser(?string $process = null, $fetch_type = \PDO::FETCH_OBJ) : ?object
 	{
 		if (empty($this->user))
 		{
 			if ($process === 'authentication')
 			{
-				$this->user = Injector::make(Authenticator::class, [$this->configurer])->getUser();
+				$this->user = Injector::make(Authenticator::class, [$this->configurer])->getUser($fetch_type);
 			}
 		}
 		return empty($this->user) ? null : (object) $this->user;

@@ -18,7 +18,7 @@
 namespace dFramework\core\db\query;
 
 use dFramework\core\db\connection\BaseConnection;
-use dFramework\core\Entity;
+use dFramework\core\models\Entity;
 use dFramework\core\loader\Service;
 use PDO;
 
