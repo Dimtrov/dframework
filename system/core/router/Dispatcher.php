@@ -289,6 +289,7 @@ class Dispatcher
 			$resp = null;
 
 			$resp = $this->startController($request, $response);
+
 			// Closure controller has run in startController().
 			if (! is_callable($this->controller))
 			{
@@ -435,7 +436,13 @@ class Dispatcher
 		$this->timer->start('routing');
 		ob_start();
 
-		$this->controller     = $this->router->handle($this->determinePath());
+		try {
+			$this->controller     = $this->router->handle($this->determinePath());
+		}
+		catch(RouterException $e) {
+			$this->response = $this->display404errors('', $e->getMessage());
+		}
+
         $this->method         = $this->router->methodName();
         $this->parameters     = $this->router->params();
 		$this->controllerFile = $this->router->controllerFile();
@@ -493,12 +500,12 @@ class Dispatcher
 		// Try to autoload the class
 		if (!class_exists($this->controller, true))
 		{
-			RouterException::except(
+			return $this->display404errors(
 				'Controller not found',
 				'Impossible to load the controller <b>'.preg_replace('#Controller$#', '',$this->controller).'</b>.
 				<br>
 				The file &laquo; '.$this->controllerFile.' &raquo; do not contain class <b>'.$this->controller.'</b>
-			', 404);
+			');
 		}
 
 		$reflectedClass = new ReflectionClass($this->controller);
@@ -507,16 +514,14 @@ class Dispatcher
 		{
 			if ($reflectedClass->isSubclassOf(RestController::class))
 			{
-				$this->response = $this->response->withBody(to_stream(json_encode([
+				return $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unknow_method')
 				])))->withStatus(RestController::HTTP_NOT_ACCEPTABLE);
-
-				return;
 			}
-			RouterException::except(
+
+			return $this->display404errors(
 				'Method not found',
-				'&laquo;<b>'.$this->method.'</b> method &raquo; is not defined in '.$this->controller,
-				404
+				'&laquo;<b>'.$this->method.'</b> method &raquo; isss not defined in '.$this->controller,
 			);
 		}
 
@@ -525,11 +530,9 @@ class Dispatcher
         if ($reflection->getName() == "__construct")
         {
 			if ($reflectedClass->isSubclassOf(RestController::class)) {
-				$this->response = $this->response->withBody(to_stream(json_encode([
+				return $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(RestController::HTTP_FORBIDDEN);
-
-				return;
 			}
             RouterException::except(
 				'Forbidden',
@@ -540,11 +543,9 @@ class Dispatcher
         if ($reflection->isProtected() OR $reflection->isPrivate())
         {
             if ($reflectedClass->isSubclassOf(RestController::class)) {
-				$this->response = $this->response->withBody(to_stream(json_encode([
+				return $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(RestController::HTTP_FORBIDDEN);
-
-				return;
 			}
 			RouterException::except(
 				'Forbidden',
@@ -556,11 +557,9 @@ class Dispatcher
 		if (!in_array($reflection->getName(), $this->reservedMethods) AND preg_match('#^_#i', $reflection->getName()))
         {
 			if ($reflectedClass->isSubclassOf(RestController::class)) {
-				$this->response = $this->response->withBody(to_stream(json_encode([
+				return $this->response->withBody(to_stream(json_encode([
 					'status' => false, 'message' => lang('rest.unauthorized')
 				])))->withStatus(RestController::HTTP_FORBIDDEN);
-
-				return;
 			}
 			RouterException::except(
 				'Forbidden',
@@ -607,23 +606,25 @@ class Dispatcher
 			$params = [$method, $params];
 			$method = '_remap';
 		}
+
 		return Service::injector()->call([$class, $method], (array) $params);
 	}
 
 	/**
 	 * Displays a 404 Page Not Found error. If set, will try to
 	 * call the 404Override controller/method that was set in routing config.
-	 *
-	 * @param \Exception $e
 	 */
-	private function display404errors(\Exception $e)
+	private function display404errors(string $title, string $message)
 	{
+		// Display 404 Errors
+		$this->response = $this->response->withStatus(404, $title);
+
 		// Is there a 404 Override available?
 		if ($override = $this->router->get404Override())
 		{
 			if ($override instanceof \Closure)
 			{
-				echo $override($e->getMessage());
+				return $override($message);
 			}
 			else if (is_array($override))
 			{
@@ -632,15 +633,16 @@ class Dispatcher
 
 				unset($override);
 
-				$controller = $this->createController($this->request, $this->response);
-				$this->runController($controller);
+				$controller = $this->createController(
+					$this->request->withAttribute('title', $title)->withAttribute('message', $message),
+					$this->response
+				);
+
+				return $this->response->withBody(
+					to_stream($this->runController($controller))
+				);
 			}
-
-			return;
 		}
-
-		// Display 404 Errors
-		$this->response = $this->response->withStatus($e->getCode());
 
 		if (config('general.environment') !== 'test')
 		{
@@ -658,7 +660,7 @@ class Dispatcher
 			}
 		}
 
-		throw new \Exception('PageNotFoundException::forPageNotFound(' . $e->getMessage() . ')');
+		RouterException::except($title, $message, 404);
 	}
 
 	//--------------------------------------------------------------------

@@ -96,9 +96,16 @@ class Routes extends BaseCollector
 			}
 			catch (\ReflectionException $e)
 			{
+				$override = $router->get404Override();
+				
 				// If we're here, the method doesn't exist
 				// and is likely calculated in _remap.
-				$method = new \ReflectionMethod(!empty($controllerName) ? $controllerName : $router->controllerName(), '_remap');
+				$method  = is_array($override) ? ($override[1] ?? 'index') : '_remap';
+		
+				$method = new \ReflectionMethod(
+					!empty($controllerName) ? $controllerName : $router->controllerName(), 
+					$method
+				);
 			}	
 		}
 

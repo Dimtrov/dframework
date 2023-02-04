@@ -704,6 +704,6 @@ class Router
 			exit(Service::emitter()->emit($this->response));
 		}
 
-		RouterException::except($error, $details, $code);
+		throw new RouterException($details, $code);
 	}
 }
