@@ -480,6 +480,16 @@ class Input
         else {
             return NULL;
         }
+
+        if (is_array($value))
+        {
+            return array_map(function ($v) use($filter) {
+                return Xss::clean($v, array_merge([
+                    'filter_sanitize'
+                ], $filter));
+            }, $value);
+        }
+
         return Xss::clean($value, array_merge([
             'filter_sanitize'
         ], $filter));
@@ -577,7 +587,7 @@ class Input
 		// Clean UTF-8 if supported
 		if (UTF8_ENABLED === TRUE)
 		{
-			$str = Str::clean_string($str);
+			$str = Str::cleanStr($str);
 		}
 
 		// Remove control characters
@@ -611,14 +621,15 @@ class Input
             $response = Service::response();
             $response->statusCode(503);
             $response->body('Disallowed Key Characters.');
-            $response->send();
+
+			Service::emitter()->emit($response);
             exit(7); // EXIT_USER_INPUT
 		}
 
 		// Clean UTF-8 if supported
 		if (UTF8_ENABLED === TRUE)
 		{
-			return Str::clean_string($str);
+			return Str::cleanStr($str);
 		}
 
 		return $str;
