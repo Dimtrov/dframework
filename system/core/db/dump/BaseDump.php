@@ -70,25 +70,25 @@ abstract class BaseDump
 	 */
 	protected $options = [
 		'use_transaction' => false,
-		'disable_fk' => true,
-		'drop_database' => false,
-		'quick_param' => true,
-		'sql_compat' => 'NONE',
-		'sql_structure' => true,
-		'sql_data' => true,
-		'drop_table' => false,
-		'add_locks' => true,
+		'disable_fk'      => true,
+		'drop_database'   => false,
+		'quick_param'     => true,
+		'sql_compat'      => 'NONE',
+		'sql_structure'   => true,
+		'sql_data'        => true,
+		'drop_table'      => false,
+		'add_locks'       => true,
 		'extended_insert' => true,
-		'delayed_insert' => false,
+		'delayed_insert'  => false,
 		'complete_insert' => true,
-		'insert_ignore' => false,
-		'showcolumns' => false,
-		'hexforbinary' => false,
-		'compress' => true,
-		'skip_opt' => true,
-		'create_options' => true,
-		'quote_names' => true,
-		'compression' => 'none',
+		'insert_ignore'   => false,
+		'showcolumns'     => false,
+		'hexforbinary'    => false,
+		'compress'        => true,
+		'skip_opt'        => true,
+		'create_options'  => true,
+		'quote_names'     => true,
+		'compression'     => 'none',
 	];
 
 
@@ -113,6 +113,20 @@ abstract class BaseDump
 	 * @return string
 	 */
 	abstract public function import(?string $version = null): string;
+
+	/**
+	 *	Return full path of dump program
+	 *
+	 *	@return		string		Full path of dump program
+	 */
+	abstract public function exportPath(): string;
+	
+	/**
+	 *	Return full path of restore program
+	 *
+	 *	@return		string		Full path of restore program
+	 */
+	abstract public function importPath(): string;
 
 	/**
 	 * down

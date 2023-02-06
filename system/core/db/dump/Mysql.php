@@ -50,7 +50,7 @@ class Mysql extends BaseDump
             }
         }
 
-		$command = $this->initCommand();
+		$command = $this->initCommand('export');
 
 		if ($this->options['use_transaction'])
 		{
@@ -191,28 +191,65 @@ class Mysql extends BaseDump
 
        	$this->deleteAllTables();
 
-        $command = $this->initCommand() . ' < ' . $file;
+        $command = $this->initCommand('import')
+				. ' --database=' . escapeshellarg($this->config['database'])
+				. ' < ' . escapeshellarg($file);
 
         shell_exec($command);
 
         return $file;
     }
 
-	private function initCommand() : string
+	/**
+	 *	Return full path of dump program
+	 *
+	 *	@return		string		Full path of dump program
+	 */
+	public function exportPath(): string
+	{
+		$cmd = 'mysqldump';
+
+		$resql = $this->db->connection()->query('SHOW VARIABLES LIKE \'basedir\'');
+
+		if ($resql)
+		{
+			$liste   = $resql->first(\PDO::FETCH_ASSOC);
+			$basedir = rtrim($liste['Value'], '/\\');
+			$cmd     = $basedir . (preg_match('/\/$/', $basedir) ? '' : '/') . 'bin/mysqldump';
+		}
+
+		return $cmd;
+	}
+
+	/**
+	 *	Return full path of restore program
+	 *
+	 *	@return		string		Full path of restore program
+	 */
+	public function importPath(): string
 	{
 		$cmd = 'mysql';
 
-		$result = $this->db->connection()->query('SHOW VARIABLES LIKE \'basedir\'');
+		$resql = $this->db->connection()->query('SHOW VARIABLES LIKE \'basedir\'');
 
-		if ($result) {
-			$liste = $result->first(\PDO::FETCH_ASSOC);
+		if ($resql)
+		{
+			$liste   = $resql->first(\PDO::FETCH_ASSOC);
 			$basedir = rtrim($liste['Value'], '/\\');
-			$cmd = $basedir . (preg_match('/\/$/', $basedir) ? '' : '/') . 'bin/mysqldump';
+			$cmd     = $basedir . (preg_match('/\/$/', $basedir) ? '' : '/') . 'bin/mysql';
 		}
 
-        if (preg_match("/\s/", $cmd)) {
-            $cmd = escapeshellarg($cmd); // Use quotes on command
-        }
+		return $cmd;
+	}
+
+	private function initCommand(string $type) : string
+	{
+		$cmd = $type === 'import' ? $this->importPath() : $this->exportPath();
+
+		if (preg_match("/\s/", $cmd))
+		{
+			$cmd = escapeshellarg($cmd); // Use quotes on command
+		}
 
 		return str_replace('/', DS, $cmd)
         	. ' --host=' . escapeshellarg($this->config['host'])
