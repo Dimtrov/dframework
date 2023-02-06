@@ -1430,7 +1430,10 @@ class Builder
                 $this->table[0],
                 'SET',
                 implode(',', $this->query_values),
-                $this->where
+                $this->where,
+                $this->order,
+                $this->limit,
+                $this->offset
             ]);
         }
 
