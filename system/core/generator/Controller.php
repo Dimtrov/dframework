@@ -23,7 +23,7 @@ use dFramework\core\dFramework;
 use Nette\PhpGenerator\ClassType;
 use dFramework\core\utilities\Str;
 use Nette\PhpGenerator\PhpNamespace;
-use dFramework\core\controllers\ApplcationController;
+use dFramework\core\controllers\ApplicationController;
 use dFramework\core\controllers\RestController;
 use dFramework\core\support\traits\CliMessage;
 
@@ -133,7 +133,7 @@ final class Controller
         }
         else
         {
-            $generator->setExtends(ApplcationController::class);
+            $generator->setExtends(ApplicationController::class);
         }
         if (!empty($this->type))
         {

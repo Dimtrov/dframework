@@ -18,6 +18,7 @@
 namespace dFramework\core\db\connection;
 
 use dFramework\core\db\query\Result;
+use dFramework\core\debug\Timer;
 use dFramework\core\loader\Service;
 use dFramework\core\exception\DatabaseException;
 use PDO;
@@ -348,7 +349,8 @@ abstract class BaseConnection
 				$this->$key = $value;
 			}
         }
-        $this->timer = Service::timer();
+
+		$this->timer = is_cli() ? new Timer : Service::timer();
     }
 
 	/**

@@ -41,6 +41,8 @@ $app
     ->add(dFramework\core\cli\General::test())
     ->add(dFramework\core\cli\Maker::controller())
     ->add(dFramework\core\cli\Maker::entity())
+    ->add(dFramework\core\cli\Maker::model())
+    ->add(dFramework\core\cli\Maker::app())
     ->add(dFramework\core\cli\Migration::down())
     ->add(dFramework\core\cli\Migration::make())
     ->add(dFramework\core\cli\Migration::up())

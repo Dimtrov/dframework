@@ -23,7 +23,7 @@ use Nette\PhpGenerator\ClassType;
 use dFramework\core\utilities\Str;
 use Nette\PhpGenerator\PhpNamespace;
 use dFramework\core\db\Database;
-use dFramework\core\Entity as CoreEntity;
+use dFramework\core\models\Entity as CoreEntity;
 use dFramework\core\support\traits\CliMessage;
 
 /**

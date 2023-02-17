@@ -75,7 +75,9 @@ class Result
         $this->query = &$query;
         $this->db = &$db;
 
-        Service::event()->trigger('db.query', $this);
+		if (! is_cli()) {
+			Service::event()->trigger('db.query', $this);
+		}
     }
 
     /**
@@ -221,6 +223,11 @@ class Result
      */
     final public function result($type = PDO::FETCH_OBJ) : array
     {
+		if ($type === null)
+		{
+			$type = PDO::FETCH_OBJ;
+		}
+
         $data = [];
 
         if ($type === PDO::FETCH_OBJ OR $type === 'object')
