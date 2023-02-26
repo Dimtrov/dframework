@@ -690,7 +690,7 @@ class Dispatcher
 		// This is mainly needed during testing...
 		if (is_string($uri))
 		{
-			$uri = Service::uri($uri, false);
+			$uri = new Uri($uri);
 		}
 
 		if (isset($_SESSION))

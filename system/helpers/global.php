@@ -480,7 +480,7 @@ if (!function_exists('previous_url'))
 		$referer = $_SESSION['_df_previous_url'] ?? null;
 		if (false === filter_var($referer, FILTER_VALIDATE_URL))
 		{
-			$referer = Service::request()->getServer('HTTP_REFERER', FILTER_SANITIZE_URL);
+			$referer = Service::request()->getHeaderLine('HTTP_REFERER');
 		}
 
 		$referer = $referer ?? site_url('/');
