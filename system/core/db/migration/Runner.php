@@ -54,15 +54,15 @@ class Runner
 	protected $groupSkip = false;
 
 	/**
-     * @var array paths to store migration files
-     */
-    private $paths = [
-        DB_MIGRATION_DIR
-    ];
+	 * @var array paths to store migration files
+	 */
+	protected $paths = [
+		DB_MIGRATION_DIR
+	];
 	/**
-     * @var Filesystem
-     */
-    private $files;
+	 * @var Filesystem
+	 */
+	protected $files;
 
     /**
      * @var array
@@ -105,26 +105,23 @@ class Runner
 	 */
 	public function __construct(?string $group = null)
 	{
-		if (PHP_SAPI !== 'cli')
-        {
-        	throw new RuntimeException("Disponible unique via l'invite de commande", 1);
-        }
 		$this->db = new Builder($group);
 		$this->files = new Filesystem;
     }
 	/**
-     * Get a single instance
-     *
-     * @return self
-     */
-    public static function instance() : self
-    {
-        if (null === self::$_instance)
-        {
-            self::$_instance = new self;
-        }
-        return self::$_instance;
-    }
+	 * Get a single instance
+	 *
+	 * @return self
+	 */
+	public static function instance() : self
+	{
+		if (null === self::$_instance)
+		{
+			$args = func_get_args();
+			self::$_instance = new self(...$args);
+		}
+		return self::$_instance;
+	}
 
 
 	/**
@@ -649,7 +646,7 @@ class Runner
 		}
 
 		// Initialize migration
-		$instance = new $class();
+		$instance = new $class($this->db);
 
 		if (! is_callable([$instance, $direction]))
 		{

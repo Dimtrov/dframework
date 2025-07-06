@@ -18,6 +18,7 @@
 namespace dFramework\core\db;
 
 use dFramework\core\db\migration\Schema;
+use dFramework\core\db\query\Builder;
 
 /**
  * Migration
@@ -44,7 +45,17 @@ abstract class Migration
 	 */
 	protected $group = null;
 
+	/**
+	 * @var Builder Query Builder
+	 */
+	protected $db;
+
 	//--------------------------------------------------------------------
+
+	public function __construct(Builder $db)
+	{
+		$this->db = $db;
+	}
 
 	/**
 	 * Perform a migration step.
