@@ -112,7 +112,7 @@ class Builder
         {
             $make = false;
         }
-        if ($make)
+		if ($make)
         {
             $this->db = Database::instance($group, $customConfig);
             $this->db_config = $this->db->config(null, $group);
@@ -1611,6 +1611,11 @@ class Builder
 
         return $this;
     }
+
+	public function getConnection()
+	{
+		return $this->db->connection($this->db->getGroup());
+	}
 
     /**
      * Checks whether the table property has been set.
