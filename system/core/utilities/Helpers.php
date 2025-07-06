@@ -310,6 +310,7 @@ class Helpers
             AND !preg_match('#\.test$#', $host)
             AND !preg_match('#\.lab$#', $host)
             AND !preg_match('#\.loc(al)?$#', $host)
+            AND !preg_match('#\.localhost?$#', $host)
             AND !preg_match('#^192\.168#', $host)
         );
     }
