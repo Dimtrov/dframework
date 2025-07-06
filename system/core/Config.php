@@ -122,6 +122,17 @@ class Config
         self::initialize();
     }
 
+	/**
+	 * Refresh configurations
+	 *
+	 * @return void
+	 */
+	public static function refresh()
+	{
+		self::$_config = [];
+		self::init();
+	}
+
     /**
      * Load the specific configuration in the scoope
      *
@@ -172,10 +183,8 @@ class Config
                     The &laquo; '.$config_file.' &raquo; file does not exist
                 ', 404);
             }
-            if (! in_array($config_file, get_included_files()))
-            {
-                self::$_config = array_merge(self::$_config, require($config_file));
-            }
+
+			self::$_config = array_merge(self::$_config, require($config_file));
         }
         else
         {
